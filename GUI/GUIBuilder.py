@@ -62,7 +62,7 @@ def getGUIBuilderForFilter(obj):
 		return XMLGUIBuilder.XMLGUIBuilder
 	else:
 		return GUIBuilder
-
+		
 class GUIBuilder(wx.Panel):
 	"""
 	Created: 13.04.2006, KP
@@ -83,7 +83,7 @@ class GUIBuilder(wx.Panel):
 		self.histograms = []
 		self.currentBackground = None
 		self.currentBackgroundSizer = None
-		
+		self.items = {}		
 		self.buildGUI(myfilter)
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
@@ -275,6 +275,7 @@ class GUIBuilder(wx.Panel):
 		colorPanel = ColorTransferEditor.ColorTransferEditor(background, alpha = wantAlpha)
 		backgroundSizer.Add(colorPanel)
 		self.itemSizer.Add(background, (0, 0))
+		self.items[itemName] = background
 		setColorTransferFunction = lambda obj, event, arg, panel = colorPanel, i = item, \
 											s = self: s.onSetCtf(panel, i, arg)
 	  
@@ -338,6 +339,7 @@ class GUIBuilder(wx.Panel):
 		background.SetSizer(bgsizer)
 		background.SetAutoLayout(1)
 		background.Layout()
+		self.items[itemName] = background
 		
 		self.outputXML('<ThresholdSelection id="%s">'%itemName)
 		return 0
@@ -381,6 +383,7 @@ class GUIBuilder(wx.Panel):
 		background.SetSizer(pixelsizer)
 		background.SetAutoLayout(1)
 		background.Layout()
+		self.items[itemName] = background
 		
 		#obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, colorTransferFunction)
 		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
@@ -420,6 +423,7 @@ class GUIBuilder(wx.Panel):
 		background.SetAutoLayout(1)
 		background.Layout()
 		self.itemSizer.Add(background, (0, 0))
+		self.items[itemName] = background
 		getVoxelFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
 						r, g, b, alpha, currentCt, its = item, \
 						f = currentFilter:self.onSetPixel(obj, event, rx, ry, rz, r, g, b, \
@@ -473,8 +477,9 @@ class GUIBuilder(wx.Panel):
 		box.Add(choice, 1)
 		# was (y, 0)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
-		
+		self.items[itemName] = box
 		self.outputXML('<ROISelection id="%s"/>'%itemName)
+
 		return 1
 
 	def createChoice(self, n, items, currentFilter):
@@ -516,11 +521,11 @@ class GUIBuilder(wx.Panel):
 
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		self.items[itemName] = box
 		self.outputXML('<Choice id="%s" label="%s">/'%(itemName, text.replace('"','\\"')))
 		#self.indent+=1
 		#for item in choices:
-			
-			
+
 		return 1
 
 	def createRadioChoice(self, n, items, currentFilter):
@@ -561,6 +566,8 @@ class GUIBuilder(wx.Panel):
 		box.Bind(wx.EVT_RADIOBOX, onSelectRadioBox)
 		self.staticBoxName = ""
 		self.itemSizer.Add(box, (0, 0))
+		self.items[itemName] = box
+
 		spec="rows"
 		if majordim == wx.RA_SPECIFY_COLS:
 			spec = "columns"
@@ -570,6 +577,7 @@ class GUIBuilder(wx.Panel):
 			self.outputXML('<RadioChoice name="%s"/>'%item)
 		self.outputXMl('</RadioChoice>')
 		self.indent-=1
+
 		return 0
 		
 	def createSliceSelection(self, n, items, currentFilter):
@@ -622,7 +630,9 @@ class GUIBuilder(wx.Panel):
 		
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		self.items[itemName] = box
 		self.outputXML('<SliceSelection id="%s" label="%s"/>'%(itemName,text))
+
 		return 1
 		
 	def createFileSelection(self, n, items, currentFilter):
@@ -653,7 +663,9 @@ class GUIBuilder(wx.Panel):
 
 		box.Add(browse, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
+		self.items[itemName] = box
 		self.outputXML('<FileSelection id="%s label="%s" fileMask="%s" dialogTitle="%s"/>'%(itemName,text,items[n][2],items[n][1]))
+
 		return 1
 							
 	def buildChannelSelection(self):
@@ -832,11 +844,11 @@ class GUIBuilder(wx.Panel):
 			self.newItemSizer.Add(input)
 			backgroundSizer.Add(self.newItemSizer)
 
-
 		if not useOld:
 			itemSizer.Add(background, (y, x))
 		background.Layout()
-
+		self.items[item] = background
+		
 		if useOther:
 			self.currentBackgroundSizer	 = self.newItemSizer
 		return (x, y)

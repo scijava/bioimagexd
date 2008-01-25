@@ -55,6 +55,10 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Description: Initializes new object
 		"""
 		RegistrationFilters.RegistrationFilter.__init__(self,inputs)
+		self.totalTranslation = itk.Array.D()
+		self.totalTranslation.SetSize(3)
+		for i in range(3):
+			self.totalTranslation.SetElement(i,0)
 
 	def updateProgress(self):
 		"""
@@ -71,32 +75,63 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Description: Initializes and executes the registration process. Does
 		the result translation to input image and returns translated image.
 		"""
-		#import pdb
-		#pdb.set_trace()
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
-
-		fixedtp = self.parameters["FixedTimepoint"] - 1
+		
 		backgroundValue = self.parameters["BackgroundPixelValue"]
 		minStepLength = self.parameters["MinStepLength"]
 		maxStepLength = self.parameters["MaxStepLength"]
 		maxIterations = self.parameters["MaxIterations"]
+		usePrevious = self.parameters["UsePreviousAsFixed"]
+
+		if usePrevious:
+			if scripting.processingTimepoint > 0:
+				fixedtp = scripting.processingTimepoint - 1
+			else:
+				fixedtp = 0
+		else:
+			fixedtp = self.parameters["FixedTimepoint"] - 1
 
 		movingImage = self.getInput(1)
 		movingImage.SetUpdateExtent(movingImage.GetWholeExtent())
 		movingImage.Update()
+
 		# Create copy of data, otherwise movingImage will point to same image
 		# as fixedImage
 		mi = vtk.vtkImageData()
 		mi.DeepCopy(movingImage)
 		movingImage = mi
 		movingImage.Update()
-		
+		#movingImage = self.convertVTKtoITK(movingImage, cast = types.FloatType)
+		# Following is dirty but currently has to be done this way since
+		# convertVTKtoITK doesn't work with two dataset unless
+		# itkConfig.ProgressCallback is set and that eats all memory.
+		vtkToItk = itk.VTKImageToImageFilter.IF3.New()
+		icast = vtk.vtkImageCast()
+		icast.SetOutputScalarTypeToFloat()
+		icast.SetInput(movingImage)
+		vtkToItk.SetInput(icast.GetOutput())
+		vtkToItk.Update()
+		movingImage = vtkToItk.GetOutput()
+
 		fixedImage = self.dataUnit.getSourceDataUnits()[0].getTimepoint(fixedtp)
 		fixedImage.SetUpdateExtent(fixedImage.GetWholeExtent())
 		fixedImage.Update()
-		movingImage = self.convertVTKtoITK(movingImage, cast = types.FloatType)
-		fixedImage = self.convertVTKtoITK(fixedImage, cast = types.FloatType)
+			
+		#fixedImage = self.convertVTKtoITK(fixedImage, cast = types.FloatType)
+		vtkToItk2 = itk.VTKImageToImageFilter.IF3.New()
+		icast2 = vtk.vtkImageCast()
+		icast2.SetOutputScalarTypeToFloat()
+		icast2.SetInput(fixedImage)
+		vtkToItk2.SetInput(icast2.GetOutput())
+		vtkToItk2.Update()
+		fixedImage = vtkToItk2.GetOutput()
+
+		# Use last transform parameters as initialization to this registration
+		if self.transform and not usePrevious:
+			initialParameters = self.transform.GetParameters()
+		else:
+			initialParameters = None
 
 		# Create registration framework's components
 		self.registration = itk.ImageRegistrationMethod.IF3IF3.New()
@@ -113,8 +148,11 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.registration.SetFixedImage(fixedImage)
 		self.registration.SetMovingImage(movingImage)
 		self.registration.SetFixedImageRegion(fixedImage.GetBufferedRegion())
-		self.transform.SetIdentity()
-		initialParameters = self.transform.GetParameters()
+
+		# Use last transform parameters as initialization to this registration
+		if not initialParameters:
+			self.transform.SetIdentity()
+			initialParameters = self.transform.GetParameters()
 		self.registration.SetInitialTransformParameters(initialParameters)
 		self.optimizer.SetMaximumStepLength(maxStepLength)
 		self.optimizer.SetMinimumStepLength(minStepLength)
@@ -134,18 +172,24 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Logging.info("Translation Y = %f"%(finalParameters.GetElement(1)))
 		Logging.info("Translation Z = %f"%(finalParameters.GetElement(2)))
 
+		if usePrevious:
+			for i in range(3):
+				self.totalTranslation.SetElement(i,self.totalTranslation.GetElement(i) + finalParameters.GetElement(i))
+			finalParameters = self.totalTranslation
+
 		# Translate input image using results from the registration
 		self.resampler = itk.ResampleImageFilter.IF3IF3.New()
+		self.transform.SetParameters(finalParameters)
 		self.resampler.SetTransform(self.transform.GetPointer())
 		self.resampler.SetInput(movingImage)
-		region = fixedImage.GetLargestPossibleRegion()
+		region = movingImage.GetLargestPossibleRegion()
 		self.resampler.SetSize(region.GetSize())
-		self.resampler.SetOutputSpacing(fixedImage.GetSpacing())
-		self.resampler.SetOutputOrigin(fixedImage.GetOrigin())
+		self.resampler.SetOutputSpacing(movingImage.GetSpacing())
+		self.resampler.SetOutputOrigin(movingImage.GetOrigin())
 		self.resampler.SetDefaultPixelValue(backgroundValue)
 		data = self.resampler.GetOutput()
 		data.Update()
 
-		data = self.convertITKtoVTK(data, imagetype = "UC3")
+		data = self.convertITKtoVTK(data, cast = "UC3")
 		return data
 

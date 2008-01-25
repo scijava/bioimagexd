@@ -723,7 +723,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 			
 		data = self.itkfilter.GetOutput()
 		#if last:
-		#	 return self.convertITKtoVTK(data,imagetype="UC3")
+		#	 return self.convertITKtoVTK(data,cast="UC3")
 			
 		return data		 
 

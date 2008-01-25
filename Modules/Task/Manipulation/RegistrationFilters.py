@@ -58,7 +58,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
-		self.descs = {"FixedTimepoint": "Timepoint for fixed image", "MaxStepLength": "Maximum step length", "MinStepLength": "Minimum step length", "MaxIterations": "Maximum iterations", "BackgroundPixelValue": "Background pixel value"}
+		self.descs = {"FixedTimepoint": "Timepoint for fixed image", "MaxStepLength": "Maximum step length", "MinStepLength": "Minimum step length", "MaxIterations": "Maximum iterations", "BackgroundPixelValue": "Set background pixel value as", "UsePreviousAsFixed": "Use previous time point as fixed image"}
 		self.itkFlag = 1
 		self.registration = None
 		self.metric = None
@@ -66,6 +66,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.interpolator = None
 		self.optimizer = None
 		self.resampler = None
+		self.lastTransform = None
 
 	def updateProgress(self):
 		"""
@@ -81,7 +82,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		Created: 14.03.2007, KP
 		Description: Return the level of the given parameter
 		"""
-		if parameter in ["FixedTimepoint","BackgroundPixelValue","MaxIterations"]:
+		if parameter in ["FixedTimepoint","BackgroundPixelValue","MaxIterations","UsePreviousAsFixed"]:
 			return scripting.COLOR_INTERMEDIATE
 		if parameter in ["MaxStepLength","MinStepLength"]:
 			return scripting.COLOR_EXPERIENCED
@@ -103,6 +104,8 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 			return 30
 		if parameter == "BackgroundPixelValue":
 			return 0
+		if parameter == "UsePreviousAsFixed":
+			return False
 		
 		return 0
 		
@@ -126,9 +129,11 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "BackgroundPixelValue":
 			return GUIBuilder.SLICE
 		if parameter == "MaxStepLength":
-			types.FloatType
+			return types.FloatType
 		if parameter == "MinStepLength":
-			types.FloatType
+			return types.FloatType
+		if parameter == "UsePreviousAsFixed":
+			return types.BooleanType
 		
 		return types.IntType
 			 
@@ -137,7 +142,23 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		Created: 14.03.2007, KP
 		Description: Return the list of parameters needed for configuring this GUI
 		"""            
-		return [["", ("FixedTimepoint", )], ["", ("BackgroundPixelValue",)], ["Accuracy and speed settings", ("MaxIterations","MaxStepLength","MinStepLength")]]
+		return [["Fixed image", ("UsePreviousAsFixed","FixedTimepoint")], ["", ("BackgroundPixelValue",)], ["Accuracy and speed settings", ("MaxIterations","MaxStepLength","MinStepLength")]]
+
+	def setParameter(self, parameter, value):
+		"""
+		Created: 23.1.2008, LP
+		Description: Set value of parameter
+		"""
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self,parameter,value)
+		if parameter == "UsePreviousAsFixed" and self.gui:
+			item = self.gui.items["FixedTimepoint"]
+			if self.getParameter(parameter):
+				for c in item.GetChildren():
+					c.Show(False)
+			else:
+				for c in item.GetChildren():
+					c.Show(True)
+			self.gui.sizer.Layout()
 
 
 def getFilters():

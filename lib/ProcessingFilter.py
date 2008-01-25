@@ -87,7 +87,6 @@ class ProcessingFilter:
 		self.inputs = []
 		self.nextFilter = None
 		self.prevFilter = None
-		self.itkToVtk = None
 		self.enabled = 1
 		self.itkFlag = 0
 		self.imageType = "UC3"
@@ -101,6 +100,7 @@ class ProcessingFilter:
 		self.executive = None
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
+		
 		# self.itk = 0
 		
 	def resetFilters(self):
@@ -138,7 +138,7 @@ class ProcessingFilter:
 		Created: 20.11.2007, KP
 		Description: set a result variable to a value
 		"""
-		if variable not in self.resultVariables:
+		if variable not in self.getResultVariables():
 			raise Exception("No such result variable '%s'"%(variable))
 		self.resultVar[variable] = value
 		
@@ -283,8 +283,6 @@ class ProcessingFilter:
 				"A non-ITK filter %s tried to convert data to ITK image data" % self.name)
 			return image
 
-		ImageType = itk.VTKImageToImageFilter.IUC3
-
 		if cast == types.FloatType:
 			ImageType = itk.VTKImageToImageFilter.IF3
 		elif not cast:
@@ -296,10 +294,12 @@ class ProcessingFilter:
 				conv = vtk.vtkImageCast()
 				conv.SetInput(image)
 				ImageType = itk.VTKImageToImageFilter.IUL3
-				conv.SetOutputScalarTypeToUnsignedLong ()
+				conv.SetOutputScalarTypeToUnsignedLong()
 				image = conv.GetOutput()
 			elif scalarType == "unsigned short":
 				ImageType = itk.VTKImageToImageFilter.IUS3
+			else:
+				ImageType = itk.VTKImageToImageFilter.IUC3
 
 		self.vtkToItk = ImageType.New()
 
@@ -313,9 +313,10 @@ class ProcessingFilter:
 			image = icast.GetOutput()
 		self.vtkToItk.SetInput(image)
 		self.vtkToItk.Update()
+	
 		return self.vtkToItk.GetOutput()
 
-	def convertITKtoVTK(self, image, imagetype = "UC3", force = 0):
+	def convertITKtoVTK(self, image, cast = None, force = 0):
 		"""
 		Created: 18.04.2006, KP
 		Description: Convert the ITK image data to VTK image
@@ -339,6 +340,17 @@ class ProcessingFilter:
 			return image
 		self.itkToVtk.SetInput(image)
 		self.itkToVtk.Update()
+
+		if cast:
+			icast = vtk.vtkImageCast()
+			if cast == "UC3":
+				icast.SetOutputScalarTypeToUnsignedChar()
+			elif cast == "US3":
+				icast.SetOutputScalarTypeToUnsignedShort()
+			icast.SetInput(self.itkToVtk.GetOutput())
+			icast.Update()
+			return icast.GetOutput()
+
 		return self.itkToVtk.GetOutput()
 
 	def setNextFilter(self, nfilter):

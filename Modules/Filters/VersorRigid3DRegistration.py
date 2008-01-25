@@ -59,6 +59,10 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		"""
 		RegistrationFilters.RegistrationFilter.__init__(self,inputs)
 		self.descs["RotateAround"] = "Rotate around"
+		self.totalTransform = itk.Array.D()
+		self.totalTransform.SetSize(6)
+		for i in range(6):
+			self.totalTransform.SetElement(i,0)
 
 	def updateProgress(self):
 		"""
@@ -84,7 +88,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Description: Return the default value of a parameter
 		"""
 		if parameter == "RotateAround":
-			return CENTEROFMASS
+			return 0
 		return RegistrationFilters.RegistrationFilter.getDefaultValue(self,parameter)
 
 	def getType(self,parameter):
@@ -124,28 +128,60 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
 
-		fixedtp = self.parameters["FixedTimepoint"] - 1
 		backgroundValue = self.parameters["BackgroundPixelValue"]
 		minStepLength = self.parameters["MinStepLength"]
 		maxStepLength = self.parameters["MaxStepLength"]
 		maxIterations = self.parameters["MaxIterations"]
 		useMoments = self.parameters["RotateAround"]
+		usePrevious = self.parameters["UsePreviousAsFixed"]
+
+		if usePrevious:
+			if scripting.processingTimepoint > 0:
+				fixedtp = scripting.processingTimepoint - 1
+			else:
+				fixedtp = 0
+		else:
+			fixedtp = self.parameters["FixedTimepoint"] - 1
 
 		movingImage = self.getInput(1)
 		movingImage.SetUpdateExtent(movingImage.GetWholeExtent())
 		movingImage.Update()
+		
 		# Create copy of data, otherwise movingImage will point to same image
 		# as fixedImage
 		mi = vtk.vtkImageData()
 		mi.DeepCopy(movingImage)
 		movingImage = mi
 		movingImage.Update()
+		#movingImage = self.convertVTKtoITK(movingImage, cast = types.FloatType)
+		# Following is dirty but currently has to be done this way since
+		# convertVTKtoITK doesn't work with two dataset unless
+		# itkConfig.ProgressCallback is set and that eats all memory.
+		vtkToItk = itk.VTKImageToImageFilter.IF3.New()
+		icast = vtk.vtkImageCast()
+		icast.SetOutputScalarTypeToFloat()
+		icast.SetInput(movingImage)
+		vtkToItk.SetInput(icast.GetOutput())
+		vtkToItk.Update()
+		movingImage = vtkToItk.GetOutput()
 
 		fixedImage = self.dataUnit.getSourceDataUnits()[0].getTimepoint(fixedtp)
 		fixedImage.SetUpdateExtent(fixedImage.GetWholeExtent())
 		fixedImage.Update()
-		movingImage = self.convertVTKtoITK(movingImage, cast = types.FloatType)
-		fixedImage = self.convertVTKtoITK(fixedImage, cast = types.FloatType)
+		#fixedImage = self.convertVTKtoITK(fixedImage, cast = types.FloatType)
+		vtkToItk2 = itk.VTKImageToImageFilter.IF3.New()
+		icast2 = vtk.vtkImageCast()
+		icast2.SetOutputScalarTypeToFloat()
+		icast2.SetInput(fixedImage)
+		vtkToItk2.SetInput(icast2.GetOutput())
+		vtkToItk2.Update()
+		fixedImage = vtkToItk2.GetOutput()
+
+		# Use last transform parameters as initialization to this registration
+		if self.transform and not usePrevious:
+			initialParameters = self.transform.GetParameters()
+		else:
+			initialParameters = None
 
 		# Create registration framework's components
 		self.registration = itk.ImageRegistrationMethod.IF3IF3.New()
@@ -153,7 +189,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 			self.optimizer = itk.VersorRigid3DTransformOptimizer.New()
 		except:
 			Logging.error("Versor Rigid 3D Registration failed","VersorRigid3DTransformOptimizer couldn't be found.")
-			return self.convertITKtoVTK(movingImage, imagetype = "UC3")
+			return self.convertITKtoVTK(movingImage, cast = "UC3")
 
 		self.metric = itk.MeanSquaresImageToImageMetric.IF3IF3.New()
 		self.interpolator = itk.LinearInterpolateImageFunction.IF3D.New()
@@ -181,13 +217,23 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		else:
 			initializer.GeometryOn()
 		initializer.InitializeTransform()
-		rotation = itk.Versor.D()
-		axis = itk.Vector.D3()
-		axis.SetElement(0,0)
-		axis.SetElement(1,0)
-		axis.SetElement(2,1)
-		rotation.Set(axis,0)
-		self.transform.SetRotation(rotation)
+
+		if initialParameters:
+			self.transform.SetParameters(initialParameters)
+		else:
+			rotation = itk.Versor.D()
+			translation = itk.Vector.D3()
+			rotation.SetRotationAroundX(0)
+			rotation.SetRotationAroundY(0)
+			rotation.SetRotationAroundZ(0)
+			#axis = itk.Vector.D3()
+			#axis.SetElement(0,0)
+			#axis.SetElement(1,0)
+			#axis.SetElement(2,1)
+			#rotation.Set(axis,0)
+			self.transform.SetRotation(rotation)
+			self.transform.SetTranslation(translation)
+			
 		self.registration.SetInitialTransformParameters(self.transform.GetParameters())
 
 		iterationCommand = itk.PyCommand.New()
@@ -205,17 +251,23 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Logging.info("Translation Z = %f"%(finalParameters.GetElement(5)))
 		Logging.info("Versor = (%f,%f,%f)"%(finalParameters.GetElement(0),finalParameters.GetElement(1),finalParameters.GetElement(2)))
 
+		if usePrevious:
+			for i in range(6):
+				self.totalTransform.SetElement(i,self.totalTransform.GetElement(i) + finalParameters.GetElement(i))
+				finalParameters = self.totalTransform
+
 		self.resampler = itk.ResampleImageFilter.IF3IF3.New()
+		self.transform.SetParameters(finalParameters)
 		self.resampler.SetTransform(self.transform.GetPointer())
 		self.resampler.SetInput(movingImage)
-		region = fixedImage.GetLargestPossibleRegion()
+		region = movingImage.GetLargestPossibleRegion()
 		self.resampler.SetSize(region.GetSize())
-		self.resampler.SetOutputSpacing(fixedImage.GetSpacing())
-		self.resampler.SetOutputOrigin(fixedImage.GetOrigin())
+		self.resampler.SetOutputSpacing(movingImage.GetSpacing())
+		self.resampler.SetOutputOrigin(movingImage.GetOrigin())
 		self.resampler.SetDefaultPixelValue(backgroundValue)
-		dataBeforeCast = self.resampler.GetOutput()
-		dataBeforeCast.Update()
+		data = self.resampler.GetOutput()
+		data.Update()
 
-		data = self.convertITKtoVTK(dataBeforeCast, imagetype = "UC3")
+		data = self.convertITKtoVTK(data, cast = "UC3")
 		return data
 	
