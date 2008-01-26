@@ -147,7 +147,7 @@ class GUIBuilder(wx.Panel):
 			if type(param) == types.StringType:
 				label = wx.StaticText(self, -1, param)
 				sizer.Add(label, (gy, 0))
-				if eslf.xmlFp:
+				if self.xmlFp:
 					self.outputXML('<Label label="%s" />'%param.replace('"','\\"'))
 			# If it's a list with header name and items
 			elif type(param) == types.ListType:

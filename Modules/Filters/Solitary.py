@@ -27,6 +27,7 @@ import vtkbxd
 import GUI.GUIBuilder
 import lib.FilterTypes
 import scripting
+import types
 
 class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -41,7 +42,7 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		Created: 13.04.2006, KP
 		Description: Initialization
 		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtkbxd.vtkImageSolitaryFilter()
 		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
 		self.descs = {"HorizontalThreshold": "X:", "VerticalThreshold": "Y:", \

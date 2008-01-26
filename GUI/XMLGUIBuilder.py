@@ -30,6 +30,8 @@ __author__ = "BioImageXD Project < http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
+import wx
+
 class XMLGUIElement:
 	"""
 	Created: 26.01.2008, KP
