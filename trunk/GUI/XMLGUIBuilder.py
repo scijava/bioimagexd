@@ -36,9 +36,18 @@ class XMLGUIElement:
 	Description: a base class for all user interface elements available to XMLGUIBuilder
 	"""
 	inputTypes = []
-	def __init__(self, parent, *args, **kws):
+	def __init__(self, builder, parent, *args, **kws):
 		self.id = kws.get("id","")
 		self.parent = parent
+		self.builder = builder
+		self.uiElement = None
+		
+	def getUI(self):
+		"""
+		Created: 26.01.2008, KP
+		Description: return the actual UI element
+		"""
+		return self.uiElement
 		
 class XMLGUIContainer:
 	"""
