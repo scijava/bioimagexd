@@ -58,7 +58,7 @@ ROISELECTION = "ROISELECTION"
 SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION]
 
 def getGUIBuilderForFilter(obj):
-	if hasattr(obj, "getParametersAsXML"):
+	if hasattr(obj, "getXMLDescription"):
 		return XMLGUIBuilder.XMLGUIBuilder
 	else:
 		return GUIBuilder
