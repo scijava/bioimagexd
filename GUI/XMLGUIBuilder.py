@@ -30,7 +30,37 @@ __author__ = "BioImageXD Project < http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
+import xml.sax
 import wx
+import cStringIO
+
+class XMLGUIHandler(xml.sax.handler.ContentHandler):
+	"""
+	Created: 26.01.2008, KP
+	Description: the SAX parser for XMLGUI definitions
+	"""
+	def __init__(self):
+		pass
+		
+	def startElement(self, name, attrs):
+		"""
+		Created: 26.01.2008, KP
+		Description: handle the starting on an element
+		"""
+		print "startElement",name,attrs
+		
+	def endElement(self, name):
+		"""
+		Created: 26.01.2008, KP
+		Description: handle the ending of an element
+		"""
+		print "endElement",name
+
+	def endDocument(self):
+		pass
+		
+	
+
 
 class XMLGUIElement:
 	"""
@@ -40,6 +70,7 @@ class XMLGUIElement:
 	inputTypes = []
 	def __init__(self, builder, parent, *args, **kws):
 		self.id = kws.get("id","")
+		self.currentFilter = builder.getFilter()
 		self.parent = parent
 		self.builder = builder
 		self.uiElement = None
@@ -76,11 +107,19 @@ class XMLGUIBuilder(wx.Panel):
 		self.sizer = wx.GridBagSizer()
 		
 		self.elementsForParameters = {}
+		
 
 		self.items = {}
 		self.buildGUI(myfilter)
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
+		
+	def getFilter(self):
+		"""
+		Creted: 26.01.2008, KP
+		Description: return the current filter
+		"""
+		return self.filter
 		
 	def getElementForParameter(self, parameter):
 		"""
@@ -95,5 +134,7 @@ class XMLGUIBuilder(wx.Panel):
 		Description: create the GUI for the filter
 		"""
 		xmlstring = filter.getXMLDescription()
-		
+		parser = xml.sax.make_parser()
+		parser.setContentHandler(XMLGUIHandler())
+		parser.parse(cStringIO.StringIO(xmlstring))
 		
