@@ -41,8 +41,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 	"""    
 	def __init__(self, parent, visualizer, name, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		#scrolled.ScrolledPanel.__init__(self,parent.parent,-1)
 		if "mode" in kws:
@@ -117,16 +116,14 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 
 	def updateModuleSettings(self, obj, evt, *args):
 		"""
-		Created: 02.08.2005, KP
-		Description: Signal for updating the module settings
+		Signal for updating the module settings
 		"""
 		if self.module:
 			self.setModule(self.module)
 
 	def onMaterial(self, event):
 		"""
-		Created: 23.05.2005, KP
-		Description: Toggle material configuration
+		Toggle material configuration
 		"""		
 		val = self.toggleBtn.GetValue()
 		
@@ -138,8 +135,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		
 	def onApply(self, event):
 		"""
-		Created: 16.05.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""		
 		try:
 			ambient = float(self.ambientEdit.GetValue())
@@ -152,8 +148,7 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		
 	def findModule(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Refresh the modules affected by this configuration
+		Refresh the modules affected by this configuration
 		"""
 		modules = self.visualizer.getCurrentMode().getModules()
 		for module in modules:
@@ -163,7 +158,6 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		self.module = module

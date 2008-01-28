@@ -8,8 +8,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Created: 20.06.07, SS
-		Description: Creates a test RenderingInterface and test variables
+		Creates a test RenderingInterface and test variables
 		"""
 	
 #		self.testDataUnit = lib.DataUnit.DataUnit.DataUnit()
@@ -32,8 +31,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetType(self):
 		"""
-		Created: 20.06.07, SS
-		Description: Tests the method setType()
+		Tests the method setType()
 		Before setType(): self.testRenderingInterface.imageType should be non-equal to self.testImageType
 		After setType():self.testRenderingInterface.imageType should be equal to self.testImageType
 		"""
@@ -44,8 +42,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetColorTransferFunction(self):
 		"""
-		Created: 20.06.07, SS
-		Description: Tests the method getColorTransferFunction()
+		Tests the method getColorTransferFunction()
 		"""
 
 		self.testRenderingInterface.ctf = self.testCtf
@@ -54,8 +51,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetCurrentData(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setCurrentTimepoint()
+		Tests the method setCurrentTimepoint()
 
 		nts:	Can't be done before testSetCurrenttimepoint() is working
 		"""
@@ -64,8 +60,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetCurrentTimepoint(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getCurrentData()
+		Tests the method getCurrentData()
 
 		nts:	TOO COMPLICATED! testRenderingInterface needs a dataUnit as parameter
 				and this dataUnit instance needs a dataSource. will leave this
@@ -84,8 +79,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 		
 	def testSetRenderWindowSize(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setRenderWindowSize()
+		Tests the method setRenderWindowSize()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -93,8 +87,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetRenderWindow(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method GetRenderWindow()
+		Tests the method GetRenderWindow()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -102,8 +95,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetParent(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setParent()
+		Tests the method setParent()
 		"""
 		# no parameter "parent" exists
 #		self.assertEqual(self.testRenderingInterface.parent, self.oldTestParentValue)
@@ -113,8 +105,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetRenderer(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getRenderer()
+		Tests the method getRenderer()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -122,8 +113,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testRender(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method render()
+		Tests the method render()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -131,8 +121,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetVisualizer(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setVisualizer()
+		Tests the method setVisualizer()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -140,8 +129,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetDataUnit(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setDataUnit()
+		Tests the method setDataUnit()
 		"""
 #		self.assertEqual(self.testRenderingInterface.dataUnit, self.oldDataUnitValue)
 #		self.testRenderingInterface.setDataUnit(self.testDataUnit)
@@ -149,8 +137,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetTimePoints(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setTimePoints()
+		Tests the method setTimePoints()
 		"""
 		self.assertEqual(self.testRenderingInterface.timePoints, self.oldTimepointsValue)
 		self.testRenderingInterface.setTimePoints(self.testTimepoints)
@@ -158,8 +145,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testCreateVisualization(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method createVisualization()
+		Tests the method createVisualization()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -167,8 +153,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testIsVisualizationSoftwareRunning(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method isVisualizationSoftwareRunning()
+		Tests the method isVisualizationSoftwareRunning()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -176,8 +161,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testIsVisualizationModuleLoaded(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method isVisualizationModuleLoaded()
+		Tests the method isVisualizationModuleLoaded()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -185,8 +169,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testDoRendering(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method doRendering()
+		Tests the method doRendering()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -194,8 +177,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetFrameList(self):
 		"""
-		Created: 20.06.07, SS
-		Description: Tests the method getFrameList()
+		Tests the method getFrameList()
 		"""
 		self.testRenderingInterface.frameList = self.testFrameList
 		tempFrameList = self.testRenderingInterface.getFrameList()
@@ -203,8 +185,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSetOutputPath(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method setOutputPath()
+		Tests the method setOutputPath()
 		"""
 		# no parameter "dirname" exists
 #		self.assertEqual(self.testRenderingInterface.dirname, self.oldDirnameValue)
@@ -213,8 +194,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testRenderData(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method renderData()
+		Tests the method renderData()
 
 		nts:	Complicated
 		"""
@@ -222,8 +202,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testSaveFrame(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method saveFrame()
+		Tests the method saveFrame()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""
@@ -231,23 +210,20 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetFilenamePattern(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getFilenamePattern()
+		Tests the method getFilenamePattern()
 		"""
 		# no parameter "format"
 #		self.assertEqual(self.testRenderingInterface.getFilenamePattern(), self.testRenderingInterface.format)
 
 	def testGetFrameName(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getFrameName()
+		Tests the method getFrameName()
 		"""
 		self.assertEqual(self.testRenderingInterface.getFrameName(), self.testRenderingInterface.frameName)
 
 	def testGetFilename(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getFilename()
+		Tests the method getFilename()
 
 		nts:	somehow complicated, format gets a value in setDataUnit() which has not been processed yet
 		"""
@@ -255,8 +231,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetCenter(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getCenter()
+		Tests the method getCenter()
 
 		nts:	complicated, involves a dataUnit and dataSource
 		"""
@@ -264,8 +239,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testGetDimensions(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method getDimensions()
+		Tests the method getDimensions()
 
 		nts:	complicated, involves a dataUnit and dataSource
 		"""
@@ -273,8 +247,7 @@ class RenderingInterfaceTest(unittest.TestCase):
 
 	def testUpdateDataset(self):
 		"""
-		Created: 10.07.07, SS
-		Description: Tests the method updateDataset()
+		Tests the method updateDataset()
 
 		nts:	Have to create a test Visualizer to test this method but gets complicated
 		"""

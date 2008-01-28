@@ -48,8 +48,7 @@ class Track:
 	
 	def distance(self, tp1, tp2):
 		"""
-		Created: 01.07.2007, KP
-		Description: return the distance between objects at tp1 and tp2
+		return the distance between objects at tp1 and tp2
 		"""
 		if tp1 not in self.points:
 			return 0 #TODO: why 0? this equals to distance(p1, p1) - 14.8.2007 SS
@@ -62,8 +61,7 @@ class Track:
 
 	def getLength(self):
 		"""
-		Created: 01.07.2007, KP
-		Description: return the length of this track
+		return the length of this track
 		"""
 		if self.length < 0:
 			self.length = 0
@@ -73,22 +71,19 @@ class Track:
 
 	def getSpeed(self):
 		"""
-		Created: 01.07.2007, KP
-		Description: return the speed
+		return the speed
 		"""
 		return self.getLength() / (self.maxtp - self.mintp)
 
 	def getDirectionalPersistence(self):
 		"""
-		Created: 01.07.2007, KP
-		Description: return the directional persistence of this track
+		return the directional persistence of this track
 		"""
 		return  self.distance(self.mintp, self.maxtp) / self.getLength()
 
 	def getAverageAngle(self):
 		"""
-		Created: 01.07.2007, KP
-		Description: return the average of the angle differences
+		return the average of the angle differences
 		"""
 		#TODO: check if this is working correctly
 		totalAngle = 0
@@ -111,8 +106,7 @@ class Track:
 		
 	def addTrackPoint(self, timepoint, objval, position):
 		"""
-		Created: 23.11.2006, KP
-		Description: add a point to this track
+		add a point to this track
 		"""
 		if timepoint < self.mintp:
 			self.mintp = timepoint
@@ -125,15 +119,13 @@ class Track:
 
 	def getTimeRange(self):
 		"""
-		Created: 23.11.2006, KP
-		Description: Return the range in time this track occupies
+		Return the range in time this track occupies
 		"""
 		return self.mintp, self.maxtp
 	
 	def getObjectAtTime(self, timePoint):
 		"""
-		Created: 23.11.2006, KP
-		Description: Return the object value and position at timepoint t
+		Return the object value and position at timepoint t
 		"""
 		if timePoint not in self.points:
 			return -1, (-1, -1, -1)
@@ -147,8 +139,7 @@ class TrackReader:
 	"""
 	def __init__(self, filename = ""):
 		"""
-		Created: 12.07.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.filename = filename
 		self.tracks = []
@@ -158,8 +149,7 @@ class TrackReader:
 				
 	def readFromFile(self, filename):
 		"""
-		Created: 12.07.2006, KP
-		Description: Return the number of tracks
+		Return the number of tracks
 		""" 
 		self.maxLength = -1
 		try:
@@ -174,8 +164,7 @@ class TrackReader:
 			
 	def getTrack(self, trackNumber, minLength = 3):
 		"""
-		Created: 20.06.2006, KP
-		Description: Method desc
+		Method desc
 		"""   
 		tracks = self.getTracks(minLength)
 		print "Tracks with minlength =", minLength, "=", tracks
@@ -183,8 +172,7 @@ class TrackReader:
 		
 	def getMaximumTrackLength(self):
 		"""
-		Created: 12.07.2006, KP
-		Description: Return the maximum length of a track
+		Return the maximum length of a track
 		"""			  
 		if self.maxLength <= 0:
 			for track in self.tracks:
@@ -196,20 +184,18 @@ class TrackReader:
 		
 	def getNumberOfTracks(self, minLength = 3):
 		"""
-		Created: 12.07.2006, KP
-		Description: Return the number of tracks
+		Return the number of tracks
 		"""			  
 		return len(self.getTracks(minLength))
 		
 	def getTracks(self, minLength = 3):
 		"""
-		Created: 12.07.2006, KP
-		Description: Return the tracks with length >= minLength
+		Return the tracks with length >= minLength
 		"""   
 		def isLongerThan(trackObject, minimumLength):
 			"""
 			Created 12.07.2006, KP
-			Description: Returns whether trackObjects length is greater than minimumLength
+			Returns whether trackObjects length is greater than minimumLength
 			"""
 			return len(trackObject) > minimumLength
 		if not self.tracks:
@@ -219,8 +205,7 @@ class TrackReader:
 	@staticmethod
 	def readTracks(reader):
 		"""
-		Created: 12.07.2006, KP
-		Description: Read tracks from the given file
+		Read tracks from the given file
 		"""   
 		tracks = []
 		ctrack = Track()

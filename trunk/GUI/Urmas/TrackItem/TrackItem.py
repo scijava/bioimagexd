@@ -96,29 +96,25 @@ class TrackItem:
 		
 	def getTimepoint(self):
 		"""
-		Created: 19.04.2005, KP
-		Description: Return the timepoint of this item
+		Return the timepoint of this item
 		"""       
 		return self.timepoint
 		
 	def setItemNumber(self, n):
 		"""
-		Created: 14.04.2005, KP
-		Description: Set the item number of this item
+		Set the item number of this item
 		"""       
 		self.itemnum = n
 		
 	def setText(self, s):
 		"""
-		Created: 14.04.2005, KP
-		Description: Set the text number of this item
+		Set the text number of this item
 		"""       
 		self.text = s
 
 	def OnDragOver(self, x, y):
 		"""
-		Created: 12.04.2005, KP
-		Description: A method called when something is being dragged over this item
+		A method called when something is being dragged over this item
 		"""       
 		w, h = self.GetSize()
 		ix, iy = self.GetPosition()
@@ -134,8 +130,7 @@ class TrackItem:
 		
 	def setThumbnailDataunit(self, dataunit):
 		"""
-		Created: 06.05.2005, KP
-		Description: Sets the setting for thumbnail generation
+		Sets the setting for thumbnail generation
 		"""       
 		self.dataUnit = dataunit
 		self.thumbtimepoint = self.timepoint
@@ -145,8 +140,7 @@ class TrackItem:
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Update the item
+		Update the item
 		"""       
 		start, end = state.position
 		# don't update itemnum, since it should accurately represent the 
@@ -171,8 +165,7 @@ class TrackItem:
 		
 	def setColor(self, col, headercolor):
 		"""
-		Created: 10.02.2005, KP
-		Description: Set the color and header color for this item
+		Set the color and header color for this item
 		"""       
 		self.color = col
 		self.headercolor = headercolor
@@ -180,8 +173,7 @@ class TrackItem:
 
 	def drawHeader(self, hilight = -1):
 		"""
-		Created: 19.03.2005, KP
-		Description: A method that draws the header of this item
+		A method that draws the header of this item
 		"""       
 		# Set the color to header color
 		r, g, b = self.headercolor
@@ -208,8 +200,7 @@ class TrackItem:
 		
 	def drawItem(self, hilight = -1):
 		"""
-		Created: 10.02.2005, KP
-		Description: A method that draws this track item
+		A method that draws this track item
 		"""
 		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		self.dc = wx.MemoryDC()
@@ -248,16 +239,14 @@ class TrackItem:
 
 	def hilight(self, h):
 		"""
-		Created: 12.04.2005, KP
-		Description: A method to highlight the spot where a drop would occur
+		A method to highlight the spot where a drop would occur
 		""" 
 		self.dc.SetPen(wx.Pen(wx.Colour(0, 0, 0), 2))
 		self.dc.DrawLine(h, 0, h, self.height)
 		
 	def drawThumbnail(self):
 		"""
-		Created: 10.02.2005, KP
-		Description: A method that draws a thumbnail on an item. If no thumbnail exists,
+		A method that draws a thumbnail on an item. If no thumbnail exists,
 					 this will create one
 		"""   
 		if not self.thumbnailbmp:
@@ -274,16 +263,14 @@ class TrackItem:
 		
 	def setMinimumWidth(self, w):
 		"""
-		Created: 10.02.2005, KP
-		Description: Set the minimum width for this item, below which it cannot
+		Set the minimum width for this item, below which it cannot
 					 be resized
 		"""       
 		self.minSize = w
 		
 	def setWidth(self, w):
 		"""
-		Created: 10.02.2005, KP
-		Description: Set the width of this item. Will allocate buffer for
+		Set the width of this item. Will allocate buffer for
 					 drawing self.
 		"""       
 		self.width = w
@@ -295,8 +282,7 @@ class TrackItem:
 		
 	def onDown(self, event):
 		"""
-		Created: 10.02.2005, KP
-		Description: Event handler for when the mouse is pressed down over
+		Event handler for when the mouse is pressed down over
 					 this item. Will store the position in order to enable
 					 dragging.
 		"""       
@@ -324,8 +310,7 @@ class TrackItem:
 			
 	def canDrag(self, event):
 		"""
-		Created: 16.7.2005, KP
-		Description: A method that tells whether a track item can be dragged
+		A method that tells whether a track item can be dragged
 		"""       
 		x, y = event.GetPosition()
 		w, h = self.GetSize()
@@ -340,8 +325,7 @@ class TrackItem:
 		
 	def onUp(self, event):
 		"""
-		Created: 10.02.2005, KP
-		Description: Event handler for when mouse is released over this item.
+		Event handler for when mouse is released over this item.
 					 Will store the position in order to enable dragging.
 		"""    
 		x, y = event.GetPosition()
@@ -351,8 +335,7 @@ class TrackItem:
 
 	def updateItem(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: A method called when the item has been resized
+		A method called when the item has been resized
 		"""       
 		posx, posy = self.GetPosition()
 		posx -= self.parent.getLabelWidth()
@@ -363,15 +346,13 @@ class TrackItem:
 		
 	def getPosition(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Return the starting and ending position of this item
+		Return the starting and ending position of this item
 		"""       
 		return self.position
 		
 	def onDrag(self, event):
 		"""
-		Created: 10.02.2005, KP
-		Description: Event handler for when the mouse is dragged on the item.
+		Event handler for when the mouse is dragged on the item.
 					 Will resize the item accordingly.
 		"""
 		if self.canDrag(event):
@@ -388,8 +369,7 @@ class TrackItem:
 		
 	def __getstate__(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""      
 		odict = {}
 		keys = [""]
@@ -401,8 +381,7 @@ class TrackItem:
 
 	def __str__(self):
 		"""
-		Created: 05.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""  
 		if self.timepoint != -1:
 			desc = "T%d" % self.timepoint
@@ -421,15 +400,13 @@ class EmptyItem(TrackItem):
 	"""       
 	def __init__(self, parent, size, **kws):
 		"""
-		Created: 16.04.2005, KP
-		Description: Initialize
+		Initialize
 		"""       
 		TrackItem.__init__(self, parent, "", size, **kws)
 		
 	def drawItem(self, hilight = -1):
 		"""
-		Created: 13.04.2005, KP
-		Description: A method that draws the item.
+		A method that draws the item.
 		"""
 		self.dc = wx.MemoryDC()
 		self.dc.SelectObject(self.buffer)
@@ -447,8 +424,7 @@ class EmptyItem(TrackItem):
 		
 	def __str__(self):
 		"""
-		Created: 13.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""  
 		start, end = self.position
 		return "[E %ds:%ds]" % (start, end)      
@@ -461,8 +437,7 @@ class StopItem(TrackItem):
 	"""       
 	def __init__(self, parent, size, **kws):
 		"""
-		Created: 24.06.2005, KP
-		Description: Initialize
+		Initialize
 		"""       
 		self.itemnum = -1
 		self.stopitem = 1
@@ -472,8 +447,7 @@ class StopItem(TrackItem):
 		
 	def drawItem(self, hilight = -1):
 		"""
-		Created: 24.06.2005, KP
-		Description: A method that draws the item.
+		A method that draws the item.
 		"""
 		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		self.dc = wx.MemoryDC()
@@ -516,16 +490,14 @@ class StopItem(TrackItem):
 		
 	def __str__(self):
 		"""
-		Created: 13.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""  
 		start, end = self.position
 		return "[STOP %ds:%ds]" % (start, end)    
 		
 	def __getstate__(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""      
 		odict = {}
 		keys = [""]
@@ -536,8 +508,7 @@ class StopItem(TrackItem):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 17.07.2005, KP
-		Description: Set the pure state of this item
+		Set the pure state of this item
 		"""      
 		TrackItem.__set_pure_state__(self, state)
 		self.stopitem = state.stopitem

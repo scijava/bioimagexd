@@ -52,8 +52,7 @@ class RendererConfiguration(wx.MiniFrame):
 	"""	   
 	def __init__(self, parent, visualizer):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""		
 		wx.MiniFrame.__init__(self, parent, -1, "Configure Render Window")
 		self.panel = wx.Panel(self, -1)
@@ -109,8 +108,7 @@ class RendererConfiguration(wx.MiniFrame):
 		
 	def initializeGUI(self):
 		"""
-		Created: 16.05.2005, KPself.mode
-		Description: Build up the configuration GUI
+		Build up the configuration GUI
 		"""				
 		self.colorLbl = wx.StaticText(self.panel, -1, "Background color: ")
 		self.colorBtn = csel.ColourSelect(self.panel, -1)
@@ -137,8 +135,7 @@ class RendererConfiguration(wx.MiniFrame):
 		
 	def onApply(self, event):
 		"""
-		Created: 16.05.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""			  
 		if self.color:
 			red, green, blue = self.color
@@ -154,31 +151,27 @@ class RendererConfiguration(wx.MiniFrame):
 		
 	def onCancel(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Close this dialog
+		Close this dialog
 		"""		
 		self.Close()
 		
 	def onOk(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Apply changes and close
+		Apply changes and close
 		""" 
 		self.onApply(None)
 		self.Close()
 		
 	def onSelectColor(self, event):
 		"""
-		Created: 16.05.2005, KP
-		Description: Select the background color for render window
+		Select the background color for render window
 		"""				
 		color = event.GetValue()
 		self.color = (color.Red(), color.Green(), color.Blue())
 		
 	def onSetStereoMode(self, event):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the stereo mode
+		Set the stereo mode
 		"""				
 		index = event.GetSelection()
 		mode = self.modes[index]
@@ -194,8 +187,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 	"""
 	def __init__(self, parent, visualizer, mode, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		#wx.Panel.__init__(self, parent, -1, style = wx.RAISED_BORDER)
 		#wx.ScrolledWindow.__init__(self, parent, -1)
@@ -274,8 +266,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def onConfigureRenderwindow(self, event):
 		"""
-		Created: 15.05.2005, KP
-		Description: Configure the render window
+		Configure the render window
 		"""
 		conf = RendererConfiguration(self, self.visualizer)
 		conf.Show()
@@ -283,8 +274,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def onSelectItem(self, event):
 		"""
-		Created: 15.05.2005, KP
-		Description: Select a module
+		Select a module
 		"""
 		self.selected = event.GetSelection()
 		lbl = self.moduleListbox.GetStringSelection()
@@ -296,8 +286,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def showConfiguration(self, label):
 		"""
-		Created: 23.05.2005, KP
-		Description: showConfiguration
+		showConfiguration
 		"""
 		n = self.moduleListbox.FindString(label)
 		if self.currentConf:
@@ -316,8 +305,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 				
 	def onCheckItem(self, event):
 		"""
-		Created: 15.05.2005, KP
-		Description: Enable / Disable a module
+		Enable / Disable a module
 		"""
 		index = event.GetSelection()
 		lbl = self.moduleListbox.GetString(index)
@@ -329,15 +317,13 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def setRenderingEnabled(self, label, status):
 		"""
-		Created: 16.10.2007, KP
-		Description: toggle whether a given module is rendered on the scene
+		toggle whether a given module is rendered on the scene
 		"""
 		self.mode.setRenderingStatus(label, status)
 
 	def onConfigureLights(self, event):
 		"""
-		Created: 29.04.2005, KP
-		Description: Configure the lights
+		Configure the lights
 		"""
 		lightmanager = self.mode.lightsManager
 		lightmanager.config()
@@ -345,8 +331,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
 	def onLoadModule(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Load the selected module
+		Load the selected module
 		"""
 		lbl = self.moduleChoice.GetStringSelection()
 		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().loadModule("%s")' % lbl
@@ -357,8 +342,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def loadModule(self, lbl):
 		"""
-		Created: 16.10.2007, KP
-		Description: load a visualization module with the give name
+		load a visualization module with the give name
 		"""		
 		if not lbl in self.count:
 			self.count[lbl] = 0
@@ -373,8 +357,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def appendModuleToList(self, module):
 		"""
-		Created: 16.05.2005, KP
-		Description: Append a module to the list
+		Append a module to the list
 		"""
 		n = self.moduleListbox.GetCount()
 		self.moduleListbox.InsertItems([module], n)
@@ -382,8 +365,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
 	def onRemoveModule(self, event):
 		"""
-		Created: 03.05.2005, KP
-		Description: Remove the selected module
+		Remove the selected module
 		"""
 		if self.selected == -1:
 			if self.moduleListbox.GetCount() == 1:
@@ -400,8 +382,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 	def removeModule(self, lbl):
 		"""
-		Created: 16.10.2007, KP
-		Description: remove a module with the give name
+		remove a module with the give name
 		"""
 		self.mode.removeModule(lbl)
 		selected = self.moduleListbox.FindString(lbl)
@@ -418,8 +399,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 
 	def onOpenScene(self, event):
 		"""
-		Created: 02.08.2005, KP
-		Description: Load a scene from file
+		Load a scene from file
 		"""	   
 		wc = "3D view scene (*.3xd)|*.3xd"
 		filename = GUI.Dialogs.askOpenFileName(self, "Open 3D view scene", wc, 0)
@@ -432,8 +412,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 	
 	def onSaveScene(self, event):
 		"""
-		Created: 02.08.2005, KP
-		Description: Save a scene to file
+		Save a scene to file
 		"""	   
 		wc = "3D view scene (*.3xd)|*.3xd"
 		filename = None
@@ -454,8 +433,7 @@ class VisualizationFrame(wx.Frame):
 	"""
 	def __init__(self, parent, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		wx.Frame.__init__(self, parent, -1, "BioImageXD Visualization", **kws)
 

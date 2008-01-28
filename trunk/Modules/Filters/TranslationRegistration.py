@@ -51,8 +51,7 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def __init__(self, inputs = (1,1)):
 		"""
-		Created: 14.12.2007, LP
-		Description: Initializes new object
+		Initializes new object
 		"""
 		RegistrationFilters.RegistrationFilter.__init__(self,inputs)
 		self.totalTranslation = itk.Array.D()
@@ -62,8 +61,7 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def updateProgress(self):
 		"""
-		Created: 18.12.2007, LP
-		Description: Updates progress of registration
+		Updates progress of registration
 		"""
 		currentParameter = self.transform.GetParameters()
 		print "M: %f  T: %f %f %f" %(self.optimizer.GetValue(),currentParameter.GetElement(0),currentParameter.GetElement(1),currentParameter.GetElement(2))
@@ -71,8 +69,7 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 14.12.2007, LP
-		Description: Initializes and executes the registration process. Does
+		Initializes and executes the registration process. Does
 		the result translation to input image and returns translated image.
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):

@@ -47,8 +47,7 @@ class ExportDialog(wx.Dialog):
 	"""
 	def __init__(self, parent, dataUnit, imageMode = 1):
 		"""
-		Created: 17.03.2005, KP
-		Description: Initialize the dialog
+		Initialize the dialog
 		"""    
 		wx.Dialog.__init__(self, parent, -1, 'Export Data')
 		
@@ -81,8 +80,7 @@ class ExportDialog(wx.Dialog):
 		
 	def onOkButton(self, event):
 		"""
-		Created: 20.04.2005, KP
-		Description: Executes the procedure
+		Executes the procedure
 		"""            
 		if self.imageMode == 1:
 			self.writeImages()
@@ -92,8 +90,7 @@ class ExportDialog(wx.Dialog):
 		
 	def writeImages(self):
 		"""
-		Created: 20.04.2005, KP
-		Description: Writes out the images
+		Writes out the images
 		"""            
 		dirname = self.browsedir.GetValue()
 		pattern = self.patternEdit.GetValue()
@@ -155,8 +152,7 @@ class ExportDialog(wx.Dialog):
 			
 	def writeDatasets(self, event = None):
 		"""
-		Created: 20.04.2005, KP
-		Description: A method that writes the datasets
+		A method that writes the datasets
 		"""        
 		dirname = self.vtkbrowsedir.GetValue()
 		pattern = self.vtkpatternEdit.GetValue()
@@ -189,8 +185,7 @@ class ExportDialog(wx.Dialog):
 		
 	def createImageExport(self):
 		"""
-		Created: 17.03.2005, KP
-		Description: Creates a panel for importing of images as slices of a volume
+		Creates a panel for importing of images as slices of a volume
 		"""            
 		self.imagePanel = wx.Panel(self, -1, size = (640, 480))
 		self.imageSizer = wx.GridBagSizer(5, 5)
@@ -279,8 +274,7 @@ class ExportDialog(wx.Dialog):
 	
 	def createVTIExport(self):
 		"""
-		Created: 20.04.2005, KP
-		Description: Creates a panel for exporting data as vtk datasets
+		Creates a panel for exporting data as vtk datasets
 		"""            
 		self.vtkPanel = wx.Panel(self, -1, size = (640, 480))
 		self.vtkSizer = wx.GridBagSizer(5, 5)
@@ -360,8 +354,7 @@ class ExportDialog(wx.Dialog):
 	
 	def sortNumerically(self, item1, item2):
 		"""
-		Created: 17.03.2005, KP
-		Description: A method that compares two filenames and sorts them by the number in their filename
+		A method that compares two filenames and sorts them by the number in their filename
 		"""        
 		r = re.compile("[0-9]+")
 		s = r.search(item1)
@@ -372,8 +365,7 @@ class ExportDialog(wx.Dialog):
 	
 	def updateListOfImages(self, event = None):
 		"""
-		Created: 20.04.2005, KP
-		Description: A method that updates a list of images to a listbox based on the selected input type
+		A method that updates a list of images to a listbox based on the selected input type
 		"""        
 		if self.imageMode == 1:
 			dirname = self.browsedir.GetValue()
@@ -421,8 +413,7 @@ class ExportDialog(wx.Dialog):
 					
 	def updateListOfDatasets(self, event = None):
 		"""
-		Created: 20.04.2005, KP
-		Description: A method that updates a list of datasets to a listbox based on the selected input type
+		A method that updates a list of datasets to a listbox based on the selected input type
 		"""        
 		dirname = self.vtkbrowsedir.GetValue()
 		pattern = self.vtkpatternEdit.GetValue()

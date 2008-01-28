@@ -46,7 +46,6 @@ class ManipulationSettings(FilterBasedTaskSettings):
 	"""
 	def __init__(self, n = -1):
 		"""
-		Created: 27.03.2005, KP
 		"""
 		FilterBasedTaskSettings.__init__(self, n)
 	

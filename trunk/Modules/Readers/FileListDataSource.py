@@ -48,13 +48,11 @@ def getClass():
 
 class FileListDataSource(DataSource):
 	"""
-	Created: 12.04.2005, KP
-	Description: File list datasource for reading a dataset from a given set of files
+	File list datasource for reading a dataset from a given set of files
 	"""
 	def __init__(self, filenames = [], callback = None):
 		"""
-		Created: 12.04.2005, KP
-		Description: Constructor
+		Constructor
 		"""    
 		DataSource.__init__(self)
 		self.name = "Import"
@@ -86,36 +84,31 @@ class FileListDataSource(DataSource):
 		
 	def getFileName(self):
 		"""
-		Created: 09.01.2008, KP
-		Description: return the filename
+		return the filename
 		"""
 		return self.filenames[0]
 		
 	def getNumberOfScalarComponents(self):
 		"""
-		Created: 24.10.2007, KP
-		Description: return the number of scalar components
+		return the number of scalar components
 		"""
 		return self.numberOfComponents
 	
 	def setColorTransferFunction(self, ctf):
 		"""
-		Created: 04.06.2007, KP
-		Description: Set the color transfer function
+		Set the color transfer function
 		"""
 		self.ctf = ctf
 		
 	def is3DImage(self):
 		"""
-		Created: 08.05.2007, KP
-		Description: Return a flag indicating whether the images are 2D or 3D images
+		Return a flag indicating whether the images are 2D or 3D images
 		"""
 		return self.is3D
 				
 	def setFilenames(self, filenames):
 		"""
-		Created: 07.05.2007, KP
-		Description: set the filenames that will be read
+		set the filenames that will be read
 		"""
 		if not self.dimensions:
 			self.retrieveImageInfo(filenames[0])
@@ -131,8 +124,7 @@ class FileListDataSource(DataSource):
 		
 	def checkImageDimensions(self, filenames):
 		"""
-		Created: 16.05.2007, KP
-		Description: check that each image in the list has the same dimensions
+		check that each image in the list has the same dimensions
 		"""
 		s = None
 		hashStr = filenames[:]
@@ -165,8 +157,7 @@ class FileListDataSource(DataSource):
 		
 	def getReaderByExtension(self, ext, isRGB = 0):
 		"""
-		Created: 08.05.2007, KP
-		Description: return a VTK image reader based on file extension
+		return a VTK image reader based on file extension
 		"""
 		assert ext in self.extMapping, "Extension not recognized: %s" % ext
 		mpr = self.extMapping[ext]
@@ -186,8 +177,7 @@ class FileListDataSource(DataSource):
 
 	def getReadersFromFilenames(self):
 		"""
-		Created: 07.05.2007, KP
-		Description: create the reader list from a given set of file names and parameters
+		create the reader list from a given set of file names and parameters
 		"""		   
 
 		for i in self.readers:
@@ -278,15 +268,13 @@ class FileListDataSource(DataSource):
 
 	def getSlicesPerTimepoint(self):
 		"""
-		Created: 24.10.2007, KP
-		Description: return the number of slices per timepoint
+		return the number of slices per timepoint
 		"""
 		return self.slicesPerTimepoint
 
 	def setSlicesPerTimepoint(self, n):
 		"""
-		Created: 07.05.2007, KP
-		Description: Set the number of slices that belong to a given timepoint
+		Set the number of slices that belong to a given timepoint
 		"""
 		assert n > 0, "Slices per timepoint needs to be greater than 0"
 		print "Setting slices per timepoint to ", n
@@ -296,16 +284,14 @@ class FileListDataSource(DataSource):
 		
 	def getDataSetCount(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the number of individual DataSets (=time points)
+		Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
 		return int(self.numberOfImages / self.slicesPerTimepoint)
 		
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the DataSet at the specified index
+		Returns the DataSet at the specified index
 		Parameters:   i		  The index
 		"""
 		data = self.getTimepoint(i)
@@ -332,8 +318,7 @@ class FileListDataSource(DataSource):
 		
 	def retrieveImageInfo(self, filename):
 		"""
-		Created: 21.04.2005, KP
-		Description: A method that reads information from an image
+		A method that reads information from an image
 		"""		   
 		assert filename, "Filename must be defined"
 		assert os.path.exists(filename), "File that we're retrieving information \
@@ -367,8 +352,7 @@ class FileListDataSource(DataSource):
 				
 	def getTimepoint(self, n, onlyDims = 0):
 		"""
-		Created: 16.02.2006, KP
-		Description: Return the nth timepoint
+		Return the nth timepoint
 		"""		   
 		if not self.readers:
 			self.getReadersFromFilenames()
@@ -393,8 +377,7 @@ class FileListDataSource(DataSource):
 
 	def getDimensions(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this
+		Returns the (x,y,z) dimensions of the datasets this
 		dataunit contains
 		"""
 		print "Returning",self.x,self.y,self.slicesPerTimepoint
@@ -405,8 +388,7 @@ class FileListDataSource(DataSource):
 
 	def getSpacing(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the spacing of the datasets this 
+		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
 		if not self.spacing:
@@ -416,16 +398,14 @@ class FileListDataSource(DataSource):
 		
 	def getVoxelSize(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the voxel size of the datasets this 
+		Returns the voxel size of the datasets this 
 					 dataunit contains
 		"""
 		return self.voxelsize
   
 	def setVoxelSize(self, vxs):
 		"""
-		Created: 08.05.2007, KP
-		Description: set the voxel sizes of the images that are read
+		set the voxel sizes of the images that are read
 		"""
 		self.voxelsize = vxs
 		a, b, c = vxs
@@ -434,16 +414,14 @@ class FileListDataSource(DataSource):
 			
 	def loadFromFile(self, filename):
 		"""
-		Created: 12.04.2005, KP
-		Description: Loads the specified .oif - file and imports data from it.
+		Loads the specified .oif - file and imports data from it.
 		"""
 		return []
 		
 
 	def getName(self):
 		"""
-		Created: 18.11.2005, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		return self.name
@@ -451,8 +429,7 @@ class FileListDataSource(DataSource):
 		
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		return self.ctf

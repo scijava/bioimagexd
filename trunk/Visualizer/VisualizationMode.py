@@ -39,8 +39,7 @@ class VisualizationMode:
 	"""
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""    
 
 		self.parent = parent
@@ -53,47 +52,41 @@ class VisualizationMode:
 		
 	def getRenderWindow(self):
 		"""
-		Created: 24.04.2007, KP
-		Description: return a render window, if this mode uses one
+		return a render window, if this mode uses one
 		"""
 		return None
    
 	def layoutTwice(self):
 		"""
-		Created: 20.12.2005, KP
-		Description: Method that is queried for whether the mode needs to
+		Method that is queried for whether the mode needs to
 					 be laid out twice
 		"""
 		return False
 		
 	def annotate(self, annclass, **kws):
 		"""
-		Created: 04.07.2005, KP
-		Description: Add an annotation to the scene
+		Add an annotation to the scene
 		"""
 		if self.iactivePanel:
 			self.iactivePanel.addAnnotation(annclass, **kws)
 		
 	def manageAnnotation(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Manage annotations on the scene
+		Manage annotations on the scene
 		"""
 		if self.iactivePanel:
 			self.iactivePanel.manageAnnotation()
 
 	def deleteAnnotation(self):
 		"""
-		Created: 15.08.2005, KP
-		Description: Delete annotations on the scene
+		Delete annotations on the scene
 		"""
 		if self.iactivePanel:
 			self.iactivePanel.deleteAnnotation()
 			
 	def zoomObject(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Zoom to a user selected portion of the image
+		Zoom to a user selected portion of the image
 		"""
 		if self.iactivePanel:
 			self.iactivePanel.startRubberband()
@@ -101,8 +94,7 @@ class VisualizationMode:
 		
 	def zoomToFit(self):
 		"""
-		Created: 05.06.2005, KP
-		Description: Zoom the dataset to fit the available screen space
+		Zoom the dataset to fit the available screen space
 		"""
 		if self.iactivePanel:
 			self.iactivePanel.zoomToFit()
@@ -110,16 +102,14 @@ class VisualizationMode:
 	
 	def setZoomFactor(self, factor):
 		"""
-		Created: 05.06.2005, KP
-		Description: Set the factor by which the image is zoomed
+		Set the factor by which the image is zoomed
 		"""
 		if self.iactivePanel:
 			self.iactivePanel.setZoomFactor(factor)  
 			
 	def getZoomFactor(self):
 		"""
-		Created: 01.08.2005, KP
-		Description: Get the zoom factor
+		Get the zoom factor
 		"""
 		if self.iactivePanel:
 			return self.iactivePanel.getZoomFactor()   
@@ -127,47 +117,41 @@ class VisualizationMode:
 			
 	def showSideBar(self):
 		"""
-		Created: 24.05.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the sidebar
 		"""
 		return False
 		
 	def showSliceSlider(self):
 		"""
-		Created: 07.08.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the zslider
 		"""
 		return False   
    
 	def showViewAngleCombo(self):
 		"""
-		Created: 11.08.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the view angle combo box in the toolbar
 		"""
 		return False  
 		
 	def closeOnReload(self):
 		"""
-		Created: 1.09.2005, KP
-		Description: Method to determine whether the visualization mode
+		Method to determine whether the visualization mode
 					 should be closed if the user clicks it again.
 		"""    
 		return False
   
 	def setBackground(self, red, green, blue):
 		"""
-		Created: 24.05.2005, KP
-		Description: Set the background color
+		Set the background color
 		"""		   
 		self.iactivePanel.setBackground(red, green, blue)
 
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""			   
 		self.dataUnit = dataunit
 		if dataunit and not dataunit.getSettings():
@@ -178,50 +162,43 @@ class VisualizationMode:
 		
 	def getDataUnit(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Returns the dataunit this module uses for visualization
+		Returns the dataunit this module uses for visualization
 		"""		
 		return self.dataUnit
 		
 	def setTimepoint(self, timepoint):
 		"""
-		Created: 25.05.2005, KP
-		Description: Set the timepoint to be visualized
+		Set the timepoint to be visualized
 		"""
 		self.timepoint = timepoint
 		self.iactivePanel.setTimepoint(timepoint)
 
 	def saveSnapshot(self, filename):
 		"""
-		Created: 05.06.2005, KP
-		Description: Save a snapshot of the scene
+		Save a snapshot of the scene
 		"""		 
 		self.iactivePanel.saveSnapshot(filename)
 		
 	def deactivate(self, newmode = None):
 		"""
-		Created: 24.05.2005, KP
-		Description: Unset the mode of visualization
+		Unset the mode of visualization
 		"""
 		self.iactivePanel.Show(0)		 
 		
 	def Render(self):
 		"""
-		Created: 24.05.2005, KP
-		Description: Update the rendering
+		Update the rendering
 		"""		 
 		self.iactivePanel.Refresh()
 				
 	def relayout(self):
 		"""
-		Created: 07.08.2005, KP
-		Description: Method called when the size of the window changes
+		Method called when the size of the window changes
 		"""    
 		pass
 		
 	def reloadMode(self):
 		"""
-		Created: 1.09.2005, KP
-		Description: Method called when the user tries to reload the mode
+		Method called when the user tries to reload the mode
 		"""    
 		pass

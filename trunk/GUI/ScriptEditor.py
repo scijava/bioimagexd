@@ -57,8 +57,7 @@ class ScriptEditor(editor.Editor):
 	""" 
 	def __init__(self, parent):
 		"""
-		Created: 13.02.2006, KP
-		Description: Initialize the editor component of script editor
+		Initialize the editor component of script editor
 		"""
 		editor.Editor.__init__(self, parent, -1, style = wx.SUNKEN_BORDER)
 		lib.messenger.connect(None, "record_code", self.onUpdateText)
@@ -66,16 +65,14 @@ class ScriptEditor(editor.Editor):
 	def onUpdateText(self,obj,evt,code, imports):
 		"""
 		Method: onUpdateText()
-		Created: 13.02.2006, KP
-		Description: Update the gui
+		Update the gui
 		""" 
 		if scripting.record:
 			self.SetText(scripting.recorder.getText())
 		
 	def setScript(self, lines, imports):
 		"""
-		Created: 13.02.2006, KP
-		Description: Sets the script in the editor to the given list of lines. Also sets the imports required for the current script to work
+		Sets the script in the editor to the given list of lines. Also sets the imports required for the current script to work
 		"""
 		self.code = lines
 		self.imports = imports
@@ -97,8 +94,7 @@ class ScriptEditorFrame(wx.Frame):
 	""" 
 	def __init__(self, parent):
 		"""
-		Created: 13.02.2006, KP
-		Description: Initialize the script editor frame
+		Initialize the script editor frame
 		"""
 		self.parent = parent
 		wx.Frame.__init__(self, parent, -1, "BioImageXD Script Editor", size = (800, 600))
@@ -117,8 +113,7 @@ class ScriptEditorFrame(wx.Frame):
 		
 	def createMenubar(self):
 		"""
-		Created: 13.02.2006, KP
-		Description: Creates the menubar for the script editor
+		Creates the menubar for the script editor
 		"""
 		self.menu = wx.MenuBar()
 		self.SetMenuBar(self.menu)
@@ -155,22 +150,19 @@ class ScriptEditorFrame(wx.Frame):
    
 	def onClose(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Close the script editor
+		Close the script editor
 		"""   
 		self.Destroy()
 		
 	def onSaveScript(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Save the script to a file
+		Save the script to a file
 		"""
 		filename = Dialogs.askSaveAsFileName(self, "Save script file", "script.bxs", self.wc)
 		self.writeScript(filename)
 	def writeScript(self, filename):
 		"""
-		Created: 15.08.2006, KP
-		Description: Actually write the script out
+		Actually write the script out
 		"""
 		
 		try:
@@ -190,8 +182,7 @@ class ScriptEditorFrame(wx.Frame):
 		
 	def onLoadScript(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Load a script from file
+		Load a script from file
 		"""
 		filenames = Dialogs.askOpenFileName(self, "Open script file", self.wc)
 		if not filenames:
@@ -203,8 +194,7 @@ class ScriptEditorFrame(wx.Frame):
 	
 	def readFile(self, file):
 		"""
-		Created: 13.02.2006, KP
-		Description: Read a script from file
+		Read a script from file
 		"""
 		f = open(file, "r")
 		lines = f.readlines()
@@ -233,8 +223,7 @@ class ScriptEditorFrame(wx.Frame):
 		
 	def createToolbar(self):
 		"""
-		Created: 13.02.2006, KP
-		Description: Creates the toolbar for the script editor
+		Creates the toolbar for the script editor
 		"""
 		flags = wx.NO_BORDER | wx.TB_HORIZONTAL | wx.TB_TEXT
 		self.CreateToolBar(flags)
@@ -260,8 +249,7 @@ class ScriptEditorFrame(wx.Frame):
 		
 	def onRunScript(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Run the recorded script
+		Run the recorded script
 		"""
 		x, filename = tempfile.mkstemp(".py", "BioImageXD")
 		
@@ -276,8 +264,7 @@ class ScriptEditorFrame(wx.Frame):
 	def onRecordScript(self, evt):
 		"""
 		Method: onRecordScript
-		Created: 13.02.2006, KP
-		Description: Enable the recording of scripts
+		Enable the recording of scripts
 		"""
 		self.tb.EnableTool(MenuManager.ID_STOP_RECORD, 1)
 		self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT, 0)
@@ -289,8 +276,7 @@ class ScriptEditorFrame(wx.Frame):
 	def onStopRecord(self, evt):
 		"""
 		Method: onStopRecord
-		Created: 13.02.2006, KP
-		Description: Stop recording of scripts
+		Stop recording of scripts
 		"""
 		self.tb.EnableTool(MenuManager.ID_STOP_RECORD, 0)
 		self.tb.EnableTool(MenuManager.ID_RECORD_SCRIPT, 1)

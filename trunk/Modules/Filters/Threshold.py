@@ -43,8 +43,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.defaultLower = 128
 		self.defaultUpper = 255
@@ -63,8 +62,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["ReplaceInValue", "ReplaceOutValue"]:
 			return scripting.COLOR_INTERMEDIATE
@@ -72,8 +70,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def setParameter(self, parameter, value):
 		"""
-		Created: 18.01.2007, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""
 		oldval = self.parameters.get(parameter, "ThisIsABadValueThatNoOneWillEverUse")
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
@@ -82,8 +79,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Threshold", (("LowerThreshold", "UpperThreshold"), )],
 				["Replace voxels", (("ReplaceIn", "ReplaceOut"), )],
@@ -94,23 +90,20 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""	   
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		""" 
 		return ""
 		
 		
 	def getType(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["LowerThreshold", "UpperThreshold"]:
 			return GUI.GUIBuilder.THRESHOLD
@@ -120,8 +113,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""
 		if parameter == "LowerThreshold":
 			return self.defaultLower
@@ -138,8 +130,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 	def setDataUnit(self,dataUnit):
 		"""
-		Created: 08.11.2007, KP
-		Description: set the dataunit used as input for this filter
+		set the dataunit used as input for this filter
 		"""
 		if dataUnit:
 			sourceDataUnits = dataUnit.getSourceDataUnits()
@@ -151,16 +142,14 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def onRemove(self):
 		"""
-		Created: 26.1.2006, KP
-		Description: Restore palette upon filter removal
+		Restore palette upon filter removal
 		"""
 		if self.origCtf:
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 			
 	def setInputChannel(self, inputNum,n):
 		"""
-		Created: 26.10.2007, KP
-		Description: 
+		
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
 		
@@ -171,8 +160,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):

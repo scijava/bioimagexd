@@ -61,8 +61,7 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 		
 	def updateGridValues(self):
 		"""
-		Created: 30.11.2007, KP
-		Description: update the grid values
+		update the grid values
 		"""
 		vars = []
 		for procList in self.analysis.getProcedureListNames():
@@ -71,15 +70,13 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 		
 	def GetColLabelValue(self, col):
 		"""
-		Created: 30.11.2007, KP
-		Description: return the column label of the given column
+		return the column label of the given column
 		"""
 		return "Var%d"%(col+1)
 		
 	def GetRowLabelValue(self, row):
 		"""
-		Created: 29.11.2007, KP
-		Description: return the row labels of the grid, listing the file names
+		return the row labels of the grid, listing the file names
 		"""
 		fileNames = [x.getName() for x in self.analysis.getSourceDataUnits()]
 		if row < len(fileNames):
@@ -88,15 +85,13 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 
 	def GetNumberRows(self):
 		"""
-		Created: 30.11.2007, KP
-		Description: return the number of rows the grid has
+		return the number of rows the grid has
 		"""
 		return len(self.analysis.getSourceDataUnits())+20
 
 	def GetNumberCols(self):
 		"""
-		Created: 30.11.2007, KP
-		Description: return the number of cols the grid has
+		return the number of cols the grid has
 		"""
 		if not self.variables:
 			return 10
@@ -107,8 +102,7 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 
 	def GetValue(self, row, col):
 		"""
-		Created: 30.11.2007, KP
-		Description: Get the value of a given cell
+		Get the value of a given cell
 		"""
 		if row==0:
 			if col<len(self.variables):
@@ -121,8 +115,7 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 
 class PickVariablesDialog(wx.Dialog):
 	"""
-	Created: 26.11.2007, KP
-	Description: A dialog for picking which variables to retrieve from the procedure lists
+	A dialog for picking which variables to retrieve from the procedure lists
 	"""
 	def __init__(
 		self, parent, analysis, id = -1, title = "Select retrieved variables", size=wx.DefaultSize, pos=wx.DefaultPosition, 
@@ -151,8 +144,7 @@ class PickVariablesDialog(wx.Dialog):
 			
 	def getSelectedVariables(self):
 		"""
-		Created: 27.11.2007, KP
-		Description: get the selected variables
+		get the selected variables
 		"""
 		ret = {}
 		for i in range(self.checkListCtrl.GetItemCount()):
@@ -164,8 +156,7 @@ class PickVariablesDialog(wx.Dialog):
 			
 	def populateFromAnalysis(self, analysis):
 		"""
-		Created: 27.11.2007, KP
-		Description: populate the list of variables from the given analysis
+		populate the list of variables from the given analysis
 		"""
 		procList = analysis.getProcedureList()
 		if not procList:
@@ -245,8 +236,7 @@ class CheckListCtrl(wx.ListCtrl,
 		
 	def OnBeginEdit(self, evt):
 		"""
-		Created: 26.11.2007, KP
-		Description: event handler called when the user edits a label
+		event handler called when the user edits a label
 		"""
 		if evt.GetColumn() in [0,1,2,4]:
 			evt.Veto()
@@ -275,8 +265,7 @@ class ProcedureListCtrl(wx.ListCtrl,
 		
 	def OnBeginEdit(self, evt):
 		"""
-		Created: 1.12.2007, KP
-		Description: an event handler for beginning the editing of an entry
+		an event handler for beginning the editing of an entry
 		"""
 		index = evt.GetIndex()
 		col = evt.GetColumn()
@@ -298,8 +287,7 @@ class ProcedureListCtrl(wx.ListCtrl,
 
 	def updateSelectedVariables(self, row, listName = ""):
 		"""
-		Created: 30.11.2007, KP
-		Description: update the selected variables on given row
+		update the selected variables on given row
 		"""
 		if not listName:
 			listName = self.analysis.getSelectedProcedureList()
@@ -330,8 +318,7 @@ class BatchAnalysisGrid(gridlib.Grid):
 
 	def updateGrid(self, message):
 		"""
-		Created: 30.11.2007, KP
-		Description: update the grid
+		update the grid
 		"""
 		self.GetTable().updateGridValues()
 		print "Updating grid values"
@@ -353,8 +340,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 
 	def createGUI(self):
 		"""
-		Created: 25.11.2007, KP
-		Description: create the GUI
+		create the GUI
 		"""
 		self.sizer = wx.GridBagSizer()
 		
@@ -438,8 +424,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onChangeListName(self, evt):
 		"""
-		Created: 04.12.2007, KP
-		Description: change the name of the current procedure list
+		change the name of the current procedure list
 		"""
 
 		self.analysis.renameList(self.analysis.getSelectedProcedureList(), evt.GetLabel())
@@ -447,8 +432,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onSelectChannelProcessing(self, evt):
 		"""
-		Created: 1.12.2007, KP
-		Description: an event handler for when the user selects how to process file channels
+		an event handler for when the user selects how to process file channels
 		"""
 		selection = self.radioBox.GetSelection()
 		self.groupChannelsCheckbox.Enable(selection == 0)
@@ -457,22 +441,19 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onCheckGroupChannels(self, evt):
 		"""
-		Created: 1.12.2007, KP
-		Description: an event handler for when the user toggles the channel grouping checkbox
+		an event handler for when the user toggles the channel grouping checkbox
 		"""
 		self.analysis.setChannelGrouping(evt.IsChecked())
 		
 	def onCheckGroupByProcList(self, evt):
 		"""
-		Created: 06.12.2007, KP
-		Description: 
+		
 		"""
 		self.analysis.setChannelGroupingByProcedureList(evt.IsChecked())
 		
 	def onExecuteAnalysis(self, evt):
 		"""
-		Created: 30.11.2007, KP
-		Description: execute the analysis
+		execute the analysis
 		"""
 		filename = Dialogs.askSaveAsFileName(self, "Save batch analysis results as", "analysis.csv", \
 												"Batch Analysis Results (*.csv)|*.csv")
@@ -493,15 +474,13 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onPlaceVariables(self, evt):
 		"""
-		Created: 30.11.2007, KP
-		Description: place the selected variables on the grid
+		place the selected variables on the grid
 		"""
 		pubsub.Publisher().sendMessage('UpdateGrid')
 		
 	def updateFromAnalysis(self):
 		"""
-		Created: 30.11.2007, KP
-		Description: update the GUI from the analysis
+		update the GUI from the analysis
 		"""
 		self.filterEditor.setDataUnit(self.analysis.getDataUnit())
 		procListNames = self.analysis.getProcedureListNames()
@@ -515,8 +494,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 
 	def onAddProcedureList(self, evt):
 		"""
-		Created: 26.11.2007, KP
-		Description: add a procedure list to the listbox
+		add a procedure list to the listbox
 		"""
 		n = self.procedureListBox.GetItemCount()
 		k=n+1
@@ -533,8 +511,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onSelectProcedureList(self, evt):
 		"""
-		Created: 27.11.2007, KP
-		Description: An event handler that is called when the user selects an item in the procedure list ListCtrl
+		An event handler that is called when the user selects an item in the procedure list ListCtrl
 		"""
 		item = evt.GetIndex()
 		item = self.procedureListBox.GetItem(item)
@@ -544,8 +521,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def selectProcedureList(self, name):
 		"""
-		Created: 27.11.2007, KP
-		Description: Select a procedure list with the given name
+		Select a procedure list with the given name
 		"""
 		self.analysis.setSelectedProcedureList(name)
 		procList = self.analysis.getProcedureList(name)
@@ -557,8 +533,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onRemoveProcedureList(self, evt):
 		"""
-		Created: 26.11.2007, KP
-		Description: remove a procedure list from the list box
+		remove a procedure list from the list box
 		"""
 		item = self.procedureListBox.FindItem(0, self.analysis.getSelectedProcedureList())
 		if item != -1:
@@ -566,8 +541,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 
 	def populateListBox(self):
 		"""
-		Created: 25.11.2007, KP
-		Description: populate the list box
+		populate the list box
 		"""
 		self.fileListBox.Clear()
 		fileNames = []
@@ -578,8 +552,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 			
 	def onSaveAnalysis(self, evt = None):
 		"""
-		Created: 25.11.2007, KP
-		Description: Save the analysis to a file
+		Save the analysis to a file
 		"""
 		filename = Dialogs.askSaveAsFileName(self, "Save analysis as", "analysis.bba", \
 												"BioImageXD Batch Analysis (*.bba)|*.bba")
@@ -593,8 +566,7 @@ class BatchProcessor(wx.Frame):
 	""" 
 	def __init__(self, parent):
 		"""
-		Created: 13.02.2006, KP
-		Description: Initialize the batch processor
+		Initialize the batch processor
 		"""
 		self.parent = parent
 		wx.Frame.__init__(self, parent, -1, "BioImageXD Batch Processor", size = (1024, 800))
@@ -617,16 +589,14 @@ class BatchProcessor(wx.Frame):
 		
 	def setInputDataUnits(self, dataUnits):
 		"""
-		Created: 25.11.2007, KP
-		Description: set the input data units for this batch processor
+		set the input data units for this batch processor
 		"""
 		self.analysis.setInputDataUnits(dataUnits)
 		self.procedurePane.updateFromAnalysis()
 		
 	def createMenubar(self):
 		"""
-		Created: 13.02.2006, KP
-		Description: Creates the menubar for the script editor
+		Creates the menubar for the script editor
 		"""
 		self.menu = wx.MenuBar()
 		self.SetMenuBar(self.menu)
@@ -648,16 +618,14 @@ class BatchProcessor(wx.Frame):
 
 	def onClose(self, evt):
 		"""
-		Created: 25.11.2007, KP
-		Description: Close the batch processor
+		Close the batch processor
 		"""	  
 		scripting.unregisterDialog("BatchProcessor")
 		self.Destroy()
 	
 	def onLoadAnalysis(self, evt):
 		"""
-		Created: 25.11.2007, KP
-		Description: Load an analysis form file
+		Load an analysis form file
 		"""
 		
 		filenames = Dialogs.askOpenFileName(self, "Open analysis file",  \

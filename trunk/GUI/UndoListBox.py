@@ -73,8 +73,7 @@ class CommandHistory(wx.Frame):
 	def onRunCommand(self, evt):
 		"""
 		Method: onRunCommand
-		Created: 13.02.2006, KP
-		Description: Run the selected command
+		Run the selected command
 		"""            
 		cmd = self.undobox.getCommand()
 		self.menuManager.enable(MenuManager.ID_REDO)
@@ -88,8 +87,7 @@ class CommandHistory(wx.Frame):
 	def onUndoCommand(self, evt):
 		"""
 		Method: onRunCommand
-		Created: 13.02.2006, KP
-		Description: Undo the selected command
+		Undo the selected command
 		"""            
 		cmd = self.undobox.getCommand()
 		if cmd:
@@ -101,8 +99,7 @@ class CommandHistory(wx.Frame):
 	def enableUndo(self, flag):
 		"""
 		Method: enableUndo(flag)
-		Created: 13.02.2006, KP
-		Description: Enable / Disable the undo button
+		Enable / Disable the undo button
 		"""    
 		self.undoBtn.Enable(flag)
 		
@@ -110,8 +107,7 @@ class UndoListBox(wx.HtmlListBox):
 	def __init__(self, parent, mgr, **kws):
 		"""
 		Method: __init__(parent,kws)
-		Created: 13.02.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.parent = parent
 		wx.HtmlListBox.__init__(self, parent, -1, **kws)
@@ -127,16 +123,14 @@ class UndoListBox(wx.HtmlListBox):
 	def getCommand(self):
 		"""
 		Method: getCommand
-		Created: 13.02.2006, KP
-		Description: Return the selected command
+		Return the selected command
 		"""        
 		return self.selectedCmd
 		
 	def update(self, *args):
 		"""
 		Method: upate
-		Created: 13.02.2006, KP
-		Description: Update the item count of this listbox
+		Update the item count of this listbox
 		"""    
 		self.commands = self.menuManager.getCommands()
 		self.SetItemCount(len(self.commands))
@@ -144,8 +138,7 @@ class UndoListBox(wx.HtmlListBox):
 	def onSelectItem(self, event):
 		"""
 		Method: onSelectItem
-		Created: 26.07.2005, KP
-		Description: Callback called when a user selects a channel in this listbox
+		Callback called when a user selects a channel in this listbox
 		"""
 		item = self.GetSelection()
 		command = self.commands[item]
@@ -157,8 +150,7 @@ class UndoListBox(wx.HtmlListBox):
 	def OnGetItem(self, n):
 		"""
 		Method: OnGetItem
-		Created: 26.07.2005, KP
-		Description: Return the HTML code for given item
+		Return the HTML code for given item
 		"""      
 		
 		if len(self.commands) < n:

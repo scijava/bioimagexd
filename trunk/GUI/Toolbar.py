@@ -45,14 +45,12 @@ class ToolCommandEvent(wx.PyCommandEvent):
 
 class Toolbar(wx.Panel):
 	"""
-	Created: 27.04.2006, KP
-	Description: A toolbar that can change it's amount of tool rows based on it's size
+	A toolbar that can change it's amount of tool rows based on it's size
 	"""
 	def __init__(self, parent, wid, pos = wx.DefaultPosition, size = wx.DefaultSize,
 			style = wx.TB_HORIZONTAL | wx.NO_BORDER, name = ""):
 		"""
-		Created: 27.04.2006, KP
-		Description: Initialize the toolbar
+		Initialize the toolbar
 		"""
 		wx.Panel.__init__(self, parent, wid, pos, size, style)
 		#self.SetBackgroundColour((255,255,0))
@@ -78,8 +76,7 @@ class Toolbar(wx.Panel):
 		
 	def OnSize(self, evt):
 		"""
-		Created: 27.04.2006, KP
-		Description: Event handler for size events
+		Event handler for size events
 		"""
 		size = evt.GetSize()
 		if size[0] == 0:
@@ -103,8 +100,7 @@ class Toolbar(wx.Panel):
 			
 	def ReOrderItems(self, layout, width):
 		"""
-		Created: 28.07.2006, KP
-		Description: Re-order the items based on a given layout
+		Re-order the items based on a given layout
 		"""
 		for sizer in self.rowsizers:
 			try:
@@ -124,8 +120,7 @@ class Toolbar(wx.Panel):
 		
 	def getLayout(self, width):
 		"""
-		Created: 28.07.2006, KP
-		Description: Get the optimal layout for current controls and given width
+		Get the optimal layout for current controls and given width
 		"""
 		ctrls = []
 		curr = []
@@ -148,15 +143,13 @@ class Toolbar(wx.Panel):
 		
 	def EnableTool(self, toolid, flag):
 		"""
-		Created: 27.04.2006, KP
-		Description: Enable / Disable a tool
+		Enable / Disable a tool
 		"""
 		self.idToTool[toolid].Enable(flag)
 		
 	def createRows(self, layout):
 		"""
-		Created: 28.07.2006, KP
-		Description: Create enough rows to fit a given layout
+		Create enough rows to fit a given layout
 		"""
 		for y in range(len(layout)):
 			if len(self.rowsizers) <= y:
@@ -166,8 +159,7 @@ class Toolbar(wx.Panel):
 		
 	def Realize(self):
 		"""
-		Created: 27.04.2006, KP
-		Description: Render the toolbar
+		Render the toolbar
 		"""
 		w = self.GetSize()[0]
 		if not w:
@@ -181,8 +173,7 @@ class Toolbar(wx.Panel):
 		
 	def DeleteTool(self, toolid):
 		"""
-		Created: 27.04.2006, KP
-		Description: Delete a tool
+		Delete a tool
 		"""
 		ctrl = self.idToTool[toolid]
 		self.ctrls.remove(ctrl)
@@ -200,8 +191,7 @@ class Toolbar(wx.Panel):
 		
 	def AddControl(self, ctrl):
 		"""
-		Created: 27.04.2006, KP
-		Description: Add a control to the toolbar
+		Add a control to the toolbar
 		"""
 		self.ctrls.append(ctrl)
 		self.idToTool[ctrl.GetId()] = ctrl
@@ -211,16 +201,14 @@ class Toolbar(wx.Panel):
 		
 	def onToolButton(self, evt):
 		"""
-		Created: 27.04.2006, KP
-		Description: A method for passing the events forward in event chain
+		A method for passing the events forward in event chain
 		"""
 		nevt = ToolCommandEvent(wx.EVT_TOOL.evtType[0], evt.GetId(), evt.GetIsDown())
 		self.GetEventHandler().ProcessEvent(nevt)
 		
 	def AddSimpleTool(self, wid, bitmap, shortHelpString = '', longHelpString = '', isToggle = 0):
 		"""
-		Created: 27.04.2006, KP
-		Description: A method for adding a tool to the toolbar
+		A method for adding a tool to the toolbar
 		"""
 		if not isToggle:
 			#btn = wx.BitmapButton(self,id,bitmap,size=self.toolSize)
@@ -238,8 +226,7 @@ class Toolbar(wx.Panel):
 		
 	def ToggleTool(self, toolid, flag):
 		"""
-		Created: 27.04.2006, KP
-		Description: A method for toggling a togglebutton on or off
+		A method for toggling a togglebutton on or off
 		"""
 		ctrl = self.idToTool[toolid]
 		ctrl.SetToggle(flag)
@@ -247,15 +234,13 @@ class Toolbar(wx.Panel):
 	def DoAddTool(self, wid, label, bitmap, bmpDisabled = None,
 		kind = wx.ITEM_NORMAL, shortHelp = '', longHelp = '', clientData = None):
 		"""
-		Created: 27.04.2006, KP
-		Description: A method for adding a tool to the toolbar
+		A method for adding a tool to the toolbar
 		"""
 		self.AddSimpleTool(wid, bitmap, shortHelp, longHelp, (kind == wx.ITEM_CHECK))
 		
 	def AddSeparator(self):
 		"""
-		Created: 27.04.2006, KP
-		Description: A method for adding a separator to the toolbar
+		A method for adding a separator to the toolbar
 		"""
 		sep = wx.Panel(self, -1, size = (2, 32), style = wx.SUNKEN_BORDER)
 		#self.sizer.Add(sep, (self.y,self.x))
@@ -266,21 +251,18 @@ class Toolbar(wx.Panel):
 
 	def GetToolSeparation(self):
 		"""
-		Created: 27.04.2006, KP
-		Description: Return the width between tools
+		Return the width between tools
 		"""
 		return self.toolSeparation
 		
 	def GetToolSize(self):
 		"""
-		Created: 27.04.2006, KP
-		Description: Return the size of a toolbar item
+		Return the size of a toolbar item
 		"""
 		return self.toolSize
 		
 	def SetToolBitmapSize(self, size):
 		"""
-		Created: 27.04.2006, KP
-		Description: Set the bitmap size of the toolbar
+		Set the bitmap size of the toolbar
 		"""
 		self.toolSize = size

@@ -11,7 +11,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -34,7 +33,6 @@ class ProcessingFilterTest(unittest.TestCase):
 
 	def testOnRemove(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -42,7 +40,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testSet(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -50,7 +47,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testSetParameter(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -58,7 +54,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testWriteOutput(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -66,7 +61,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testNotifyTaskPanel(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -74,7 +68,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testSetImageType(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.imageType, self.oldImageType)
@@ -83,14 +76,12 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testGetImageType(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.getImageType(), self.testProcessingFilter.imageType)
 	
 	def testSetTaskPanel(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.taskPanel, self.oldTaskPanel)
@@ -99,7 +90,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testConvertVTKToITK(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -107,7 +97,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testConvertITKToVTK(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -115,7 +104,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testSetNextFilter(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -123,7 +111,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testSetPrevFilter(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -131,21 +118,18 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testGetITK(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.getITK(), self.testProcessingFilter.itkFlag)
 	
 	def testGetEnabled(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.getEnabled(), self.testProcessingFilter.enabled)
 	
 	def testSetDataUnit(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.dataUnit, self.oldDataUnit)
@@ -154,14 +138,12 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testGetDataUnit(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.getDataUnit(), self.testProcessingFilter.dataUnit)
 	
 	def testSetEnabled(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.enabled, self.oldEnabled)
@@ -170,8 +152,7 @@ class ProcessingFilterTest(unittest.TestCase):
 
 	def testGetGUI(self):
 		"""
-		Created: 11.07.2007, SS
-		Description: a test for the method getGUI()
+		a test for the method getGUI()
 
 		Have to set the parent value but havent yet figured out what that would be
 		"""
@@ -182,7 +163,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testGetName(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 #		print "name:", self.testProcessingFilter.getName()
@@ -190,7 +170,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testGetCategory(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 #		print "category:", self.testProcessingFilter.getCategory()
@@ -198,7 +177,6 @@ class ProcessingFilterTest(unittest.TestCase):
 	
 	def testExecute(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testProcessingFilter.inputs, self.oldInputs)

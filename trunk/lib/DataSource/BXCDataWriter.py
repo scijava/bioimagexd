@@ -44,14 +44,12 @@ class MyConfigParser(RawConfigParser):
 		
 class BXCDataWriter(DataWriter):
 	"""
-	Created: 26.03.2005, KP
-	Description: A writer of BioImageXD dataset channel (.bxc) files
+	A writer of BioImageXD dataset channel (.bxc) files
 	"""
 
 	def __init__(self, filename):
 		"""
-		Created: 26.03.2005, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataWriter.__init__(self)
 		# list of references to individual datasets (= timepoints) stored in 
@@ -73,16 +71,14 @@ class BXCDataWriter(DataWriter):
 		
 	def getFilename(self):
 		"""
-		Created: 08.02.2007, KP
-		Description: return the filename
+		return the filename
 		"""
 		return self.filename
 		
 		
 	def getParser(self):
 		"""
-		Created: 27.03.2005, KP
-		Description: Returns the parser that is used to read the .du file
+		Returns the parser that is used to read the .du file
 		"""
 		if not self.parser:
 			self.parser = MyConfigParser()
@@ -90,15 +86,13 @@ class BXCDataWriter(DataWriter):
 		
 	def getOutputDimensions(self):
 		"""
-		Created: 09.01.2008, KP
-		Description: return the output dimensions
+		return the output dimensions
 		"""
 		return self.outputDims
 
 	def sync(self, n = -1):
 		"""
-		Created: 26.03.2005, KP
-		Description: Writes all datasets pending a write to disk
+		Writes all datasets pending a write to disk
 		"""
 		ret = 0
 		toRemove = []
@@ -116,8 +110,7 @@ class BXCDataWriter(DataWriter):
 		
 	def write(self):
 		"""
-		Created: 26.03.2005, KP
-		Description: Writes the given datasets and their information to a du file
+		Writes the given datasets and their information to a du file
 		"""
 		# Create a parser to write settings to disk:
 		parser = self.getParser()
@@ -141,8 +134,7 @@ class BXCDataWriter(DataWriter):
 
 	def addImageData(self, imageData):
 		"""
-		Created: 1.12.2004, KP
-		Description: Add a vtkImageData object to be written to the disk.
+		Add a vtkImageData object to be written to the disk.
 		"""
 		# We find out the path to the directory where the image data is written
 		if not self.path:
@@ -168,8 +160,7 @@ class BXCDataWriter(DataWriter):
 
 	def addImageDataObjects(self, imageDataList):
 		"""
-		Created: 10.11.2004, KP
-		Description: Adds a list of vtkImageData objects to be written to the
+		Adds a list of vtkImageData objects to be written to the
 					  disk. Uses addVtiObject to do all the dirty work
 		"""
 		for i in range(0, len(imageDataList)):
@@ -177,8 +168,7 @@ class BXCDataWriter(DataWriter):
 
 	def writeImageData(self, imageData, filename, callback = None):
 		"""
-		Created: 09.11.2004, JM
-		Description: Writes the given vtkImageData-instance to disk
+		Writes the given vtkImageData-instance to disk
 					 as .vti-file with the given filename
 		Parameters:   imageData  vtkImageData-instance to be written
 					  filename	filename to be used

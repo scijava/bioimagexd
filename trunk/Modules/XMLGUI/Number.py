@@ -55,8 +55,7 @@ class NumberValidator(wx.PyValidator):
 		
 	def ValidateValue(self, val):
 		"""
-		Created: 26.01.2008, KP
-		Description: validate the given value
+		validate the given value
 		"""
 		for letter in val:
 			if letter not in self.digits[self.mode]:
@@ -77,8 +76,7 @@ class NumberInput(GUI.XMLGUIBuilder.XMLGUIElement):
 		
 	def createUI(self):
 		"""
-		Created: 26.01.2008, KP
-		Description: create the user interface element
+		create the user interface element
 		"""
 		defaultValue = self.builder.getDefaultValue(self.id)
 		
@@ -96,8 +94,7 @@ class NumberInput(GUI.XMLGUIBuilder.XMLGUIElement):
 	
 	def setParameterValue(self, event):
 		"""
-		Created: 26.01.2008, KP
-		Description: set the parameter value based on GUI input value
+		set the parameter value based on GUI input value
 		"""
 		itemType = self.builder.getInputType(self.id)
 		if itemType == "Integer":
@@ -112,8 +109,7 @@ class NumberInput(GUI.XMLGUIBuilder.XMLGUIElement):
 
 	def onSetInputValue(self, value):
 		"""
-		Created: 26.01.2008, KP
-		Description: Set the value of the input
+		Set the value of the input
 		"""
 		if self.validator.ValidateValue(value):
 			self.uiElement.SetValue(str(value))

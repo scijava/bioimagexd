@@ -125,8 +125,7 @@ class IntensityMeasurementList(wx.ListCtrl):
 
 def getFilters():
 	"""
-	Created: 10.8.2007, SS
-	Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [GaussianSmoothFilter, ShiftScaleFilter, 
 			ROIIntensityFilter, GradientFilter, GradientMagnitudeFilter,
@@ -136,9 +135,8 @@ def getFilters():
 # fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
 def getFilterList():
 	"""
-	Created: KP
 	Modified: 10.8.2007, SS
-	Description: This function returns the filter-classes from all filter-modules
+	This function returns the filter-classes from all filter-modules
 	"""
 	filterlist = getFilters()
 	filterlist += MathFilters.getFilters()
@@ -161,8 +159,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 15.11.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageGaussianSmooth()
@@ -173,8 +170,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 15.11.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [ "Radius factor:", ["", ("RadiusX", "RadiusY", "RadiusZ")],
 		["", ("Dimensionality", )]
@@ -182,15 +178,13 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 15.11.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""	   
 		return self.descs[parameter]
  
 	def getType(self, parameter):
 		"""
-		Created: 15.11.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["RadiusX", "RadiusY", "RadiusZ"]:
 			return types.FloatType
@@ -198,8 +192,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.11.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""		
 		if parameter == "Dimensionality":
 			return 3
@@ -207,15 +200,13 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 15.11.2006, KP
-		Description: return the range of the parameter
+		return the range of the parameter
 		"""
 		return 1, 3
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.11.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -243,8 +234,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageShiftScale()
@@ -254,29 +244,25 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("Shift", "Scale", "AutoScale")]]
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""	   
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		""" 
 		return ""
 		
 	def getType(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["Shift", "Scale"]:
 			return types.FloatType
@@ -285,8 +271,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""		
 		if parameter in ["Shift", "Scale"]:
 			return 0
@@ -294,8 +279,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -334,8 +318,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 31.07.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 2))
 	  
@@ -347,23 +330,20 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getInputName(self, n):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return the name of the input #n
+		Return the name of the input #n
 		"""			 
 		if n == 2: return "ROI image"
 		return "Source dataset" 
 
 	def getParameters(self):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("ROI", "AllROIs","SecondInput")]]
 		
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""				 
 		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		if not self.reportGUI:
@@ -377,8 +357,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter == "ROI":
 			return GUIBuilder.ROISELECTION
@@ -386,8 +365,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""		
 		if parameter == "SecondInput": return False
 		if parameter == "ROI":
@@ -399,8 +377,7 @@ class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 31.07.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -477,8 +454,7 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradient()
@@ -487,15 +463,13 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return []
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -518,8 +492,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradientMagnitude()
@@ -529,15 +502,13 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return []
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -559,8 +530,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -572,15 +542,13 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_INTERMEDIATE
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "TimeStep":
 			return 0.0630
@@ -592,8 +560,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["TimeStep", "Conductance"]:
 			return types.FloatType
@@ -601,15 +568,13 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("TimeStep", "Conductance", "Iterations")]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -639,8 +604,7 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.eventDesc = "Performing edge detection (gradient magnitude)"
@@ -649,15 +613,13 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return []		 
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -685,8 +647,7 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
@@ -695,22 +656,19 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 1.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_EXPERIENCED
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return []		 
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -739,8 +697,7 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
@@ -751,23 +708,20 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_EXPERIENCED				   
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Data range", ("Minimum", "Maximum")],
 		]		 
 
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "Minimum":
 			return 0.0
@@ -779,15 +733,13 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.FloatType
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -815,8 +767,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 26.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.descs = {"Connectivity": "Use 8 neighbors for connectivity"}
@@ -824,8 +775,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 				
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	  
 		if parameter == "Connectivity":
 			return 1
@@ -833,23 +783,20 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 
 	def getType(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["Connectivity"]:
 			return types.BooleanType
 				
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("Connectivity", )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

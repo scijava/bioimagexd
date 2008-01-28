@@ -12,8 +12,7 @@ class ModuleTest(unittest.TestCase):
 
 	def setUp(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: Initialization, test data
+		Initialization, test data
 		"""
 
 #		conffile = os.path.join(scripting.get_config_dir(), "BioImageXD.ini")
@@ -63,8 +62,7 @@ class ModuleTest(unittest.TestCase):
 
 	def testSetControlDataUnit(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: A test for the method setControlDataUnit
+		A test for the method setControlDataUnit
 		"""
 		self.assertEqual(self.testModule.controlUnit, self.oldControlUnitValue)
 		self.testModule.setControlDataUnit(self.newControlUnitValue)
@@ -72,22 +70,19 @@ class ModuleTest(unittest.TestCase):
 
 	def testGetControlDataUnit(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: A test for the method getControlDataUnit
+		A test for the method getControlDataUnit
 		"""
 		self.assertEqual(self.testModule.controlUnit, self.testModule.getControlDataUnit())
 		
 	def testUpdateProgress(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: 
+		
 		"""
 		pass
 
 	def testSetTimepoint(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: A test for the method setTimepoint
+		A test for the method setTimepoint
 		"""
 		self.assertEqual(self.testModule.timepoint, self.oldTimepoint)
 		self.testModule.setTimepoint(self.newTimepoint)
@@ -95,8 +90,7 @@ class ModuleTest(unittest.TestCase):
 
 	def testSetSettings(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: A test for the method setSettings
+		A test for the method setSettings
 		"""
 		self.assertEqual(self.testModule.settings, self.oldSettings)
 		self.testModule.setSettings(self.newSettings)
@@ -104,8 +98,7 @@ class ModuleTest(unittest.TestCase):
 
 	def testReset(self):
 		"""
-		Created: 02.07.2007, MB
-		Description: A test for the method reset
+		A test for the method reset
 		"""
 		self.testModule.images = self.testImages
 		self.testModule.extent = self.testExtent
@@ -127,7 +120,6 @@ class ModuleTest(unittest.TestCase):
 
 	def testAddInput(self):
 		"""
-		Created: 02.07.2007, MB
 		Description:
 		"""
 		#Test
@@ -139,7 +131,6 @@ class ModuleTest(unittest.TestCase):
 
 	def testGetPreview(self):
 		"""
-		Created: 02.07.2007, MB
 		Description:
 		"""
 		self.testModule.images = self.testImages
@@ -148,7 +139,6 @@ class ModuleTest(unittest.TestCase):
 
 	def testProcessData(self):
 		"""
-		Created: 02.07.2007, MB
 		Description:
 		"""
 		self.testModule.images = self.testImages
@@ -159,7 +149,6 @@ class ModuleTest(unittest.TestCase):
 
 	def testDoOperation(self):
 		"""
-		Created: 02.07.2007, MB
 		Description:
 		"""
 		self.testModule.images = self.testImages

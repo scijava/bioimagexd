@@ -46,8 +46,7 @@ class RGBComponentDataSource(DataSource):
 	"""
 	def __init__(self, source, component):
 		"""
-		Created: 06.02.2007, KP
-		Description: Initialization
+		Initialization
 		"""
 		DataSource.__init__(self)
 		self.source = source
@@ -80,8 +79,7 @@ class RGBComponentDataSource(DataSource):
 		
 	def getColorTransferFunction(self):
 		"""
-		Created: 06.02.2007, KP
-		Description: return the color transfer function for this dataset
+		return the color transfer function for this dataset
 		"""
 		if not self.ctf:
 			col = [0, 0, 0]
@@ -97,8 +95,7 @@ class RGBComponentDataSource(DataSource):
 
 	def getCacheKey(self, datafilename, chName, purpose):
 		"""
-		Created: 07.11.2006, KP
-		Description: Return a unique name based on a filename and channel name that can be used as 
+		Return a unique name based on a filename and channel name that can be used as 
 					 a filename for the MIP
 		"""
 		
@@ -111,8 +108,7 @@ class RGBComponentDataSource(DataSource):
 		
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 06.02.2007, KP
-		Description: Returns the DataSet at the specified index
+		Returns the DataSet at the specified index
 		Parameters:   i		  The index
 		"""		   
 		data = self.source.getDataSet(i, raw)
@@ -124,8 +120,7 @@ class RGBComponentDataSource(DataSource):
 		
 	def getBitDepth(self):
 		"""
-		Created: 06.02.2007, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		if not self.bitdepth:
 			

@@ -11,8 +11,7 @@ class BXDGUIApplication(wx.App):
 	"""
 	def OnInit(self):
 		"""
-		Created: 10.1.2005, KP
-		Description: Create the application's main window
+		Create the application's main window
 		"""
 		self.SetAppName("BioImageXD")
 		iconpath = scripting.get_icon_dir()
@@ -36,15 +35,13 @@ class BXDGUIApplication(wx.App):
 
 	def macOpenFile(self, filename):
 		"""
-		Created: 14.03.2007, KP
-		Description: open a file that was dragged on the app
+		open a file that was dragged on the app
 		"""
 		self.mainwin.loadFiles([filename])
 
 	def run(self, files, scriptfile, **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Run the wxPython main loop
+		Run the wxPython main loop
 		"""
 		if files:
 			self.mainwin.loadFiles(files)

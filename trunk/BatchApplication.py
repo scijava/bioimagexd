@@ -10,13 +10,11 @@ class BatchMainWindow:
 	"""
 	def __init__(self):
 		"""
-		Created: 03.01.2008, KP
-		Description: initialize
+		initialize
 		"""
 	def updateProgressBar(self, obj, evt, progress, text, *args):
 		"""
-		Created: 03.01.2008, KP
-		Description: print progress report
+		print progress report
 		"""
 		print "%d%% %s"%(int(100*progress), text)
 		
@@ -50,8 +48,7 @@ class BXDBatchApplication:
 		
 	def setFilters(self, filterList, filterParams):
 		"""
-		Created: 01.01.2008, KP
-		Description: set the list of filters in the procedure stack, and 
+		set the list of filters in the procedure stack, and 
 					 their corresponding parameters
 		"""
 		self.filterList = filterList
@@ -60,8 +57,7 @@ class BXDBatchApplication:
 				
 	def loadFiles(self, filelist, selectedChannels = {}):
 		"""
-		Created: 02.01.2008, KP
-		Description: load a list of files
+		load a list of files
 		"""
 		dataunits = []
 		for filename in filelist:
@@ -97,8 +93,7 @@ class BXDBatchApplication:
 	
 	def run(self, files, scriptfile, name = "", outputFile = "output.bxd", timepoints = [], selectedChannels = {}):
 		"""
-		Created: 01.01.2008
-		Description: Run the procedure list
+		Run the procedure list
 		"""
 		dataunits = self.loadFiles(files, selectedChannels)
 		for dataunit in dataunits:

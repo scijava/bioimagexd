@@ -57,13 +57,11 @@ def getVisualizer():
 
 class Visualizer:
 	"""
-	Created: 05.04.2005, KP
-	Description: A class that is the controller for the visualization
+	A class that is the controller for the visualization
 	"""
 	def __init__(self, parent, menuManager, mainwin, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		global visualizerInstance
 		visualizerInstance = self
@@ -238,15 +236,13 @@ class Visualizer:
 
 	def getMasks(self):
 		"""
-		Created: 20.06.2006, KP
-		Description: Get all the masks
+		Get all the masks
 		"""
 		return self.masks
 
 	def setMask(self, mask):
 		"""
-		Created: 20.06.2006, KP
-		Description: Set the current mask
+		Set the current mask
 		"""
 		self.masks.insert(0, mask)
 		self.currentMask = mask
@@ -254,8 +250,7 @@ class Visualizer:
 
 	def createSliders(self):
 		"""
-		Created: 1.08.2005, KP
-		Description: Method that creates the sliders
+		Method that creates the sliders
 		"""
 		self.sliderPanel = wx.Panel(self.sliderWin, -1)
 		self.setCurrentSliderPanel(self.sliderPanel)
@@ -313,8 +308,7 @@ class Visualizer:
 
 	def onSliceUp(self, evt = None):
 		"""
-		Created: 15.11.2006, KP
-		Description: Move one slice up
+		Move one slice up
 		"""
 		newZSliderValue = self.zslider.GetValue() - 1
 		if newZSliderValue >= self.zslider.GetMin():
@@ -323,8 +317,7 @@ class Visualizer:
 
 	def onSliceDown(self, evt = None):
 		"""
-		Created: 15.11.2006, KP
-		Description: Move one slice down
+		Move one slice down
 		"""
 		newZSliderValue = self.zslider.GetValue() + 1
 		if newZSliderValue <= self.zslider.GetMax():
@@ -333,8 +326,7 @@ class Visualizer:
 
 	def bindTimeslider(self, method, all = 0):
 		"""
-		Created: 15.08.2005, KP
-		Description: Bind the timeslider to a method
+		Bind the timeslider to a method
 		"""
 		if not all and platform.system() == "Windows":
 			self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
@@ -348,8 +340,7 @@ class Visualizer:
 
 	def onSetVisibility(self, obj, evt, arg):
 		"""
-		Created: 12.07.2005, KP
-		Description: Set an object's visibility
+		Set an object's visibility
 		"""
 		obj = None
 		if arg == "toolbar":
@@ -394,15 +385,13 @@ class Visualizer:
 
 	def getDataUnit(self):
 		"""
-		Created: 09.07.2005, KP
-		Description: Return the dataunit that is currently shown
+		Return the dataunit that is currently shown
 		"""
 		return self.dataUnit
 
 	def nextTimepoint(self):
 		"""
-		Created: 18.07.2005, KP
-		Description: Go to next timepoint
+		Go to next timepoint
 		"""
 		if self.timepoint < self.maxTimepoint:
 			Logging.info("Setting timepoint to ", self.timepoint + 1, kw = "visualizer")
@@ -413,22 +402,19 @@ class Visualizer:
 
 	def getTimepoint(self):
 		"""
-		Created: 06.09.2006, KP
-		Description: return the current timepoint
+		return the current timepoint
 		"""
 		return self.timepoint
 
 	def getNumberOfTimepoints(self):
 		"""
-		Created: 18.07.2006, KP
-		Description: Return the number of timepoints
+		Return the number of timepoints
 		"""
 		return self.maxTimepoint
 
 	def onNextTimepoint(self, evt):
 		"""
-		Created: 26.06.2005, KP
-		Description: Go to next timepoint
+		Go to next timepoint
 		"""
 		undo_cmd = "scripting.visualizer.prevTimepoint()"
 		do_cmd = "scripting.visualizer.nextTimepoint()"
@@ -437,8 +423,7 @@ class Visualizer:
 
 	def onPrevTimepoint(self, evt):
 		"""
-		Created: 26.06.2005, KP
-		Description: Go to previous timepoint
+		Go to previous timepoint
 		"""
 		undo_cmd = "scripting.visualizer.nextTimepoint()"
 		do_cmd = "scripting.visualizer.prevTimepoint()"
@@ -447,8 +432,7 @@ class Visualizer:
 
 	def prevTimepoint(self):
 		"""
-		Created: 18.07.2006, KP
-		Description: Switch to previous timepoint
+		Switch to previous timepoint
 		"""
 		if self.timepoint >= 1:
 			self.setTimepoint(self.timepoint - 1)
@@ -458,8 +442,7 @@ class Visualizer:
 
 	def createHistogram(self):
 		"""
-		Created: 28.05.2005, KP
-		Description: Method to create histograms of the dataunit
+		Method to create histograms of the dataunit
 		"""
 		if self.dataUnit != self.histogramDataUnit:
 			self.histogramDataUnit = self.dataUnit
@@ -493,8 +476,7 @@ class Visualizer:
 
 	def createToolbar(self):
 		"""
-		Created: 28.05.2005, KP
-		Description: Method to create a toolbar for the window
+		Method to create a toolbar for the window
 		"""
 		icondir = scripting.get_icon_dir()
 		if self.tb:
@@ -594,8 +576,7 @@ class Visualizer:
 
 	def onPerspectiveRendering(self, evt):
 		"""
-		Created: 08.11.2006, KP
-		Description: Toggle perspective rendering on or off
+		Toggle perspective rendering on or off
 		"""
 		flag = not evt.IsChecked()
 		if hasattr(self.currentWindow, "getRenderer"):
@@ -605,8 +586,7 @@ class Visualizer:
 
 	def getRegionsOfInterest(self):
 		"""
-		Created: 04.08.2006, KP
-		Description: Return all the regions of interest
+		Return all the regions of interest
 		"""
 		if hasattr(self.currentWindow, "getRegionsOfInterest"):
 			return self.currentWindow.getRegionsOfInterest()
@@ -614,8 +594,7 @@ class Visualizer:
 
 	def onShowOriginal(self, evt, flag = 1):
 		"""
-		Created: 27.07.2005, KP
-		Description: Show the original datasets instead of processed ones
+		Show the original datasets instead of processed ones
 		"""
 		if evt == "hide":
 			flag = 0
@@ -626,8 +605,7 @@ class Visualizer:
 
 	def onSetView(self, evt):
 		"""
-		Created: 22.07.2005, KP
-		Description: Set view mode
+		Set view mode
 		"""
 		item = evt.GetString()
 		viewmapping = {" + X": (1, 0, 0, 0, 0, 1), " - X": (-1, 0, 0, 0, 0, 1),
@@ -641,16 +619,14 @@ class Visualizer:
 
 	def zoomObject(self, evt):
 		"""
-		Created: 19.03.2005, KP
-		Description: Lets the user select the part of the object that is zoomed
+		Lets the user select the part of the object that is zoomed
 		"""
 		self.zoomToFitFlag = 0
 		self.currMode.zoomObject()
 
 	def zoomOut(self, evt):
 		"""
-		Created: 19.03.2005, KP
-		Description: Makes the zoom factor smaller
+		Makes the zoom factor smaller
 		"""
 		zoomFactor = self.currMode.getZoomFactor()
 		numberOfZoomLevels = len(self.zoomLevels)
@@ -664,15 +640,13 @@ class Visualizer:
 
 	def zoomToComboSelection(self, evt):
 		"""
-		Created: 19.03.2005, KP
-		Description: Sets the zoom according to the combo selection
+		Sets the zoom according to the combo selection
 		"""
 		return self.zoomComboDirection(0)
 		
 	def getPositionForFactor(self, factor):
 		"""
-		Created: 01.09.2007, KP
-		Description: search the correct combobox position for the given zoom factor
+		search the correct combobox position for the given zoom factor
 		"""
 		pos = 6
 		for i, zoomFactor in enumerate(self.zoomLevels):
@@ -683,8 +657,7 @@ class Visualizer:
 				
 	def setComboBoxToFactor(self, factor):
 		"""
-		Created: 01.08.2005, KP
-		Description: Set the value of the combobox to the correct zoom factor
+		Set the value of the combobox to the correct zoom factor
 		"""
 		pos = self.getPositionForFactor(factor)
 		self.zoomCombo.SetSelection(pos)
@@ -694,8 +667,7 @@ class Visualizer:
 
 	def zoomComboDirection(self, dir):
 		"""
-		Created: 21.02.2005, KP
-		Description: Makes the zoom factor larger / smaller based on values in the zoom combobox
+		Makes the zoom factor larger / smaller based on values in the zoom combobox
 		"""
 		pos = self.zoomCombo.GetSelection()
 		#pos = self.getPositionForFactor(self.zoomFactor)
@@ -720,8 +692,7 @@ class Visualizer:
 
 	def zoomIn(self, evt, factor = -1):
 		"""
-		Created: 21.02.2005, KP0
-		Description: Makes the zoom factor larger
+		Makes the zoom factor larger
 		"""
 		zoomFactor = self.currMode.getZoomFactor()
 		numberOfZoomLevels = len(self.zoomLevels)
@@ -734,8 +705,7 @@ class Visualizer:
 
 	def zoomToFit(self, evt = None):
 		"""
-		Created: 21.02.2005, KP
-		Description: Sets the zoom factor to fit the image into the preview window
+		Sets the zoom factor to fit the image into the preview window
 		"""
 		self.zoomToFitFlag = 1
 		self.currMode.zoomToFit()
@@ -744,8 +714,7 @@ class Visualizer:
 
 	def onSashDrag(self, event = None):
 		"""
-		Created: 24.5.2005, KP
-		Description: A method for laying out the window
+		A method for laying out the window
 		"""
 
 		if event and event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
@@ -769,8 +738,7 @@ class Visualizer:
 
 	def OnSize(self, event = None):
 		"""
-		Created: 23.05.2005, KP
-		Description: Handle size events
+		Handle size events
 		"""
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 		x, y = self.zsliderWin.GetSize()
@@ -794,8 +762,7 @@ class Visualizer:
 
 	def restoreWindowSizesFromSettings(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Restore the window sizes from settings
+		Restore the window sizes from settings
 		"""
 
 		item = "%s_SidebarSize" % self.mode
@@ -817,8 +784,7 @@ class Visualizer:
 
 	def saveWindowSizes(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Save window sizes to the settings
+		Save window sizes to the settings
 		"""
 		if self.mode:
 			ssize = self.sidebarWin.GetSize()
@@ -833,8 +799,7 @@ class Visualizer:
 
 	def setCurrentSliderPanel(self, panel):
 		"""
-		Created: 26.01.2006, KP
-		Description: Set the currently visible timeslider panel
+		Set the currently visible timeslider panel
 		"""
 		self.currSliderPanel = panel
 
@@ -846,43 +811,37 @@ class Visualizer:
 
 	def setProcessedMode(self, mode):
 		"""
-		Created: 25.05.2005, KP
-		Description: Set the visualizer to processed / unprocessed mode
+		Set the visualizer to processed / unprocessed mode
 		"""
 		self.processedMode = mode
 
 	def getProcessedMode(self):
 		"""
-		Created: 25.05.2005, KP
-		Description: Return whether visualizer is in processed / unprocessed mode
+		Return whether visualizer is in processed / unprocessed mode
 		"""
 		return self.processedMode
 
 	def getCurrentWindow(self):
 		"""
-		Created: 23.11.2006, KP
-		Description: return the current visualizer window
+		return the current visualizer window
 		"""
 		return self.currentWindow
 
 	def getCurrentMode(self):
 		"""
-		Created: 20.06.2005, KP
-		Description: Return the current visualization mode
+		Return the current visualization mode
 		"""
 		return self.currMode
 
 	def getCurrentModeName(self):
 		"""
-		Created: 20.06.2005, KP
-		Description: Return the current visualization mode
+		Return the current visualization mode
 		"""
 		return self.mode
 
 	def closeVisualizer(self):
 		"""
-		Created: 12.08.2005, KP
-		Description: Close the visualizer
+		Close the visualizer
 		"""
 		if self.currMode:
 #			self.currentWindow.enable(0)
@@ -911,8 +870,7 @@ class Visualizer:
 
 	def setVisualizationMode(self, mode, reload = 0):
 		"""
-		Created: 23.05.2005, KP
-		Description: Set the mode of visualization
+		Set the mode of visualization
 		"""
 		if self.mode == mode:
 			Logging.info("Mode %s already selected" % mode, kw = "visualizer")
@@ -1020,15 +978,13 @@ class Visualizer:
 
 	def showItemToolbar(self, flag):
 		"""
-		Created: 01.06.2005, KP
-		Description: Show / hide item toolbar
+		Show / hide item toolbar
 		"""
 		pass
 
 	def enable(self, flag, **kws):
 		"""
-		Created: 23.05.2005, KP
-		Description: Enable / Disable updates
+		Enable / Disable updates
 		"""
 		self.preload = 0
 		if kws.has_key("preload"):
@@ -1051,29 +1007,25 @@ class Visualizer:
 
 	def setBackground(self, r, g, b):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the background color
+		Set the background color
 		"""
 		self.currMode.setBackground(r, g, b)
 
 	def onClose(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Called when this window is closed
+		Called when this window is closed
 		"""
 		self.closed = 1
 
 	def isClosed(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Returns flag indicating the closure of this window
+		Returns flag indicating the closure of this window
 		"""
 		return self.closed
 
 	def toggleTimeSlider(self, flag):
 		"""
-		Created: 23.07.2006, KP
-		Description: Toggle the time slider on or off
+		Toggle the time slider on or off
 		"""
 		if not flag:
 			self.sliderWin.SetDefaultSize((0, 0))
@@ -1082,8 +1034,7 @@ class Visualizer:
 
 	def toggleZSlider(self, flag):
 		"""
-		Created: 28.11.2007, LP
-		Description: Toggle the z slider on or off
+		Toggle the z slider on or off
 		"""
 		if not flag:
 			self.zsliderWin.SetDefaultSize((0,0))
@@ -1092,8 +1043,7 @@ class Visualizer:
 
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""
 		print "VISUALIZER SETDATAUNIT"
 		self.dataUnit = dataunit
@@ -1164,8 +1114,7 @@ class Visualizer:
 
 	def setupMode(self):
 		"""
-		Created: 09.03.2007, KP
-		Description: Setup the current mode
+		Setup the current mode
 		"""
 		Logging.info("Setting dataunit to current mode", kw = "visualizer")
 		self.currMode.setDataUnit(self.dataUnit)
@@ -1181,8 +1130,7 @@ class Visualizer:
 		
 	def setZoomFactor(self, factor):
 		"""
-		Created: 01.09.2007, KP
-		Description: set the zoom factor to given factor
+		set the zoom factor to given factor
 		"""
 		if self.currMode:
 			if factor < 0.05:
@@ -1197,15 +1145,13 @@ class Visualizer:
 		
 	def setImmediateRender(self, flag):
 		"""
-		Created: 14.02.2006, KP
-		Description: Toggle immediate rendering on or off
+		Toggle immediate rendering on or off
 		"""
 		self.immediateRender = flag
 
 	def setNoRendering(self, flag):
 		"""
-		Created: 14.02.2006, KP
-		Description: Toggle rendering on or off
+		Toggle rendering on or off
 		"""
 		if not flag:
 			self.noRender = flag
@@ -1220,8 +1166,7 @@ class Visualizer:
 
 	def updateRendering(self, event = None, object = None, delay = 0):
 		"""
-		Created: 25.05.2005, KP
-		Description: Update the rendering
+		Update the rendering
 		"""
 		if not self.enabled:
 			Logging.info("Disabled, will not update rendering", kw = "visualizer")
@@ -1260,8 +1205,7 @@ class Visualizer:
 
 	def Render(self, evt = None):
 		"""
-		Created: 28.04.2005, KP
-		Description: Render the scene
+		Render the scene
 		"""
 		if self.enabled:
 			self.currMode.Render()
@@ -1269,8 +1213,7 @@ class Visualizer:
 
 	def onZPageDown(self, evt):
 		"""
-		Created: 26.10.2006, KP
-		Description: Callback for when the z slider is "paged down"
+		Callback for when the z slider is "paged down"
 		"""
 		newpos = self.zslider.GetValue() - 1
 		newpos += 10
@@ -1279,8 +1222,7 @@ class Visualizer:
 
 	def onZPageUp(self, evt):
 		"""
-		Created: 26.10.2006, KP
-		Description: Callback for when the z slider is "paged up"
+		Callback for when the z slider is "paged up"
 		"""
 		newpos = self.zslider.GetValue() - 1
 		newpos -= 10
@@ -1288,8 +1230,7 @@ class Visualizer:
 
 	def onChangeZSlice(self, obj, event = None, arg = None):
 		"""
-		Created: 1.08.2005, KP
-		Description: Set the z slice to be shown
+		Set the z slice to be shown
 		"""
 		timeValue = time.time()
 		if abs(self.depthT - timeValue) < self.updateFactor:
@@ -1310,15 +1251,13 @@ class Visualizer:
 			
 	def getZSliderValue(self):
 		"""
-		Created: 17.08.2007, KP
-		Description: return the z slider value
+		return the z slider value
 		"""
 		return self.zslider.GetValue()
 
 	def onSnapshot(self, event):
 		"""
-		Created: 05.06.2005, KP
-		Description: Save a snapshot of current visualization
+		Save a snapshot of current visualization
 		"""
 		if self.currMode and self.dataUnit:
 			wildCardDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
@@ -1349,7 +1288,6 @@ class Visualizer:
 
 	def saveSnapshot(self, filename):
 		"""
-		Created: 14.06.2007, KP
 		Description save a snapshot with the given name
 		"""
 		if filename:
@@ -1357,8 +1295,7 @@ class Visualizer:
 
 	def restoreWindowSizes(self):
 		"""
-		Created: 15.08.2005, KP
-		Description: Restores the window sizes that may be changed by setRenderWindowSize
+		Restores the window sizes that may be changed by setRenderWindowSize
 		"""
 		self.visWin.SetDefaultSize(self.visWin.origSize)
 		self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
@@ -1368,8 +1305,7 @@ class Visualizer:
 
 	def setRenderWindowSize(self, size, taskwin):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the render window size by modifying the size of the surrounding panels
+		Set the render window size by modifying the size of the surrounding panels
 		"""
 		x, y = size
 		currx, curry = self.visWin.GetSize()
@@ -1428,8 +1364,7 @@ class Visualizer:
 
 	def setTimepoint(self, timepoint):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be shown
+		Set the timepoint to be shown
 		"""
 		if self.blockTpUpdate:
 			return
@@ -1447,8 +1382,7 @@ class Visualizer:
 
 	def onUpdateTimepoint(self, evt = None):
 		"""
-		Created: 31.07.2005, KP
-		Description: An event handler for events caused by the time slider
+		An event handler for events caused by the time slider
 		"""
 		# if this call is not from a user caused event, and there has been a request
 		# to change the timepoint 1/100 of a second ago, then wait a bit
@@ -1482,30 +1416,26 @@ class Visualizer:
 			
 	def onSetTimeRange(self, obj, event, r1, r2):
 		"""
-		Created: 15.08.2005, KP
-		Description: Set the range that the time slider shows
+		Set the range that the time slider shows
 		"""
 		self.timeslider.SetRange(r1, r2)
 		self.timeslider.Refresh()
 
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
-		Created: 21.06.2005, KP
-		Description: Update the timepoint according to an event
+		Update the timepoint according to an event
 		"""
 		self.setTimepoint(timepoint)
 
 	def onSetTimeslider(self, obj, event, timepoint):
 		"""
-		Created: 21.08.2005, KP
-		Description: Update the timeslider according to an event
+		Update the timeslider according to an event
 		"""
 		self.timeslider.SetValue(timepoint)
 
 	def delayedTimesliderEvent(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be shown
+		Set the timepoint to be shown
 		"""
 		self.changing = time.time()
 		wx.FutureCall(200, lambda e = event, s = self: s.timesliderMethod(e))

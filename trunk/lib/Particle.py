@@ -49,8 +49,7 @@ class ParticleReader:
 	"""
 	def __init__(self, filename, filterObjectSize = 2):
 		"""
-		Created: KP
-		Description: Initialize the reader and necessary information for the reader
+		Initialize the reader and necessary information for the reader
 		"""
 		self.rdr = csv.reader(open(filename), dialect = "excel", delimiter = ";")
 		self.filterObjectSize = filterObjectSize
@@ -62,36 +61,31 @@ class ParticleReader:
 		
 	def getObjects(self):
 		"""
-		Created: 25.11.2006, KP
-		Description: Return the list of object "intensity" values
+		Return the list of object "intensity" values
 		"""
 		return self.objects
 	
 	def getVolumes(self):
 		"""
-		Created: 25.11.2006, KP
-		Description: return a list of the object volumes (sorted)
+		return a list of the object volumes (sorted)
 		"""
 		return self.volumes
 
 	def getCentersOfMass(self):
 		"""
-		Created: 25.11.2006, KP
-		Description: return a list of the mass centers of the objects (sorted)
+		return a list of the mass centers of the objects (sorted)
 		"""
 		return self.cogs
 		
 	def getAverageIntensities(self):
 		"""
-		Created: 25.11.2006, KP
-		Description: return a list of the avereage intensities of the objects (sorted)
+		return a list of the avereage intensities of the objects (sorted)
 		"""
 		return self.avgints		
 		
 	def read(self, statsTimepoint  = 0):
 		"""
-		Created: KP
-		Description: Read the particles from the filename and create corresponding instances of Particle class
+		Read the particles from the filename and create corresponding instances of Particle class
 		"""
 		
 		ret = []
@@ -161,22 +155,19 @@ class Particle:
 		
 	def getCenterOfMass(self):
 		"""
-		Created: 26.11.2006, KP
-		Description: Return the center of mass component
+		Return the center of mass component
 		"""
 		return self.posInPixels
 		
 	def objectNumber(self):
 		"""
-		Created: Unknown, KP
-		Description: Get intval
+		Get intval
 		"""
 		return self.intval
 		
 	def distance(self, particle):	 
 		"""
-		Created: KP
-		Description: Return the distance between this particle and p
+		Return the distance between this particle and p
 
 		Pre: Valid coordinates
 		Post: A distance, with a max error of ...
@@ -190,8 +181,7 @@ class Particle:
 		
 	def copy(self, particle):
 		"""
-		Created: KP
-		Description: Copy information over from particle p
+		Copy information over from particle p
 
 		Pre: Valid properties in particle p
 		Post: Particle self has valid properties
@@ -219,8 +209,7 @@ class Particle:
 
 class ParticleTracker:
 	"""
-	Created: 11.09.2006, KP
-	Description: A class that will utilize the different tracking related
+	A class that will utilize the different tracking related
 				 classes to create tracks of a set of particles
 	"""
 	def __init__(self):
@@ -254,8 +243,7 @@ class ParticleTracker:
 		
 	def setMinimumTrackLength(self, minlen):
 		"""
-		Created: 11.09.2006, KP
-		Description: Set the minimum length that tracks need to have
+		Set the minimum length that tracks need to have
 					 in order to be written to disk
 		"""
 		self.minimumTrackLength = minlen
@@ -263,8 +251,7 @@ class ParticleTracker:
 	def setWeights(self, velocityWeight, sizeWeight, intensityWeight, directionWeight):	
 
 		"""
-		Created: 25.11.2006, KP
-		Description: Set the weighting factors for velocity change, 
+		Set the weighting factors for velocity change, 
 					size change, intensity change and direction change
 		"""
 		self.velocityWeight = velocityWeight
@@ -274,15 +261,13 @@ class ParticleTracker:
 		
 	def getReader(self):	
 		"""
-		Created: 25.11.2006, KP
-		Description: Return the particle reader
+		Return the particle reader
 		"""
 		return self.reader
 		
 	def readFromFile(self, filename, statsTimepoint = 0):
 		"""
-		Created: 11.09.2006, KP
-		Description: Read the particles from a given .CSV filename
+		Read the particles from a given .CSV filename
 		"""
 		self.particles = []
 		#n = 999
@@ -296,8 +281,7 @@ class ParticleTracker:
 				
 	def getParticles(self, timepoint, objs):
 		"""
-		Created: 26.11.2006, KP
-		Description: return the particles in given timepoint with given int.values
+		return the particles in given timepoint with given int.values
 		"""
 		pts = self.particles[timepoint]
 		ret = []
@@ -309,15 +293,13 @@ class ParticleTracker:
 		
 	def getTracks(self):
 		"""
-		Created: 27.11.2006, KP
-		Description: return the tracks
+		return the tracks
 		"""
 		return self.tracks
 		
 	def writeTracks(self, filename):			# TODO: Test when tracks != []
 		"""
-		Created: 11.09.2006, KP
-		Description: Write the calculated tracks to a file
+		Write the calculated tracks to a file
 		"""
 		fileToOpen = codecs.open(filename, "wb", "latin1")
 			
@@ -334,16 +316,14 @@ class ParticleTracker:
 						
 	def setFilterObjectSize(self, filterSize):
 		"""
-		Created: 11.09.2006, KP
-		Description: Set the minimum size (in pixels) objects must have to be
+		Set the minimum size (in pixels) objects must have to be
 					 considered for the tracking
 		"""
 		self.filterObjectSize = filterSize
 
 	def getStats(self):
 		"""
-		Created: KP
-		Description: Given a set of particles, calculate their minimum, maximum and
+		Given a set of particles, calculate their minimum, maximum and
 					 average distances in each timepoint
 		"""
 		mindists = []
@@ -391,8 +371,7 @@ class ParticleTracker:
 		
 	def setDistanceChange(self, distChange):
 		"""
-		Created: 11.09.2006, KP
-		Description: Set the parameter that defines maximum change in the distance (in percents
+		Set the parameter that defines maximum change in the distance (in percents
 					 of the maximum change) of two particles that will still be considered to be
 					 able to belong to the same track.
 		"""
@@ -400,8 +379,7 @@ class ParticleTracker:
 	
 	def setSizeChange(self, sizeChange):
 		"""
-		Created: 11.09.2006, KP
-		Description: Set the parameter that defines maximum change in the size (in percents
+		Set the parameter that defines maximum change in the size (in percents
 					 of the maximum change) of two particles that will still be considered to be
 					 able to belong to the same track.
 		"""
@@ -409,8 +387,7 @@ class ParticleTracker:
 		
 	def setIntensityChange(self, intChange):
 		"""
-		Created: 11.09.2006, KP
-		Description: Set the parameter that defines maximum change in the average intensity
+		Set the parameter that defines maximum change in the average intensity
 					 (in percents of the maximum change) of two particles that will still
 					 be considered to be able to belong to the same track.
 		"""
@@ -418,8 +395,7 @@ class ParticleTracker:
 		
 	def setAngleChange(self, angleChange):	
 		"""
-		Created: 11.09.2006, KP
-		Description: Set the parameter that defines maximum change in the angle of the track
+		Set the parameter that defines maximum change in the angle of the track
 					 (in degrees) that is calculated betwee two particles so  that the particles
 					 will still be considered to be able to belong to the same track.
 					 The angle is the total "cone of change", so if the track can veer 15 degrees
@@ -429,8 +405,7 @@ class ParticleTracker:
 		
 	def score(self, testParticle, oldParticle):
 		"""
-		Created: 24.09.2006, KP
-		Description: Measure the match score between two particles. Returns 
+		Measure the match score between two particles. Returns 
 					 a 3 - tuple (distFactor, sizeFactor, intFactor )if there's a match
 					and none otherwise	  
 		"""
@@ -459,8 +434,7 @@ class ParticleTracker:
 	@staticmethod
 	def angle(particle1, particle2):
 		"""
-		Created: 25.09.2006, KP
-		Description: Measure the "angle" between horizontal axis and the line defined
+		Measure the "angle" between horizontal axis and the line defined
 					 by the two particles
 		"""
 		particle1X, particle1Y = particle1.posInPixels[0:2]
@@ -473,8 +447,7 @@ class ParticleTracker:
 		
 	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 1):	
 		"""
-		Created: 25.09.2006, KP
-		Description: Return a score that unifies the different factors into a single score
+		Return a score that unifies the different factors into a single score
 		"""
 		#return 0.50*distFactor+0.2*angleFactor+0.15*sizeFactor+0.15*intFactor
 		return self.velocityWeight * distFactor + \
@@ -484,8 +457,7 @@ class ParticleTracker:
 	
 	def getParticlesFromSeedpoints(self, fromTimepoint, seedParticles):
 		"""
-		Created: 12.09.2007, KP
-		Description: get the particle list based on the given seed particles
+		get the particle list based on the given seed particles
 		"""
 		# The seed particles are organized as follows:
 		#[ [t1_p1, t1_p2, t1_p3], [t2_p1,t2_p2, t2_p3], ...]
@@ -532,8 +504,7 @@ class ParticleTracker:
 		
 	def track(self, fromTimepoint = 0, seedParticles = []):# TODO: Test for this
 		"""
-		Created: KP
-		Description: Perform the actual tracking using the given particles and tracking
+		Perform the actual tracking using the given particles and tracking
 		parameters.
 		"""
 		tracks = []

@@ -36,8 +36,7 @@ import wx
 
 def registerHelpers(interactivePanel):
 	"""
-	Created: 04.08.2007, KP
-	Description: register the painter helpers to the interactive panel
+	register the painter helpers to the interactive panel
 	"""
 	interactivePanel.registerPainter( AnnotationHelper(interactivePanel) )
 	interactivePanel.registerPainter( CenterOfMassHelper(interactivePanel) )
@@ -57,14 +56,12 @@ class PainterHelper:
 		
 	def setParent(self, parent):
 		"""
-		Created: 02.07.2007, KP
-		Description: set the parent
+		set the parent
 		"""		   
 		self.parent = parent
 	def paintOnDC(self, dc):
 		"""
-		Created: 06.10.2006, KP
-		Description: A method that is used to paint whatever this helper wishes to paint
+		A method that is used to paint whatever this helper wishes to paint
 					 on the DC
 		"""
 		pass
@@ -76,8 +73,7 @@ class VisualizeTracksHelper(PainterHelper):
 	"""
 	def __init__(self, parent):
 		"""
-		Created: 21.11.2006, KP
-		Description: Initialize the helper
+		Initialize the helper
 		"""
 		PainterHelper.__init__(self, parent)
 		self.selectedTracks = []
@@ -85,8 +81,7 @@ class VisualizeTracksHelper(PainterHelper):
 		
 	def onShowTracks(self, obj, evt, tracks):
 		"""
-		Created: 25.09.2006, KP
-		Description: Show the selected tracks
+		Show the selected tracks
 		"""
 		if not tracks:
 			return
@@ -95,8 +90,7 @@ class VisualizeTracksHelper(PainterHelper):
 				
 	def paintOnDC(self, dc):			   
 		"""
-		Created: 21.11.2006, KP
-		Description: Paint the selected tracks to the DC
+		Paint the selected tracks to the DC
 		"""
 		if self.selectedTracks:
 			xc, yc, wc, hc = self.parent.GetClientRect()
@@ -146,8 +140,7 @@ class VisualizeTracksHelper(PainterHelper):
 						
 	def drawTimepoint(self, dc, tp, x, y):
 		"""
-		Created: 26.11.2006, KP
-		Description: Draw the text label for given timepoint
+		Draw the text label for given timepoint
 		"""
 		if tp != scripting.visualizer.getTimepoint():
 			dc.SetFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
@@ -160,8 +153,7 @@ class VisualizeTracksHelper(PainterHelper):
 class CenterOfMassHelper(PainterHelper):
 	def __init__(self, parent):
 		"""
-		Created: 21.11.2006, KP
-		Description: Initialize the helper
+		Initialize the helper
 		"""
 		PainterHelper.__init__(self, parent)
 		self.centerOfMass = None
@@ -169,16 +161,14 @@ class CenterOfMassHelper(PainterHelper):
 		
 	def onShowCenterOfMass(self, obj, evt, label, centerofmass):
 		"""
-		Created: 04.07.2006, KP
-		Description: Show the given center of mass
+		Show the given center of mass
 		"""			   
 		self.centerOfMass = (label, centerofmass)
 		
 		
 	def paintOnDC(self, dc):
 		"""
-		Created: 21.11.2006, KP
-		Description: Paint the contents
+		Paint the contents
 		"""
 		if self.centerOfMass:
 			label, (x, y, z) = self.centerOfMass
@@ -207,15 +197,13 @@ class AnnotationHelper(PainterHelper):
 				
 	def paintOnDC(self, dc):
 		"""
-		Created: 06.10.2006, KP
-		Description: Paint the annotations on a DC
+		Paint the annotations on a DC
 		"""
 		self.parent.diagram.Redraw(dc)
 		
 		
 	def setParent(self, parent):
 		"""
-		Created: 02.07.2007, KP
-		Description: set the parent
+		set the parent
 		"""		   
 		self.parent = parent		

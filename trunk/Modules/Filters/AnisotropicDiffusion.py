@@ -40,8 +40,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageAnisotropicDiffusion3D()
@@ -54,8 +53,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [ 
 		"Neighborhood:", ["", ( ("Faces", "Corners", "Edges"), )],
@@ -65,15 +63,13 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""    
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		"""     
 		if parameter == "Faces":
 			return "Toggle whether the 6 voxels adjoined by faces are included in the neighborhood."
@@ -85,8 +81,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter in ["Faces", "Edges", "Corners"]:
 			return types.BooleanType
@@ -96,8 +91,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""     
 		if parameter in ["Faces", "Edges", "Corners"]:
 			return 1
@@ -110,8 +104,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

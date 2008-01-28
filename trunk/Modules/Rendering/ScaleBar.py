@@ -46,13 +46,11 @@ def getName():
 
 class ScaleBarModule(VisualizationModule):
 	"""
-	Created: 05.06.2005, KP
-	Description: A module for showing a scale bar
+	A module for showing a scale bar
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
@@ -87,8 +85,7 @@ class ScaleBarModule(VisualizationModule):
 		
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 		
@@ -100,8 +97,7 @@ class ScaleBarModule(VisualizationModule):
 	  
 	def pointsToPolyline(self, pts, rawmode = 0):
 		"""
-		Created: 06.05.2005, KP
-		Description: Make a set of 2D points into a 3D polyline
+		Make a set of 2D points into a 3D polyline
 		"""      
 		renderer = self.renderer
 		n = 0
@@ -124,8 +120,7 @@ class ScaleBarModule(VisualizationModule):
 
 	def updateLine(self):
 		"""
-		Created: 06.05.2005, KP
-		Description: Update the line to be near the selected point
+		Update the line to be near the selected point
 		"""          
 		
 		self.polyGrid = vtk.vtkUnstructuredGrid()
@@ -176,15 +171,13 @@ class ScaleBarModule(VisualizationModule):
 
 	def showTimepoint(self, value):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		pass
 		
 	def updateRendering(self, e1 = None, e2 = None):
 		"""
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		self.updateLine()
 		self.mapper.Update()
@@ -192,8 +185,7 @@ class ScaleBarModule(VisualizationModule):
 
 	def disableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""          
 		self.renderer.RemoveActor(self.actor)
 		self.renderer.RemoveActor2D(self.textActor)
@@ -201,8 +193,7 @@ class ScaleBarModule(VisualizationModule):
 		
 	def enableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""          
 		self.renderer.AddActor(self.actor)
 		self.renderer.AddActor2D(self.textActor)
@@ -212,15 +203,13 @@ class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
 		
 	def __init__(self, parent, visualizer, name = "Scale bar", **kws):
 		"""
-		Created: 04.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""  
 #        self.addButton=wx.Button(self,-1,"Add plane")
 #        self.addButton.Bind(wx.EVT_BUTTON,self.onAddPlane)
@@ -228,7 +217,6 @@ class ScaleBarConfigurationPanel(ModuleConfigurationPanel):
 
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)

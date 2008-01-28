@@ -43,13 +43,11 @@ def getRenderingInterface(mayavi = 0):
 
 class RenderingInterface:
 	"""
-	Created: 17.11.2004, KP
-	Description: The interface to visualizer used for animator rendering
+	The interface to visualizer used for animator rendering
 	"""
 	def __init__(self, dataUnit = None, timePoints = [], **kws):
 		"""
-		Created: 17.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.dataUnit = dataUnit
 		self.currentData = None
@@ -71,22 +69,19 @@ class RenderingInterface:
 		
 	def setType(self, imageType):
 		"""
-		Created: 13.12.2005, KP
-		Description: Set the imageType of the rendered frame
+		Set the imageType of the rendered frame
 		"""			   
 		self.imageType = imageType
 		
 	def getColorTransferFunction(self):
 		"""
-		Created: 18.04.2005, KP
-		Description: Return the current ctf
+		Return the current ctf
 		"""
 		return self.ctf
 		
 	def getCurrentData(self):
 		"""
-		Created: n/a
-		Description: Return the current timepoint
+		Return the current timepoint
 		"""
 	
 		if not self.currentData:
@@ -98,8 +93,7 @@ class RenderingInterface:
 		
 	def setCurrentTimepoint(self, timepoint):
 		"""
-		Created: 22.02.2005, KP
-		Description: Sets the current timepoint to be the specified timepoint.
+		Sets the current timepoint to be the specified timepoint.
 					 This will also update relevant information about the dataset
 
 		Preconditions: self.dataUnit != 0
@@ -113,8 +107,7 @@ class RenderingInterface:
 		
 	def setRenderWindowSize(self, size):
 		"""
-		Created: 27.04.2005, KP
-		Description: Sets the visualizer's render window size
+		Sets the visualizer's render window size
 		"""		   
 		x, y = size
 		if self.visualizer:
@@ -122,22 +115,19 @@ class RenderingInterface:
 			
 	def getRenderWindow(self):
 		"""
-		Created: 22.02.2005, KP
-		Description: Returns the visualizer's render window. Added for Animator compatibility
+		Returns the visualizer's render window. Added for Animator compatibility
 		"""
 		return self.visualizer.getCurrentMode().GetRenderWindow()
 	
 	def setParent(self, parent):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the parent of this window
+		Set the parent of this window
 		"""		   
 		self.parent = parent
 		
 	def getRenderer(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Returns the renderer
+		Returns the renderer
 		"""		   
 		return self.visualizer.getCurrentMode().GetRenderer()
 		
@@ -146,16 +136,14 @@ class RenderingInterface:
 	
 	def setVisualizer(self, visualizer):
 		"""
-		Created: 20.06.2005, KP
-		Description: Set the visualizer instance to use
+		Set the visualizer instance to use
 		"""		   
 		self.visualizer = visualizer
 		self.frameList = []
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 17.11.2004, KP
-		Description: Set the dataunit from which the rendered datasets are read
+		Set the dataunit from which the rendered datasets are read
 		"""
 		self.dataUnit = dataUnit
 		if not dataUnit:
@@ -175,44 +163,38 @@ class RenderingInterface:
 
 	def setTimePoints(self, timepoints):
 		"""
-		Created: 17.11.2004, KP
-		Description: Set the list of timepoints to be rendered
+		Set the list of timepoints to be rendered
 		"""
 		self.timePoints = timepoints
 
 	def isVisualizationSoftwareRunning(self):
 		"""
-		Created: 11.1.2005, KP
-		Description: A method that returns true if a visualizer window exists that 
+		A method that returns true if a visualizer window exists that 
 					 can be used for rendering
 		"""
 		return (self.visualizer and not self.visualizer.isClosed())
 		
 	def isVisualizationModuleLoaded(self):
 		"""
-		Created: 22.02.2005, KP
-		Description: A method that returns true if the visualizer has a visualization module loaded.
+		A method that returns true if the visualizer has a visualization module loaded.
 		"""
 		return len(self.visualizer.getCurrentMode().getModules())		 
 		
 	def getFrameList(self):
 		"""
-		Created: 07.11.2006, KP
-		Description: Return the list of the names of the frames that have been rendered
+		Return the list of the names of the frames that have been rendered
 		"""
 		return self.frameList
 		
 	def setOutputPath(self, path):
 		"""
-		Created: 17.11.2004, KP
-		Description: Sets the path where the rendered frames are stored.
+		Sets the path where the rendered frames are stored.
 		"""
 		self.dirname = path
 			
 	def saveFrame(self, filename):
 		"""
-		Created: 22.02.2005, KP
-		Description: Saves a frame with a given name
+		Saves a frame with a given name
 		"""
 		self.frameList.append(filename)
 		visualizer = self.visualizer
@@ -223,29 +205,25 @@ class RenderingInterface:
 			
 	def getFilenamePattern(self):
 		"""
-		Created: 27.04.2005, KP
-		Description: Returns output filename pattern
+		Returns output filename pattern
 		"""
 		return self.format
 		
 	def getFrameName(self):
 		"""
-		Created: 27.04.2005, KP
-		Description: Returns name used to construct the filenames
+		Returns name used to construct the filenames
 		"""
 		return self.frameName
 			
 	def getFilename(self, frameNum):
 		"""
-		Created: 22.02.2005, KP
-		Description: Returns output filename of the frame we're rendering
+		Returns output filename of the frame we're rendering
 		"""
 		return self.format % (self.dirname, self.frameName, frameNum)
 
 	def getCenter(self, timepoint = -1):
 		"""
-		Created: 22.02.2005, KP
-		Description: Returns the center of the requested dataset. If none is specified, the
+		Returns the center of the requested dataset. If none is specified, the
 					 center of the current dataset is returned
 		"""
 		if self.currentTimePoint < 0 or not self.timePoints or timepoint > max(self.timePoints):
@@ -257,8 +235,7 @@ class RenderingInterface:
 		
 	def getDimensions(self, timepoint = -1):
 		"""
-		Created: 22.02.2005, KP
-		Description: Returns the dimensions of the requested dataset. If none is specified, the
+		Returns the dimensions of the requested dataset. If none is specified, the
 					 dimensions of the current dataset is returned
 		"""    
 		if self.currentTimePoint < 0 or not self.timePoints or timepoint > max(self.timePoints):
@@ -271,8 +248,7 @@ class RenderingInterface:
 			
 	def updateDataset(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Updates the dataset to the current timepoint
+		Updates the dataset to the current timepoint
 		"""
 		if self.visualizer:
 			self.visualizer.setTimepoint(self.currentTimePoint)

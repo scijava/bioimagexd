@@ -43,8 +43,7 @@ class TreeWidget(wx.SashLayoutWindow):
 	"""
 	def __init__(self, parent):
 		"""
-		Created: 10.01.2005, KP
-		Description: Initialization
+		Initialization
 		"""        
 		wx.SashLayoutWindow.__init__(self, parent, -1)
 		self.treeId = wx.NewId()
@@ -104,8 +103,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			
 	def onRightClick(self, event):
 		"""
-		Created: 21.07.2005
-		Description: Method that is called when the right mouse button is
+		Method that is called when the right mouse button is
 					 pressed down on this item
 		"""      
 		pt = event.GetPosition()
@@ -119,8 +117,7 @@ class TreeWidget(wx.SashLayoutWindow):
  
 	def closeItem(self, item, obj):
 		"""
-		Created: 17.1.2007, KP
-		Description: close on item from the tree
+		close on item from the tree
 		"""
 		unit = self.dataUnitToPath[obj]
 		self.items[unit] -= 1
@@ -142,8 +139,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def removeEmptyParents(self):
 		"""
-		Created: 07.10.2007, KP
-		Description: remove empty parent items from the tree after their children have been removed
+		remove empty parent items from the tree after their children have been removed
 		"""
 		removeParents = []
 		for i in self.removeParents:
@@ -176,8 +172,7 @@ class TreeWidget(wx.SashLayoutWindow):
 					
 	def onCloseDataset(self, event):
 		"""
-		Created: 21.07.2005, KP
-		Description: Method to close a dataset
+		Method to close a dataset
 		"""
 		selections = self.tree.GetSelections()
 		if not selections and self.selectedItem:
@@ -207,8 +202,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			
 	def onSize(self, event):
 		"""
-		Created: 10.01.2005, KP
-		Description: Callback that modifies the tree size according to
+		Callback that modifies the tree size according to
 					 own changes in size
 		"""                
 		w, h = self.GetClientSizeTuple()
@@ -216,8 +210,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def getSelectionContainer(self):
 		"""
-		Created: 11.09.2005, KP
-		Description: Return the dataset that contains a channel
+		Return the dataset that contains a channel
 		"""         
 		selections = self.tree.GetSelections()
 		dataunits = []
@@ -241,8 +234,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def markGreen(self, items):
 		"""
-		Created: 16.09.2005, KP
-		Description: Mark given items green and set the old green item to default color
+		Mark given items green and set the old green item to default color
 		"""                    
 		if self.greenitems:
 			for item in self.greenitems:
@@ -254,8 +246,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			
 	def markYellow(self, items):
 		"""
-		Created: 16.09.2005, KP
-		Description: Mark given items yellow and set the old yellow item to default color
+		Mark given items yellow and set the old yellow item to default color
 		"""        
 		if self.yellowitems:
 			for item in self.yellowitems:
@@ -268,8 +259,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def markRed(self, items, appendchar = ""):
 		"""
-		Created: 11.09.2005, KP
-		Description: Mark given items red
+		Mark given items red
 		"""                
 		for item in items:
 			if appendchar != "":
@@ -280,8 +270,7 @@ class TreeWidget(wx.SashLayoutWindow):
 
 	def markBlue(self, items, appendchar = ""):
 		"""
-		Created: 15.08.2006, KP
-		Description: Mark given items blue
+		Mark given items blue
 		"""                
 		for item in items:
 			if appendchar != "":
@@ -293,22 +282,19 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def hasItem(self, path):
 		"""
-		Created: 10.01.2005, KP
-		Description: Returns whether the tree has a specified item
+		Returns whether the tree has a specified item
 		"""            
 		return (path in self.items and self.items[path])
 		
 	def getItemNames(self):
 		"""
-		Created: 15.08.2006, KP
-		Description: Return the names of the dataunits in the tree
+		Return the names of the dataunits in the tree
 		"""
 		return self.items.keys()
 	
 	def addToTree(self, name, path, objtype, objs):
 		"""
-		Created: 10.01.2005, KP
-		Description: Add item to the tree
+		Add item to the tree
 		Parameters:
 			name        Name of the item
 			path        Path of the item
@@ -460,8 +446,7 @@ class TreeWidget(wx.SashLayoutWindow):
 
 	def getSelectedDataUnits(self):
 		"""
-		Created: 10.01.2005, KP
-		Description: Returns the selected dataunits
+		Returns the selected dataunits
 		"""            
 		items = self.tree.GetSelections()
 		objs = [self.tree.GetPyData(x) for x in items]
@@ -470,8 +455,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def getSelectedPaths(self):
 		"""
-		Created: 23.10.2006, KP
-		Description: Return the paths of the selected dataunits
+		Return the paths of the selected dataunits
 		"""
 		
 		objs = self.getSelectedDataUnits()
@@ -480,8 +464,7 @@ class TreeWidget(wx.SashLayoutWindow):
 
 	def onActivateItem(self, event = None):
 		"""
-		Created: 03.04.2006, KP
-		Description: A event handler called when user double clicks an item
+		A event handler called when user double clicks an item
 		"""      
 		item = event.GetItem()
 		if not item.IsOk():
@@ -497,8 +480,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def onSelectionChanging(self, event):
 		"""
-		Created: 25.1.2007, KP
-		Description: An event handler called before the selection changes
+		An event handler called before the selection changes
 		"""
 		if self.ignore:
 			event.Skip()
@@ -529,8 +511,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.ignore = 0
 	def onKeyDown(self, event):
 		"""
-		Created: 25.1.2006, KP
-		Description: Akey event handler
+		Akey event handler
 		"""
 		keyevent = event
 		if keyevent.ControlDown() or keyevent.ShiftDown():
@@ -543,8 +524,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def onSelectionChanged(self, event = None):
 		"""
-		Created: 10.01.2005, KP
-		Description: A event handler called when user selects and item.
+		A event handler called when user selects and item.
 		"""      
 		item = event.GetItem()
 		if not item.IsOk():
@@ -564,22 +544,19 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def unselectAll(self):
 		"""
-		Created: 16.07.2006, KP
-		Description: Unselect everything in the tree
+		Unselect everything in the tree
 		"""
 		self.tree.UnselectAll()
 		
 	def getChannelsByName(self, unit, channels):
 		"""
-		Created: 16.07.2006, KP
-		Description: Return items in the tree by their names
+		Return items in the tree by their names
 		"""   
 		return self.selectChannelsByName(unit, channels, dontSelect = 1)
 		
 	def selectChannelsByNumber(self, unit, numbers, dontSelect = 0):
 		"""
-		Created: 06.09.2006, KP
-		Description: Select channels with the given numhers
+		Select channels with the given numhers
 		"""
 		n = -1
 		ret = []
@@ -598,8 +575,7 @@ class TreeWidget(wx.SashLayoutWindow):
 
 	def selectChannelsByName(self, unit, channels, dontSelect = 0):
 		"""
-		Created: 16.07.2006, KP
-		Description: Select items in the tree by their names
+		Select items in the tree by their names
 		"""   
 		ret = []
 		self.programmatic = 1        

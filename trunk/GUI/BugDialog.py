@@ -45,8 +45,7 @@ import platform
 
 def createSystemReport():
 	"""
-	Created: 27.09.2007, KP
-	Description: create a report of the system
+	create a report of the system
 	"""
 	ret = "System report for machine %s (%s)\n"%(platform.node(),platform.system())
 	ret += "Version: %s\n"%platform.version()
@@ -70,8 +69,7 @@ def createSystemReport():
 	return ret
 def mail(to = '', senderName = '', logText = '', text = ''):
 	"""
-	Created: 25.06.2007, KP
-	Description: send an email message
+	send an email message
 	"""
 	sender = 'bioimagexd.bugs@gmail.com'
 	message = MIMEMultipart('related')
@@ -194,30 +192,26 @@ software will be attached to the report to aid the developers in solving the err
         
 	def crashModeOn(self, logfile):
 		"""
-		Created: 25.06.2007, KP
-		Description: enable the crash mode, where the log will be coming fromthe given filename
+		enable the crash mode, where the log will be coming fromthe given filename
 		"""
 		self.crashMode = 1
 		self.logFile = logfile
 	def setContent(self, actions, logmessages):
 		"""
-		Created: 25.06.2007, KP
-		Description: set the contents to be sent, for example in case we're reporting a crash 
+		set the contents to be sent, for example in case we're reporting a crash 
 						instead of an error in current execution
 		"""
 		self.actions, self.logmessages = actions, logmessages
        
 	def closeWindow(self, evt):
 		"""
-		Created: 25.06.2007, KP
-		Description: close the window without sending a bug report
+		close the window without sending a bug report
 		"""
 		self.EndModal(wx.ID_CANCEL)
 
 	def sendReport(self, evt):
 		"""
-		Created: 25.06.2007, KP
-		Description: close the window without sending a bug report
+		close the window without sending a bug report
 		"""
 		if not self.logmessages:
 			loglines = scripting.logFile.getvalue().split("\n")

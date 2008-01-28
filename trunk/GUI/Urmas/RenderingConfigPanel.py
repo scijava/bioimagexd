@@ -158,8 +158,7 @@ be the same size as the final frame.""")
 		
 	def onUpdateFrameSize(self, evt):
 		"""
-		Created: 06.02.2005, KP
-		Description: A callback for when the user changes the frame size
+		A callback for when the user changes the frame size
 		"""		
 		sel = evt.GetSelection()
 		flag = (sel == 0)
@@ -168,8 +167,7 @@ be the same size as the final frame.""")
 		evt.Skip()
 	def getFrameAmount(self):
 		"""
-		Created: 15.08.2005, KP
-		Description: Return the number of frames selected
+		Return the number of frames selected
 		"""		
 		try:
 			n = int(self.totalFrames.GetValue())
@@ -179,16 +177,14 @@ be the same size as the final frame.""")
 
 	def setFrames(self, n):
 		"""
-		Created: N/A, KP
-		Description: Set the number of frames in the GUI
+		Set the number of frames in the GUI
 		"""		   
 		self.totalFrames.SetValue(str(n))
 		self.useSettings()
 		
 	def setDuration(self, t):
 		"""
-		Created: N/A, KP
-		Description: Set the duration in the GUI
+		Set the duration in the GUI
 		"""			   
 		if type(t) != types.StringType:
 			h = t / 3600
@@ -200,8 +196,7 @@ be the same size as the final frame.""")
 	
 	def useSettings(self, event = None):
 		"""
-		Created: N/A, KP
-		Description: Use the GUI settings
+		Use the GUI settings
 		"""		   
 		duration = -1
 		frameCount = -1
@@ -253,8 +248,7 @@ be the same size as the final frame.""")
 		
 	def getDurationInSeconds(self):
 		"""
-		Created: KP
-		Description: return the duration of the movie in seconds
+		return the duration of the movie in seconds
 		"""
 		
 		if not self.updated:
@@ -273,8 +267,7 @@ be the same size as the final frame.""")
 		
 	def updateFPS(self, event):
 		"""
-		Created: KP
-		Description: update the amount of frames based on the Frames Per Second variable
+		update the amount of frames based on the Frames Per Second variable
 		"""
 		if self.in_framecount:
 			return
@@ -293,8 +286,7 @@ be the same size as the final frame.""")
 		
 	def updateDuration(self, event):
 		"""
-		Created: KP
-		Description: update the amount of frames based on the duration of the movie
+		update the amount of frames based on the duration of the movie
 		"""
 		self.updated = 1
 		secs = self.getDurationInSeconds()
@@ -306,8 +298,7 @@ be the same size as the final frame.""")
 		
 	def updateFrameCount(self, event):
 		"""
-		Created: KP
-		Description: Update the frame rate based on the duration
+		Update the frame rate based on the duration
 		"""
 		if self.in_fps:
 			return

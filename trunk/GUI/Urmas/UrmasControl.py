@@ -70,22 +70,19 @@ class UrmasControl:
 	def setFrameSize(self, x, y):
 		"""
 		Method: setFrameSize
-		Created: 19.12.2005, KP
-		Description: Set the frame size of the rendered images
+		Set the frame size of the rendered images
 		"""
 		self.frameSize = (x, y)
 		
 	def getFrameSize(self):
 		"""
-		Created: 19.12.2005, KP
-		Description: Get the frame size of the rendered images
+		Get the frame size of the rendered images
 		"""	   
 		return self.frameSize
 		
 	def writeToDisk(self, filename):
 		"""
-		Created: 06.04.2005, KP
-		Description: Writes the whole control datastructures to disk by way of
+		Writes the whole control datastructures to disk by way of
 					 pickling
 		"""
 		p = UrmasPersist.UrmasPersist(self)
@@ -94,24 +91,21 @@ class UrmasControl:
 	def getViewMode(self):return self.viewMode	  
 	def setViewMode(self, mode):
 		"""
-		Created: 17.08.2005, KP
-		Description: Set the view mode of spline editor
+		Set the view mode of spline editor
 		"""	   
 		self.viewMode = mode
 
 
 	def resetAnimator(self):
 		"""
-		Created: 24.06.2005, KP
-		Description: Reset the animator
+		Reset the animator
 		"""	   
 		self.clearGUI()
 		self.updateLayouts()
 
 	def readFromDisk(self, filename):
 		"""
-		Created: 06.04.2005, KP
-		Description: Read the whole control datastructures from disk by way of
+		Read the whole control datastructures from disk by way of
 					 pickling
 		"""	   
 		self.clearGUI()
@@ -122,23 +116,20 @@ class UrmasControl:
 		
 	def clearGUI(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: Clear the GUI
+		Clear the GUI
 		"""	   
 		self.timeline.clearTracks()
 		
 	def updateGUI(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: Update the GUI to match the data structures
+		Update the GUI to match the data structures
 		"""	   
 		self.__set_pure_state__(self)
 		self.updateLayouts()
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Update the GUI to match the data structures
+		Update the GUI to match the data structures
 		"""	   
 		Logging.info("Setting pure state of control...", kw = "animator")
 		self.setAnimationMode(state.animationMode)
@@ -148,72 +139,64 @@ class UrmasControl:
 		
 	def getFrames(self):
 		"""
-		Created: 04.04.2005, KP
-		Description: Return the number of frames
+		Return the number of frames
 		"""	   
 		return self.frames
 		
 	def getFramesPerSecond(self):
 		"""
 		Creted: 09.10.2006, KP
-		Description: Return the frames per second
+		Return the frames per second
 		"""
 		return self.frames / float(self.duration)
 		
 	def getSecondsPerFrame(self):
 		"""
 		Creted: 09.10.2006, KP
-		Description: Return the seconds per frame
+		Return the seconds per frame
 		"""
 		return float(self.duration) / self.frames
 		
 	def getDuration(self):
 		"""
-		Created: 20.03.2005, KP
-		Description: Return the duration of the timeline
+		Return the duration of the timeline
 		"""	   
 		return self.duration
 		
 	def getPixelsPerSecond(self):
 		"""
-		Created: 20.03.2005, KP
-		Description: Return how many pixels there are per second on the timescale
+		Return how many pixels there are per second on the timescale
 		"""	   
 		return self.timeline.timeScale.getPixelsPerSecond()
 
 	def setAnimator(self, animator):
 		"""
-		Created: 20.03.2005, KP
-		Description: Sets the animator controlled by this
+		Sets the animator controlled by this
 		"""	   
 		self.animator = animator
 
 	def setTimelinePanel(self, timelinepanel):
 		"""
-		Created: 20.03.2005, KP
-		Description: Sets the timeline panel controlled by this
+		Sets the timeline panel controlled by this
 		"""	   
 		self.timelinePanel = timelinepanel
 
 
 	def renderProject(self, preview, **kws):
 		"""
-		Created: 19.04.2005, KP
-		Description: Render this project
+		Render this project
 		"""			   
 		return self.renderer.render(self, preview, **kws)
 		
 	def getDataUnit(self):
 		"""
-		Created: 20.03.2005, KP
-		Description: Returns the dataunit
+		Returns the dataunit
 		"""			   
 		return self.dataUnit
 		
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 20.03.2005, KP
-		Description: Sets the dataunit used as a source of data
+		Sets the dataunit used as a source of data
 		"""	   
 		self.dataUnit = dataunit
 		self.renderingInterface = lib.RenderingInterface.getRenderingInterface(1)
@@ -229,8 +212,7 @@ class UrmasControl:
 		
 	def initializeSplineEditor(self):
 		"""
-		Created: 12.09.2007, KP
-		Description: initialize the spline editor
+		initialize the spline editor
 		"""
 		data = self.renderingInterface.getCurrentData()
 		ctf = self.renderingInterface.getColorTransferFunction()
@@ -240,8 +222,7 @@ class UrmasControl:
 		
 	def updateLayouts(self):
 		"""
-		Created: 20.03.2005, KP
-		Description: Update various parts of the window as the layout changes
+		Update various parts of the window as the layout changes
 		"""	   
 		if self.timeline:
 			self.timeline.Layout()
@@ -253,15 +234,13 @@ class UrmasControl:
 		
 	def getSplineEditor(self):
 		"""
-		Created: 14.04.2005, KP
-		Description: Return the spline editor instance
+		Return the spline editor instance
 		"""		   
 		return self.splineEditor
 		
 	def setAnimationMode(self, mode):
 		"""
-		Created: 12.03.2005, KP
-		Description: Method used to either show or hide the animator
+		Method used to either show or hide the animator
 		"""		   
 		self.animationMode = mode
 		self.timeline.setAnimationMode(mode)
@@ -270,8 +249,7 @@ class UrmasControl:
 		
 	def setTimeline(self, timeline):
 		"""
-		Created: 20.03.2005, KP
-		Description: Sets the timeline controlled by this
+		Sets the timeline controlled by this
 		"""	   
 		self.timeline = timeline
 		self.getSelectedTrack = timeline.getSelectedTrack
@@ -279,16 +257,14 @@ class UrmasControl:
 		
 	def setTimelineConfig(self, config):
 		"""
-		Created: 20.03.2005, KP
-		Description: Sets the timeline config panel controlled by this
+		Sets the timeline config panel controlled by this
 		"""	   
 	
 		self.timelineConfig = config
 		
 	def setSplineInteractionCallback(self, cb):
 		"""
-		Created: 19.03.2005, KP
-		Description: Method to set a callback that is called when interaction
+		Method to set a callback that is called when interaction
 					 with the spline editor ends
 		"""		   
 		self.splineEditor.setInteractionCallback(cb)
@@ -296,8 +272,7 @@ class UrmasControl:
 		
 	def configureTimeline(self, seconds, frames):
 		"""
-		Created: 20.03.2005, KP
-		Description: Set the duration and frames of the movie
+		Set the duration and frames of the movie
 		"""	   
 		#print "Calling timeline.configureTimeline(",seconds,",",frames,")"
 		self.duration = seconds
@@ -307,15 +282,13 @@ class UrmasControl:
 
 	def setSplineEditor(self, spe):
 		"""
-		Created: 19.03.2005, KP
-		Description: Method used to set the spline editor
+		Method used to set the spline editor
 		"""		   
 		self.splineEditor = spe
 		
 	def __str__(self):
 		"""
-		Created: 05.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""		   
 		s = "Urmas rendering\nDuration: %.2fs\nFrames: %d\n" % (self.duration, self.frames)
 		s += str(self.timeline)
@@ -323,8 +296,7 @@ class UrmasControl:
 		
 	def __getstate__(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""		 
 		odict = {}
 		for key in ["duration", "frames", "timeline", "animationMode"]:

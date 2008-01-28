@@ -59,8 +59,7 @@ class ScriptRecorder:
 	"""
 	def __init__(self):
 		"""
-		Created: 13.02.2006, KP
-		Description: Initialize the editor component of script editor
+		Initialize the editor component of script editor
 		"""
 		self.imports = []
 		messenger.connect(None, "record_code", self.onRecordCode)
@@ -71,8 +70,7 @@ class ScriptRecorder:
 
 	def getText(self):
 		"""
-		Created: 25.06.2007, KP
-		Description: return the recorded output
+		return the recorded output
 		"""
 		imports = []
 		for i in self.imports:
@@ -86,8 +84,7 @@ class ScriptRecorder:
 
 	def onRecordCode(self, obj, evt, code, imports):
 		"""
-		Created: 13.02.2006, KP
-		Description: Record a piece of code to the script
+		Record a piece of code to the script
 		"""
 		text = self.code
 		for i in imports:
@@ -128,8 +125,7 @@ class Command:
 	def __init__(self, category = None, paramDo = None, undo = None, do_code = "",
 	undo_code = "", imports = None, desc = ""):
 		"""
-		Created: 13.02.2006, KP
-		Description: Initialization 
+		Initialization 
 		"""
 		self.toDo = paramDo
 		self.undocmd = undo
@@ -164,8 +160,7 @@ class Command:
 	@staticmethod	
 	def functionize(code, imports):
 		"""
-		Created: Unknown, KP
-		Description: Removes starting and trailing whitespaces from text
+		Removes starting and trailing whitespaces from text
 		"""
 		lines = code.split("\n")
 		for i, line in enumerate(lines):
@@ -175,30 +170,26 @@ class Command:
 
 	def getDesc(self):
 		"""
-		Created: KP
-		Description: return the description of this command
+		return the description of this command
 		"""
 		return self.desc
 		
 	def isUndoed(self):
 		"""
-		Created: Kp
-		Description: return a flag indicating whether this command has been undoed
+		return a flag indicating whether this command has been undoed
 		"""
 		return self._undoed
 	
 	def canUndo(self):
 		"""
-		Created: 13.02.2006, KP
-		Description: A get method indicating whether this command can be undoed
+		A get method indicating whether this command can be undoed
 		"""		
 		return not(not self.undocmd)
 		
 
 	def run(self, recordOnly = 0): #TODO: write test to this
 		"""
-		Created: 13.02.2006, KP
-		Description: Execute the action associated with this command
+		Execute the action associated with this command
 		""" 
 		# If we got a callable object instead of code as string, then we need to 
 		# use inspect to get the source code so we can record it
@@ -216,8 +207,7 @@ class Command:
 			
 	def undo(self):		#TODO: write test to this
 		"""
-		Created: 13.02.2006, KP
-		Description: Execute an action that cancels the action of this command
+		Execute an action that cancels the action of this command
 		"""			
 		self.undocmd(self)
 		self._undoed = 1
@@ -233,15 +223,13 @@ class Command:
 
 	def getCategory(self):
 		"""
-		Created: KP
-		Description: return the category this command belongs to
+		return the category this command belongs to
 		"""
 		return self.category
 		
 	def __str__(self):
 		"""
-		Created:KP
-		Description: return a string representation of this object
+		return a string representation of this object
 		"""
 		return "Command: %s (%s)" % (self.category, self.desc)
 		

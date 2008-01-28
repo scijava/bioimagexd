@@ -58,8 +58,7 @@ class CSVListView(wx.ListCtrl):
 		
 	def exportToCsv(self, filename, headers = []):
 		"""
-		Created: 30.6.2007, KP
-		Description: write out the data to a .csv file
+		write out the data to a .csv file
 		"""
 		f = codecs.open(filename, "wb", "latin-1")
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
@@ -71,15 +70,13 @@ class CSVListView(wx.ListCtrl):
 		
 	def importFromCsv(self, filename):
 		"""
-		Created: 30.6.2007, KP
-		Description: read a .csv file and show it in the list box
+		read a .csv file and show it in the list box
 		"""
 		pass
 		
 	def setContents(self, data):
 		"""
-		Created: 30.6.2007, KP
-		Description: Set the contents of the list view
+		Set the contents of the list view
 		"""    
 		assert type(data) == types.ListType
 		for i, headerName in enumerate(data[0]):
@@ -90,8 +87,7 @@ class CSVListView(wx.ListCtrl):
 
 	def OnGetItemText(self, item, col):
 		"""
-		Created: 30.6.2007, KP
-		Description: A method that returns the value of the given column of given row
+		A method that returns the value of the given column of given row
 		"""            
 		try:
 			print "Returning", self.data[item][col]
@@ -101,15 +97,13 @@ class CSVListView(wx.ListCtrl):
  
 	def OnGetItemImage(self, item):
 		"""
-		Created: 30.6.2007, KP
-		Description: Return an image for the item
+		Return an image for the item
 		"""    
 		return - 1
 
 	def OnGetItemAttr(self, item):
 		"""
-		Created: 30.6.2007, KP
-		Description: Return the attribute for the given item
+		Return the attribute for the given item
 		"""    
 	
 		if item % 2 == 1:

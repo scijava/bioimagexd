@@ -115,8 +115,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def enable(self, flag):
 		"""
-		Created: 26.04.2006, KP
-		Description: Enable / Disable rendering of this window	  
+		Enable / Disable rendering of this window	  
 		"""
 		if flag and self.frozen:
 			self.frozen = 0
@@ -127,8 +126,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def enableRendering(self, flag):
 		"""
-		Created: KP
-		Description: Enable or disable the rendering in the preview window
+		Enable or disable the rendering in the preview window
 		"""
 		if flag:
 			self.timelinePanel.splineEditor.iren.Enable()
@@ -137,8 +135,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 			
 	def updateRenderWindow(self, *args):
 		"""
-		Created: 15.12.2005, KP
-		Description: Updates the render window camera settings
+		Updates the render window camera settings
 					 after all initialization is done. For some
 					 reason, it has to be done here to take effect.					   
 		"""
@@ -148,8 +145,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onShowFrame(self, evt = None):
 		"""
-		Created: 15.08.2005, KP
-		Description: Sets the frame to be shown
+		Sets the frame to be shown
 		"""
 		t = time.time()
 		if t - self.lastFrameTime < 0.2:
@@ -165,8 +161,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def cleanMenu(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: Removes the menu items from menu
+		Removes the menu items from menu
 		"""
 		mgr = self.menuManager
 		
@@ -197,8 +192,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def createMenu(self, mgr):
 		"""
-		Created: 06.04.2005, KP
-		Description: Creates a menu for the window
+		Creates a menu for the window
 		"""
 		mgr.createMenu("track", "&Track", before = "help")
 		#mgr.createMenu("rendering","&Rendering",before="help")
@@ -252,8 +246,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def updateMenus(self):
 		"""
-		Created: 18.04.2005, KP
-		Description: A method to update the state of menu items
+		A method to update the state of menu items
 		"""
 		spltracks = len(self.control.timeline.getSplineTracks())
 		flag = (spltracks >= 2)
@@ -277,8 +270,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
  
 	def onShiftClockwise(self, event):
 		"""
-		Created: 15.12.2005, KP
-		Description: Shift items in current track one step clockwise
+		Shift items in current track one step clockwise
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -288,8 +280,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onShiftCounterClockwise(self, event):
 		"""
-		Created: 15.12.2005, KP
-		Description: Shift items in current track one step counter clockwise
+		Shift items in current track one step counter clockwise
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -299,8 +290,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	
 	def onMenuRender(self, event):
 		"""
-		Created: 19.04.2005, KP
-		Description: Render this project
+		Render this project
 		"""
 		if not self.videoGenerationPanel:
 			w, h = self.taskWin.GetSize()
@@ -313,8 +303,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def onVideoGenerationClose(self, obj, evt, *args):
 		"""
-		Created: 15.12.2005, KP
-		Description: Callback for closing the video generation
+		Callback for closing the video generation
 		""" 
 	
 		w, h = self.taskWin.GetSize()
@@ -340,8 +329,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onMinTrack(self, evt):
 		"""
-		Created: 19.04.2005, KP
-		Description: Callback function for menu item minimize track
+		Callback function for menu item minimize track
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -351,8 +339,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def onSetTrack(self, evt):
 		"""
-		Created: 19.04.2005, KP
-		Description: Callback function for menu item minimize track
+		Callback function for menu item minimize track
 		"""
 
 		dlg = wx.TextEntryDialog(self, "Set duration of each item (seconds):", "Set item duration")
@@ -393,8 +380,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onSetTrackRelative(self, evt):
 		"""
-		Created: 25.06.2005, KP
-		Description: Set the length of items in a track relative to their physical size
+		Set the length of items in a track relative to their physical size
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -425,8 +411,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def onSetTrackTotal(self, evt):
 		"""
-		Created: 23.06.2005, KP
-		Description: Set the total length of items in a track
+		Set the total length of items in a track
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -449,8 +434,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def onMaxTrack(self, evt):
 		"""
-		Created: 19.04.2005, KP
-		Description: Callback function for menu item minimize track
+		Callback function for menu item minimize track
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -460,8 +444,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	
 	def onMaxTrackRatio(self, evt):
 		"""
-		Created: 19.04.2005, KP
-		Description: Callback function for menu item minimize track
+		Callback function for menu item minimize track
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -471,24 +454,21 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onMenuSetBegin(self, evt):
 		"""
-		Created: 18.04.2005, KP
-		Description: Callback function for menu item begin at end of previous
+		Callback function for menu item begin at end of previous
 		"""
 		active = self.control.getSelectedTrack()
 		self.control.timeline.setBeginningToPrevious(active)
 		
 	def onMenuSetEnd(self, evt):
 		"""
-		Created: 18.04.2005, KP
-		Description: Callback function for menu item end at beginning of next
+		Callback function for menu item end at beginning of next
 		"""
 		active = self.control.getSelectedTrack()
 		self.control.timeline.setEndToNext(active)
 		
 	def onMenuSetMaintainUp(self, evt):
 		"""
-		Created: 18.04.2005, KP
-		Description: Set the track to maintain up direction
+		Set the track to maintain up direction
 		"""
 		active = self.control.getSelectedTrack()
 		if not active:
@@ -499,8 +479,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onMenuClosedSpline(self, evt):
 		"""
-		Created: 14.04.2005, KP
-		Description: Callback function for menu item camera path is closed
+		Callback function for menu item camera path is closed
 		"""
 		track = self.control.getSelectedTrack()
 		if hasattr(track, "setClosed"):
@@ -508,8 +487,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onMenuRemoveTrack(self, evt):
 		"""
-		Created: 18.07.2005, KP
-		Description: Callback function for removing a track
+		Callback function for removing a track
 		"""
 		track = self.control.getSelectedTrack()
 		if track:
@@ -518,8 +496,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def onMenuRemoveTrackItem(self, evt):
 		"""
-		Created: 31.01.2006, KP
-		Description: Callback function for removing an item from a track
+		Callback function for removing an item from a track
 		"""
 		track = self.control.getSelectedTrack()
 		if track:
@@ -528,37 +505,32 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onMenuAddSplineTrack(self, evt):
 		"""
-		Created: 13.04.2005, KP
-		Description: Callback function for adding camera path track
+		Callback function for adding camera path track
 		"""
 		self.control.timeline.addSplinepointTrack("")
 
 	def onMenuAddKeyframeTrack(self, evt):
 		"""
-		Created: 18.04.2005, KP
-		Description: Callback function for adding keyframe track
+		Callback function for adding keyframe track
 		"""
 		self.control.timeline.addKeyframeTrack("")
 		
 	def onMenuAddTimepointTrack(self, evt):
 		"""
-		Created: 13.04.2005, KP
-		Description: Callback function for adding timepoint track
+		Callback function for adding timepoint track
 		"""
 		self.control.timeline.addTrack("")
 				
 	def onMenuCloseProject(self, event):
 		"""
-		Created: 24.06.2005, KP
-		Description: Reset the animator
+		Reset the animator
 		"""
 		self.control.resetAnimator()
 
 
 	def onMenuOpenProject(self, event):
 		"""
-		Created: 06.04.2005, KP
-		Description: Callback function for opening a project
+		Callback function for opening a project
 		"""
 		wc = "Rendering project (*.rxd)|*.rxd"
 		name = GUI.Dialogs.askOpenFileName(self, "Open rendering project", wc, 0)
@@ -567,8 +539,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		
 	def onMenuSaveProject(self, event):
 		"""
-		Created: 06.04.2005, KP
-		Description: Callback function for saving a project
+		Callback function for saving a project
 		"""
 		wc = "Rendering Project (*.rxd)|*.rxd"
 		name = None
@@ -580,8 +551,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 10.2.2005, KP
-		Description: Method used to set the dataunit we're processing
+		Method used to set the dataunit we're processing
 		"""
 		#self.timepointSelection.setDataUnit(dataUnit)
 		#self.timelinePanel.setDataUnit(dataUnit)

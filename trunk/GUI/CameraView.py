@@ -70,8 +70,7 @@ class CameraView(wx.StaticText):
 	def viewCamera(self, obj, evt, args):
 		"""
 		Method: viewCamera
-		Created: 12.12.2005, KP
-		Description: A method to update the displayed vtkCamera
+		A method to update the displayed vtkCamera
 		"""  
 		cam = args
 		lst = []

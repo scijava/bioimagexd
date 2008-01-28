@@ -49,8 +49,7 @@ class FlexConfigParser(ConfigParser.ConfigParser):
 	"""
 	def set(self, section, option, value):
 		"""
-		Created: 29.08.2007, KP
-		Description: tranform the value
+		tranform the value
 		"""
 		if type(value) == types.UnicodeType:
 			ConfigParser.ConfigParser.set(self, section, option, codecs.encode(value, "ascii", "xmlcharrefreplace"))
@@ -74,15 +73,13 @@ class FlexConfigParser(ConfigParser.ConfigParser):
 			
 	def optionxform(self, optionstr):
 		"""
-		Created: KP
-		Description: A method used to transform the option names. Does not transform the names in any way
+		A method used to transform the option names. Does not transform the names in any way
 		"""
 		return optionstr
 
 def getConfiguration():
 	"""
-	Created: Unknown date, KP
-	Description: Returns the current configuration
+	Returns the current configuration
 	"""
 	global conf
 	if not conf:
@@ -91,8 +88,7 @@ def getConfiguration():
 
 def getNumberTupleFromString(inString):
 	"""
-	Created: 23.08.07, TW
-	Description: Takes a string of form '(number, number ..., number)' 
+	Takes a string of form '(number, number ..., number)' 
 				 and returns a tuple consisting of the numbers.
 	"""
 	withoutBraces = inString[1:-1]
@@ -175,15 +171,13 @@ class Configuration:
 
 	def getConfigurationFile(self):
 		"""
-		Created: 27.09.2007, KP
-		Description: return the configuration file
+		return the configuration file
 		"""
 		return self.configFile
 
 	def writeSettings(self):
 		"""
-		Created: 12.03.2005, KP
-		Description: A method to write out the settings
+		A method to write out the settings
 		"""
 		filePointer = codecs.open(self.configFile, "w","utf-8")
 		self.parser.write(filePointer)
@@ -191,8 +185,7 @@ class Configuration:
 
 	def insertModuleDirectories(self):
 		"""
-		Created: Unknown, KP
-		Description: A method that adds the programs subdirectories into the system path
+		A method that adds the programs subdirectories into the system path
 		"""
 		self.insertPath(self.getPath("lib"))
 		self.insertPath(self.getPath("GUI"))
@@ -200,8 +193,7 @@ class Configuration:
 		
 	def processPathSettings(self):
 		"""
-		Created: Unknown, KP
-		Description: A method that inserts the correct bin- and wrapping-folders in the system path
+		A method that inserts the correct bin- and wrapping-folders in the system path
 		""" 
 		vtkdir = self.getConfigItem("VTKPath", "VTK")
 		if self.getConfigItem("RemoveOldVTK", "VTK") and os.path.isdir(vtkdir):
@@ -214,8 +206,7 @@ class Configuration:
 		
 	def setConfigItem(self, configItem, section, value, write = 1):
 		"""
-		Created: Unknown, KP
-		Description: A method that writes a setting in the confiuration, 
+		A method that writes a setting in the confiuration, 
 		creating the section for it if needed 
 		"""
 		self.configItems[configItem] = value
@@ -227,8 +218,7 @@ class Configuration:
 
 	def readConfigItem(self, configItem, section):
 		"""
-		Created: Unknown, KP
-		Description: Tries to read a configuration option, returns none if it is not available 
+		Tries to read a configuration option, returns none if it is not available 
 		""" 
 		try:
 			configItemvalue = self.parser.get(section, configItem)
@@ -239,8 +229,7 @@ class Configuration:
 		
 	def getConfigItem(self, configItem, section):
 		"""
-		Created: Unknown, KP
-		Description: Returns configItem from the configItems list if possible
+		Returns configItem from the configItems list if possible
 		otherwise tries to read it from the configuration
 		""" 
 		if not configItem in self.configItems:
@@ -253,8 +242,7 @@ class Configuration:
 		
 	def readPathSettings(self):
 		"""
-		Created: Unknown, KP
-		Description: Reads the necessary paths from the configuration file 
+		Reads the necessary paths from the configuration file 
 		""" 
 		self.readConfigItem("RemoveOldVTK", "VTK")
 		self.readConfigItem("VTKPath", "VTK")
@@ -265,15 +253,13 @@ class Configuration:
 		
 	def setCurrentDir(self, path):
 		"""
-		Created: Unknown, KP
-		Description: Sets the current directory
+		Sets the current directory
 		"""
 		self.installPath = path
 
 	def getPath(self, path):
 		"""
-		Created: Unknown, KP
-		Description: Returns a valid path based on the parameter  
+		Returns a valid path based on the parameter  
 		""" 
 		if type(path) == types.StringType:
 			path = [path]
@@ -281,8 +267,7 @@ class Configuration:
 	@staticmethod	
 	def removeWithName(names):
 		"""
-		Created: Unknown, KP
-		Description: remove modules with the given names from the system path
+		remove modules with the given names from the system path
 		"""
 		removethese = []
 		for directory in sys.path:
@@ -298,8 +283,7 @@ class Configuration:
 	@staticmethod		
 	def insertPath(path, beforeIndex = 0):
 		"""
-		Created: Unknown, KP
-		Description: Insert path in the system path before index n
+		Insert path in the system path before index n
 		"""
 		sys.path.insert(beforeIndex, path)
 

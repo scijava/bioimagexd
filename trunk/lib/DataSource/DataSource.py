@@ -43,37 +43,32 @@ class DataWriter:
 	"""
 	def __init__(self):
 		"""
-		Created: 26.03.2005
-		Description: Constructor
+		Constructor
 		"""    
 		pass
 		
 	def sync(self):
 		"""
-		Created: 26.03.2005
-		Description: Write pending imagedata to disk
+		Write pending imagedata to disk
 		"""    
 		raise "Abstract method sync() called"
 	
 	def write(self):
 		"""
-		Created: 26.03.2005
-		Description: Write the data to disk
+		Write the data to disk
 		"""    
 		raise "Abstract method write() called"	  
 		
 	def addImageData(self, imageData):
 		"""
-		Created: 26.03.2005, KP
-		Description: Add a vtkImageData object to be written to the disk.
+		Add a vtkImageData object to be written to the disk.
 		"""    
 		raise "Abstract method addImageData"
 
 	def addImageDataObjects(self, imageDataList):		
 		"""
 		Method: addImageDataObjects(imageDataList)
-		Created: 26.03.2005, KP
-		Description: Adds a list of vtkImageData objects to be written to the
+		Adds a list of vtkImageData objects to be written to the
 					  disk. Uses addVtiObject to do all the dirty work
 		"""
 		raise "Abstract method addImageDataObjects called"
@@ -85,8 +80,7 @@ class DataSource:
 	"""
 	def __init__(self):
 		"""
-		Created: 17.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.system = platform.system()
 		
@@ -132,15 +126,13 @@ class DataSource:
 		
 	def setResampling(self, status):
 		"""
-		Created: 22.08.2007, KP
-		Description: enable / disable resampling
+		enable / disable resampling
 		"""
 		self.resampling = status
 			
 	def destroy(self):
 		"""
-		Created: 27.1.2007, KP
-		Description: destroy self
+		destroy self
 		"""
 		del self.reader
 		for i in self.vtkFilters:
@@ -149,29 +141,25 @@ class DataSource:
 			
 	def setPath(self, path):
 		"""
-		Created: 17.07.2006, KP
-		Description: Set the path this datasource was created from
+		Set the path this datasource was created from
 		"""   
 		self.filePath = path
 
 	def getPath(self):
 		"""
-		Created: 17.07.2006, KP
-		Description: Return the path this datasource was created from
+		Return the path this datasource was created from
 		"""   
 		return self.filePath
 		
 	def setMask(self, mask):
 		"""
-		Created: 20.06.2006, KP
-		Description: Set the mask applied to this dataunit
+		Set the mask applied to this dataunit
 		"""   
 		self.mask = mask
 		
 	def setResampleDimensions(self, dims):
 		"""
-		Created: 1.09.2005, KP
-		Description: Set the resample dimensions
+		Set the resample dimensions
 		"""
 		Logging.info("Setting dimensions of resampled image to ",dims,kw="datasource")
 		self.resampleDims = [int(dimension) for dimension in dims]
@@ -179,22 +167,19 @@ class DataSource:
 
 	def getOriginalScalarRange(self):
 		"""
-		Created: 12.04.2006, KP
-		Description: Return the original scalar range for this dataset
+		Return the original scalar range for this dataset
 		"""
 		return self.originalScalarRange
 		
 	def getOriginalDimensions(self):
 		"""
-		Created: 12.04.2006, KP
-		Description: Return the original scalar range for this dataset
+		Return the original scalar range for this dataset
 		"""
 		return self.originalDimensions
 		
 	def getResampleFactors(self):
 		"""
-		Created: 07.04.2006, KP
-		Description: Return the factors for the resampling
+		Return the factors for the resampling
 		"""
 		if not self.resampleFactors and self.resampleDims:		  
 			if not self.originalDimensions:
@@ -211,8 +196,7 @@ class DataSource:
 		
 	def getResampledVoxelSize(self):
 		"""
-		Created: KP
-		Description: Return the voxel size for the data after resampling has taken place
+		Return the voxel size for the data after resampling has taken place
 		"""
 		if not self.resampleDims:
 			return None
@@ -224,8 +208,7 @@ class DataSource:
 		
 	def getResampleDimensions(self):
 		"""
-		Created: 11.09.2005, KP
-		Description: Get the resample dimensions
+		Get the resample dimensions
 		"""
 		if self.autoResampleLimitDimensions and not self.resampleDims:
 			dims = self.getDimensions()
@@ -237,8 +220,7 @@ class DataSource:
 	@staticmethod
 	def getCacheKey(datafilename, chName, purpose):
 		"""
-		Created: 07.11.2006, KP
-		Description: Return a unique name based on a filename and channel name that can be used as 
+		Return a unique name based on a filename and channel name that can be used as 
 					 a filename for the MIP
 		"""
 		filename = datafilename.replace("\\", "_")
@@ -248,8 +230,7 @@ class DataSource:
 		
 	def getFromCache(self, datafilename, chName, purpose):
 		"""
-		Created: 07.11.2006, KP
-		Description: Retrieve a MIP image from cache
+		Retrieve a MIP image from cache
 		"""
 		key = self.getCacheKey(datafilename, chName, purpose)
 		directory = scripting.get_preview_dir()
@@ -264,8 +245,7 @@ class DataSource:
 		
 	def storeToCache(self, imagedata, datafilename, chName, purpose):
 		"""
-		Created: 07.11.2006, KP
-		Description: Store an image to a cache
+		Store an image to a cache
 		"""
 		if imagedata.GetScalarType() not in [3, 5]:
 			return
@@ -281,8 +261,7 @@ class DataSource:
 		
 	def getMIPdata(self, n):
 		"""
-		Created: 05.06.2006, KP
-		Description: Return a small resampled dataset of which a small
+		Return a small resampled dataset of which a small
 					 MIP can be created.
 		"""
 		return self.getDataSet(n)
@@ -293,15 +272,13 @@ class DataSource:
 		
 	def getIntensityScale(self):
 		"""
-		Created: 27.04.2007, KP
-		Description: return the shift and scale applied to the data as tuple
+		return the shift and scale applied to the data as tuple
 		"""
 		return self.intensityShift, self.intensityScale
 		
 	def setIntensityScale(self, shift, scale):
 		"""
-		Created: 12.04.2006, KP
-		Description: Set the factors for scaling and shifting the intensity of
+		Set the factors for scaling and shifting the intensity of
 					 the data. Used for emphasizing certain range of intensities
 					 in > 8-bit data.
 		"""
@@ -312,8 +289,7 @@ class DataSource:
 	
 	def getIntensityScaledData(self, data):
 		"""
-		Created: 12.04.2006, KP
-		Description: Return the data shifted and scaled to appropriate intensity range
+		Return the data shifted and scaled to appropriate intensity range
 		"""
 		if not self.explicitScale:
 			return data
@@ -345,8 +321,7 @@ class DataSource:
 	
 	def getResampledData(self, data, n, resampleToDimensions = None):
 		"""
-		Created: 1.09.2005, KP
-		Description: Return the data resampled to given dimensions
+		Return the data resampled to given dimensions
 		"""
 		if self.resampling and not scripting.resamplingDisabled:
 			currentResamplingDimensions = self.getResampleDimensions()
@@ -394,62 +369,54 @@ class DataSource:
 
 	def getTimeStamp(self, timepoint):
 		"""
-		Created: 02.07.2007, KP
-		Description: return the timestamp for given timepoint
+		return the timestamp for given timepoint
 		"""
 		return timepoint
 
 	def getEmissionWavelength(self):
 		"""
-		Created: 07.04.2006, KP
-		Description: Returns the emission wavelength used to image this channel
+		Returns the emission wavelength used to image this channel
 		managed by this DataSource
 		"""
 		return 0
 			
 	def getExcitationWavelength(self):
 		"""
-		Created: 07.04.2006, KP
-		Description: Returns the excitation wavelength used to image this channel
+		Returns the excitation wavelength used to image this channel
 		managed by this DataSource
 		"""
 		return 0
 		
 	def getNumericalAperture(self):
 		"""
-		Created: 07.04.2006, KP
-		Description: Returns the numerical aperture used to image this channel
+		Returns the numerical aperture used to image this channel
 		managed by this DataSource
 		"""
 		return 0
 		
 	def getDataSetCount(self):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the number of individual DataSets ( = time points)
+		Returns the number of individual DataSets ( = time points)
 		managed by this DataSource
 		"""
 		raise "Abstract method getDataSetCount() in DataSource called"
 
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""    
 		raise "Abstract method getFileName() called in DataSource"
 
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the DataSet at the specified index
+		Returns the DataSet at the specified index
 		Parameters:   i		  The index
 		"""
 		raise "Abstract method getDataSet() in DataSource called"
 
 	def getName(self):
 		"""
-		Created: 18.11.2004, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		raise "Abstract method getName() in DataSource called"
@@ -457,16 +424,14 @@ class DataSource:
 		
 	def convertFileName(self, filename):
 		"""
-		Created: 14.1.2008, KP
-		Description: convert the filename to proper encoding
+		convert the filename to proper encoding
 		"""
 		if self.system == "Windows": return filename.encode('mbcs')
 		return filename.encode(sys.getfilesystemencoding())
 		
 	def getDimensions(self):
 		"""
-		Created: 14.12.2004, KP
-		Description: Returns the (x, y, z) dimensions of the datasets this 
+		Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		"""
 		if self.resampleDims and not scripting.resamplingDisabled:
@@ -477,16 +442,14 @@ class DataSource:
 		
 	def getScalarRange(self):
 		"""
-		Created: 28.05.2005, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		self.getBitDepth()
 		return self.scalarRange
 		
 	def getBitDepth(self):
 		"""
-		Created: 28.05.2005, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		if not self.bitdepth:
 			
@@ -517,8 +480,7 @@ class DataSource:
 	
 	def getSingleComponentBitDepth(self):
 		"""
-		Created: 13.06.2007, KP
-		Description: return the bit depth of single component of data
+		return the bit depth of single component of data
 		"""
 		if not self.singleBitDepth:
 			self.getBitDepth()
@@ -526,7 +488,6 @@ class DataSource:
 		
 	def uniqueId(self):
 		"""
-		Created: 07.02.2007, KP
-		Description: return a string identifying the dataset
+		return a string identifying the dataset
 		"""
 		return self.getFileName()

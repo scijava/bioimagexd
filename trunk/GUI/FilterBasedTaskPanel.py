@@ -43,8 +43,7 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 	"""
 	def __init__(self, parent, tb, wantNotebook = 1):
 		"""
-		Created: 14.08.2006, KP
-		Description: Initialization
+		Initialization
 		Parameters:
 				root    Is the parent widget of this window
 		"""
@@ -56,16 +55,14 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 
 	def filterModified(self, filter):
 		"""
-		Created: 14.05.2006, KP
-		Description: A callback for when filter parameters change
+		A callback for when filter parameters change
 		"""
 		if self.filterEditor:
 			self.filterEditor.setModified(1)
 		  
 	def updateSettings(self, force = 0):
 		"""
-		Created: 03.11.2004, KP
-		Description: A method used to set the GUI widgets to their proper values
+		A method used to set the GUI widgets to their proper values
 		"""
 		if self.dataUnit:
 			get = self.settings.get
@@ -87,24 +84,21 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 				
 	def updateFilterData(self):
 		"""
-		Created: 13.12.2004, JV
-		Description: A method used to set the right values in dataset
+		A method used to set the right values in dataset
 					 from filter GUI widgets
 		"""
 		self.settings.set("FilterList", self.filterList)
 		
 	def doProcessingCallback(self, *args):
 		"""
-		Created: 14.08.2006, KP
-		Description: A callback for the button "Manipulation Dataset Series"
+		A callback for the button "Manipulation Dataset Series"
 		"""
 		self.updateFilterData()
 		TaskPanel.TaskPanel.doOperation(self)
 
 	def doPreviewCallback(self, event = None, *args):
 		"""
-		Created: 14.08.2006, KP
-		Description: A callback for the button "Preview" and other events
+		A callback for the button "Preview" and other events
 					 that wish to update the preview
 		"""
 		self.updateFilterData()

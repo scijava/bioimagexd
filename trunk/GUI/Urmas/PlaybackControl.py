@@ -50,8 +50,7 @@ class PlaybackControl(wx.Panel):
 	"""
 	def __init__(self, parent, n):    
 		"""
-		Created: 25.01.2006, KP
-		Description: Method that initializes the class
+		Method that initializes the class
 		"""        
 		wx.Panel.__init__(self, parent, -1, size = (1024, 34))
 		#wx.SashLayoutWind#ow.__init__(self,parent,-1)
@@ -127,16 +126,14 @@ class PlaybackControl(wx.Panel):
 		
 	def onSetPlay(self, obj, evt, *args):
 		"""
-		Created: 30.01.2006, KP
-		Description: A callback for setting the control panel to play mode
+		A callback for setting the control panel to play mode
 		"""     
 		self.onPlay(None, no_events = 1)
 	
 		
 	def bindTimeslider(self, method, all = 0):
 		"""
-		Created: 15.08.2005, KP
-		Description: Bind the timeslider to a method
+		Bind the timeslider to a method
 		"""     
 		if not all and platform.system() in ["Windows", "Darwin"]:
 			self.timeslider.Unbind(wx.EVT_SCROLL_ENDSCROLL)
@@ -150,16 +147,14 @@ class PlaybackControl(wx.Panel):
 		
 	def delayedTimesliderEvent(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be shown
+		Set the timepoint to be shown
 		"""
 		self.changing = time.time()
 		wx.FutureCall(200, lambda e = event, s = self:s.timesliderMethod(e))        
 			   
 	def onFirstFrame(self, evt):
 		"""
-		Created: 09.10.2006, KP
-		Description: Go to the first frames
+		Go to the first frames
 		"""
 		self.timeslider.SetValue(0)
 		if self.timesliderMethod:
@@ -167,8 +162,7 @@ class PlaybackControl(wx.Panel):
 		
 	def onLastFrame(self, evt):
 		"""
-		Created: 09.10.2006, KP
-		Description: Go to the first frames
+		Go to the first frames
 		"""
 		self.timeslider.SetValue(self.rangeMax)    
 		if self.timesliderMethod:
@@ -176,8 +170,7 @@ class PlaybackControl(wx.Panel):
 			
 	def onNextFrame(self, evt):
 		"""
-		Created: 09.10.2006, KP
-		Description: Go to the next frame
+		Go to the next frame
 		"""
 		n = self.timeslider.GetValue()
 		if n + 1 <= self.rangeMax:
@@ -187,8 +180,7 @@ class PlaybackControl(wx.Panel):
 		
 	def onPrevFrame(self, evt):
 		"""
-		Created: 09.10.2006, KP
-		Description: Go to the prev frame
+		Go to the prev frame
 		"""
 		n = self.timeslider.GetValue()
 		if n > 0:        
@@ -198,8 +190,7 @@ class PlaybackControl(wx.Panel):
 		
 	def onPlay(self, evt, no_events = 0):
 		"""
-		Created: 25.01.2006, KP
-		Description: Callback for when the play icon is pressed
+		Callback for when the play icon is pressed
 		"""
 		self.pauseButton.Enable(1)
 		self.playButton.Enable(0)
@@ -208,8 +199,7 @@ class PlaybackControl(wx.Panel):
 	
 	def onPause(self, evt, no_events = 0):
 		"""
-		Created: 25.01.2006, KP
-		Description: Callback for when the pause icon is pressed
+		Callback for when the pause icon is pressed
 		"""
 		self.playButton.Enable(1)
 		self.pauseButton.Enable(0)
@@ -218,22 +208,19 @@ class PlaybackControl(wx.Panel):
 			
 	def onSetTimeslider(self, obj, event, tp):
 		"""
-		Created: 21.08.2005, KP
-		Description: Update the timeslider according to an event
+		Update the timeslider according to an event
 		"""
 		self.timeslider.SetValue(tp) 
 	def onSetTimeRange(self, obj, event, r1, r2):
 		"""
-		Created: 15.08.2005, KP
-		Description: Set the range that the time slider shows
+		Set the range that the time slider shows
 		"""        
 		self.timeslider.SetRange(r1, r2)
 		self.timeslider.Refresh()   
 		
 	def onSetFrames(self, obj, event, r1):
 		"""
-		Created: 09.10.2006, KP
-		Description: Set the range that the time slider shows based on the number of frames
+		Set the range that the time slider shows based on the number of frames
 		"""        
 		self.rangeMax = r1
 		self.timeslider.SetRange(0, r1)
@@ -242,8 +229,7 @@ class PlaybackControl(wx.Panel):
 
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
-		Created: 21.06.2005, KP
-		Description: Update the timepoint according to an event
+		Update the timepoint according to an event
 		"""
 		curr = self.timeslider.GetValue()
 		if curr - 1 != timepoint:

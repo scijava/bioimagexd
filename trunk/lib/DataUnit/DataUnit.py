@@ -42,8 +42,7 @@ class DataUnit:
 	"""
 	def __init__(self, dataUnitName = "", initToNone = 1):
 		"""
-		Created: 03.11.2004, JM
-		Description: Constructor
+		Constructor
 		Parameters: dataUnitName, Name for the DataUnit, default to ""
 		"""
 		self.dataUnitName = dataUnitName
@@ -81,22 +80,19 @@ class DataUnit:
 
 	def setCacheKey(self, key):
 		"""
-		Created: 23.10.2006, KP
-		Description: Set the key under which this dataunit is stored in the cache
+		Set the key under which this dataunit is stored in the cache
 		"""
 		self.cacheKey = key
 
 	def getCacheKey(self):
 		"""
-		Created: 23.10.2006, KP
-		Description: Get the key under which this dataunit is stored in the cache
+		Get the key under which this dataunit is stored in the cache
 		"""
 		return self.cacheKey
 
 	def destroySelf(self):
 		"""
-		Created: 27.1.2007, KP
-		Description: finalize self
+		finalize self
 		"""
 		self.dataSource.destroy()
 		del self.dataSource
@@ -107,8 +103,7 @@ class DataUnit:
 
 	def resetSettings(self):
 		"""
-		Created: 23.10.2006, KP
-		Description: Reset the settings of this dataunit. This is done for example after a task
+		Reset the settings of this dataunit. This is done for example after a task
 					 has been closed to reset the dataunit back to it's original state
 		"""
 		self.settings.resetSettings()
@@ -116,30 +111,26 @@ class DataUnit:
 		
 	def setMask(self, mask):
 		"""
-		Created: 20.06.2006, KP
-		Description: Set the mask applied to this dataunit
+		Set the mask applied to this dataunit
 		"""   
 		self.dataSource.setMask(mask)
 
 	def isProcessed(self):
 		"""
-		Created: 31.05.2005, KP
-		Description: A method for querying whether this dataset is a processed one
+		A method for querying whether this dataset is a processed one
 		"""    
 		return 0
 
 
 	def getDataSource(self):
 		"""
-		Created: 12.04.2006, KP
-		Description: Returns the data source of this dataset
+		Returns the data source of this dataset
 		"""		   
 		return self.dataSource
 		
 	def getMIP(self, mipTimepoint, color, small = 0, noColor = 0):
 		"""
-		Created: 01.09.2005, KP
-		Description: Returns MIP of the given timepoint
+		Returns MIP of the given timepoint
 		"""		   
 		if self.mip and self.mipTimepoint == mipTimepoint:
 			#Logging.info("Using existing MIP")
@@ -166,24 +157,21 @@ class DataUnit:
 	
 	def storeToCache(self, imagedata, timepoint, purpose):
 		"""
-		Created: 14.11.2006, KP
-		Description: Store any image data along with it's timepoint and purpose to the cached
+		Store any image data along with it's timepoint and purpose to the cached
 		"""
 		self.dataSource.storeToCache(imagedata, self.getFileName(), self.getName(), 
 			"%s_tp%d" % (purpose, timepoint))
 
 	def getFromCache(self, timepoint, purpose):
 		"""
-		Created: 14.11.2006, KP
-		Description: Retrieve from cache any image data by it's purpose and timepoint
+		Retrieve from cache any image data by it's purpose and timepoint
 		"""
 		return self.dataSource.getFromCache(self.getFileName(), self.getName(), "%s_tp%d" % (purpose, timepoint))
 		
 		
 	def resetColorTransferFunction(self):
 		"""
-		Created: 12.10.2006, KP
-		Description: A method that will reset the CTF from the datasource.
+		A method that will reset the CTF from the datasource.
 					 This is useful e.g. when scaling the intensities of the	
 					 dataset
 		"""
@@ -194,8 +182,7 @@ class DataUnit:
 
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of this object
+		Returns the ctf of this object
 		"""
 		
 		if not self.dataSource and not self.ctf:
@@ -210,16 +197,14 @@ class DataUnit:
 	
 	def setSettings(self, settings):
 		"""
-		Created: 27.03.2005, KP
-		Description: Sets the settings object of this dataunit
+		Sets the settings object of this dataunit
 		"""
 		self.settings = settings
 		self.updateSettings()
 	
 	def updateSettings(self):
 		"""
-		Created: 28.03.2005, KP
-		Description: Sets the settings of this object based on the datasource
+		Sets the settings of this object based on the datasource
 		"""
 		if not self.settings:
 			Logging.info("No settings present, won't update", kw = "dataunit")
@@ -245,22 +230,19 @@ class DataUnit:
 			
 	def getSettings(self):
 		"""
-		Created: 27.03.2005, KP
-		Description: Returns the settings object of this dataunit
+		Returns the settings object of this dataunit
 		"""
 		return self.settings
 		
 	def getName(self):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the name of this DataUnit
+		Returns the name of this DataUnit
 		"""
 		return self.dataUnitName
 
 	def setName(self, dataUnitName):
 		"""
-		Created: 8.12.2004, JM
-		Description: Sets the name of this dataunit
+		Sets the name of this dataunit
 		"""
 		self.dataUnitName = dataUnitName
 		if self.settings:
@@ -268,8 +250,7 @@ class DataUnit:
  
 	def getTimepoint(self, timepoint):
 		"""
-		Created: 17.11.2004, KP
-		Description: Returns the requested time point
+		Returns the requested time point
 		Parameters:
 				n		The timepoint we need to return
 		"""
@@ -282,15 +263,13 @@ class DataUnit:
 
 	def getNumberOfTimepoints(self):
 		"""
-		Created: 10.11.2004, JM
-		Description: Returns the length of this DataUnit
+		Returns the length of this DataUnit
 		"""
 		return self.length
 
 	def setDataSource(self, dataSource):
 		"""
-		Created: 09.11.2004, JM
-		Description: Sets a DataSource for this SourceDataUnit
+		Sets a DataSource for this SourceDataUnit
 		Parameters: dataSource	A DataSource to manage actual
 								image data located on disk
 		"""
@@ -317,8 +296,7 @@ class DataUnit:
 
 	def getFileName(self):
 		"""
-		Created: 21.03.2006, KP
-		Description: Return the path to the file this dataunit represents
+		Return the path to the file this dataunit represents
 		"""
 		return self.dataSource.getFileName()
 		

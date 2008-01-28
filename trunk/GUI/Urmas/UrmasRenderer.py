@@ -55,14 +55,12 @@ def distance(p1, p2):
 
 class UrmasRenderer:
 	"""
-	Created: 04.04.2005, KP
-	Description: This class takes a datastructure representation of the 
+	This class takes a datastructure representation of the 
 				 timeline and renders it to a movie or set of images.
 	"""
 	def __init__(self, control):
 		"""
-		Created: 04.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""    
 		self.control = control
 		self.splineEditor = None
@@ -99,8 +97,7 @@ class UrmasRenderer:
 	   
 	def onStopPlayback(self, obj, evt, *args):
 		"""
-		Created: 30.1.2006, KP
-		Description: A callback to stop rendering if it's currently underway
+		A callback to stop rendering if it's currently underway
 					 in a preview mode
 		"""        
 		if self.rendering and self.currentIsPreview:
@@ -112,8 +109,7 @@ class UrmasRenderer:
 	  
 	def onPlayPlayback(self, obj, evt, *args):
 		"""
-		Created: 30.1.2006, KP
-		Description: A callback to resume rendering if it's currently underway
+		A callback to resume rendering if it's currently underway
 					 but paused
 		"""  
 		
@@ -135,23 +131,20 @@ class UrmasRenderer:
 			
 	def onPausePlayback(self, obj, evt, *args):
 		"""
-		Created: 30.1.2006, KP
-		Description: A callback to pause rendering if it's currently underway
+		A callback to pause rendering if it's currently underway
 		"""  
 		if self.rendering:
 			self.pauseFlag = 1
 		
 	def isPaused(self):
 		"""
-		Created: 30.1.2006, KP
-		Description: A query function that tells whether the rendering is paused
+		A query function that tells whether the rendering is paused
 		"""            
 		return self.pausedRendering
 		
 	def onStopRendering(self, obj, evt, *args):
 		"""
-		Created: 30.1.2006, KP
-		Description: Stop any rendering we're doing and exit
+		Stop any rendering we're doing and exit
 		"""        
 		self.stopFlag = 1
 		if self.renderingPreviewFlag:
@@ -160,8 +153,7 @@ class UrmasRenderer:
 			
 	def startAnimation(self, control):
 		"""
-		Created: 20.04.2005, KP
-		Description: Initialize the rendering
+		Initialize the rendering
 		"""
 		self.control = control
 		self.dataUnit = control.getDataUnit()
@@ -177,8 +169,7 @@ class UrmasRenderer:
 		
 	def render(self, control, preview = 0, **kws):
 		"""
-		Created: 04.04.2005, KP
-		Description: Render the timeline
+		Render the timeline
 		"""    
 		self.startAnimation(self.control)
 		self.lastSplinePosition = None
@@ -235,8 +226,7 @@ class UrmasRenderer:
 	def doRenderFrames(self, preview):
 		"""
 		Class: doRenderFrames()
-		Created: 31.01.2006, KP
-		Description: Method that only does the rendering.
+		Method that only does the rendering.
 					 This is separate from render() to make it
 					 easier to pause/resume rendering
 		""" 
@@ -286,8 +276,7 @@ class UrmasRenderer:
 		
 	def initializeCameraInterpolator(self):
 		"""
-		Created: 18.08.2005, KP
-		Description: Initialize the camera interpolator if there are keyframes
+		Initialize the camera interpolator if there are keyframes
 		"""           
 		tracks = self.getKeyframes()
 		if not tracks:
@@ -313,8 +302,7 @@ class UrmasRenderer:
 		
 	def renderPreviewAt(self, evt, obj, timepos):
 		"""
-		Created: 15.08.2005, KP
-		Description: Renders a preview at given time position
+		Renders a preview at given time position
 		"""           
 		self.initializeCameraInterpolator()
 		if not self.splineEditor:
@@ -345,8 +333,7 @@ class UrmasRenderer:
 		 
 	def getTimepointAt(self, time):
 		"""
-		Created: 05.04.2005, KP
-		Description: Returns the timepoint used at given time
+		Returns the timepoint used at given time
 		Parameters:
 		time    The current time in the timeline
 		"""            
@@ -361,16 +348,14 @@ class UrmasRenderer:
 		
 	def getKeyframes(self):
 		"""
-		Created: 18.08.2005, KP
-		Description: Return the keyframes if there is a keyframe track
+		Return the keyframes if there is a keyframe track
 		"""
 		tracks = self.control.timeline.getKeyframeTracks()
 		return tracks
 		
 	def getSplinepointsAt(self, time, get_first = 0):
 		"""
-		Created: 05.04.2005, KP
-		Description: Returns two splinepoints between wich the camera is located at this time
+		Returns two splinepoints between wich the camera is located at this time
 		Parameters:
 		time    The current time in the timeline
 		"""            
@@ -403,8 +388,7 @@ class UrmasRenderer:
 		
 	def renderFrame(self, frame, timepos, spf, preview = 0, use_cam = 0):
 		"""
-		Created: 04.04.2005, KP
-		Description: This renders a given frame
+		This renders a given frame
 		Parameters:
 		frame   The frame we're rendering
 		time    The current time in the timeline
@@ -537,8 +521,7 @@ class UrmasRenderer:
 		
 	def setCameraParameters(self, cam, renderer, point, focal):
 		"""
-		Created: 04.04.2005, KP
-		Description: Sets the camera parameters
+		Sets the camera parameters
 		"""
 		if point:
 			cam.SetPosition(point)        

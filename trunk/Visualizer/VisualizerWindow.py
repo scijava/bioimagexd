@@ -42,8 +42,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 	"""
 	def __init__(self, parent, **kws):
 		"""
-		Created: 3.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""    
 		kws["stereo"] = 1
 		wxVTKRenderWindowInteractor.__init__(self, parent, -1, **kws)
@@ -67,8 +66,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
 	def enable(self, flag):
 		"""
-		Created: 02.06.2005, KP
-		Description: Enable / Disable updates
+		Enable / Disable updates
 		"""
 		self.enabled = flag
 		
@@ -77,16 +75,14 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def Render(self):
 		"""
-		Created: 05.06.2005, KP
-		Description: If this windows is enabled, call the super class Render()
+		If this windows is enabled, call the super class Render()
 		"""
 		if self.enabled:
 			wxVTKRenderWindowInteractor.Render(self)
 
 	def initializeVTK(self):
 		"""
-		Created: 29.04.2005, KP
-		Description: initialize the vtk renderer
+		initialize the vtk renderer
 		"""
 		self.keyPressEvents = []
 		self.iren = iren = self.GetRenderWindow().GetInteractor()
@@ -103,8 +99,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 	
 	def onKeypress(self, obj, evt):
 		"""
-		Created: 02.11.2005
-		Description: Catch keypresses from the window and do actions
+		Catch keypresses from the window and do actions
 		"""    
 		key = obj.GetKeyCode()
 		words = {"j": "Joystick", "a": "Actor", "c": "Camera", "t": "Trackball"}
@@ -135,15 +130,13 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def getZoomFactor(self):
 		"""
-		Created: 22.07.2005
-		Description: Set the view according to given params
+		Set the view according to given params
 		"""
 		return self.zoomFactor
 		
 	def setZoomFactor(self, factor):
 		"""
-		Created: 22.07.2005
-		Description: Set the view according to given params
+		Set the view according to given params
 		"""
 		cam = self.renderer.GetActiveCamera()
 		if self.origParallelScale != None:			  
@@ -156,8 +149,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def setView(self, params):
 		"""
-		Created: 22.07.2005
-		Description: Set the view according to given params
+		Set the view according to given params
 		"""
 		self.getRenderer()
 		cam = self.renderer.GetActiveCamera()
@@ -171,8 +163,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
 	def zoomToRubberband(self):
 		"""
-		Created: 30.04.2005, KP
-		Description: Zoom to rubberband
+		Zoom to rubberband
 		"""
 		self.rubberband = 1
 		self.oldStyle = self.iren.GetInteractorStyle()
@@ -180,15 +171,13 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 	
 	def onRenderBegin(self, event = None, e2 = None):
 		"""
-		Created: 30.04.2005, KP
-		Description: Called when rendering begins
+		Called when rendering begins
 		"""
 		self.rendering = 1
 
 	def onRenderEnd(self, event = None, e2 = None):
 		"""
-		Created: 30.04.2005, KP
-		Description: Called when rendering begins
+		Called when rendering begins
 		"""
 		self.rendering = 0
 		if self.rubberband:
@@ -219,22 +208,19 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def save_png(self, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Save the rendered screen as png
+		Save the rendered screen as png
 		"""
 		self.saveScreen(vtk.vtkPNGWriter(), filename)
 		
 	def save_pnm(self, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Save the rendered screen as png
+		Save the rendered screen as png
 		"""
 		self.saveScreen(vtk.vtkPNMWriter(), filename)
 		
 	def save_bmp(self, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Save the rendered screen as bmp
+		Save the rendered screen as bmp
 		"""
 		self.saveScreen(vtk.vtkBMPWriter(), filename)	
 
@@ -244,8 +230,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def save_jpeg(self, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Save the rendered screen as jpeg
+		Save the rendered screen as jpeg
 		"""			   
 		writer = vtk.vtkJPEGWriter()
 		writer.SetQuality(100)
@@ -253,8 +238,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def save_screen(self, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Save the rendered screen as image the format of which
+		Save the rendered screen as image the format of which
 					 is determined by the file extension
 		"""
 		ext = filename.split(".")[-1].lower()
@@ -266,8 +250,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def save_tiff(self, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Save the rendered screen as TIFF
+		Save the rendered screen as TIFF
 		"""
 		tifwriter = vtk.vtkTIFFWriter()
 		tifwriter.SetCompressionToNoCompression()
@@ -275,8 +258,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		
 	def saveScreen(self, writer, filename):
 		"""
-		Created: 28.04.2005, KP
-		Description: Writes the screen to disk
+		Writes the screen to disk
 		"""
 		while self.rendering:
 			time.sleep(0.01)
@@ -288,8 +270,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
 	def getRenderer(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Return the renderer
+		Return the renderer
 		"""
 		if not self.renderer:
 			collection = self.GetRenderWindow().GetRenderers()

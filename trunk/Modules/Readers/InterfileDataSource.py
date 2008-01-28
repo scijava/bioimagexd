@@ -45,13 +45,11 @@ def getClass():
 
 class InterfileDataSource(DataSource):
 	"""
-	Created: 12.04.2005, KP
-	Description: Interfile datasource
+	Interfile datasource
 	"""
 	def __init__(self, filename = ""):
 		"""
-		Created: 12.04.2005, KP
-		Description: Constructor
+		Constructor
 		"""    
 		
 		DataSource.__init__(self)
@@ -81,8 +79,7 @@ class InterfileDataSource(DataSource):
 		
 	def readInfo(self, file):
 		"""
-		Created: 28.06.2006, KP
-		Description: Read the header info from file
+		Read the header info from file
 		"""   
 		lines = file.readlines()
 		dimre = re.compile("matrix size.*\[(\d)\].*:=(\d+)")
@@ -125,8 +122,7 @@ class InterfileDataSource(DataSource):
 
 	def getDataSetCount(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the number of individual DataSets (=time points)
+		Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
 		if self.tps < 0:
@@ -156,15 +152,13 @@ class InterfileDataSource(DataSource):
 		
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""    
 		return self.filename
 			
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the DataSet at the specified index
+		Returns the DataSet at the specified index
 		Parameters:   i       The index
 		"""
 		data = self.getTimepoint(i)
@@ -189,8 +183,7 @@ class InterfileDataSource(DataSource):
 		
 	def getTimepoint(self, n, onlyDims = 0):
 		"""
-		Created: 16.02.2006, KP
-		Description: Return the nth timepoint
+		Return the nth timepoint
 		"""        
 		if not self.reader:
 			self.reader = vtk.vtkImageReader2()
@@ -214,8 +207,7 @@ class InterfileDataSource(DataSource):
 		
 	def internalGetDimensions(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the (x,y,z) dimensions of the datasets this 
+		Returns the (x,y,z) dimensions of the datasets this 
 					 dataunit contains
 		"""
 		return self.dimensions
@@ -223,24 +215,21 @@ class InterfileDataSource(DataSource):
 		
 	def getSpacing(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the spacing of the datasets this 
+		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
 		return self.spacing
 		
 	def getVoxelSize(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the voxel size of the datasets this 
+		Returns the voxel size of the datasets this 
 					 dataunit contains
 		"""
 		return self.voxelsize
 			
 	def loadFromFile(self, filename):
 		"""
-		Created: 12.04.2005, KP
-		Description: Loads the specified .oif-file and imports data from it.
+		Loads the specified .oif-file and imports data from it.
 		Parameters:   filename  The .oif-file to be loaded
 		"""
 		dataunit = DataUnit()
@@ -251,8 +240,7 @@ class InterfileDataSource(DataSource):
 
 	def getName(self):
 		"""
-		Created: 18.11.2005, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		return self.name
@@ -260,8 +248,7 @@ class InterfileDataSource(DataSource):
 		
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		if not self.ctf:

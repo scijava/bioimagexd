@@ -60,8 +60,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 	"""
 	def __init__(self, parent, tb):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		Parameters:
 				root    Is the parent widget of this window
 		"""
@@ -85,15 +84,13 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		
 	def updateTimepoint(self, obj, event, timePoint):
 		"""
-		Created: 27.04.2006, KP
-		Description: A callback function called when the timepoint is changed
+		A callback function called when the timepoint is changed
 		"""
 		self.timePoint = timePoint
 		
 	def createButtonBox(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a button box containing the buttons Render,
+		Creates a button box containing the buttons Render,
 					 Preview and Close
 		"""
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createButtonBox(self)
@@ -102,8 +99,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 
 	def createOptionsFrame(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a frame that contains the various widgets
+		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
@@ -123,8 +119,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 
 	def doFilterCheckCallback(self, event = None):
 		"""
-		Created: 14.12.2004, JV
-		Description: A callback function called when the neither of the
+		A callback function called when the neither of the
 					 filtering checkbox changes state
 		"""
 		pass
@@ -132,16 +127,14 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		
 	def doProcessingCallback(self, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback for the button "Manipulation Dataset Series"
+		A callback for the button "Manipulation Dataset Series"
 		"""
 		self.updateFilterData()
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.doOperation(self)
 
 	def doPreviewCallback(self, event = None, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback for the button "Preview" and other events
+		A callback for the button "Preview" and other events
 					 that wish to update the preview
 		"""
 		self.updateFilterData()
@@ -149,8 +142,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 
 	def createItemToolbar(self):
 		"""
-		Created: 16.04.2006, KP
-		Description: Method to create a toolbar for the window that allows use to select processed channel
+		Method to create a toolbar for the window that allows use to select processed channel
 		"""      
 		# Pass flag force which indicates that we do want an item toolbar
 		# although we only have one input channel
@@ -192,8 +184,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 
 	def setCombinedDataUnit(self, dataUnit):
 		"""
-		Created: 23.11.2004, KP
-		Description: Set the combined dataunit to be processed. Also initialize the output channels to be off by default.
+		Set the combined dataunit to be processed. Also initialize the output channels to be off by default.
 		"""
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self, dataUnit)
 		self.filterEditor.setDataUnit(dataUnit)
@@ -208,8 +199,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		
 	def updateFilterData(self, *args):
 		"""
-		Created: 13.12.2004, JV
-		Description: A method used to set the right values in dataset
+		A method used to set the right values in dataset
 								from filter GUI widgets
 		"""
 		filterList =self.filterEditor.getFilterList()

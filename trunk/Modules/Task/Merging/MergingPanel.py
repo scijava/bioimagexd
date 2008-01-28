@@ -49,8 +49,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 	"""
 	def __init__(self, parent, tb):
 		"""
-		Created: 10.11.2004, JV
-		Description: Initialization
+		Initialization
 		Parameters:
 				parent    Is the parent widget of this window
 		"""
@@ -67,8 +66,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 
 	def createButtonBox(self):
 		"""
-		Created: 10.11.2004, JV
-		Description: Creates a button box containing the buttons Render,
+		Creates a button box containing the buttons Render,
 					 Preview and Close
 		"""
 		TaskPanel.TaskPanel.createButtonBox(self)
@@ -77,8 +75,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		
 	def createOptionsFrame(self):
 		"""
-		Created: 10.11.2004, JV
-		Description: Creates a frame that contains the various widgets
+		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
 		TaskPanel.TaskPanel.createOptionsFrame(self)
@@ -147,8 +144,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 
 	def modeSelect(self, event):
 		"""
-		Created: 21.03.2005, KP
-		Description: A method that is called when the selection of alpha mode is chan ged
+		A method that is called when the selection of alpha mode is chan ged
 		"""
 		mode = event.GetInt()
 		if mode == 1:
@@ -158,8 +154,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 
 	def resetTransferFunctions(self, event = None):
 		"""
-		Created: 30.11.2004, KP
-		Description: A method to reset all the intensity transfer functions
+		A method to reset all the intensity transfer functions
 		"""
 		dataunits = self.dataUnit.getSourceDataUnits()
 		for unit in dataunits:
@@ -173,8 +168,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 
 	def updateSettings(self, force = 0):
 		"""
-		Created: 10.11.2004, JV
-		Description: A method used to set the GUI widgets to their proper values
+		A method used to set the GUI widgets to their proper values
 					 based on the selected channel, the settings of which are 
 					 stored in the instance variable self.configSetting
 		"""
@@ -197,8 +191,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 
 	def doColorMergingCallback(self, *args):
 		"""
-		Created: 10.11.2004, JV
-		Description: A callback for the processing button
+		A callback for the processing button
 		"""
 		#print "\n\n\n\n\nDO COLOR MERGING"
 		method = self.alphaModeBox.GetSelection()
@@ -214,8 +207,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 
 	def setCombinedDataUnit(self, dataUnit):
 		"""
-		Created: 23.11.2004, KP
-		Description: Sets the combined dataunit that is to be processed.
+		Sets the combined dataunit that is to be processed.
 					 It is then used to get the names of all the source 
 					 data units and they are added to the menu.
 		"""

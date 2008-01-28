@@ -85,8 +85,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		
 	def createConfigFrame(self):
 		"""
-		Created: 17.11.2004, KP
-		Description: A callback that is used to close this window
+		A callback that is used to close this window
 		"""
 		self.configFrame = wx.Panel(self)
 		self.selectboxsizer.Add(self.configFrame)
@@ -108,8 +107,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		
 	def updateSelection(self, event = None):
 		"""
-		Created: 17.11.2004, KP
-		Description: A callback that is used to select every nth button, where
+		A callback that is used to select every nth button, where
 					 N is the value of the nthEntry entry
 		"""
 		try:
@@ -123,8 +121,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		
 	def selectEveryNth(self, n):
 		"""
-		Created: 18.07.2006, KP
-		Description: Select every nth button
+		Select every nth button
 		"""        
 		if not n:
 			for i in range(len(self.buttonList)):
@@ -141,8 +138,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		
 	def createButtons(self):
 		"""
-		Created: 10.11.2004, KP
-		Description: A method that creates as many buttons as the dataunit
+		A method that creates as many buttons as the dataunit
 				 has timepoints, so that each button represent one time point
 		"""
 		nrow = 0
@@ -170,8 +166,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
 	def buttonClickedCallback(self, button, number):
 		"""
-		Created: 10.11.2004, KP
-		Description: A method called when user clicks a button representing 
+		A method called when user clicks a button representing 
 					 a time point
 		"""
 		flag = False
@@ -189,8 +184,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
 	def setTimepoint(self, number, flag):
 		"""
-		Created: 18.07.2006, KP
-		Description: Set the given timepoint on or off
+		Set the given timepoint on or off
 		"""   
 		if not self.selectedFrames.has_key(number):
 			self.selectedFrames[number] = 0
@@ -205,8 +199,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
 	def setButtonState(self, button, flag):
 		"""
-		Created: 09.02.2005, KP
-		Description: A method to set the state of a button to selected/deselected
+		A method to set the state of a button to selected/deselected
 		Paremeters:
 				button  The button to configure
 				flag    Should the button be selected or deselected
@@ -221,8 +214,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 10.11.2004, KP
-		Description: A method to set the data unit we use to do the
+		A method to set the data unit we use to do the
 					 actual rendering
 		Paremeters:
 			dataUnit    The data unit we use
@@ -232,8 +224,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		
 	def updateButtons(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: update the buttons
+		update the buttons
 		"""
 		self.createButtons()
 		self.updateSelection()
@@ -247,8 +238,7 @@ class TimepointSelection(wx.Dialog):
 	"""
 	def __init__(self, parent, name = "Timepoint selection"):
 		"""
-		Created: 10.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		wx.Dialog.__init__(self, parent, -1, name, style = wx.CAPTION | wx.STAY_ON_TOP | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER, size = (640, 480))
 		self.parent = parent
@@ -280,8 +270,7 @@ class TimepointSelection(wx.Dialog):
 		
 	def createButtonBox(self):
 		"""
-		Created: 31.1.2005, KP
-		Description: Creates the standard control buttons
+		Creates the standard control buttons
 		"""
 		self.buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.buttonsSizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -302,8 +291,7 @@ class TimepointSelection(wx.Dialog):
 		
 	def onButtonOk(self, event):
 		"""
-		Created: 13.04.2005, KP
-		Description: A callback that sets the status of this dialog
+		A callback that sets the status of this dialog
 		"""
 		do_cmd = "scripting.dialogs['%s'].process()" % self.dialogName
 		undo_cmd = ""
@@ -314,8 +302,7 @@ class TimepointSelection(wx.Dialog):
 	
 	def process(self):
 		"""
-		Created: 20.07.2006, KP
-		Description: Set the status so that the processing will continue and close the window
+		Set the status so that the processing will continue and close the window
 		"""   
 		self.status = wx.ID_OK
 		scripting.unregisterDialog(self.dialogName)
@@ -324,8 +311,7 @@ class TimepointSelection(wx.Dialog):
 
 	def cancel(self):
 		"""
-		Created: 20.07.2006, KP
-		Description: Set the status so that the processing will cancel and close the window
+		Set the status so that the processing will cancel and close the window
 		"""
 		self.status = wx.ID_CANCEL
 		scripting.unregisterDialog(self.dialogName)
@@ -333,23 +319,20 @@ class TimepointSelection(wx.Dialog):
 
 	def closeWindowCallback(self, event):
 		"""
-		Created: 10.11.2004, KP
-		Description: A callback that is used to close this window
+		A callback that is used to close this window
 		"""
 		self.EndModal(self.status)
 		
 	def setNumberOfTimepoints(self, n):
 		"""
-		Created: 1.12.2007, KP
-		Description: set the number of timepoint buttons to create
+		set the number of timepoint buttons to create
 		"""
 		self.panel.numberOfTimepoints = n
 		self.panel.updateButtons()
 			
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 10.11.2004, KP
-		Description: A method to set the data unit we use to do the
+		A method to set the data unit we use to do the
 					 actual rendering
 		Paremeters:
 			dataUnit    The data unit we use

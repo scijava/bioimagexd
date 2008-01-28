@@ -46,8 +46,7 @@ class SectionsPanel(InteractivePanel):
 	"""
 	def __init__(self, parent, visualizer, size = (512, 512), **kws):
 		"""
-		Created: 24.03.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.imagedata = None
 		self.fitLater = 0
@@ -101,15 +100,13 @@ class SectionsPanel(InteractivePanel):
 		
 	def getDrawableRectangles(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Return the rectangles can be drawn on as four-tuples
+		Return the rectangles can be drawn on as four-tuples
 		"""
 		return self.drawableRects
 		
 	def setZoomFactor(self, factor):
 		"""
-		Created: 05.06.2005, KP
-		Description: Set the factor by which the image is zoomed
+		Set the factor by which the image is zoomed
 		"""
 		self.zoomFactor = factor
 		if self.dataUnit:
@@ -134,8 +131,7 @@ class SectionsPanel(InteractivePanel):
 		
 	def onSetZSlice(self, obj, event, arg):
 		"""
-		Created: 1.08.2005, KP
-		Description: Set the shown zslice
+		Set the shown zslice
 		"""
 		# A flag to indicate that we won't react on our own messages
 		if self.noUpdate:
@@ -149,8 +145,7 @@ class SectionsPanel(InteractivePanel):
 		
 	def onLeftDown(self, event):
 		"""
-		Created: 06.06.2005, KP
-		Description: Handler for mouse clicks
+		Handler for mouse clicks
 		"""
 		# if left mouse key is not down or the key down is related to
 		# interactive panel events
@@ -249,8 +244,7 @@ class SectionsPanel(InteractivePanel):
 
 	def onSize(self, event):
 		"""
-		Created: 23.05.2005, KP
-		Description: Size event handler
+		Size event handler
 		"""
 		InteractivePanel.OnSize(self, event)
 		self.size = event.GetSize()
@@ -259,15 +253,13 @@ class SectionsPanel(InteractivePanel):
 		
 	def setBackground(self, r, g, b):
 		"""
-		Created: 24.05.2005, KP
-		Description: Set the background color
+		Set the background color
 		"""
 		self.bgcolor = (r, g, b)
 		
 	def setDataUnit(self, dataUnit, selectedItem = -1):
 		"""
-		Created: 23.05.2005, KP
-		Description: Set the dataunit used for preview. 
+		Set the dataunit used for preview. 
 		"""
 		self.dataUnit = dataUnit
 		
@@ -287,8 +279,7 @@ class SectionsPanel(InteractivePanel):
 		
 	def getPlane(self, data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
 		"""
-		Created: 06.06.2005, KP
-		Description: Get a plane from given the volume
+		Get a plane from given the volume
 		"""   
 		xAxis, yAxis, zAxis = 0, 1, 2
 		dataWidth, dataHeight, dataDepth = data.GetDimensions()
@@ -355,8 +346,7 @@ class SectionsPanel(InteractivePanel):
 
 	def setTimepoint(self, tp, update = 1):
 		"""
-		Created: 23.05.2005, KP
-		Description: Set the timepoint
+		Set the timepoint
 		"""
 		self.timepoint = tp
 		if self.dataUnit.isProcessed():
@@ -417,8 +407,7 @@ class SectionsPanel(InteractivePanel):
 
 	def calculateBuffer(self):
 		"""
-		Created: 23.05.2005, KP
-		Description: Calculate the drawing buffer required
+		Calculate the drawing buffer required
 		"""
 		if not self.imagedata:
 			return
@@ -438,8 +427,7 @@ class SectionsPanel(InteractivePanel):
 
 	def enable(self, flag):
 		"""
-		Created: 02.06.2005, KP
-		Description: Enable/Disable updates
+		Enable/Disable updates
 		"""
 		self.enabled = flag
 		if flag:
@@ -447,8 +435,7 @@ class SectionsPanel(InteractivePanel):
 
 	def updatePreview(self):
 		"""
-		Created: 24.03.2005, KP
-		Description: Updates the viewed image
+		Updates the viewed image
 		"""
 		if not self.enabled:
 			Logging.info("Won't draw sections cause not enabled", kw="preview")
@@ -460,8 +447,7 @@ class SectionsPanel(InteractivePanel):
 
 	def OnPaint(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Does the actual blitting of the bitmap
+		Does the actual blitting of the bitmap
 		"""
 		# if the size of the painting area has changed, then re-generate the buffer and repaint
 		if self.sizeChanged:
@@ -473,8 +459,7 @@ class SectionsPanel(InteractivePanel):
 	
 	def paintPreview(self):
 		"""
-		Created: 24.03.2005, KP
-		Description: Paints the image to a DC
+		Paints the image to a DC
 		"""
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
@@ -534,8 +519,7 @@ class SectionsPanel(InteractivePanel):
 		
 	def zoomToFit(self):
 		"""
-		Created: 14.08.2005, KP
-		Description: Calculate and set the zoom factor so that the dataset
+		Calculate and set the zoom factor so that the dataset
 					 fits in the available screen space
 		"""
 		if not self.imagedata:

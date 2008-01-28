@@ -45,14 +45,12 @@ def getClass():
 
 class BXDDataSource(DataSource):
 	"""
-	Created: 08.02.2007, KP
-	Description: Manages .bxd files that list each individual .bxc channel. This datasource is a kind of a pseudo
+	Manages .bxd files that list each individual .bxc channel. This datasource is a kind of a pseudo
 				 datasource in that it will return BXC datasources, and cannot in and of itself read anything
 	"""
 	def __init__(self, filename = ""):
 		"""
-		Created: 08.2.2007, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataSource.__init__(self)
 		self.sourceUnits = []  
@@ -60,8 +58,7 @@ class BXDDataSource(DataSource):
 
 	def loadFromFile(self, filename):
 		"""
-		Created: 08.02.2007, KP
-		Description: Loads the specified .bxc-file and imports data from it.
+		Loads the specified .bxc-file and imports data from it.
 					 Also returns a DataUnit of the type stored in the loaded
 					 .bxc-file or None if something goes wrong. The dataunit is
 					 returned in a list with one item for interoperability with

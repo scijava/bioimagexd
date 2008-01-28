@@ -50,8 +50,7 @@ class SplineEditor:
 
 	def __init__(self, parent, renwin, width = 600, height = 400):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Initialization
+		Initialization
 		"""                  
 		self.cameraHandles = {}
 	   
@@ -68,8 +67,7 @@ class SplineEditor:
 		
 	def onShowCamera(self, obj, evt, cam):
 		"""
-		Created: 15.12.2005, KP
-		Description: Set the active based on an event
+		Set the active based on an event
 		"""
 		self.setCamera(cam)
 		self.render()
@@ -85,8 +83,7 @@ class SplineEditor:
 		
 	def onSetPreviewMode(self, obj, evt, flag):
 		"""
-		Created: 14.12.2005, KP
-		Description: Set the preview mode. Toggles visibility of spline, frame etc.
+		Set the preview mode. Toggles visibility of spline, frame etc.
 		"""                   
 		if flag:
 			self.spline.Off()
@@ -102,8 +99,7 @@ class SplineEditor:
 
 	def initializeVTK(self):
 		"""
-		Created: 20.03.2005, HU, KP
-		Description: Code to initialize VTK portions of this widget
+		Code to initialize VTK portions of this widget
 		"""           
 		
 		self.renWin = self.wxrenwin.GetRenderWindow()
@@ -173,8 +169,7 @@ class SplineEditor:
 		
 	def setMovement(self, flag):
 		"""
-		Created: 17.08.2005, KP
-		Description: Enable / Disable moving the camera around
+		Enable / Disable moving the camera around
 		"""
 		self.style = self.iren.GetInteractorStyle()
 		events = ["RightButtonPressEvent", "MiddleButtonPressEvent", "RightButtonReleaseEvent", "MiddleButtonReleaseEvent", "MouseWheelForwardEvent", "MouseWheelBackwardEvent"]
@@ -192,23 +187,20 @@ class SplineEditor:
 				
 	def onDisableEvent(self, obj, evt, *args):
 		"""
-		Created: 17.08.2005, KP
-		Description: Stop the event from propagating
+		Stop the event from propagating
 		"""
 		return False
 		
 	def setClosed(self, flag):
 		"""
-		Created: 14.04.2005, KP
-		Description: Sets the spline closed or open
+		Sets the spline closed or open
 		"""
 		self.spline.SetClosed(flag)
 		self.render()
 
 	def getBounds(self):
 		"""
-		Created: 18.04.2005, KP
-		Description: Returns the bounds of the dataset
+		Returns the bounds of the dataset
 		"""
 		xmin, xmax, ymin, ymax, zmin, zmax = self.data.GetBounds()
 		p1 = (xmin, ymin, zmin)
@@ -224,8 +216,7 @@ class SplineEditor:
 
 	def setViewMode(self, showViewAngle):
 		"""
-		Created: 15.08.2005, KP
-		Description: Sets the view mode
+		Sets the view mode
 		"""
 		
 		if showViewAngle:
@@ -241,8 +232,7 @@ class SplineEditor:
 
 	def findControlPoint(self, pt):
 		"""
-		Created: 20.03.2005, KP
-		Description: This method returns the point that contains the given
+		This method returns the point that contains the given
 					 spline handle
 		"""           
 		pps = self.getControlPoints()
@@ -250,16 +240,14 @@ class SplineEditor:
 		
 	def setInteractionCallback(self, cb):
 		"""
-		Created: 19.03.2005, KP
-		Description: Method to set a callback that is called when an interaction
+		Method to set a callback that is called when an interaction
 					 with the spline ends
 		"""
 		self.interactionCallback = cb
 
 	def getSplineLength(self, ip0 = 0, ip1 = 0):
 		"""
-		Created: 19.03.2005, KP
-		Description: Method that returns the length of the spline between
+		Method that returns the length of the spline between
 					 the given two points. If no points are given, the total
 					 length of the spline is returned.
 		"""
@@ -305,8 +293,7 @@ class SplineEditor:
 		
 	def getCameraPosition(self, n, p0, percentage):
 		"""
-		Created: KP, 05.04.2005
-		Description: Method that returns the camera position when it is located a given percentage
+		Method that returns the camera position when it is located a given percentage
 					 of the way from point p0 (the nth control point) to next spline point
 		"""        
 		pps = self.getControlPoints()
@@ -368,8 +355,7 @@ class SplineEditor:
 		
 	def updateData(self, data, ctf = None):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Method that initializes the VTK rendering based
+		Method that initializes the VTK rendering based
 					 on a dataset
 		"""            
 		if self.data:
@@ -462,16 +448,14 @@ class SplineEditor:
 			
 	def setCamera(self, cam):
 		"""
-		Created: 18.8.2005, KP
-		Description: Set the active camera
+		Set the active camera
 		"""
 		if self.renderer:
 			self.renderer.SetActiveCamera(cam)
 		
 	def getCamera(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: If there's a currently active camera, returns it
+		If there's a currently active camera, returns it
 		"""
 		cam = None
 		if self.renderer:
@@ -480,8 +464,7 @@ class SplineEditor:
 
 	def getPoints(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the points of the polygon forming the spline
+		Returns the points of the polygon forming the spline
 		"""
 		data = vtk.vtkPolyData()
 		self.spline.GetPolyData(data)
@@ -489,8 +472,7 @@ class SplineEditor:
 		
 	def getRandomPoint(self):
 		"""
-		Created: 14.04.2005, KP
-		Description: Return a random point for the spline
+		Return a random point for the spline
 		"""        
 		pt = (math.Random(-self.dataExtensionX, self.dataWidth() + self.dataExtensionX),
 				math.Random(-self.dataExtensionY, self.dataHeight() + self.dataExtensionY),
@@ -499,8 +481,7 @@ class SplineEditor:
 
 	def initSpline(self, points):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Creates a random spline with given amount of points
+		Creates a random spline with given amount of points
 		"""        
 		lst = []
 		for i in range(points):
@@ -511,8 +492,7 @@ class SplineEditor:
 			
 	def setSplinePoints(self, pointlist):
 		"""
-		Created: KP, 06.04.2005
-		Description: Sets the handles of the spline widget to the given point list
+		Sets the handles of the spline widget to the given point list
 		"""
 		n = len(pointlist)
 		self.spline.SetNumberOfHandles(n)
@@ -522,15 +502,13 @@ class SplineEditor:
 
 	def setSplinePoint(self, pos, point):
 		"""
-		Created: KP, 11.04.2005
-		Description: Sets the a handle of the spline widget to a given point
+		Sets the a handle of the spline widget to a given point
 		"""        
 		self.spline.SetHandlePosition(pos, point)
 		
 	def initCamera(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Initializes the camera
+		Initializes the camera
 		"""        
 		cam = self.getCamera()
 		if cam:
@@ -541,8 +519,7 @@ class SplineEditor:
 
 	def getInitialCameraPosition(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns an initial position for the camera
+		Returns an initial position for the camera
 		"""        
 		if not self.data:
 			return [0, 0, 0]
@@ -551,8 +528,7 @@ class SplineEditor:
 		
 	def getCameraFocalPointCenter(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the center of the current dataset
+		Returns the center of the current dataset
 		""" 
 		if not self.data:
 			return [0, 0, 0]
@@ -561,8 +537,7 @@ class SplineEditor:
 			
 	def getControlPoints(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the points for the handles of the widget
+		Returns the points for the handles of the widget
 		"""        
 		points = []
 		for i in range(self.spline.GetNumberOfHandles()):
@@ -572,15 +547,13 @@ class SplineEditor:
 
 	def isActive(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: A method that tells whether the spline is enabled or not
+		A method that tells whether the spline is enabled or not
 		"""            
 		return self.spline.GetEnabled()
 
 	def dataWidth(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the width of the data
+		Returns the width of the data
 		"""       
 		if not self.data:
 			return 0
@@ -588,8 +561,7 @@ class SplineEditor:
 
 	def dataHeight(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the height of the data
+		Returns the height of the data
 		"""       
 		if not self.data:
 			return 0
@@ -597,8 +569,7 @@ class SplineEditor:
 
 	def dataDepth(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the depth of the data
+		Returns the depth of the data
 		"""           
 		if not self.data:
 			return 0
@@ -606,15 +577,13 @@ class SplineEditor:
 	
 	def dataDimensions(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the dimensions of the data
+		Returns the dimensions of the data
 		"""           
 		return self.data.GetDimensions()
 
 	def getNumberOfPoints(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Returns the number of points in the polygon that forms
+		Returns the number of points in the polygon that forms
 					 the spline
 		"""           
 		data = vtk.vtkPolyData()
@@ -623,15 +592,13 @@ class SplineEditor:
 
 	def quit(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Destructs necessary objects upon quitting
+		Destructs necessary objects upon quitting
 		"""           
 		pass
 		
 	def endInteraction(self, event = -1, e2 = -1):
 		"""
-		Created: 19.03.2005, KP
-		Description: Method called when user manipulates the spline and then 
+		Method called when user manipulates the spline and then 
 					 lets the mouse button up. Used to call a callback.
 		"""
 		cam = self.getCamera()
@@ -645,8 +612,7 @@ class SplineEditor:
 
 	def getAsImage(self):
 		"""
-		Created: 18.8.2005, KP
-		Description: Render the scene to a vtkImageData
+		Render the scene to a vtkImageData
 		"""
 		filter = vtk.vtkWindowToImageFilter()
 		filter.SetInput(self.renWin)
@@ -655,7 +621,6 @@ class SplineEditor:
 	
 	def render(self):
 		"""
-		Created: Heikki Uuksulainen
-		Description: Render the widget
+		Render the widget
 		"""
 		self.wxrenwin.Render()

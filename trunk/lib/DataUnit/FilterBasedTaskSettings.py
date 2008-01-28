@@ -40,8 +40,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 	"""
 	def __init__(self, n = -1):
 		"""
-		Created: 27.03.2005, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataUnitSettings.__init__(self, n)
 		self.set("Type", "No Type Set")
@@ -60,16 +59,14 @@ class FilterBasedTaskSettings(DataUnitSettings):
 	def initialize(self, dataunit, channels, timepoints):
 		"""
 		Method: initialize(dataunit, channels, timepoints)
-		Created: 27.03.2005
-		Description: Set initial values for settings based on 
+		Set initial values for settings based on 
 					 number of channels and timepoints
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
 		
 	def writeTo(self, parser):
 		"""
-		Created: 05.06.2005
-		Description: Attempt to write all keys to a parser
+		Attempt to write all keys to a parser
 		"""	   
 		DataUnitSettings.writeTo(self, parser)
 		filterList = self.get("FilterList")
@@ -77,8 +74,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 
 	def deserialize(self, name, value):
 		"""
-		Created: 05.06.2005 by KP?
-		Description: Returns the value of a given key
+		Returns the value of a given key
 		"""
 		if name == "FilterList":
 			filterList = lib.FilterBasedModule.FilterList()
@@ -92,8 +88,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		
 	def serialize(self, name, value):
 		"""
-		Created: 05.06.2005
-		Description: Returns the value of a given key in a format
+		Returns the value of a given key in a format
 					 that can be written to disk.
 		"""
 		if name == "FilterList":

@@ -65,13 +65,11 @@ def getGUIBuilderForFilter(obj):
 		
 class GUIBuilder(wx.Panel):
 	"""
-	Created: 13.04.2006, KP
-	Description: A GUI builder for the manipulation filters
+	A GUI builder for the manipulation filters
 	""" 
 	def __init__(self, parent, myfilter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		""" 
 		wx.Panel.__init__(self, parent, -1)
 		self.xmlFp = None
@@ -90,8 +88,7 @@ class GUIBuilder(wx.Panel):
 		
 	def outputXML(self, string):
 		"""
-		Created: 25.01.2008, KP
-		Description: output XML if the file pointer exists
+		output XML if the file pointer exists
 		"""
 		if self.xmlFp:
 			ind="    "*self.indent
@@ -99,15 +96,13 @@ class GUIBuilder(wx.Panel):
 			
 	def getSizerPosition(self):
 		"""
-		Created: 07.06.2006, KP
-		Description: Return the position in the sizer where the user can add more stuff
+		Return the position in the sizer where the user can add more stuff
 		""" 
 		return (1, 0)
 		
 	def isSpecialElement(self, item, itemType):
 		"""
-		Created: 12.09.2007, KP
-		Description: determine whether the given item is an item that requires special method to create the GUI element for
+		determine whether the given item is an item that requires special method to create the GUI element for
 		"""
 		if (type(item) == types.TupleType): return True
 		if itemType in SPECIAL_ELEMENTS: return True
@@ -115,8 +110,7 @@ class GUIBuilder(wx.Panel):
 
 	def buildGUI(self, currentFilter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Build the GUI for a given filter
+		Build the GUI for a given filter
 		""" 
 		self.currentFilter = currentFilter
 		if not os.path.exists("XMLDescs"):
@@ -255,8 +249,7 @@ class GUIBuilder(wx.Panel):
 		
 	def createColorTransferFunctionEditor(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a GUI element that allows the editing of a color transfer function
+		create a GUI element that allows the editing of a color transfer function
 		"""
 		itemName = items[n]
 		item = items[n]
@@ -288,8 +281,7 @@ class GUIBuilder(wx.Panel):
 			
 	def createThresholdSelection(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a histogram GUI element that can be used to select a lower and upper threshold
+		create a histogram GUI element that can be used to select a lower and upper threshold
 		"""
 		item = items[n]
 		itemName = item[0]
@@ -347,16 +339,14 @@ class GUIBuilder(wx.Panel):
 
 	def updateThresholdHistogram(self, event, input, parameter, itemType, currentFilter):
 		"""
-		Created: 06.11.2007, KP
-		Description: 
+		
 		"""
 		currentFilter.sendUpdateGUI([parameter])
 
 		
 	def createMultiPixelSelection(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a GUI element that allows the user to select (and remove selection of) multiple pixels
+		create a GUI element that allows the user to select (and remove selection of) multiple pixels
 		"""
 		pixelsizer = wx.GridBagSizer()
 		background = wx.Window(self, -1)
@@ -400,8 +390,7 @@ class GUIBuilder(wx.Panel):
 
 	def createPixelSelection(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a GUI element for selecting a pixel from the preview
+		create a GUI element for selecting a pixel from the preview
 		"""
 		background = wx.Window(self, -1)
 		itemName = items[n]
@@ -438,8 +427,7 @@ class GUIBuilder(wx.Panel):
 
 	def createROISelection(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a dropdown menu to select a ROI
+		create a dropdown menu to select a ROI
 		"""
 		box = wx.BoxSizer(wx.VERTICAL)
 		itemName = items[n]
@@ -484,8 +472,7 @@ class GUIBuilder(wx.Panel):
 
 	def createChoice(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a choice (a dropdown menu) gui element
+		create a choice (a dropdown menu) gui element
 		"""
 		itemName = items[n]
 		item = items[n]
@@ -530,8 +517,7 @@ class GUIBuilder(wx.Panel):
 
 	def createRadioChoice(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a radio choice GUI element
+		create a radio choice GUI element
 		"""
 		itemName = items[n]
 
@@ -582,8 +568,7 @@ class GUIBuilder(wx.Panel):
 		
 	def createSliceSelection(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a slice selection slider GUI element
+		create a slice selection slider GUI element
 		"""
 		itemName = items[n]
 		item = items[n]
@@ -637,8 +622,7 @@ class GUIBuilder(wx.Panel):
 		
 	def createFileSelection(self, n, items, currentFilter):
 		"""
-		Created: 12.09.2007, KP
-		Description: create a file selection GUI element that shows the filename and has a button to select a file
+		create a file selection GUI element that shows the filename and has a button to select a file
 		"""
 		itemName = items[n][0]
 
@@ -670,8 +654,7 @@ class GUIBuilder(wx.Panel):
 							
 	def buildChannelSelection(self):
 		"""
-		Created: 17.04.2006, KP
-		Description: Build a GUI for selecting the source channels
+		Build a GUI for selecting the source channels
 		"""
 		sizer = wx.GridBagSizer()
 		y = 0
@@ -695,16 +678,14 @@ class GUIBuilder(wx.Panel):
 		
 	def onSetChoice(self, filter, item, event):
 		"""
-		Created: 20.07.2006, KP
-		Description: Set the parameter to the value of the choice widget
+		Set the parameter to the value of the choice widget
 		"""			  
 		value = event.GetSelection()
 		filter.setParameter(item, value)		
 		
 	def onSetROI(self, regionsOfInterest, filter, item, event):
 		"""
-		Created: 20.07.2006, KP
-		Description: Set the parameter to the ROI corresponding to the value of the choice widget
+		Set the parameter to the ROI corresponding to the value of the choice widget
 		"""			  
 		value = event.GetSelection()
 		regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
@@ -713,30 +694,26 @@ class GUIBuilder(wx.Panel):
 		
 	def onSetFileName(self, filter, item, event):
 		"""
-		Created: 12.07.2006, KP
-		Description: Set the file name
+		Set the file name
 		"""			  
 		filename = event.GetString()
 		filter.setParameter(item, filename)
 		
 	def onSetChoiceFromFilter(self, cc, itemName, value):
 		"""
-		Created: 12.07.2006, KP
-		Description: Set the file name
+		Set the file name
 		"""			  
 		cc.SetSelection(value)
 	
 	def onSetFileNameFromFilter(self, browseButton, itemName, value):
 		"""
-		Created: 12.07.2006, KP
-		Description: Set the file name
+		Set the file name
 		"""			  
 		browseButton.SetValue(value)
 		
 	def onSetRadioBox(self, box, item, value):
 		"""
-		Created: 05.06.2006, KP
-		Description: Set the value for the GUI item 
+		Set the value for the GUI item 
 		"""			
 		selectionValue = box.itemToDesc[item]
 		if value:
@@ -744,31 +721,27 @@ class GUIBuilder(wx.Panel):
 		
 	def onSetSlice(self, slider, item, value):
 		"""
-		Created: 05.06.2006, KP
-		Description: Set the value for the GUI item 
+		Set the value for the GUI item 
 		"""					
 		
 		slider.SetValue(value)
 
 	def onSetSpinFromFilter(self, spin, item, value):
 		"""
-		Created: 21.06.2006, KP
-		Description: Set the value for the GUI item 
+		Set the value for the GUI item 
 		"""							
 		spin.SetValue(value)
 
 	def onSetInputChannel(self, currentFilter, inputNum, event):
 		"""
-		Created: 17.04.2006, KP
-		Description: Set the input channel number #inputNum
+		Set the input channel number #inputNum
 		"""				 
 		n = event.GetSelection()
 		self.currentFilter.setInputChannel(inputNum, n)
 		
 	def createGUIElement(self, currentFilter, itemSizer, item, x, y, useOld = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Build the GUI related to one specific item
+		Build the GUI related to one specific item
 		"""
 		desc = currentFilter.getDesc(item)
 		if not useOld:
@@ -855,8 +828,7 @@ class GUIBuilder(wx.Panel):
 						
 	def createNumberInput(self, parent, currentFilter, item, itemType, defaultValue, label = "", chainFunction = None):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the input for int type
+		Return the input for int type
 		"""		   
 		input = wx.TextCtrl(parent, -1, str(defaultValue), style = wx.TE_PROCESS_ENTER)
 		valid = lambda event, f = currentFilter, p = item, t = itemType, \
@@ -870,8 +842,7 @@ class GUIBuilder(wx.Panel):
 		
 	def createSpinInput(self, parent, currentFilter, itemName, itemType, defaultValue, label = ""):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the input for int type
+		Return the input for int type
 		"""		   
 		minval, maxval = currentFilter.getRange(itemName)
 		
@@ -897,30 +868,26 @@ class GUIBuilder(wx.Panel):
 
 	def updateLabel(self, obj, label):
 		"""
-		Created: 14.06.2007, KP
-		Description: update the label of an object
+		update the label of an object
 		"""
 		obj.SetLabel(label)
 	
 
 	def onSetNumber(self, input, item, value):
 		"""
-		Created: 05.06.2006, KP
-		Description: Set the value for the GUI item
+		Set the value for the GUI item
 		"""				
 		input.SetValue(str(value))
 
 	def onSetBool(self, input, item, value):
 		"""
-		Created: 05.06.2006, KP
-		Description: Set the value for the GUI item
+		Set the value for the GUI item
 		"""				
 		input.SetValue(value)
 	
 	def createBooleanInput(self, parent, currentFilter, item, itemType, defaultValue, label = ""):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the input for boolean type
+		Return the input for boolean type
 		"""		   
 		input = wx.CheckBox(parent, -1, label)
 		input.SetValue(defaultValue)
@@ -933,8 +900,7 @@ class GUIBuilder(wx.Panel):
 		
 	def removeSeed(self, listbox, currFilter):
 		"""
-		Created: 29.05.2006, KP
-		Description: Remove a seed from filter
+		Remove a seed from filter
 		"""			
 		item = listbox.itemName
 		n = listbox.GetSelection()
@@ -950,8 +916,7 @@ class GUIBuilder(wx.Panel):
 	def onAddPixel(self, obj, event, rx, ry, rz, r, g, b, alpha, \
 					colorTransferFunction, item, currFilter, listbox):
 		"""
-		Created: 29.05.2006, KP
-		Description: Add a value to the pixel listbox
+		Add a value to the pixel listbox
 		"""				
 		if listbox.selectPixel:
 			seeds = currFilter.getParameter(item[0])
@@ -964,8 +929,7 @@ class GUIBuilder(wx.Panel):
 	def onSetPixel(self, obj, event, rx, ry, rz, r, g, b, alpha, \
 					colorTransferFunction, item, currFilter, valueLabel):
 		"""
-		Created: 26.05.2006, KP
-		Description: Set the value of the pixel label
+		Set the value of the pixel label
 		"""				
 		if valueLabel.selectPixel:
 			currFilter.setParameter(item[0], (rx, ry, rz))
@@ -974,16 +938,14 @@ class GUIBuilder(wx.Panel):
 			
 	def onSetPixelFromFilter(self, label, item, value):
 		"""
-		Created: 06.06.2006, KP
-		Description: Set the value of the pixel label from a variable
+		Set the value of the pixel label from a variable
 		"""				
 		rx, ry, rz = value
 		label.SetLabel("(%d, %d, %d)" % (rx, ry, rz))
 
 	def onSetPixelsFromFilter(self, listbox, item, value):
 		"""
-		Created: 06.06.2006, KP
-		Description: Set the value of the pixel label from a variable
+		Set the value of the pixel label from a variable
 		"""		
 		listbox.Clear()
 		for rx, ry, rz in value:
@@ -991,29 +953,25 @@ class GUIBuilder(wx.Panel):
 
 	def onSetHistogramValues(self, histogram, item, value, valuetype = "Lower"):
 		"""
-		Created: 06.06.2006, KP
-		Description: Set the lower and upper threshold for histogram
+		Set the lower and upper threshold for histogram
 		"""
 		eval("histogram.set%sThreshold(value)" % valuetype)
 
 	def onSetCtf(self, colorPanel, item, value):
 		"""
-		Created: 12.03.2007, KP
-		Description: Set the color transfer function editor colorTransferFunction
+		Set the color transfer function editor colorTransferFunction
 		"""
 		colorPanel.setColorTransferFunction(value)
 		
 	def onSetOtf(self, colorPanel, item, value):
 		"""
-		Created: 12.03.2007, KP
-		Description: Set the color transfer function editor otf
+		Set the color transfer function editor otf
 		"""
 		colorPanel.setOpacityTransferFunction(value)
 			
 	def onSetThreshold(self, event, items, currentFilter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Process an event from the histogram
+		Process an event from the histogram
 		"""
 		thresholds = event.getThresholds()
 		for i, item in enumerate(items):
@@ -1022,16 +980,14 @@ class GUIBuilder(wx.Panel):
 			
 	def onSetSliderValue(self, event, items, currentFilter):
 		"""
-		Created: 31.05.2006, KP
-		Description: Set the slider value
+		Set the slider value
 		"""		 
 		value = event.GetPosition()
 		currentFilter.setParameter(items, value)
 
 	def onSetSpinValue(self, event, spinbox, itemName, currentFilter):
 		"""
-		Created: 31.05.2006, KP
-		Description: Set the spin value
+		Set the spin value
 		"""		 
 		value = spinbox.GetValue()
 		value = int(value)
@@ -1039,8 +995,7 @@ class GUIBuilder(wx.Panel):
 			
 	def onSelectRadioBox(self, event, items, currentFilter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Process an event from a radio box
+		Process an event from a radio box
 		"""		 
 		selection = event.GetSelection()
 		
@@ -1050,8 +1005,7 @@ class GUIBuilder(wx.Panel):
 		
 	def validateAndPassOn(self, event, input, parameter, itemType, currentFilter, chain = None):
 		"""
-		Created: 13.04.2006, KP
-		Description: Build the GUI for a given filter
+		Build the GUI for a given filter
 		"""
 		if itemType == types.IntType:
 			convert = int

@@ -52,8 +52,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def __init__(self, inputs = (1,1)):
 		"""
-		Created: 10.12.2007, LP
-		Description: Initialization
+		Initialization
 		"""
 		self.statisticsType = MEAN
 		self.neighborhood = (5,5)
@@ -72,15 +71,13 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getParameters(self):
 		"""
-		Created: 10.12.2007, LP
-		Description: Returns the parameters for GUI.
+		Returns the parameters for GUI.
 		"""
 		return [["",("StatisticsType",)],["Neighborhood (only odd values)",("X","Y")]]
 
 	def getType(self, param):
 		"""
-		Created: 10.12.2007, LP
-		Description: Returns the types of parameters for GUI.
+		Returns the types of parameters for GUI.
 		"""
 		if param == "StatisticsType":
 			return GUIBuilder.CHOICE
@@ -88,7 +85,6 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getDefaultValue(self, param):
 		"""
-		Created:
 		Description:
 		"""
 		if param == "StatisticsType":
@@ -100,7 +96,6 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, param):
 		"""
-		Created:
 		Description:
 		"""
 		if param in ["X","Y","StatisticsType"]:
@@ -109,7 +104,6 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getRange(self, param):
 		"""
-		Created:
 		Description:
 		"""
 		if param == "StatisticsType":
@@ -117,8 +111,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 10.12.2007, LP
-		Description: Execute filter in input image and return output image
+		Execute filter in input image and return output image
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None

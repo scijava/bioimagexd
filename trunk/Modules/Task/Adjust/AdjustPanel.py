@@ -47,8 +47,7 @@ class AdjustPanel(TaskPanel):
 	"""
 	def __init__(self, parent, tb):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		Parameters:
 				root    Is the parent widget of this window
 		"""
@@ -69,8 +68,7 @@ class AdjustPanel(TaskPanel):
 
 	def createIntensityInterpolationPanel(self):
 		"""
-		Created: 09.12.2004, KP
-		Description: Creates a frame holding the entries for configuring 
+		Creates a frame holding the entries for configuring 
 					 interpolation
 		"""        
 		self.interpolationPanel = wx.Panel(self.settingsNotebook)
@@ -131,8 +129,7 @@ class AdjustPanel(TaskPanel):
 
 	def createIntensityTransferPage(self):
 		"""
-		Created: 09.12.2004, KP
-		Description: Creates a frame holding the entries for configuring 
+		Creates a frame holding the entries for configuring 
 					 intensity
 		"""
 		self.editIntensityPanel = wx.Panel(self.settingsNotebook, -1)
@@ -166,8 +163,7 @@ class AdjustPanel(TaskPanel):
 
 	def setInterpolationTimePoints(self, event):
 		"""
-		Created: 13.12.2004, KP
-		Description: A callback that is called when a timepoint entry for
+		A callback that is called when a timepoint entry for
 					 intensity interpolation changes. Updates the list of 
 					 timepoints between which the interpolation is carried out
 					 by the dataunit
@@ -187,8 +183,7 @@ class AdjustPanel(TaskPanel):
 
 	def gotoInterpolationTimePoint(self, entrynum):
 		"""
-		Created: 09.12.2004, KP
-		Description: The previewed timepoint is set to timepoint specified in
+		The previewed timepoint is set to timepoint specified in
 					 self.entries[entrynum]
 		"""
 		try:
@@ -204,8 +199,7 @@ class AdjustPanel(TaskPanel):
 
 	def createButtonBox(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a button box containing the buttons Render,
+		Creates a button box containing the buttons Render,
 					 Preview and Close
 		"""
 		TaskPanel.createButtonBox(self)
@@ -216,8 +210,7 @@ class AdjustPanel(TaskPanel):
 
 	def createOptionsFrame(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a frame that contains the various widgets
+		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
 		TaskPanel.createOptionsFrame(self)
@@ -230,8 +223,7 @@ class AdjustPanel(TaskPanel):
 
 	def updateTimepoint(self, obj, evt, timePoint):
 		"""
-		Created: 04.04.2005, KP
-		Description: A callback function called when the timepoint is changed
+		A callback function called when the timepoint is changed
 		"""
 		#timePoint=event.getValue()
 		Logging.info("Now configuring timepoint", timePoint, kw = "task")
@@ -241,8 +233,7 @@ class AdjustPanel(TaskPanel):
  
 	def copyTransferFunctionToAll(self, event = None):
 		"""
-		Created: 10.03.2005, KP
-		Description: A method to copy this transfer function to all timepooints
+		A method to copy this transfer function to all timepooints
 		"""
 		itf = self.settings.getCounted("IntensityTransferFunctions", self.timePoint)
 		l = self.dataUnit.getNumberOfTimepoints()
@@ -252,8 +243,7 @@ class AdjustPanel(TaskPanel):
 		
 	def resetTransferFunctions(self, event = None):
 		"""
-		Created: 30.11.2004, KP
-		Description: A method to reset all the intensity transfer functions
+		A method to reset all the intensity transfer functions
 		"""
 		l = self.dataUnit.getNumberOfTimepoints()
 		sources = self.dataUnit.getSourceDataUnits()
@@ -271,8 +261,7 @@ class AdjustPanel(TaskPanel):
 		
 	def startInterpolation(self, evt):
 		"""
-		Created: 24.11.2004, KP
-		Description: A callback to interpolate intensity transfer functions
+		A callback to interpolate intensity transfer functions
 					 between the specified timepoints
 		"""
 		self.dataUnit.interpolateIntensities()
@@ -280,8 +269,7 @@ class AdjustPanel(TaskPanel):
 
 	def updateSettings(self, force = 0):
 		"""
-		Created: 03.11.2004, KP
-		Description: A method used to set the GUI widgets to their proper values
+		A method used to set the GUI widgets to their proper values
 		"""
 
 		if self.dataUnit:
@@ -306,15 +294,13 @@ class AdjustPanel(TaskPanel):
 
 	def doProcessingCallback(self, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback for the button "Process Dataset Series"
+		A callback for the button "Process Dataset Series"
 		"""
 		TaskPanel.doOperation(self)
 
 	def setCombinedDataUnit(self, dataUnit):
 		"""
-		Created: 23.11.2004, KP
-		Description: Sets the processed dataunit that is to be processed.
+		Sets the processed dataunit that is to be processed.
 					 It is then used to get the names of all the source data
 					 units and they are added to the menu.
 					 This is overwritten from TaskPanel since we only process

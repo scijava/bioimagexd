@@ -50,8 +50,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 	
@@ -60,32 +59,28 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getParameters(self):
 		"""
 		Method: getParameters
-		Created: 13.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [ ["Convolution kernel", ("KernelX", "KernelY", "KernelZ")] ]
 		
 	def getDesc(self, parameter):
 		"""
 		Method: getDesc
-		Created: 13.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""    
 		return self.descs[parameter]
 		
 	def getType(self, parameter):
 		"""
 		Method: getType
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		return types.IntType
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Method: getDefaultValue
-		Created: 13.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""           
 		return 2
 		
@@ -93,8 +88,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Method: execute
-		Created: 13.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -113,8 +107,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 
 def getFilters():
     """
-    Created: 10.8.2007, SS
-    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
     return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
             SobelFilter, HybridMedianFilter, MedianFilter]
@@ -131,8 +124,7 @@ class ErodeFilter(MorphologicalFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageContinuousErode3D()
@@ -149,8 +141,7 @@ class VarianceFilter(MorphologicalFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageVariance3D()        
@@ -167,8 +158,7 @@ class DilateFilter(MorphologicalFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageContinuousDilate3D()  
@@ -184,8 +174,7 @@ class RangeFilter(MorphologicalFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageRange3D()     
@@ -201,8 +190,7 @@ class SobelFilter(MorphologicalFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageSobel3D()          
@@ -210,15 +198,13 @@ class SobelFilter(MorphologicalFilter):
 		
 	def getParameters(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""  
 		return []
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 13.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None        
@@ -239,8 +225,7 @@ class HybridMedianFilter(MorphologicalFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageHybridMedian2D()        
@@ -249,15 +234,13 @@ class HybridMedianFilter(MorphologicalFilter):
 		
 	def getParameters(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""  
 		return []
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 13.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None        
@@ -280,8 +263,7 @@ class MedianFilter(MorphologicalFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageMedian3D()        

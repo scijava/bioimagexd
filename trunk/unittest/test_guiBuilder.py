@@ -7,7 +7,6 @@ class GUIBuilderBaseTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 
@@ -41,21 +40,18 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 	def testGetInput(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetInputDataUnit(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetCurrentTimepoint(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 
 		nts:	difficult to test; bxd.visualizer in GUIBuilder does not exist
@@ -65,21 +61,18 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 	def testGetInputFromChannel(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetNumberOfInputs(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testSetInputChannel(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testGUIBuilderBase.inputMapping, self.oldInputMapping)
@@ -88,49 +81,42 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 	def testGetInputName(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testGUIBuilderBase.getInputName(self.n), self.nText)
 
 	def testGetParameterLevel(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testGUIBuilderBase.getParameterLevel(self.parameter), self.colorBeginner)
 
 	def testSendUpdateGUI(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testCanSelectChannels(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetParameters(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetPlainParameters(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testSetParameter(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testGUIBuilderBase.parameters, self.oldParameters)
@@ -139,7 +125,6 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 	def testGetParameter(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testGUIBuilderBase.getParameter(self.parameterKey), self.emptyValue)
@@ -148,7 +133,6 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 	def testGetDesc(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		self.assertEqual(self.testGUIBuilderBase.getDesc(self.descKey), self.descEmpty)
@@ -157,28 +141,24 @@ class GUIBuilderBaseTest(unittest.TestCase):
 
 	def testGetLongDesc(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetType(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetRange(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testGetDefaultValue(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
@@ -187,35 +167,30 @@ class GUIBuilder(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 #		self.testGUIBuilder = GUI.GUIBuilder.GUIBuilder(parent, myfilter)
 
 	def test(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testa(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testb(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass
 
 	def testc(self):
 		"""
-		Created: 11.07.2007, SS
 		Description:
 		"""
 		pass

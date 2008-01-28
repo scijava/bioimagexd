@@ -216,8 +216,7 @@ class MenuManager:
 	def __init__(self, mainwin, **kws):
 		"""
 		Method: __init__(parent,id,app)
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.text = 1
 		self.separators = {}
@@ -238,16 +237,14 @@ class MenuManager:
 		
 	def getCommands(self):
 		"""
-		Created: 13.02.2006, KP
-		Description: Return the list of commands
+		Return the list of commands
 		"""
 		return self.commands
 				
 	def addCommand(self, cmd):
 		"""
 		Method: addCommand
-		Created: 13.02.2006, KP
-		Description: Add a command to the list of executed commands
+		Add a command to the list of executed commands
 		"""
 		if cmd not in self.commands:
 			self.commands.append(cmd)
@@ -255,8 +252,7 @@ class MenuManager:
 	def getLastCommand(self):
 		"""
 		Method: getLastCommand
-		Created: 13.02.2006, KP
-		Description: Return the last executed command
+		Return the last executed command
 		"""
 		if (len(self.commands) == 0): 		#	There is nothing to undo
 			return False					#   Thus return False
@@ -265,16 +261,14 @@ class MenuManager:
 	def setUndoedCommand(self, cmd):
 		"""
 		Method: setUndoedCommand
-		Created: 13.02.2006, KP
-		Description: Set the last command that was undoed
+		Set the last command that was undoed
 		"""
 		self.undoCmd = cmd
 	
 	def getUndoedCommand(self):
 		"""
 		Method: getUndoedCommand
-		Created: 13.02.2006, KP
-		Description: Return the last undoed command
+		Return the last undoed command
 		"""
 		return self.undoCmd
 		
@@ -282,24 +276,21 @@ class MenuManager:
 	def setMenuBar(self, menubar):
 		"""
 		Method: setMenuBar
-		Created: 19.06.2005, KP
-		Description: Set the menubar
+		Set the menubar
 		"""
 		self.menubar = menubar
 
 	def setMainToolbar(self, bar):
 		"""
 		Method: setMenuBar
-		Created: 19.06.2005, KP
-		Description: Set the menubar
+		Set the menubar
 		"""
 		self.mainToolbar = bar
 
 	def removeSeparator(self, sepid):
 		"""
 		Method: removeSeparator
-		Created: 02.09.2005, KP
-		Description: delete a separator
+		delete a separator
 		"""
 		menu = self.menus[self.mapping[sepid]]
 		menu.RemoveItem(self.separators[sepid])
@@ -307,8 +298,7 @@ class MenuManager:
 	def addSeparator(self, menuname, sepid = None, before = None):
 		"""
 		Method: addSeparator(menuname)
-		Created: 19.06.2005, KP
-		Description: add a separator
+		add a separator
 		"""
 		if not before:
 			if not sepid:
@@ -338,8 +328,7 @@ class MenuManager:
 
 	def check(self, itemid, flag):
 		"""
-		Created: 25.06.2005, KP
-		Description: Check / uncheck a menu item
+		Check / uncheck a menu item
 		"""
 		menu = self.mapping[itemid]
 		self.menus[menu].Check(itemid, flag)
@@ -347,8 +336,7 @@ class MenuManager:
 	def isChecked(self, itemid):
 		"""
 		Method: isChecked(itemid)
-		Created: 21.07.2005, KP
-		Description: Return whether an item is checked
+		Return whether an item is checked
 		"""
 		menu = self.mapping[itemid]
 		self.menus[menu].IsChecked(itemid)
@@ -356,15 +344,13 @@ class MenuManager:
 	def addSubMenu(self, menuname, submenuname, title, menuid):
 		"""
 		Method: addSubMenu(menuname,submenuname,title,menuid)
-		Created: 19.06.2005, KP
-		Description: make a menu a submenu of another
+		make a menu a submenu of another
 		"""
 		self.menus[menuname].AppendMenu(menuid, title, self.menus[submenuname])
 		
 	def createMenu(self, menuname, menutitle, place = 1, before = None):
 		"""
-		Created: 19.06.2005, KP
-		Description: Create a menu with a given id and title
+		Create a menu with a given id and title
 		"""
 		ret = self.menus[menuname] = wx.Menu()
 		if not place:
@@ -386,15 +372,13 @@ class MenuManager:
 			
 	def setVisualizer(self, visualizer):
 		"""
-		Created: 01.06.2005, KP
-		Description: Set the visualizer instance managed by this class
+		Set the visualizer instance managed by this class
 		"""
 		self.visualizer = visualizer
 		
 	def clearItemsBar(self):
 		"""
-		Created: 01.06.2005, KP
-		Description: Clear items bar
+		Clear items bar
 		"""
 		self.visualizer.annotateBar.clearChannelItems()
 		#if not self.itemBar:return
@@ -406,8 +390,7 @@ class MenuManager:
 
 	def addChannelItem(self, name, bitmap, toolid, func):
 		"""
-		Created: 01.06.2005, KP
-		Description: Add a toolbar item
+		Add a toolbar item
 		"""
 		self.channelIds.append(toolid)
 
@@ -423,8 +406,7 @@ class MenuManager:
 	
 	def toggleTool(self, toolid, flag):
 		"""
-		Created: 22.07.2005, KP
-		Description: Toggle a toolbar item
+		Toggle a toolbar item
 		"""
 		if toolid in self.channelIds:
 			self.visualizer.annotateBar.toggleChannelItem(toolid, flag)
@@ -435,8 +417,7 @@ class MenuManager:
 					before = None, check = 0, checked = 1):
 		"""
 		Method: addMenuItem
-		Created: 29.05.2005, KP
-		Description: Add a menu item
+		Add a menu item
 		"""
 		if not callback:
 			if hlp and type(hlp) != type(""):
@@ -477,15 +458,13 @@ class MenuManager:
 
 	def disable(self, itemid):
 		"""
-		Created: 29.05.2005, KP
-		Description: Disable a menu item
+		Disable a menu item
 		"""
 		self.menus[self.mapping[itemid]].Enable(itemid, 0)
 		
 	def enable(self, itemid, callback = None):
 		"""
-		Created: 29.05.2005, KP
-		Description: Enable a menu item
+		Enable a menu item
 		"""
 		self.menus[self.mapping[itemid]].Enable(itemid, 1)
 		if callback:
@@ -494,8 +473,7 @@ class MenuManager:
 	def removeMenu(self, menuname):
 		"""
 		Method: removeMenu(menuname)
-		Created: 19.06.2005, KP
-		Description: Remove a menu
+		Remove a menu
 		"""
 		title = self.menus[menuname].GetTitle()
 		for i in range(self.menubar.GetMenuCount()):
@@ -507,8 +485,7 @@ class MenuManager:
 	def remove(self, itemid):
 		"""
 		Method: remove(itemid)
-		Created: 19.06.2005, KP
-		Description: Remove a menu item
+		Remove a menu item
 		"""
 		menu = self.menus[self.mapping[itemid]]
 		menu.Delete(itemid)

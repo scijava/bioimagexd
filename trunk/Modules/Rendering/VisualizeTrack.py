@@ -48,13 +48,11 @@ def getName():
 
 class VisualizeTrackModule(VisualizationModule):
 	"""
-	Created: 24.06.2005, KP
-	Description: A module for clipping the dataset
+	A module for clipping the dataset
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
@@ -77,8 +75,7 @@ class VisualizeTrackModule(VisualizationModule):
 		
 	def onVisualizeTracks(self, obj, evt, tracks):
 		"""
-		Created: 15.04.2007, KP
-		Description: visualize the tracks given as argument
+		visualize the tracks given as argument
 		"""
 		self.showTracks = tracks
 		print "Got tracks=", tracks
@@ -86,23 +83,20 @@ class VisualizeTrackModule(VisualizationModule):
 
 	def setParameter(self, parameter, value):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""    
 		VisualizationModule.setParameter(self, parameter, value)
   
 		
 	def getParameters(self):
 		"""
-		Created: 31.05.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [  ]
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""           
 		if parameter == "TrackFile":
 			return "tracks.csv"
@@ -117,8 +111,7 @@ class VisualizeTrackModule(VisualizationModule):
 			
 	def getRange(self, parameter):
 		"""
-		Created: 31.05.2006, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""     
 		if parameter == "Track":
 			#TODO: self.track does not exist
@@ -137,8 +130,7 @@ class VisualizeTrackModule(VisualizationModule):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 
 		if parameter == "TrackFile":
@@ -152,8 +144,7 @@ class VisualizeTrackModule(VisualizationModule):
 
 	def __getstate__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""            
 		odict = VisualizationModule.__getstate__(self)
 		#print "Saving Slice =" ,self.parameters["Slice"]
@@ -163,8 +154,7 @@ class VisualizeTrackModule(VisualizationModule):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""        
 		VisualizationModule.__set_pure_state__(self, state)
 		self.parameters = state.parameters
@@ -172,23 +162,20 @@ class VisualizeTrackModule(VisualizationModule):
 				
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 
 	def showTimepoint(self, value):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
 
 	def getPoints(self, tracks):
 		"""
-		Created: 15.04.2007, KP
-		Description: adapt the track objects to straightforward point lists
+		adapt the track objects to straightforward point lists
 		"""
 		ret = []
 		xc, yc, zc = self.data.GetSpacing()
@@ -206,8 +193,7 @@ class VisualizeTrackModule(VisualizationModule):
 		
 	def updateRendering(self):
 		"""
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		#data = self.data
 		#self.mapper.SetInput(data)
@@ -306,14 +292,12 @@ class VisualizeTrackModule(VisualizationModule):
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the ambient, diffuse and specular lighting of this module
+		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
 	def setShading(self, shading):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set shading on / off
+		Set shading on / off
 		"""          
 		pass
 
@@ -321,22 +305,19 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 
 	def __init__(self, parent, visualizer, name = "VisualizeTrack", **kws):
 		"""
-		Created: 29.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""          
 		pass
 		
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		self.module = module
@@ -346,7 +327,6 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 
 	def onApply(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		self.module.updateRendering()

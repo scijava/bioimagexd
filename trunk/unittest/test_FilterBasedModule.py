@@ -8,8 +8,7 @@ class FilterBasedModuleTest(unittest.TestCase):
 
 	def setUp(self):
 		"""
-		Created: 03.07.2007, MB
-		Description: Creating test data
+		Creating test data
 		"""
 		self.testFilterBasedModule = lib.FilterBasedModule.FilterBasedModule()	
 		
@@ -32,8 +31,7 @@ class FilterBasedModuleTest(unittest.TestCase):
 
 	def testSetModified(self):
 		"""
-		Created: 03.07.2007, MB
-		Description: A test for setModified()
+		A test for setModified()
 
 		A test checking if the parameters are flaged
 		"""
@@ -45,8 +43,7 @@ class FilterBasedModuleTest(unittest.TestCase):
 
 	def testReset(self):
 		"""
-		Created: 3.7.2007, MB
-		Description: Testing reset()
+		Testing reset()
 
 		A test to check that the values get reseted
 		"""
@@ -76,7 +73,6 @@ class FilterBasedModuleTest(unittest.TestCase):
 
 	def testAddInput(self):
 		"""
-		Created:
 		Description:
 		"""
 
@@ -85,7 +81,6 @@ class FilterBasedModuleTest(unittest.TestCase):
 
 	def testGetPreview(self):
 		"""
-		Created:
 		Description
 		"""
 
@@ -94,7 +89,6 @@ class FilterBasedModuleTest(unittest.TestCase):
 
 	def testDoOperation(self):
 		"""
-		Created:
 		Description:
 		"""
 

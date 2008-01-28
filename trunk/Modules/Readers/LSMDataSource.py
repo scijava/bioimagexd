@@ -47,13 +47,11 @@ def getClass():
 
 class LsmDataSource(DataSource):
 	"""
-	Created: 18.11.2004, KP
-	Description: Manages 4D data stored in an lsm-file
+	Manages 4D data stored in an lsm-file
 	"""
 	def __init__(self, filename = "", channelNum = -1):
 		"""
-		Created: 18.11.2004, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataSource.__init__(self)
 		# Name and path of the lsm-file:
@@ -105,8 +103,7 @@ class LsmDataSource(DataSource):
 			
 	def updateProgress(self, obj, evt):
 		"""
-		Created: 13.07.2004, KP
-		Description: Sends progress update event
+		Sends progress update event
 		"""
 		if not obj:
 			progress = 1.0
@@ -128,8 +125,7 @@ class LsmDataSource(DataSource):
 
 	def getTimeStamp(self, timepoint):
 		"""
-		Created: 02.07.2007, KP
-		Description: return the timestamp for given timepoint
+		return the timestamp for given timepoint
 		"""
 		if not self.reader:
 			return timepoint
@@ -144,8 +140,7 @@ class LsmDataSource(DataSource):
 
 	def getDataSetCount(self):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the number of individual DataSets (=time points)
+		Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
 		if not self.dimensions:
@@ -154,8 +149,7 @@ class LsmDataSource(DataSource):
   
 	def getBitDepth(self):
 		"""
-		Created: 07.08.2006, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		if not self.bitdepth:
 			#self.reader.DebugOn()
@@ -177,8 +171,7 @@ class LsmDataSource(DataSource):
 		
 	def getScalarRange(self):
 		"""
-		Created: 28.05.2005, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		if not self.scalarRange:
 			#data=self.getDataSet(0,raw=1)
@@ -188,8 +181,7 @@ class LsmDataSource(DataSource):
 
 	def internalGetDimensions(self):
 		"""
-		Created: 14.12.2004, KP
-		Description: Return the original dimensions of the dataset
+		Return the original dimensions of the dataset
 		"""
 		return self.reader.GetDimensions()
 
@@ -210,8 +202,7 @@ class LsmDataSource(DataSource):
 		
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 18.11.2004, KP
-		Description: Returns the timepoint at the specified index
+		Returns the timepoint at the specified index
 		Parameters:	  i		  The timepoint to retrieve
 					  raw	  A flag indicating that the data is not to be processed in any way
 		"""
@@ -238,15 +229,13 @@ class LsmDataSource(DataSource):
 		
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""
 		return self.filename
 		
 	def loadFromFile(self, filename):
 		"""
-		Created: 18.11.2004, KP
-		Description: Loads all channels from a specified LSM file to DataUnit-
+		Loads all channels from a specified LSM file to DataUnit-
 					 instances and returns them as a list.
 		Parameters:	  filename	The .lsm-file to be loaded
 		"""
@@ -285,8 +274,7 @@ class LsmDataSource(DataSource):
 
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		if not self.ctf:
@@ -318,8 +306,7 @@ class LsmDataSource(DataSource):
 		
 	def resetColorTransferFunction(self):
 		"""
-		Created: 12.10.2006, KP
-		Description: A method that will reset the CTF from the datasource.
+		A method that will reset the CTF from the datasource.
 					 This is useful e.g. when scaling the intensities of the
 					 dataset
 		"""
@@ -330,8 +317,7 @@ class LsmDataSource(DataSource):
 		
 	def getName(self):
 		"""
-		Created: 18.11.2004, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		if self.channelNum < 0:
@@ -343,15 +329,13 @@ class LsmDataSource(DataSource):
 
 	def uniqueId(self):
 		"""
-		Created: 07.02.2007, KP
-		Description: return a string identifying the dataset
+		return a string identifying the dataset
 		"""
 		return self.getFileName() + "|" + str(self.channelNum)
 
 	def __str__(self):
 		"""
-		Created: 18.11.2004, KP
-		Description: Returns the basic information of this instance as a string
+		Returns the basic information of this instance as a string
 		"""
 		return "LSM DataSource (%s, channel %d)" % (self.filename, self.channelNum)
 

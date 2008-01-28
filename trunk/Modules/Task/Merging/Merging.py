@@ -46,8 +46,7 @@ class Merging(Module):
 	"""
 	def __init__(self, **kws):
 		"""
-		Created: 24.11.2004, JV
-		Description: Initialization
+		Initialization
 		"""
 		Module.__init__(self, **kws)
 		self.doAlpha = 1
@@ -61,8 +60,7 @@ class Merging(Module):
 
 	def reset(self):
 		"""
-		Created: 24.11.2004, JV
-		Description: Resets the module to initial state. This method is
+		Resets the module to initial state. This method is
 					 used mainly when doing previews, when the parameters
 					 that control the colocalization are changed and the
 					 preview data becomes invalid.
@@ -80,8 +78,7 @@ class Merging(Module):
 		
 	def addInput(self, dataunit, data):
 		"""
-		Created: 24.11.2004, JV
-		Description: Adds an input for the color merging filter
+		Adds an input for the color merging filter
 		"""
 		
 		settings = dataunit.getSettings()
@@ -113,8 +110,7 @@ class Merging(Module):
 
 	def getPreview(self, z):
 		"""
-		Created: 24.11.2004, JV
-		Description: Does a preview calculation for the x-y plane at depth z
+		Does a preview calculation for the x-y plane at depth z
 		"""
 		if z != -1:
 			self.doAlpha = 0
@@ -134,8 +130,7 @@ class Merging(Module):
 
 	def doOperation(self):
 		"""
-		Created: 24.11.2004, JV
-		Description: Does color merging for the dataset
+		Does color merging for the dataset
 		"""
 		t1 = time.time()
 		datasets = []

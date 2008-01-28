@@ -44,8 +44,7 @@ class Adjust(Module):
 
 	def __init__(self, **kws):
 		"""
-		Created: 25.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		Module.__init__(self, **kws)
 
@@ -60,8 +59,7 @@ class Adjust(Module):
 
 	def reset(self):
 		"""
-		Created: 25.11.2004, KP
-		Description: Resets the module to initial state. This method is
+		Resets the module to initial state. This method is
 					 used mainly when doing previews, when the parameters
 					 that control the colocalization are changed and the
 					 preview data becomes invalid.
@@ -73,8 +71,7 @@ class Adjust(Module):
 
 	def addInput(self, dataunit, data):
 		"""
-		Created: 1.12.2004, KP, JV
-		Description: Adds an input for the single dataunit processing filter
+		Adds an input for the single dataunit processing filter
 		"""
 		Module.addInput(self, dataunit, data)
 		settings = dataunit.getSettings()
@@ -87,8 +84,7 @@ class Adjust(Module):
 
 	def getPreview(self, z):
 		"""
-		Created: 1.12.2004, KP
-		Description: Does a preview calculation for the x-y plane at depth z
+		Does a preview calculation for the x-y plane at depth z
 		"""
 		if self.settings.get("ShowOriginal"):
 			return self.images[0]        
@@ -105,8 +101,7 @@ class Adjust(Module):
 
 	def doOperation(self, preview = 0):
 		"""
-		Created: 1.12.2004, KP, JV
-		Description: Processes the dataset in specified ways
+		Processes the dataset in specified ways
 		"""
 		t1 = time.time()
 

@@ -59,8 +59,7 @@ class TrackTable(gridlib.PyGridTableBase):
 	"""
 	def __init__(self, rows = 1, cols = 10, canEnable = 0):
 		"""
-		Created: 21.11.2006, KP
-		Description: Initialize the track table
+		Initialize the track table
 		"""
 		gridlib.PyGridTableBase.__init__(self)
 	
@@ -83,8 +82,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		
 	def getEnabled(self):
 		"""
-		Created: 14.04.2007, KP
-		Description: return the rows that are enabled
+		return the rows that are enabled
 		"""
 		ret = []
 		for key, val in self.enabled.items():
@@ -95,8 +93,7 @@ class TrackTable(gridlib.PyGridTableBase):
 
 	def GetTypeNameDISABLED(self, row, col):
 		"""
-		Created: 14.04.2007, KP
-		Description: return the type of the given row and col
+		return the type of the given row and col
 		"""
 		if not self.canEnable or col != 0:
 			return gridlib.PyGridTableBase.GetTypeName(self, row, col)
@@ -105,8 +102,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		
 	def setEnabledColumn(self, col):
 		"""
-		Created: 23.11.2006, KP
-		Description: set the column that can be modified
+		set the column that can be modified
 		"""
 		# if there is a column for enabling / disabling this row, then offset
 		# the column by one
@@ -116,8 +112,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		
 	def GetColLabelValue(self, col):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the labels of the columns
+		Return the labels of the columns
 		"""
 		if self.canEnable and col == 0:
 			return ""
@@ -127,8 +122,7 @@ class TrackTable(gridlib.PyGridTableBase):
 
 	def GetAttr(self, row, col, kind):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the attribute for a given row,col position
+		Return the attribute for a given row,col position
 		"""
 		attr = [self.even, self.odd][row % 2]
 		attr.IncRef()
@@ -139,45 +133,39 @@ class TrackTable(gridlib.PyGridTableBase):
 
 	def GetNumberRows(self):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the number of rows
+		Return the number of rows
 		"""    
 		return self.numberOfRows
 		
 	def Clear(self):
 		"""
-		Created: 26.11.2006, KP
-		Description: clear the table
+		clear the table
 		"""
 		self.numberOfRows = 0
 		self.gridValues = {}
 
 	def AppendRows(self, n = 1):
 		"""
-		Created: 21.11.2006, KP
-		Description: Add a row
+		Add a row
 		"""
 		self.numberOfRows += n
 		print "NUmber of rows=", self.numberOfRows
 		
 	def GetNumberCols(self):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the number of cols
+		Return the number of cols
 		"""        
 		return self.numberOfCols
 
 	def IsEmptyCell(self, row, col):
 		"""
-		Created: 21.11.2006, KP
-		Description: Determine whether a cell is empty or not
+		Determine whether a cell is empty or not
 		"""            
 		return False
 
 	def GetValue(self, row, col):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the value of a cell
+		Return the value of a cell
 		"""                
 		if not self.canEnable:
 			if (row, col) in self.gridValues:
@@ -196,8 +184,7 @@ class TrackTable(gridlib.PyGridTableBase):
 
 	def getPointsAtRow(self, getrow):
 		"""
-		Created: 26.11.2006, KP
-		Description: return the points at a given row
+		return the points at a given row
 		"""
 		ret = []
 		for row, col in self.gridValues.keys():
@@ -206,8 +193,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		return ret        
 	def getPointsAtColumn(self, getcol):
 		"""
-		Created: 22.11.2006, KP
-		Description: return the points at given columns
+		return the points at given columns
 		"""
 		ret = []
 		#for row,col in self.gridValues.keys():
@@ -223,8 +209,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		return True
 	def SetValue(self, row, col, value, override = 0):
 		"""
-		Created: 21.11.2006, KP
-		Description: Set the value of a cell
+		Set the value of a cell
 		"""                  
 		print "SetValue", row, col, value, override
 		if self.canEnable:
@@ -249,8 +234,7 @@ class TrackTableGrid(gridlib.Grid):
 	"""
 	def __init__(self, parent, dataUnit, trackFilter, canEnable = 0):
 		"""
-		Created: 21.11.2006, KP
-		Description: Initialize the grid
+		Initialize the grid
 		"""
 		gridlib.Grid.__init__(self, parent, -1, size = (350, 250))
 
@@ -286,16 +270,14 @@ class TrackTableGrid(gridlib.Grid):
 		
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
-		Created: 23.11.2006, KP
-		Description: Update the column that can be edited based on the timepoint
+		Update the column that can be edited based on the timepoint
 		"""
 		self.table.setEnabledColumn(timepoint)
 		self.ForceRefresh()
 		
 	def onUpdateCell(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
 		"""
-		Created: 21.11.2006, KP
-		Description: Store a coordinate in the cell
+		Store a coordinate in the cell
 		"""
 		currWin = scripting.visualizer.getCurrentWindow()
 		print scripting.currentVisualizationMode
@@ -341,8 +323,7 @@ class TrackTableGrid(gridlib.Grid):
 			
 	def onSetCell(self, x, y, z):
 		"""
-		Created: 23.11.2006, KP
-		Description: Set the value of the grid at given points
+		Set the value of the grid at given points
 		"""        
 		if self.selectedRow != None and self.selectedCol != None:
 			self.table.SetValue(self.selectedRow, self.selectedCol, (x, y, z))
@@ -350,8 +331,7 @@ class TrackTableGrid(gridlib.Grid):
 		
 	def onNewTrack(self, event):
 		"""
-		Created: 21.11.2006, KP
-		Description: Add a new track to the table
+		Add a new track to the table
 		"""
 		self.AppendRows()
 		self.SetTable(self.table, False)
@@ -359,8 +339,7 @@ class TrackTableGrid(gridlib.Grid):
 		
 	def getTimepoint(self):
 		"""
-		Created: 22.11.2006, KP
-		Description: return the last modified timepoint
+		return the last modified timepoint
 		"""
 		if not self.selectedCol:
 			return 0
@@ -368,8 +347,7 @@ class TrackTableGrid(gridlib.Grid):
 		
 	def getSeedPoints(self):
 		"""
-		Created: 22.11.2006, KP
-		Description: return the selected seed points
+		return the selected seed points
 		"""
 		#rows=[]
 		cols = []
@@ -391,15 +369,13 @@ class TrackTableGrid(gridlib.Grid):
 		
 	def OnRightDown(self, event):
 		"""
-		Created: 21.11.2006, KP
-		Description: An event handler for right clicking
+		An event handler for right clicking
 		"""
 		print self.GetSelectedRows()
 		
 	def OnLeftDown(self, event):
 		"""
-		Created: 21.11.2006, KP
-		Description: An event handler for left clicking
+		An event handler for left clicking
 		"""
 		if event.GetCol() == 0 and self.canEnable:
 			val = self.table.enabled.get(event.GetRow(), False)
@@ -415,8 +391,7 @@ class TrackTableGrid(gridlib.Grid):
 
 def getFilters():
     """
-    Created: 10.8.2007, SS
-    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
     return [CreateTracksFilter, ViewTracksFilter, AnalyzeTracksFilter]
 
@@ -431,8 +406,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		self.tracks = []
 		self.track = None
@@ -473,16 +447,14 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
-		Created: 23.11.2006, KP
-		Description: Update the column that can be edited based on the timepoint
+		Update the column that can be edited based on the timepoint
 		"""        
 		self.selectedTimepoint = timepoint
 		self.updateObjects()
 		
 	def onSetSelectedObjects(self, obj, event, objects, isROI = 0):
 		"""
-		Created: 26.11.2006, KP
-		Description: An event handler for highlighting selected objects
+		An event handler for highlighting selected objects
 		"""
 		print "\n\nonSetSelectedObjects(", obj, event, objects, ")"
 		if not self.ctf:
@@ -520,8 +492,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def setParameter(self, parameter, value):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""    
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 		if parameter == "TrackFile":
@@ -552,8 +523,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [
 		["Change between consecutive objects",
@@ -569,23 +539,20 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""    
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		""" 
 		return ""
 		
 		
 	def getType(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter == "UseSize":
 			return types.BooleanType
@@ -604,8 +571,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the range of given parameter
+		Return the range of given parameter
 		"""             
 		if parameter in ["MaxVelocity", "MinSize"]:
 			return (0, 999)
@@ -625,8 +591,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""     
 		if parameter == "UseSize":
 			return 1
@@ -663,8 +628,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 04.04.2007, KP
-		Description: a method to set the dataunit used by this filter
+		a method to set the dataunit used by this filter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		tracksFile = dataUnit.getSettings().get("StatisticsFile")
@@ -676,8 +640,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""              
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
@@ -745,8 +708,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getObjectsForROI(self, roi):
 		"""
-		Created: 26.11.2006, KP
-		Description: return the intensity values of objects in a given roi
+		return the intensity values of objects in a given roi
 		"""
 		imagedata = self.getInputFromChannel(0)
 		mx, my, mz = self.dataUnit.getDimensions()
@@ -766,8 +728,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def onUseSelectedSeeds(self, event):
 		"""
-		Created: 26.11.2006, KP
-		Description: use the selected seed list
+		use the selected seed list
 		"""
 		if self.parameters["UseROI"]:
 			roi = self.parameters["ROI"]
@@ -796,8 +757,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def onShowObjectList(self, event):
 		"""
-		Created: 26.11.2006, KP
-		Description: show a list of objects that can be used as seeds for trakcing
+		show a list of objects that can be used as seeds for trakcing
 		"""
 		val = self.toggleBtn.GetValue()
 		if not val:
@@ -809,8 +769,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 14.08.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -819,8 +778,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def onReadTracks(self, event):
 		"""
-		Created: 22.11.2006, KP
-		Description: Read tracks from a file instead of calculating them
+		Read tracks from a file instead of calculating them
 		"""
 		filename = self.parameters["ResultsFile"]
 		if not os.path.exists(filename):
@@ -836,8 +794,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def showTracks(self, tracks):
 		"""
-		Created: 26.11.2006, KP
-		Description: show the given tracks in the track grid
+		show the given tracks in the track grid
 		"""
 		table = self.trackGrid.getTable()
 		table.Clear()
@@ -855,8 +812,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def onReadObjects(self, event):
 		"""
-		Created: 22.11.2006, KP
-		Description: Read the object statistics from the given file
+		Read the object statistics from the given file
 		"""
 		if not self.particleFile:
 			return
@@ -876,8 +832,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def updateObjects(self):
 		"""
-		Created: 26.11.2006, KP
-		Description: update the objects list
+		update the objects list
 		"""
 		if self.objectsReader:
 			rdr = self.objectsReader            
@@ -888,8 +843,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 	def getObjectFromCoord(self, pt, timepoint = -1):
 		"""
-		Created: 22.11.2006, KP
-		Description: return an intensity value at given x,y,z
+		return an intensity value at given x,y,z
 		"""
 		if not pt:
 			return None
@@ -901,8 +855,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def onDoTracking(self, event):
 		"""
-		Created: 22.11.2006, KP
-		Description: Do the actual tracking
+		Do the actual tracking
 		"""
 		#print "Using ",image
 		#self.vtkfilter.SetInput(image)
@@ -956,8 +909,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		self.tracks = []
 		self.track = None
@@ -976,8 +928,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.particleFile = ""
 	def setParameter(self, parameter, value):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""    
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 
@@ -1000,8 +951,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		  
 	def updateSelectedTracks(self, obj, evt, tracks):
 		"""
-		Created: 14.04.2007, KP
-		Description: show the given tracks
+		show the given tracks
 		"""
 		if self.tracks:
 			showtracks = []
@@ -1013,8 +963,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [["Tracking", ("MinLength", )],        
 		["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
@@ -1023,16 +972,14 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		""" 
 		return ""
 		
 		
 	def getType(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter in ["MinLength"]:
 			return GUIBuilder.SPINCTRL
@@ -1042,8 +989,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the range of given parameter
+		Return the range of given parameter
 		"""
 		print "Get range", parameter
 		if parameter == "Track":
@@ -1059,8 +1005,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""
 		if parameter == "Track":
 			return 0    
@@ -1073,8 +1018,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""              
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
@@ -1115,8 +1059,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 14.08.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -1126,8 +1069,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def onReadTracks(self, event):
 		"""
-		Created: 22.11.2006, KP
-		Description: Read tracks from a file instead of calculating them
+		Read tracks from a file instead of calculating them
 		"""
 		filename = self.parameters["ResultsFile"]
 		if not os.path.exists(filename):
@@ -1143,8 +1085,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def showTracks(self, tracks):
 		"""
-		Created: 26.11.2006, KP
-		Description: show the given tracks in the track grid
+		show the given tracks in the track grid
 		"""
 		table = self.trackGrid.getTable()
 		table.Clear()
@@ -1171,8 +1112,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.tracks = []
 		self.track = None
@@ -1187,8 +1127,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def setParameter(self, parameter, value):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
 
@@ -1197,36 +1136,31 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getParameters(self):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )]]
 
 	def getLongDesc(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		"""
 		return ""
 
 	def getType(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""
 		return GUIBuilder.FILENAME
 
 	def getRange(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the range of given parameter
+		Return the range of given parameter
 		"""
 		return 0, 0
 
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 14.08.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""
 
 		if parameter == "ResultsFile":
@@ -1234,8 +1168,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 21.11.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 
@@ -1274,8 +1207,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 14.08.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -1285,8 +1217,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def onReadTracks(self, event):
 		"""
-		Created: 22.11.2006, KP
-		Description: Read tracks from a file instead of calculating them
+		Read tracks from a file instead of calculating them
 		"""
 		filename = self.parameters["ResultsFile"]
 		if not os.path.exists(filename):
@@ -1298,8 +1229,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def showTracks(self, tracks):
 		"""
-		Created: 26.11.2006, KP
-		Description: show the given tracks in the track grid
+		show the given tracks in the track grid
 		"""
 #		track length
 #		Directional persistance = path length / distance to starting point

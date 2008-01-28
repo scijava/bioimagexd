@@ -39,8 +39,7 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 21.01.2007, KP
-		Description: Initialization
+		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageExtractComponents()
@@ -50,44 +49,38 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 21.01.2007, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [["", ("Component1", "Component2", "Component3")]]
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 21.01.2007, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""    
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 21.01.2007, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		""" 
 		return ""
 		
 	def getRange(self, parameter):
 		"""
-		Created: 21.01.2007, KP
-		Description: return the range of values for given parameter
+		return the range of values for given parameter
 		"""
 		return ["No output", "R (component 1)", "G (component 2)", "B (component 3)"]
 		
 	def getType(self, parameter):
 		"""
-		Created: 21.01.2007, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter in ["Component1", "Component2", "Component3"]:
 			return GUI.GUIBuilder.CHOICE
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 21.01.2007, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""     
 		if parameter == "Component1":
 			return 1
@@ -99,8 +92,7 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

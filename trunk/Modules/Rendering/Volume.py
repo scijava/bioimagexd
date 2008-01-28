@@ -49,29 +49,25 @@ ISOSURFACE = 4
 
 def getClass():
 	"""
-	Created: KP
-	Description: return the rendering module class
+	return the rendering module class
 	"""
 	return VolumeModule
 
 def getConfigPanel():
 	"""
-	Created: KP
-	Description: return the class used for configuring this rendering module
+	return the class used for configuring this rendering module
 	"""
 	return VolumeConfigurationPanel
 
 def getName():
 	"""
-	Created: KP
-	Description: return the name of this visualization module
+	return the name of this visualization module
 	"""
 	return "Volume rendering"
 
 def getQuickKeyCombo():
 	"""
-	Created: KP
-	Description: return the key shortcut that can be used to load this module
+	return the key shortcut that can be used to load this module
 	"""
 	return "Shift-Ctrl-V"
 
@@ -82,8 +78,7 @@ class VolumeModule(VisualizationModule):
 	"""	   
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""		
 		self.modes = ["Ray casting", "Texture mapping", "3D texture mapping", "Maximum intensity projection"]
 		self.haveVolpro = 0
@@ -155,8 +150,7 @@ class VolumeModule(VisualizationModule):
 		
 	def setParameter(self, parameter, value):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""	   
  
 		VisualizationModule.setParameter(self, parameter, value)
@@ -179,16 +173,14 @@ class VolumeModule(VisualizationModule):
 			
 	def updateOpacityTransferFunction(self):
 		"""
-		Created: 18.03.2007, KP
-		Description: Set the GUI OTF to it's correct value
+		Set the GUI OTF to it's correct value
 		"""
 		self.otfs = [self.otf, self.otf, self.otf, self.otf2, self.otf]
 		lib.messenger.send(self, "set_Palette_otf", self.otfs[self.parameters["Method"]])
 
 	def getParameters(self):
 		"""
-		Created: 12.03.2007, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		params = [ ["Dataset palette", ("Palette", )],
 		["Rendering method", ("Method", ) ],
@@ -201,8 +193,7 @@ class VolumeModule(VisualizationModule):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 12.03.2007, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""		
 		if parameter == "Method":
 			return self.modes
@@ -213,8 +204,7 @@ class VolumeModule(VisualizationModule):
 		return - 1, -1
 	def getType(self, parameter):
 		"""
-		Created: 12.03. 2007, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	  
 		if parameter == "Method":
 			return GUI.GUIBuilder.CHOICE
@@ -231,8 +221,7 @@ class VolumeModule(VisualizationModule):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 12.03.2007, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""			  
 		if parameter == "Method":
 			return self.defaultMode
@@ -251,8 +240,7 @@ class VolumeModule(VisualizationModule):
 		
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""		  
 		Logging.info("Dataunit for Volume Rendering:", dataunit, kw = "rendering")
 		VisualizationModule.setDataUnit(self, dataunit)
@@ -273,8 +261,7 @@ class VolumeModule(VisualizationModule):
 		
 	def updateQuality(self):
 		"""
-		Created: 12.03.2006, KP
-		Description: Update the quality of rendering
+		Update the quality of rendering
 		""" 
 		method = self.parameters["Method"]
 		if self.parameters["QualityValue"]: 
@@ -316,8 +303,7 @@ class VolumeModule(VisualizationModule):
 		
 	def setInputChannel(self, inputNum, chl):
 		"""
-		Created: 17.04.2006, KP
-		Description: Set the input channel for input #inputNum
+		Set the input channel for input #inputNum
 		"""			   
 		VisualizationModule.setInputChannel(self, inputNum, chl)
 		inputDataUnit = self.getInputDataUnit(1)
@@ -331,8 +317,7 @@ class VolumeModule(VisualizationModule):
 		
 	def updateInterpolation(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the interpolation method used
+		Set the interpolation method used
 		"""				
 		
 		if self.parameters["Linear"]:
@@ -343,8 +328,7 @@ class VolumeModule(VisualizationModule):
 
 	def updateMethod(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the Rendering method used
+		Set the Rendering method used
 		"""				
 		self.parameters["QualityValue"] = 0
 		if not self.initDone:
@@ -411,8 +395,7 @@ class VolumeModule(VisualizationModule):
 
 	def updateRendering(self, input = None):
 		"""
-		Created: 28.04.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""
 		self.updateMethod()
 		self.updateQuality()
@@ -452,16 +435,14 @@ class VolumeModule(VisualizationModule):
 		
 	def disableRendering(self):
 		"""
-		Created: 30.04.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""			 
 		self.renderer.RemoveVolume(self.volume)
 		self.wxrenwin.Render()
 		
 	def enableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""
 		self.renderer.AddVolume(self.volume)
 		self.wxrenwin.Render()		  
@@ -470,16 +451,14 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 
 	def __init__(self, parent, visualizer, name = "Volume rendering", **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.gui = None
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
 		self.shadingBtn.SetValue(0)
@@ -490,16 +469,14 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		
 	def onCheckShading(self, event):
 		"""
-		Created: 16.05.2005, KP
-		Description: Toggle use of shading
+		Toggle use of shading
 		"""	 
 		self.shading = event.IsChecked()		
 		self.module.setShading(self.shading)
 
 	def getLongDesc(self, parameter):
 		"""
-		Created: 12.03.2007, KP
-		Description: return a long desc for the given parameter
+		return a long desc for the given parameter
 		"""
 		if parameter in ["NearestNeighbor", "Linear"]:
 			return "Set the type of interpolation used in rendering. \
@@ -508,8 +485,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""
 		self.module = module
 		ModuleConfigurationPanel.setModule(self, module)
@@ -533,8 +509,7 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 
 	def onApply(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""		
 		ModuleConfigurationPanel.onApply(self, event)
 		self.module.updateData()

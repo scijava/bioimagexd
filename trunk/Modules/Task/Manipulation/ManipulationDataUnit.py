@@ -39,8 +39,7 @@ class ManipulationDataUnit(CombinedDataUnit):
 
 	def __init__(self, name = ""):
 		"""
-		Created: 27.03.2005 KP
-		Description: Constructor
+		Constructor
 		"""
 		CombinedDataUnit.__init__(self, name)
 		self.original = None
@@ -48,8 +47,7 @@ class ManipulationDataUnit(CombinedDataUnit):
 
 	def setOriginal(self, datasource):
 		"""
-		Created: 14.12.2004, JM, JV
-		Description: Sets the original DataUnit for this ManipulationedSourceDataUnit
+		Sets the original DataUnit for this ManipulationedSourceDataUnit
 		Parameters: dataUnit  The original unmodified DataUnit
 		"""
 		self.original = datasource
@@ -58,8 +56,7 @@ class ManipulationDataUnit(CombinedDataUnit):
 
 	def getColorTransferFunction(self):
 		"""
-		Created: 20.07.2005, KP
-		Description: Returns the ctf of the source dataunit
+		Returns the ctf of the source dataunit
 		"""
 		sources = self.getSourceDataUnits()
 		if not self.initialized:
@@ -80,8 +77,7 @@ class ManipulationDataUnit(CombinedDataUnit):
 	   
 	def addSourceDataUnit(self, dataUnit, **args):
 		"""
-		Created: 27.03.2005, KP
-		Description: Adds a source data unit to this dataunit
+		Adds a source data unit to this dataunit
 		"""
 		self.setOriginal(dataUnit)    
 		CombinedDataUnit.addSourceDataUnit(self, dataUnit, **args)
@@ -93,8 +89,7 @@ class ManipulationDataUnit(CombinedDataUnit):
 
 	def getSettingsClass(self):
 		"""
-		Created: 02.04.2005, KP
-		Description: Return the class that represents settings for this dataunit
+		Return the class that represents settings for this dataunit
 		"""
 		return ManipulationSettings.ManipulationSettings
 

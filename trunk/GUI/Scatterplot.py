@@ -51,8 +51,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 	"""
 	def __init__(self, parent, size = (256, 256), **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.parent = parent
 		self.size = size
@@ -148,8 +147,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 	
 	def onSaveCSV(self, event):
 		"""
-		Created: 05.11.2007, KP
-		Description: save the scatterplot as csv file
+		save the scatterplot as csv file
 		"""
 		filename = Dialogs.askSaveAsFileName(self, "Save scatterplot as CSV file", "scatterplot.csv", "Comma Separated Values file|*.csv", "scatterCSV")
 		
@@ -160,8 +158,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 	
 	def onSaveScatterplot(self, event):
 		"""
-		Created: 21.11.2006, KP
-		Description: Save the scatterplot to a file
+		Save the scatterplot to a file
 		"""
 		if not self.scatterBitmap:
 			return
@@ -202,8 +199,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 	
 	def onUpdateScatterplot(self, evt, obj, *args):
 		"""
-		Created: 9.09.2005, KP
-		Description: Update the scatterplot when timepoint changes
+		Update the scatterplot when timepoint changes
 		"""
 		self.renew = 1
 		self.setTimepoint(args[0])
@@ -211,8 +207,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def setScrollbars(self, xdim, ydim):
 		"""
-		Created: 24.03.2005, KP
-		Description: Configures scroll bar behavior depending on the
+		Configures scroll bar behavior depending on the
 					 size of the dataset, which is given as parameters.
 		"""
 		self.SetSize(self.size)
@@ -221,8 +216,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def onRightClick(self, event):
 		"""
-		Created: 02.04.2005, KP
-		Description: Method that is called when the right mouse button is
+		Method that is called when the right mouse button is
 					 pressed down on this item
 		""" 
 		self.PopupMenu(self.menu, event.GetPosition())
@@ -230,8 +224,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def onSetLogarithmic(self, evt):
 		"""
-		Created: 12.07.2005, KP
-		Description: Set the scale to logarithmic
+		Set the scale to logarithmic
 		"""
 		self.logarithmic = not self.logarithmic
 		self.menu.Check(self.ID_LOGARITHMIC, self.logarithmic)
@@ -242,8 +235,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def markActionStart(self, event):
 		"""
-		Created: 12.07.2005, KP
-		Description: Sets the starting position of rubber band for zooming
+		Sets the starting position of rubber band for zooming
 		"""
 		pos = event.GetPosition()
 		x, y = pos
@@ -293,8 +285,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def updateActionEnd(self, event):
 		"""
-		Created: 12.07.2005, KP
-		Description: Draws the rubber band to current mouse pos
+		Draws the rubber band to current mouse pos
 		"""
 		if event.LeftIsDown():
 			x, y = event.GetPosition()
@@ -362,8 +353,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 04.07.2005, KP
-		Description: Sets the data unit that is displayed
+		Sets the data unit that is displayed
 		"""
 		InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)
 		self.sources = dataUnit.getSourceDataUnits()
@@ -375,8 +365,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def setVoxelCount(self, event):
 		"""
-		Created: 02.04.2005, KP
-		Description: Method to set on / off the voxel counting mode of scattergram
+		Method to set on / off the voxel counting mode of scattergram
 		"""
 		self.countVoxels = event.Checked()
 		self.renew = 1
@@ -385,8 +374,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			
 	def setWholeVolume(self, event):
 		"""
-		Created: 02.04.2005, KP
-		Description: Method to set on / off the construction of scattergram from 
+		Method to set on / off the construction of scattergram from 
 					 the whole volume
 		"""
 		self.wholeVolume = event.Checked()
@@ -395,8 +383,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def setThreshold(self, event = None):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the thresholds based on user's selection
+		Sets the thresholds based on user's selection
 		"""
 		# First get the coordinates of the user drawn box
 		(x1, y1),(x2,y2) = self.userDrawnThresholds
@@ -418,22 +405,19 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def setTimepoint(self, tp):
 		"""
-		Created: 11.07.2005, KP
-		Description: Sets the timepoint to be shown
+		Sets the timepoint to be shown
 		"""
 		self.timepoint = tp
 		
 	def setZSlice(self, z):
 		"""
-		Created: 11.07.2005, KP
-		Description: Sets the timepoint to be shown
+		Sets the timepoint to be shown
 		"""
 		self.z = z
 		
 	def setScatterplot(self, plot):
 		"""
-		Created: 11.07.2005, KP
-		Description: Sets the scatterplot as vtkImageData
+		Sets the scatterplot as vtkImageData
 		"""
 		self.scatterplot = plot
 		x0, x1 = self.scatterplot.GetScalarRange()
@@ -441,8 +425,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def saveAsCSV(self, filename):
 		"""
-		Created: 05.11.2007, KP
-		Description: save the scatterplot image as csv file
+		save the scatterplot image as csv file
 		"""
 		f = open(filename, "wb")
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
@@ -462,8 +445,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		
 	def updatePreview(self, *args):
 		"""
-		Created: 25.03.2005, KP
-		Description: A method that draws the scattergram
+		A method that draws the scattergram
 		"""
 		width, height = self.size
 		if self.renew and self.dataUnit:
@@ -484,15 +466,13 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 
 	def OnPaint(self, event):
 		"""
-		Created: 25.03.2005, KP
-		Description: Does the actual blitting of the bitmap
+		Does the actual blitting of the bitmap
 		"""
 		dc = wx.BufferedPaintDC(self, self.buffer)
 
 	def paintPreview(self):
 		"""
-		Created: 25.03.2005, KP
-		Description: Paints the scattergram
+		Paints the scattergram
 		"""
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)

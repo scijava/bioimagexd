@@ -66,8 +66,7 @@ class TimeScale(wx.Panel):
 	def onSetZoomLevel(self, obj, evt, level):
 		"""
 		Method: onSetZoomLevel
-		Created: 15.12.2005, KP
-		Description: Sets the zoom level of the animator
+		Sets the zoom level of the animator
 		"""            
 		self.setZoomLevel(level)
 		lib.messenger.send(None, "update_timeline")
@@ -75,8 +74,7 @@ class TimeScale(wx.Panel):
 	def onSetDuration(self, obj, evt, duration):
 		"""
 		Method: onSetDuration
-		Created: 21.08.2005, KP
-		Description: Sets the duration of this timescale
+		Sets the duration of this timescale
 		"""    
 		self.setDuration(duration)
 		
@@ -86,8 +84,7 @@ class TimeScale(wx.Panel):
 	def setDisabled(self, flag):
 		"""
 		Method: setDisabled(flag)
-		Created: 04.02.2005, KP
-		Description: Grays out / enables this 
+		Grays out / enables this 
 		"""
 		if not flag:
 			self.Enable(True)
@@ -106,8 +103,7 @@ class TimeScale(wx.Panel):
 	def setOffset(self, x):
 		"""
 		Method: setOffset
-		Created: N/A, KP
-		Description: Sets the offset of the timescale, which is
+		Sets the offset of the timescale, which is
 					 mainly determined by the tracks' titles
 		"""    
 		
@@ -117,8 +113,7 @@ class TimeScale(wx.Panel):
 	def setPixelsPerSecond(self, x):
 		"""
 		Method: setPixelsPerSecond
-		Created: N/A, KP
-		Description: Set how many pixels the timeline will show per second
+		Set how many pixels the timeline will show per second
 		"""    
 		self.perSecond = x
 		#print "pixels per second=",x
@@ -126,8 +121,7 @@ class TimeScale(wx.Panel):
 	def setZoomLevel(self, level):
 		"""
 		Method: setZoomLevel
-		Created: 15.12.2005, KP
-		Description: Set a zoom level affecting the pixels per second
+		Set a zoom level affecting the pixels per second
 		"""    
 		if self.zoomLevel != level:
 			self.zoomLevel = level
@@ -139,16 +133,14 @@ class TimeScale(wx.Panel):
 	def getPixelsPerSecond(self):
 		"""
 		Method: getPixelsPerSecond
-		Created: N/A, KP
-		Description: Return the pixels per second, modified by the zoom level
+		Return the pixels per second, modified by the zoom level
 		"""        
 		return int(self.perSecond * self.zoomLevel)
 
 	def setDuration(self, seconds):
 		"""
 		Method: setDuration
-		Created: N/A, KP
-		Description: Set the length of the timescale
+		Set the length of the timescale
 		"""        
 		self.seconds = seconds
 		
@@ -167,16 +159,14 @@ class TimeScale(wx.Panel):
 	def getDuration(self):
 		"""
 		Method: getDuration
-		Created: 19.12.2005, KP
-		Description: Return the length of the timescale
+		Return the length of the timescale
 		"""           
 		return self.seconds
 
 	def paintScale(self):
 		"""
 		Method: paintScale
-		Created: N/A, KP
-		Description: Paint the timescale
+		Paint the timescale
 		"""        
 		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		#col=self.GetBackgroundColour()
@@ -227,8 +217,7 @@ class TimeScale(wx.Panel):
 	def onPaint(self, event):
 		"""
 		Method: onPaint
-		Created: N/A, KP
-		Description: The event handler for paint events. Just blits
+		The event handler for paint events. Just blits
 					 a bmp
 		"""    
 		dc = wx.BufferedPaintDC(self, self.buffer)

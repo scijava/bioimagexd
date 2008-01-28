@@ -78,8 +78,7 @@ class InfoWidget(wx.Panel):
 	"""
 	def __init__(self, master, **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization for the Info node
+		Initialization for the Info node
 		"""
 		wx.Panel.__init__(self, master, -1, style = wx.BORDER_RAISED, **kws)
 		self.mainsizer = wx.GridBagSizer(5, 5)
@@ -102,15 +101,13 @@ class InfoWidget(wx.Panel):
 
 	def enable(self, flag):
 		"""
-		Created: 05.06.2005, KP
-		Description: Enable/disable widget
+		Enable/disable widget
 		"""
 		pass
  
 	def setTree(self, tree):
 		"""
-		Created: 3.04.2005, KP
-		Description: Sets the tree widget
+		Sets the tree widget
 		"""
 		self.tree = tree
 		
@@ -119,8 +116,7 @@ class InfoWidget(wx.Panel):
 		
 	def showInfo(self, obj = None, evt = None, dataunit = None):
 		"""
-		Created: 21.02.2005, KP
-		Description: Sets the infowidget to show info on a given dataunit
+		Sets the infowidget to show info on a given dataunit
 		"""
 		if not dataunit:
 			dims = (0, 0, 0)
@@ -223,8 +219,7 @@ class InfoWidget(wx.Panel):
 
 	def createInfoNotebook(self):
 		"""
-		Created: 21.02.2005, KP
-		Description: Creates the fields for showing information about the
+		Creates the fields for showing information about the
 		dataunit
 		"""
 		self.infoPanel = wx.Panel(self.infoNotebook, -1)
@@ -270,8 +265,7 @@ class InfoWidget(wx.Panel):
 
 	def clearInfo(self):
 		"""
-		Created: 28.11.2007, LP
-		Description: Clears the information from the info widget.
+		Clears the information from the info widget.
 		"""
 		self.htmlpage.SetPage("")
 		self.taskName.SetValue("")

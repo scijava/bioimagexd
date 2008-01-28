@@ -72,8 +72,7 @@ class TimepointTrack(Track):
 	def AcceptDrop(self, x, y, data):
 		"""
 		Method: AcceptDrop
-		Created: 12.04.2005, KP
-		Description: Method called to indicate that a user is no longer dragging
+		Method called to indicate that a user is no longer dragging
 					 something to this track
 		"""
 		oldlen = len(self.items)
@@ -88,8 +87,7 @@ class TimepointTrack(Track):
 	def showThumbnail(self, flag):
 		"""
 		Method: showThumbnail
-		Created: 04.02.2005, KP
-		Description: A method to set a flag indicating, whether to show a
+		A method to set a flag indicating, whether to show a
 					 thumbnail on the items in this track
 		"""           
 		self.thumbnail = flag
@@ -100,8 +98,7 @@ class TimepointTrack(Track):
 	def insertTimepoints(self, timepoints):
 		"""
 		Method: insertTimepoints(tps)
-		Created: 13.04.2005, KP
-		Description: Insert the given timepoints to the track
+		Insert the given timepoints to the track
 		"""              
 		pos = self.dragEndPosition
 		for tp in timepoints:
@@ -116,8 +113,7 @@ class TimepointTrack(Track):
 	def addTimepoint(self, position, timepoint, update = 1):
 		"""
 		Method: addTimepoint
-		Created: 04.02.2005, KP
-		Description: A method to add a new item to this track
+		A method to add a new item to this track
 		"""              
 		h = self.height
 		kws = {"editable":self.editable}
@@ -145,8 +141,7 @@ class TimepointTrack(Track):
 	def setItemAmount(self, n):
 		"""
 		Method: setItemAmount
-		Created: 20.04.2005, KP
-		Description: A method to set the amount of items in this track
+		A method to set the amount of items in this track
 		"""               
 		self.remove()
 		self.initTrack()
@@ -156,8 +151,7 @@ class TimepointTrack(Track):
 	def __set_pure_state__(self, state):
 		"""
 		Method: __set_pure_state__()
-		Created: 11.04.2005, KP
-		Description: Method called by UrmasPersist to allow the object
+		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
 		Track.__set_pure_state__(self, state)

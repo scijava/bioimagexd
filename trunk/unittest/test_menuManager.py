@@ -7,7 +7,6 @@ class MenuManagerTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Created: 16.07.2007, SS
 		Description:
 		"""
 		self.testMenuManager = GUI.MenuManager.MenuManager(None)
@@ -17,8 +16,7 @@ class MenuManagerTest(unittest.TestCase):
 
 	def testAddCommand(self):
 		"""
-		Created: 16.07.2007, SS
-		Description: Test for method addCommand()
+		Test for method addCommand()
 					Tests that if a command is added, it will appear on the end of the list.
 					If the command already exist on the list, it will not be added
 		"""
@@ -31,8 +29,7 @@ class MenuManagerTest(unittest.TestCase):
 
 	def testGetLastCommand(self):
 		"""
-		Created: 16.07.2007, SS
-		Description: Test for method getLastCommand()
+		Test for method getLastCommand()
 		"""
 		lastOne = 8
 		self.testMenuManager.commands = [1, 4, 7, lastOne]
@@ -40,29 +37,25 @@ class MenuManagerTest(unittest.TestCase):
 
 	def testRemoveSeparator(self):
 		"""
-		Created: 16.07.2007, SS
-		Description: Test for method 
+		Test for method 
 		"""
 		pass
 
 	def testCheck(self):
 		"""
-		Created: 16.07.2007, SS
-		Description: Test for method 
+		Test for method 
 		"""
 		pass
 
 	def testIsChecked(self):
 		"""
-		Created: 16.07.2007, SS
-		Description: Test for method 
+		Test for method 
 		"""
 		pass
 
 	def testAddSubMenu(self):
 		"""
-		Created: 16.07.2007, SS
-		Description: Test for method 
+		Test for method 
 		"""
 		pass
 

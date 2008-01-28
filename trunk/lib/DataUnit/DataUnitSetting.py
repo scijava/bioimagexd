@@ -58,8 +58,7 @@ class DataUnitSettings:
 	
 	def __init__(self, dataSetNumber = -1, **keyWords):
 		"""
-		Created: 26.03.2005
-		Description: Constructor
+		Constructor
 		Parameters:
 			n	Number of the dataset this is associated to
 				Reflects in that set() and get() of counted variables
@@ -100,15 +99,13 @@ class DataUnitSettings:
 		
 	def getDatasetNumber(self):
 		"""
-		Created: 02.08.2007, KP
-		Description: return the index of this dataset
+		return the index of this dataset
 		"""
 		return self.dataSetNumber
 		
 	def resetSettings(self):
 		"""
-		Created: 31.10.2006, KP
-		Description: Reset the settings
+		Reset the settings
 		"""
 		# Delete keys that have not been registered. This is to ensure
 		# nothing added by tasks is retained after the task has been closed
@@ -122,8 +119,7 @@ class DataUnitSettings:
 		
 	def asType(self, newtype):
 		"""
-		Created: 3.04.2005
-		Description: Return this setting as given type
+		Return this setting as given type
 		"""
 		newclass = eval(newtype)
 
@@ -133,23 +129,20 @@ class DataUnitSettings:
 		
 	def setType(self, newtype):
 		"""
-		Created: 2.04.2005
-		Description: Set the type of this dataunit
+		Set the type of this dataunit
 		"""
 		self.type = newtype
 		self.set("Type", newtype)
 		
 	def getType(self):
 		"""
-		Created: 2.04.2005
-		Description: Set the type of this dataunit
+		Set the type of this dataunit
 		"""
 		return self.type
 		
 	def register(self, name, serialize = 0):
 		"""
-		Created: 26.03.2005
-		Description: Register a name as valid key. 
+		Register a name as valid key. 
 		Parameters:
 			serialize	The value will be written out/read through
 						the serialize/deserialize methods
@@ -160,8 +153,7 @@ class DataUnitSettings:
 
 	def registerPrivate(self, name, serialize = 0):
 		"""
-		Created: 26.03.2005
-		Description: Register a name as valid key.
+		Register a name as valid key.
 		Parameters:
 			serialize	The value will be written out/read through
 						the serialize/deserialize methods
@@ -172,8 +164,7 @@ class DataUnitSettings:
 		
 	def registerCounted(self, name, serialize = 0):
 		"""
-		Created: 26.03.2005
-		Description: Register a name as valid key that is counted
+		Register a name as valid key that is counted
 		Parameters:
 			serialize	The value will be written out/read through
 						the serialize/deserialize methods
@@ -185,8 +176,7 @@ class DataUnitSettings:
 
 	def readFrom(self, parser):
 		"""
-		Created: 26.03.2005
-		Description: Attempt to read all registered keys from a parser
+		Attempt to read all registered keys from a parser
 		"""
 		self.parser = parser
 		if not self.get("Type"):
@@ -266,8 +256,7 @@ class DataUnitSettings:
 				
 	def writeKey(self, key, parser, n = -1):
 		"""
-		Created: 27.03.2005
-		Description: Write a key and it's value to parser
+		Write a key and it's value to parser
 		"""	   
 		nkey = "%s[%d]" % (key, n)
 		if not (key in self.settings or nkey in self.settings) \
@@ -289,8 +278,7 @@ class DataUnitSettings:
  
 	def writeTo(self, parser):
 		"""
-		Created: 26.03.2005
-		Description: Attempt to write all keys to a parser
+		Attempt to write all keys to a parser
 		"""	   
 		if not parser.has_section("Settings"):
 			parser.add_section("Settings")
@@ -310,8 +298,7 @@ class DataUnitSettings:
 			
 	def set(self, name, value, overwrite = 1):
 		"""
-		Created: 26.03.2005
-		Description: Sets the value of a key
+		Sets the value of a key
 		"""
 		if not overwrite and self.settings.has_key(name):
 			return
@@ -326,8 +313,7 @@ class DataUnitSettings:
 
 	def setCounted(self, name, count, value, overwrite = 1):
 		"""
-		Created: 26.03.2005
-		Description: If there are more than one setting associated,
+		If there are more than one setting associated,
 					 for example, with different channels, then this
 					 can be used to set the value of that variable
 					 properly.
@@ -343,8 +329,7 @@ class DataUnitSettings:
 
 	def get(self, name):
 		"""
-		Created: 26.03.2005
-		Description: Return the value of a key
+		Return the value of a key
 		"""
 		if self.dataSetNumber != -1 and name in self.counted:
 			name = "%s[%d]" % (name, self.dataSetNumber)
@@ -356,8 +341,7 @@ class DataUnitSettings:
 
 	def getCounted(self, name, count):
 		"""
-		Created: 26.03.2005
-		Description: Return the value of a key
+		Return the value of a key
 		"""
 		key = "%s[%d]" % (name, count)
 		return self.get(key)
@@ -365,8 +349,7 @@ class DataUnitSettings:
 	@staticmethod
 	def serialize(name, value):
 		"""
-		Created: 27.03.2005
-		Description: Returns the value of a given key in a format
+		Returns the value of a given key in a format
 					 that can be written to disk.
 		"""
 		Logging.info("Serializing name ", name, kw = "dataunit")
@@ -393,8 +376,7 @@ class DataUnitSettings:
 	@staticmethod
 	def deserialize(name, value):
 		"""
-		Created: 27.03.2005
-		Description: Returns the value of a given key
+		Returns the value of a given key
 		"""
 		if "ColorTransferFunction" in name:
  #			 try:
@@ -420,15 +402,13 @@ class DataUnitSettings:
 		
 	def __str__(self):
 		"""
-		Created: 30.03.2005
-		Description: Returns the string representation of this class
+		Returns the string representation of this class
 		"""
 		return "%s ( %s )" % (str(self.__class__), str(self.settings))
 
 	def initialize(self, dataunit, channels, timepoints):
 		"""
-		Created: 03.04.2005
-		Description: Set initial values for settings based on 
+		Set initial values for settings based on 
 					 number of channels and timepoints
 		"""
 		self.channels = channels

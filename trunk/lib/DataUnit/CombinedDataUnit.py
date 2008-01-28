@@ -48,8 +48,7 @@ class CombinedDataUnit(DataUnit):
 
 	def __init__(self, name = ""):
 		"""
-		Created: 03.11.2004, JM
-		Description: Constructor
+		Constructor
 		"""
 		DataUnit.__init__(self, name, initToNone = 0)
 		self.outputDirectory = ""
@@ -69,8 +68,7 @@ class CombinedDataUnit(DataUnit):
 		
 	def removeAllInputs(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: remove all inputs
+		remove all inputs
 		"""
 		self.sourceunits = []
 		self.doOrig = 0
@@ -78,37 +76,32 @@ class CombinedDataUnit(DataUnit):
 		
 	def getOutputDirectory(self):
 		"""
-		Created: 04.04.2007, KP
-		Description: return the output directory where this dataunit will write it's output
+		return the output directory where this dataunit will write it's output
 		"""
 		return self.outputDirectory
 		
 	def isProcessed(self):
 		"""
-		Created: 31.05.2005, KP
-		Description: A method for querying whether this dataset is a processed one
+		A method for querying whether this dataset is a processed one
 		"""	   
 		return 1
 		
 	def setOutputChannel(self, channel, flag):
 		"""
-		Created: 22.07.2005, KP
-		Description: Mark a channel as being part of the output
+		Mark a channel as being part of the output
 		"""
 		self.outputChannels[channel] = flag
 		#Logging.info("output channels now = ", self.outputChannels, kw = "dataunit")
 		
 	def getOutputChannel(self, channel):
 		"""
-		Created: 23.10.2006, KP
-		Description: Return the status of the given output channel
+		Return the status of the given output channel
 		"""
 		return self.outputChannels.get(channel, 1)
 		
 	def getSingleComponentBitDepth(self):
 		"""
-		Created: 09.07.2007, KP
-		Description: return the bit depth of single component of data
+		return the bit depth of single component of data
 		"""
 		if self.sourceunits:
 			return self.sourceunits[0].getSingleComponentBitDepth()
@@ -134,23 +127,20 @@ class CombinedDataUnit(DataUnit):
 
 	def setModule(self, module):
 		"""
-		Created: 27.03.2005, KP
-		Description: Sets the module that does the calculations for
+		Sets the module that does the calculations for
 					 this dataunit
 		"""
 		self.module = module
 
 	def getSettings(self):
 		"""
-		Created: 27.03.2005, KP
-		Description: Returns the settings object of this dataunit
+		Returns the settings object of this dataunit
 		"""
 		return self.settings
 
 	def setSettings(self, settings):
 		"""
-		Created: 27.03.2005, KP
-		Description: Sets the settings object of this dataunit
+		Sets the settings object of this dataunit
 		"""
 		self.settings = settings
 		self.settings.initialize(self, len(self.sourceunits), self.length)
@@ -158,8 +148,7 @@ class CombinedDataUnit(DataUnit):
 
 	def setDataSource(self, dataSource):
 		"""
-		Created: 17.11.2004, JM
-		Description: Sets a DataSource for this CombinedDataUnit
+		Sets a DataSource for this CombinedDataUnit
 		Parameters: dataSource	A DataSource to manage actual
 								image data located on disk
 		"""
@@ -168,22 +157,19 @@ class CombinedDataUnit(DataUnit):
 		
 	def getDataUnitCount(self):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the count of DataUnits
+		Returns the count of DataUnits
 		"""
 		return len(self.sourceunits)
 
 	def getSourceDataUnits(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Returns a list of references to the contained DataUnits
+		Returns a list of references to the contained DataUnits
 		"""
 		return self.sourceunits
 
 	def doProcessing(self, bxdFile, **kws):
 		"""
-		Created: 08.11.2004, JM
-		Description: Executes the module's operation using the current settings
+		Executes the module's operation using the current settings
 		Parameters:
 				bxdFile		The name of the created .bxdfile
 		Keywords:
@@ -265,16 +251,14 @@ class CombinedDataUnit(DataUnit):
 
 	def setMask(self, mask):
 		"""
-		Created: 25.05.2007, KP
-		Description: Set the mask applied to this dataunit
+		Set the mask applied to this dataunit
 		"""	  
 		for i in self.sourceunits:
 			i.setMask(mask)
 
 	def createDataUnitFile(self, writer):
 		"""
-		Created: 1.12.2004, KP, JM
-		Description: Writes a du file to disk
+		Writes a du file to disk
 		"""
 		parser = writer.getParser()
 		
@@ -292,8 +276,7 @@ class CombinedDataUnit(DataUnit):
 
 	def addSourceDataUnit(self, dataUnit, no_init = 0):
 		"""
-		Created: 03.11.2004, JM
-		Description: Adds 4D data to the unit together with channel-specific settings.
+		Adds 4D data to the unit together with channel-specific settings.
 		Parameters: dataUnit	The SourceDataUnit to be added
 		"""
 		# If one or more SourceDataUnits have already been added, check that the
@@ -331,8 +314,7 @@ class CombinedDataUnit(DataUnit):
 		
 	def switchSourceDataUnits(self, units):
 		"""
-		Created: 11.08.2005, KP
-		Description: Switch the source data units used
+		Switch the source data units used
 		"""
 		if len(units) != len(self.sourceunits):
 			raise Logging.GUIError("Wrong number of dataunits", \
@@ -356,8 +338,7 @@ class CombinedDataUnit(DataUnit):
 
 	def doPreview(self, depth, renew, timePoint = 0):
 		"""
-		Created: 08.11.2004, JM
-		Description: Makes a two-dimensional preview using the class-specific combination function
+		Makes a two-dimensional preview using the class-specific combination function
 		Parameters: depth		The preview depth
 					renew		Flag indicating, whether the preview should be 
 								regenerated or if a stored image can be reused
@@ -473,8 +454,7 @@ class CombinedDataUnit(DataUnit):
 		
 	def getSettingsClass(self):
 		"""
-		Created: 02.04.2005, KP
-		Description: Return the class that represents settings for this dataunit
+		Return the class that represents settings for this dataunit
 		"""
 		raise "Using bare DataUnitSettings"
  

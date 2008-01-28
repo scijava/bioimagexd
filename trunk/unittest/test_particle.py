@@ -175,8 +175,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def setUp(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: Create a test particleTracker and other test data
+		Create a test particleTracker and other test data
 
 		Particle parameters:
 		The first parameter defines the distance (p.pos)
@@ -256,8 +255,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetMinimumTrackLength(self):
 		"""
-		Created: 25.06.2007, SS
-		Description: A test for method setMinimumTrackLength()
+		A test for method setMinimumTrackLength()
 		"""
 
 		oldTrackLength = self.partTracker.minimumTrackLength
@@ -266,8 +264,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetWeights(self):
 		"""
-		Created: 25.06.2007, SS
-		Description: A test for method setWeights()
+		A test for method setWeights()
 		"""
 
 		oldVelocityWeight = self.partTracker.velocityWeight
@@ -287,16 +284,14 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testGetReader(self):
 		"""
-		Created: 25.06.2007, SS
-		Description: A test for method getReader()
+		A test for method getReader()
 		"""
 
 		self.assertEqual(self.partTracker.reader, self.partTracker.getReader())
 
 	def testReadFromFile(self):
 		"""
-		Created: 27.06.2007, SS
-		Description: A test for method readFromFile()
+		A test for method readFromFile()
 		"""
 
 		self.assertEqual(self.partTracker.reader, None)
@@ -307,8 +302,7 @@ class ParticleTrackerTest(unittest.TestCase):
 		
 	def testGetParticles(self):
 		"""
-		Created: 27.06.2007, SS
-		Description: A test for method getParticles()
+		A test for method getParticles()
 
 		Reading particles 1-9 in timepoint 0 and compare the values
 		"""
@@ -335,16 +329,14 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testGetTracks(self):
 		"""
-		Created: 25.06.2007, SS
-		Description: A test for method getTracks()
+		A test for method getTracks()
 		"""
 
 		self.assertEqual(self.partTracker.tracks, self.partTracker.getTracks())
 
 	def testWriteTracks(self):
 		"""
-		Created: 28.06.2007, SS
-		Description: A test for method writeTracks()
+		A test for method writeTracks()
 
 		Opening and writing to an empty file tracksWrite.csv
 		"""
@@ -357,8 +349,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetFilterObjectSize(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method setFilterObjectSize()
+		A test for method setFilterObjectSize()
 		"""
 
 		self.assertEqual(self.partTracker.filterObjectSize, 2, "the number 2 comes from ParticleTracker()")
@@ -367,8 +358,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testGetStats(self):
 		"""
-		Created: 28.06.2007, SS
-		Description: A test for method getStats()
+		A test for method getStats()
 
 		* warning! this takes about 150 minutes to execute with code coverage...
 		- the getStats() method is really complex and takes time to run, also in make test
@@ -387,8 +377,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetDistanceChange(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method setDistanceChange()
+		A test for method setDistanceChange()
 		"""
 
 		self.assertEqual(self.partTracker.distanceChange, self.oldDistanceChange)
@@ -397,8 +386,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetSizeChange(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method setSizeChange()
+		A test for method setSizeChange()
 		"""
 
 		self.assertEqual(self.partTracker.sizeChange, self.oldSizeChange)
@@ -407,8 +395,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetIntensityChange(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method setIntensityChange()
+		A test for method setIntensityChange()
 		"""
 
 		self.assertEqual(self.partTracker.intensityChange, self.oldIntensityChange)
@@ -417,8 +404,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testSetAngleChange(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method setAngleChange()
+		A test for method setAngleChange()
 		"""
 
 		self.assertEqual(self.partTracker.angleChange, self.oldAngleChange)
@@ -427,8 +413,7 @@ class ParticleTrackerTest(unittest.TestCase):
 	
 	def testScoreNiceValues(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for distance, size and average intensity values that should give !(None) output
 		(p.pos is used)
@@ -438,8 +423,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testScoreEqualDistance(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for distance values that are equal to biggest allowed values
 		The size and intensity values are within the allowed limits
@@ -452,8 +436,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testScoreEqualSize(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for size values that are equal to biggest allowed values
 		The distance and intensity values are within the allowed limits
@@ -466,8 +449,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testScoreEqualIntensity(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for average intensity values that are the biggest allowed
 		The distance and size values are within the allowed limits
@@ -481,8 +463,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testScoreTooBigDistance(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for too big distance values
 		(p.pos is used)
@@ -493,8 +474,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testScoreTooBigSize(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for too big size values and distance values between allowed limit
 		(p.pos is used)
@@ -505,8 +485,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testScoreTooBigIntensity(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method score()
+		A test for method score()
 
 		Tests for too big average intensity values and distance and size values between allowed limit
 		(p.pos is used)
@@ -517,8 +496,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testAngleNoLine(self):
 		"""
-		Created: 08.06.2007, SS
-		Description: A test for method angle()
+		A test for method angle()
 
 		Tests that no angle between horizontal axis and a single point can exist
 		(p.intpos is used)
@@ -530,8 +508,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testAngleZeroDegrees(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method angle()
+		A test for method angle()
 
 		Tests for angle between horizontal axis and a line with 0 or 180 degrees to it
 		"""
@@ -541,8 +518,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testAngleNinetyDegrees(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method angle()
+		A test for method angle()
 
 		Tests for angle between horizontal axis and a line with 90 degrees angle to it,
 		and also for the -90 degrees angle
@@ -553,8 +529,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testAngleFortyfiveDegrees(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method angle()
+		A test for method angle()
 
 		Tests for angle between horizontal axis and a line with 
 		45, 135, -45 and -135 degrees angle to it
@@ -567,8 +542,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testToScore(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method toScore()
+		A test for method toScore()
 		"""
 
 		testScore = self.partTracker.toScore(self.testDistanceFactor, \
@@ -585,8 +559,7 @@ class ParticleTrackerTest(unittest.TestCase):
 
 	def testToScoreNoAngleFactor(self):
 		"""
-		Created: 26.06.2007, SS
-		Description: A test for method toScore()
+		A test for method toScore()
 
 		No parameter given for angleFactor
 		"""

@@ -67,14 +67,12 @@ class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
 		
 class ColocalizationPanel(TaskPanel):
 	"""
-	Created: 03.11.2004, KP
-	Description: A window for controlling the settings of the
+	A window for controlling the settings of the
 				 colocalization module
 	"""
 	def __init__(self, parent, tb):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		Parameters:
 				root	Is the parent widget of this window
 		"""
@@ -98,8 +96,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def updateListCtrl(self):
 		"""
-		Created: 12.07.2005, KP
-		Description: Updates the list ctrl
+		Updates the list ctrl
 		"""
 		fs = "%.3f%%"
 		fs2 = "%.4f"
@@ -391,8 +388,7 @@ class ColocalizationPanel(TaskPanel):
 			
 	def autoThreshold(self):
 		"""
-		Created: 11.07.2004, KP
-		Description: Use vtkAutoThresholdColocalization to determine thresholds
+		Use vtkAutoThresholdColocalization to determine thresholds
 					 for colocalization and calculate statistics
 		"""
 		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 1)		 
@@ -405,8 +401,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def getAutoThreshold(self, event = None):
 		"""
-		Created: 11.07.2004, KP
-		Description: Calculate the automatic threshold for colocalization
+		Calculate the automatic threshold for colocalization
 		"""
 		do_cmd = """scripting.mainWindow.tasks['Colocalization'].autoThreshold()"""
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
@@ -415,8 +410,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def statistics(self):
 		"""
-		Created: 17.07.2006, KP
-		Description: Calculate the statistics
+		Calculate the statistics
 		"""
 		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 2)
 		self.eventDesc = "Calculating statistics"
@@ -428,8 +422,7 @@ class ColocalizationPanel(TaskPanel):
 	def getStatistics(self, event = None):
 		"""
 		Method: getStatistics
-		Created: 11.07.2004, KP
-		Description: Use vtkAutoThresholdColocalization to determine thresholds
+		Use vtkAutoThresholdColocalization to determine thresholds
 					 for colocalization and calculate statistics
 		"""
 		do_cmd = """scripting.mainWindow.tasks['Colocalization'].statistics()"""
@@ -463,8 +456,7 @@ class ColocalizationPanel(TaskPanel):
 	def getPValue(self, method = 1, iterations = 100):
 		"""
 		Method: getPValue
-		Created: 13.07.2005, KP
-		Description: Get the P value for colocalization
+		Get the P value for colocalization
 		"""
 		try:
 			n = int(self.iterations.GetValue())
@@ -516,8 +508,7 @@ class ColocalizationPanel(TaskPanel):
 	def updateProgress(self, obj, evt, *args):
 		"""
 		Method: updateProgress
-		Created: 13.07.2005, KP
-		Description: Sends a update_progress event and yields time for the GUI
+		Sends a update_progress event and yields time for the GUI
 		"""
 		wx.GetApp().Yield(1)
 		progress = obj.GetProgress()
@@ -528,8 +519,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def createButtonBox(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a button box containing the buttons Render, 
+		Creates a button box containing the buttons Render, 
 					 Preview and Close
 		"""
 		TaskPanel.createButtonBox(self)
@@ -537,8 +527,7 @@ class ColocalizationPanel(TaskPanel):
 
 	def createOptionsFrame(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a frame that contains the various widgets
+		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
 		TaskPanel.createOptionsFrame(self)
@@ -680,8 +669,7 @@ class ColocalizationPanel(TaskPanel):
 	
 	def onUpdatePSF(self, event):
 		"""
-		Created: 06.04.2006, KP
-		Description: Update the PSF based on the given NA and lambda
+		Update the PSF based on the given NA and lambda
 		"""
 		if event:
 			event.Skip()
@@ -708,8 +696,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def onSetTestMethod(self, event):
 		"""
-		Created: 13.07.2005, KP
-		Description: Set the method used for colocalisation test
+		Set the method used for colocalisation test
 		"""
 		n = self.radiobox.GetSelection()
 		flag = (n == 1)
@@ -721,8 +708,7 @@ class ColocalizationPanel(TaskPanel):
 
 	def onExportStatistics(self, event):
 		"""
-		Created: 13.07.2005, KP
-		Description: Export colocalization statistics to file
+		Export colocalization statistics to file
 		"""
 		
 		name = self.dataUnit.getName()
@@ -738,16 +724,14 @@ class ColocalizationPanel(TaskPanel):
 		
 	def decode(self, d):
 		"""
-		Created: 15.08.2006, KP
-		Description: Replace any unicode characeters with their ascii counterparts
+		Replace any unicode characeters with their ascii counterparts
 		"""
 		d = d.replace(u"\u00B1", "+-")
 		return d
 		
 	def exportStatistics(self, filename):
 		"""
-		Created: 18.07.2006, KP
-		Description: Export the colocalization stats
+		Export the colocalization stats
 		"""	  
 		name = self.dataUnit.getName()
 		sources = self.dataUnit.getSourceDataUnits()
@@ -798,8 +782,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def populateListCtrl(self):
 		"""
-		Created: 12.07.2005, KP
-		Description: Add information to the list control
+		Add information to the list control
 		"""
 		self.cols = [self.beginner, self.intermediate, self.expert]
 		self.headervals = [["%ch1% threshold (Lower / Upper)", "", "", 0],
@@ -848,8 +831,7 @@ class ColocalizationPanel(TaskPanel):
 			
 	def updateZSlice(self, obj, event, zslice):
 		"""
-		Created: 25.03.2005, KP
-		Description: A callback function called when the zslice is changed
+		A callback function called when the zslice is changed
 		"""
 		if self.scatterPlot:
 			self.scatterPlot.setZSlice(zslice)
@@ -858,8 +840,7 @@ class ColocalizationPanel(TaskPanel):
 
 	def updateTimepoint(self, obj, event, timePoint):
 		"""
-		Created: 25.03.2005, KP
-		Description: A callback function called when the timepoint is changed
+		A callback function called when the timepoint is changed
 		"""
 		self.timePoint = timePoint
 		if self.scatterPlot:
@@ -868,8 +849,7 @@ class ColocalizationPanel(TaskPanel):
 
 	def updateThreshold(self, event):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback function called when the threshold is configured via the slider
+		A callback function called when the threshold is configured via the slider
 		"""
 		# We might get called before any channel has been selected.
 		# In that case, do nothing
@@ -887,8 +867,7 @@ class ColocalizationPanel(TaskPanel):
 
 	def updateSettings(self, force = 0, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A method used to set the GUI widgets to their proper values
+		A method used to set the GUI widgets to their proper values
 					 based on the selected channel, the settings of which are 
 					 stored in the instance variable self.settings
 		"""
@@ -914,16 +893,14 @@ class ColocalizationPanel(TaskPanel):
 
 	def doColocalizationCallback(self, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback for the button "Do colocalization"
+		A callback for the button "Do colocalization"
 		"""
 		self.updateBitDepth()
 		TaskPanel.doOperation(self)
 
 	def updateBitDepth(self, event = None):
 		"""
-		Created: 17.11.2004, KP
-		Description: Updates the preview to be done at the selected depth
+		Updates the preview to be done at the selected depth
 		"""
 		if self.settings:
 			#depth=self.depthMenu.GetSelection()
@@ -940,8 +917,7 @@ class ColocalizationPanel(TaskPanel):
 
 	def doPreviewCallback(self, event = None, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback for the button "Preview" and other events
+		A callback for the button "Preview" and other events
 					 that wish to update the preview
 		"""
 		self.updateBitDepth()
@@ -957,8 +933,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def setCombinedDataUnit(self, dataUnit):
 		"""
-		Created: 25.03.2005, KP
-		Description: Set the dataunit used for the colocalization 
+		Set the dataunit used for the colocalization 
 		"""
 		TaskPanel.setCombinedDataUnit(self, dataUnit)
 		# See if the dataunit has a stored colocalizationctf
@@ -1015,8 +990,7 @@ class ColocalizationPanel(TaskPanel):
 		
 	def createItemToolbar(self):
 		"""
-		Created: 31.03.2005, KP
-		Description: Method to create a toolbar for the window that allows use to select processed channel
+		Method to create a toolbar for the window that allows use to select processed channel
 		"""		 
 		n = TaskPanel.createItemToolbar(self)		 
 		
