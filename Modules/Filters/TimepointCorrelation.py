@@ -25,10 +25,12 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import lib.ProcessingFilter
 import vtk
+import vtkbxd
 import types
 import GUI.GUIBuilder
 import lib.FilterTypes
 import scripting
+import wx
 
 class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -47,8 +49,8 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		self.box = None
 		self.descs = {"Timepoint1": "First timepoint:", "Timepoint2": "Second timepoint:"}
-		self.resultVariables = {"Correlation":		"Correlation between timepoints", 
-		"Timepoint1": "First timepoint", "Timepoint2":"Second timepoint"},
+		self.resultVariables = {"Correlation": "Correlation between timepoints", 
+		"Timepoint1": "First timepoint", "Timepoint2":"Second timepoint"}
 	
 	def getParameters(self):
 		"""
@@ -64,7 +66,6 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""				 
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		if not self.box:
-			
 			self.corrLbl = wx.StaticText(gui, -1, "Correlation:")
 			self.corrLbl2 = wx.StaticText(gui, -1, "0.0")
 			box = wx.BoxSizer(wx.HORIZONTAL)
@@ -72,6 +73,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 			box.Add(self.corrLbl2)
 			self.box = box
 			gui.sizer.Add(box, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+
 		return gui
 		
 	def getType(self, parameter):
@@ -104,14 +106,14 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
+
 		tp1 = self.parameters["Timepoint1"]
 		tp2 = self.parameters["Timepoint2"]
 		self.vtkfilter = vtkbxd.vtkImageAutoThresholdColocalization()
 		units = self.dataUnit.getSourceDataUnits()
 		data1 = units[0].getTimepoint(tp1)
-		# We need to prepare a copy of the data since
-		# when we get the next timepoint, the data we got earlier will reference the
-		# new data
+		# We need to prepare a copy of the data since when we get the next
+		# timepoint, the data we got earlier will reference the new data
 		tp = vtk.vtkImageData()
 		tp.DeepCopy(data1)
 		data2 = units[0].getTimepoint(tp2)
@@ -119,7 +121,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		self.vtkfilter.AddInput(data1)
 		self.vtkfilter.AddInput(data2)
-		
+
 		correlation = self.vtkfilter.GetPearsonWholeImage()
 		# Set the thresholds so they won't be calculated
 		self.vtkfilter.SetLowerThresholdCh1(0)
