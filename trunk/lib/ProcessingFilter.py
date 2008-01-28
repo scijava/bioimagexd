@@ -413,7 +413,8 @@ class ProcessingFilter:
 		"""
 		self.taskPanel = taskPanel
 		if not self.gui:
-			self.gui = GUI.GUIBuilder.GUIBuilder(parent, self)
+			GUIBuilder = GUI.GUIBuilder.getGUIBuilderForFilter(self)
+			self.gui = GUIBuilder(parent, self)
 		return self.gui
 
 	@classmethod

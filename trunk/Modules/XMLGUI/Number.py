@@ -23,6 +23,7 @@ __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import GUI.XMLGUIBuilder
+import lib.messenger
 
 
 class NumberValidator(wx.PyValidator):
@@ -50,6 +51,13 @@ class NumberValidator(wx.PyValidator):
 	def Validate(self, win):
 		tc = self.GetWindow()
 		val = tc.GetValue()
+		return self.ValidateValue(val)
+		
+	def ValidateValue(self, val):
+		"""
+		Created: 26.01.2008, KP
+		Description: validate the given value
+		"""
 		for letter in val:
 			if letter not in self.digits[self.mode]:
 				return False
@@ -65,7 +73,7 @@ class NumberInput(GUI.XMLGUIBuilder.XMLGUIElement):
 	inputTypes = ["Integer","Float"]
 	def __init__(self, builder, parent, *args, **kws):
 		GUI.XMLGUIBuilder.XMLGUIElement.__init__(self, builder, parent, *args, **kws)
-		self.createUI()
+		self.uiElement = self.createUI()
 		
 	def createUI(self):
 		"""
@@ -78,5 +86,35 @@ class NumberInput(GUI.XMLGUIBuilder.XMLGUIElement):
 		self.validator = NumberValidator(self.builder.getInputType(self.id))
 		if valrange:
 			self.validator.SetRange(valrange)
-		self.uiElement = wx.TextCtrl(self.parent, -1, str(defaultValue), validator = self.validator)
+		input = wx.TextCtrl(self.parent, -1, str(defaultValue), validator = self.validator, style = wx.TE_PROCESS_ENTER)
+		input.Bind(wx.EVT_TEXT_ENTER, self.setParameterValue)
+		input.Bind(wx.EVT_KILL_FOCUS, self.setParameterValue)
 		
+		lib.messenger.connect(self.currentFilter, "set_%s" % self.id, self.onSetInputValue)
+		return input
+		
+	
+	def setParameterValue(self, event):
+		"""
+		Created: 26.01.2008, KP
+		Description: set the parameter value based on GUI input value
+		"""
+		itemType = self.builder.getInputType(self.id)
+		if itemType == "Integer":
+			convert = int
+		elif itemType == "Float":
+			convert = float
+		try:
+			value = convert(input.GetValue())
+		except:
+			return
+		self.currentFilter.setParameter(self.id, value)
+
+	def onSetInputValue(self, value):
+		"""
+		Created: 26.01.2008, KP
+		Description: Set the value of the input
+		"""
+		if self.validator.ValidateValue(value):
+			self.uiElement.SetValue(str(value))
+			

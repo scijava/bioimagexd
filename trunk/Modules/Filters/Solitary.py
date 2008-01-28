@@ -68,11 +68,11 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		<Param id="ProcessingThreshold" type="Integer"  defaultValue="0" />
 	</Parameters>
 	<UserInterface>
-		<StaticBox label="Thresholds">
+		<Grouping label="Thresholds">
 			<Input id="HorizontalThreshold" label="X:"/>
 			<Input id="VerticalThreshold" label="Y:"/>
 			<Input id="ProcessingThreshold" label="Processing threshold:" />
-		</StaticBox>
+		</Grouping>
 	</UserInterface>
 	<Descriptions>
 		<LongDesc id="HorizontalThreshold">
@@ -84,7 +84,7 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		<LongDesc id="ProcessingThreshold">
 			Threshold that a pixel needs to be over to get processed by solitary filter.
 		</LongDesc>
-	</Description>
+	</Descriptions>
 </Filter>
 """
 		
