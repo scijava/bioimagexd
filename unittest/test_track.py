@@ -14,7 +14,7 @@ class TrackTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Description: Create a test Track and other test data
+		Create a test Track and other test data
 		"""
 		self.testMintp = 1
 		self.testMaxtp = 5
@@ -31,8 +31,7 @@ class TrackTest(unittest.TestCase):
 
 	def testDistance(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method Distance()
+		Test the method Distance()
 		"""
 		t1 = 1
 		t2 = 2
@@ -55,8 +54,7 @@ class TrackTest(unittest.TestCase):
 
 	def testGetLengthSmallValues(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method getLength() and how it reacts on small values
+		Test the method getLength() and how it reacts on small values
 		"""
 		# in initialization length should be -1
 		self.assertEqual(self.testTrack.length, -1)
@@ -71,8 +69,7 @@ class TrackTest(unittest.TestCase):
 
 	def testGetLength(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method getLength(), this should return the total length of the track
+		Test the method getLength(), this should return the total length of the track
 		"""
 		t1 = 1
 		t2 = 2
@@ -94,8 +91,7 @@ class TrackTest(unittest.TestCase):
 
 	def testGetSpeedNone(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method getSpeed() with a 0 speed value
+		Test the method getSpeed() with a 0 speed value
 		"""
 		# in initialization, getLength() should return 0
 		# maxtp - mintp (5 - 1) should return 4
@@ -103,8 +99,7 @@ class TrackTest(unittest.TestCase):
 
 	def testGetSpeed(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method getSpeed()
+		Test the method getSpeed()
 		"""
 		# we use the same values as in testGetLength()
 		t1 = 1
@@ -129,8 +124,7 @@ class TrackTest(unittest.TestCase):
 
 	def testGetDirectionalPersistence(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method getDirectionalPersistence()
+		Test the method getDirectionalPersistence()
 		"""
 		# we use the same values as in testGetLength()
 		t1 = 1
@@ -156,14 +150,13 @@ class TrackTest(unittest.TestCase):
 
 	def testGetAverageAngle(self):
 		"""
-		Created: 14.8.2007, SS
-		Description: Test the method getAverageAngle()
+		Test the method getAverageAngle()
 		"""
 		pass
 
 	def testAddTrackPointMintp(self):
 		"""
-		Description: Test the method addTrackPoint()
+		Test the method addTrackPoint()
 		Test that mintp gets a new value if timepoint is less than it
 		"""	
 		timepoint = -1
@@ -181,7 +174,7 @@ class TrackTest(unittest.TestCase):
 
 	def testAddTrackPointMaxtp(self):
 		"""
-		Description: Test the method addTrackPoint()
+		Test the method addTrackPoint()
 		Test that maxtp gets a new value if timepoint is greater than it
 		"""
 		timepoint = 6
@@ -199,14 +192,14 @@ class TrackTest(unittest.TestCase):
 
 	def testGetTimeRange(self):
 		"""
-		Description: Test the method getTimeRange()
+		Test the method getTimeRange()
 		Test that mintp and maxtp are correct
 		"""
 		self.assertEqual(self.testTrack.getTimeRange(), (self.testMintp, self.testMaxtp))
 
 	def testGetObjectAtTime(self):
 		"""
-		Description: Test the method getObjectAtTime()
+		Test the method getObjectAtTime()
 		getObjectAtTime should return (objval, position) if timepoint exists in track,
 		else it should return (-1, (-1,-1,-1))
 		"""
@@ -223,7 +216,7 @@ class TrackReaderTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Description: Create a test TrackReader and other test data
+		Create a test TrackReader and other test data
 		"""
 		self.filename = os.path.join(unittestPath, "testdata", "tracks.csv")
 		self.testTrackReader = lib.Track.TrackReader(self.filename)
@@ -233,7 +226,7 @@ class TrackReaderTest(unittest.TestCase):
 	
 	def testCountTracks(self):
 		"""
-		Description: Test that readTracks() returns correct amount of tracks in tracks[]
+		Test that readTracks() returns correct amount of tracks in tracks[]
 		Method readTracks() is called from __init__
 
 		This failed with the old code
@@ -242,7 +235,7 @@ class TrackReaderTest(unittest.TestCase):
 
 	def testReadFromFile(self):
 		"""
-		Description: Test that readFromFile() changes the value of self.maxLength
+		Test that readFromFile() changes the value of self.maxLength
 		"""
 		self.testTrackReader.maxLength = -1
 		oldMaxLength = self.testTrackReader.maxLength
@@ -252,26 +245,26 @@ class TrackReaderTest(unittest.TestCase):
 	
 	def testGetMaximumTrackLength(self):
 		"""
-		Description: Test that getMaximumTrackLength() returns the length of longest track
+		Test that getMaximumTrackLength() returns the length of longest track
 		"""
 		self.assertEqual(self.testTrackReader.getMaximumTrackLength(), self.expectedLengthOfLongestTrack)
 
 	def testGetNumberOfTracks(self):
 		"""
-		Description: Test that getNumberOfTracks returns correct amount of tracks in tracks[] with length > 3
+		Test that getNumberOfTracks returns correct amount of tracks in tracks[] with length > 3
 		"""
 		self.assertEqual(self.testTrackReader.getNumberOfTracks(), self.expectedAmountOfBigEnoughTracks)
 
 	def testGetTracks(self):
 		"""
-		Description: Test that getTracks() returns correct amount of tracks in tracks[] with length > 3
+		Test that getTracks() returns correct amount of tracks in tracks[] with length > 3
 		"""
 		temptracks = self.testTrackReader.getTracks()
 		self.assertEqual((len(temptracks)), self.expectedAmountOfBigEnoughTracks)
 
 	def testReadTracks(self):
 		"""
-		Description: Test that readTracks() works correctly and tracks[] is not empty
+		Test that readTracks() works correctly and tracks[] is not empty
 		"""
 		self.assertEqual(bool(self.testTrackReader.tracks), True)
 

@@ -48,8 +48,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 	"""
 	def __init__(self, parent, operation):
 		"""
-		Created: 10.11.2004
-		Description: Initialization
+		Initialization
 		"""
 		TimepointSelection.TimepointSelection.__init__(self, parent)
 		self.progressDialog = None
@@ -63,8 +62,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 
 	def createButtonBox(self):
 		"""
-		Created: 03.2.2005, KP
-		Description: Creates the standard control buttons
+		Creates the standard control buttons
 		"""
 		TimepointSelection.TimepointSelection.createButtonBox(self)
 
@@ -73,8 +71,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 	
 	def updateProgressMeter(self, obj, eventt, tp, nth, total):
 		"""
-		Created: 15.11.2004, KP
-		Description: A callback for the dataunit to give info on the
+		A callback for the dataunit to give info on the
 					 progress of the task
 		Parameters:
 				tp      The number of the timepoint the module is processing
@@ -102,8 +99,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		
 	def onDoProcessing(self, event):
 		"""
-		Created: 09.02.2005, KP
-		Description: A method that tells the dataunit to process the selected timepoints
+		A method that tells the dataunit to process the selected timepoints
 		"""          
 		self.Show(0)
 		name = self.dataUnit.getName()
@@ -118,8 +114,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		
 	def doProcessing(self, filename):
 		"""
-		Created: 18.07.2006, KP
-		Description: A method that tells the dataunit to process the selected timepoints
+		A method that tells the dataunit to process the selected timepoints
 		"""    
 		self.status = wx.ID_CANCEL
 	

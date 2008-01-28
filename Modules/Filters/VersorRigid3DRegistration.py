@@ -54,8 +54,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def __init__(self, inputs = (1,1)):
 		"""
-		Created: 14.12.2007, LP
-		Description: Initializes Versor Rigid 3d Registration object
+		Initializes Versor Rigid 3d Registration object
 		"""
 		RegistrationFilters.RegistrationFilter.__init__(self,inputs)
 		self.descs["RotateAround"] = "Rotate around"
@@ -66,8 +65,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def updateProgress(self):
 		"""
-		Created: 19.12.2007, LP
-		Description: Updates progress of the registration process.
+		Updates progress of the registration process.
 		"""
 		currentParameter = self.transform.GetParameters()
 		print "M: %f T: %f %f %f V: %f %f %f" %(self.optimizer.GetValue(),currentParameter.GetElement(3),currentParameter.GetElement(4),currentParameter.GetElement(5),currentParameter.GetElement(0),currentParameter.GetElement(1),currentParameter.GetElement(2))
@@ -75,8 +73,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 19.12.2007, LP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter == "RotateAround":
 			return scripting.COLOR_INTERMEDIATE
@@ -84,8 +81,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 19.12.2007, LP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""
 		if parameter == "RotateAround":
 			return 0
@@ -93,8 +89,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def getType(self,parameter):
 		"""
-		Created: 19.12.2007, LP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""
 		if parameter == "RotateAround":
 			return GUIBuilder.CHOICE
@@ -102,8 +97,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def getRange(self,parameter):
 		"""
-		Created: 19.12.2007, LP
-		Description: Return the range for a given parameter
+		Return the range for a given parameter
 		"""
 		if parameter == "RotateAround":
 			return ("Geometrical center","Center of mass")
@@ -111,8 +105,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def getParameters(self):
 		"""
-		Created: 19.12.2007, LP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""
 		params = RegistrationFilters.RegistrationFilter.getParameters(self)
 		addParams = ["", ("RotateAround",)]
@@ -121,8 +114,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 14.12.2007, LP
-		Description: Initializes and executes the registration process. Does
+		Initializes and executes the registration process. Does
 		the result translation to input image and returns translated image.
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):

@@ -44,13 +44,11 @@ def getName():
 
 class AxesModule(VisualizationModule):
 	"""
-	Created: 05.06.2005, KP
-	Description: A module for showing a scale bar
+	A module for showing a scale bar
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
@@ -90,8 +88,7 @@ class AxesModule(VisualizationModule):
 		
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 				
@@ -99,16 +96,14 @@ class AxesModule(VisualizationModule):
 	
 	def showTimepoint(self, value):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.updateRendering()
  
 		
 	def updateRendering(self, e1 = None, e2 = None):
 		"""
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		#self.mapper.Update()
 		VisualizationModule.updateRendering(self, input)
@@ -116,8 +111,7 @@ class AxesModule(VisualizationModule):
 
 	def disableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""          
 		#self.renderer.RemoveActor(self.actor)
 		self.marker.Off()
@@ -126,8 +120,7 @@ class AxesModule(VisualizationModule):
 		
 	def enableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""          
 		#self.renderer.AddActor(self.actor)
 		self.marker.On()
@@ -135,8 +128,7 @@ class AxesModule(VisualizationModule):
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
-		Created: 5.11.2006, KP
-		Description: A dummy method that captures the call for setting the
+		A dummy method that captures the call for setting the
 					 different properties
 		"""
 		pass
@@ -145,22 +137,19 @@ class AxesConfigurationPanel(ModuleConfigurationPanel):
 
 	def __init__(self, parent, visualizer, name = "Axes", **kws):
 		"""
-		Created: 04.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""  
 		pass
 
 	def setModule(self, module):
 		"""
 		Method: setModule(module)
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)

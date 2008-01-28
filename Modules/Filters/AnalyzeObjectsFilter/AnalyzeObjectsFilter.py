@@ -22,8 +22,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (2, 2)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
@@ -50,24 +49,21 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getInputName(self, n):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return the name of the input #n
+		Return the name of the input #n
 		"""			 
 		if n == 1: return "Segmented image"
 		return "Source dataset" 
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 04.04.2007, KP
-		Description: a method to set the dataunit used by this filter
+		a method to set the dataunit used by this filter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		self.parameters["StatisticsFile"] = self.getDefaultValue("StatisticsFile")
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if not self.dataUnit:
 			return "statistics.csv"
@@ -76,24 +72,21 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return GUI.GUIBuilder.FILENAME
 		
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["Measurement results",
 		(("StatisticsFile", "Select the file to which the statistics will be writen", "*.csv"), )]]
 		
 	def writeOutput(self, dataUnit, timepoint):
 		"""
-		Created: 09.07.2006, KP
-		Description: Optionally write the output of this module during the processing
+		Optionally write the output of this module during the processing
 		"""
 		fileroot = self.parameters["StatisticsFile"].split(".")
 		fileroot = ".".join(fileroot[:-1])
@@ -106,8 +99,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def writeToFile(self, filename, dataUnit, timepoint):
 		"""
-		Created: 16.08.2007, KP
-		Description: write the objects from a given timepoint to file
+		write the objects from a given timepoint to file
 		"""
 		f = codecs.open(filename, "awb", "latin1")
 		Logging.info("Saving statistics to file %s"%filename, kw="processing")
@@ -128,8 +120,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
@@ -167,8 +158,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def onExportStatistics(self, evt):
 		"""
-		Created: 16.08.2007, KP
-		Description: export the statistics from the objects list
+		export the statistics from the objects list
 		"""
 		name = self.dataUnit.getName()
 		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save segmentation statistics as", \
@@ -194,16 +184,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def exportStatistics(self, filename):
 		"""
-		Created: 16.08.2007, KP
-		Description: write the statistics from the current timepoint to a csv file
+		write the statistics from the current timepoint to a csv file
 		"""
 		timepoint = scripting.visualizer.getTimepoint()
 		self.writeToFile(filename, self.dataUnit, timepoint)
    
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

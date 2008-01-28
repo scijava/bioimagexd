@@ -44,15 +44,13 @@ class XMLGUIHandler(xml.sax.handler.ContentHandler):
 		
 	def startElement(self, name, attrs):
 		"""
-		Created: 26.01.2008, KP
-		Description: handle the starting on an element
+		handle the starting on an element
 		"""
 		print "startElement",name,attrs
 		
 	def endElement(self, name):
 		"""
-		Created: 26.01.2008, KP
-		Description: handle the ending of an element
+		handle the ending of an element
 		"""
 		print "endElement",name
 
@@ -64,8 +62,7 @@ class XMLGUIHandler(xml.sax.handler.ContentHandler):
 
 class XMLGUIElement:
 	"""
-	Created: 26.01.2008, KP
-	Description: a base class for all user interface elements available to XMLGUIBuilder
+	a base class for all user interface elements available to XMLGUIBuilder
 	"""
 	inputTypes = []
 	def __init__(self, builder, parent, *args, **kws):
@@ -77,8 +74,7 @@ class XMLGUIElement:
 		
 	def getUI(self):
 		"""
-		Created: 26.01.2008, KP
-		Description: return the actual UI element
+		return the actual UI element
 		"""
 		return self.uiElement
 		
@@ -93,13 +89,11 @@ class XMLGUIContainer:
 	
 class XMLGUIBuilder(wx.Panel):
 	"""
-	Created: 26.01.2008, KP
-	Description: An XML based GUI builder for the manipulation filters
+	An XML based GUI builder for the manipulation filters
 	""" 
 	def __init__(self, parent, myfilter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		""" 
 		wx.Panel.__init__(self, parent, -1)
 
@@ -117,21 +111,19 @@ class XMLGUIBuilder(wx.Panel):
 	def getFilter(self):
 		"""
 		Creted: 26.01.2008, KP
-		Description: return the current filter
+		return the current filter
 		"""
 		return self.filter
 		
 	def getElementForParameter(self, parameter):
 		"""
-		Created: 26.01.2008, KP
-		Description: return the user interafece element for reading the given parameter
+		return the user interafece element for reading the given parameter
 		"""
 		return self.elementsForParameter.get(parameter,None)
 		
 	def buildGUI(self, filter):
 		"""
-		Created: 26.01.2008, KP
-		Description: create the GUI for the filter
+		create the GUI for the filter
 		"""
 		xmlstring = filter.getXMLDescription()
 		parser = xml.sax.make_parser()

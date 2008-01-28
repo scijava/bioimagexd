@@ -39,7 +39,6 @@ class Manipulation(lib.FilterBasedModule.FilterBasedModule):
 
 	def __init__(self, **kws):
 		"""
-		Created: 25.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		lib.FilterBasedModule.FilterBasedModule.__init__(self, **kws)

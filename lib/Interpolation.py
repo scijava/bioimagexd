@@ -36,8 +36,7 @@ import bxdexceptions
 def linearInterpolation(paramlist1, paramlist2, numberofLists):
 	"""
 	Function: linearInterpolation(paramlist1, paramlist2, n)
-	Created: 09.12.2004, KP
-	Description: A function that interpolates n new parameter lists between 
+	A function that interpolates n new parameter lists between 
 				 two given parameterlists
 	Parameters:
 		paramlist1		The starting parameters

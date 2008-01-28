@@ -61,8 +61,7 @@ class Timeline(scrolled.ScrolledPanel):
 	"""    
 	def __init__(self, parent, control, **kws):
 		"""
-		Created: 04.02.2005, KP
-		Description: Initialize
+		Initialize
 		"""
 		size = (750, 600)
 		
@@ -123,8 +122,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def onUpdateTimeline(self, obj, evt, *args):
 		"""
-		Created: 15.12.2005, KP
-		Description: Method to refresh the whole timeline
+		Method to refresh the whole timeline
 		"""
 		for tracks, sizer in [(self.timepointTracks, self.timepointSizer),
 							  (self.splinepointTracks, self.splineSizer),
@@ -148,8 +146,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def AcceptDrop(self, x, y, data):
 		"""
-		Created: 02.09.2005, KP
-		Description: Method called to indicate that a user is no longer dragging
+		Method called to indicate that a user is no longer dragging
 					 something to this track
 		"""     
 		#print "AcceptDrop",x,y,data
@@ -162,8 +159,7 @@ class Timeline(scrolled.ScrolledPanel):
 			
 	def OnDragLeave(self):
 		"""
-		Created: 02.09.2005, KP
-		Description: Method called to indicate that a user is no longer dragging
+		Method called to indicate that a user is no longer dragging
 					 something to this track
 		"""     
 		#print "OnDragLeave"
@@ -173,8 +169,7 @@ class Timeline(scrolled.ScrolledPanel):
 			
 	def OnDragOver(self, x, y, d):
 		"""
-		Created: 02.09.2005, KP
-		Description: Method called to indicate that a user is dragging
+		Method called to indicate that a user is dragging
 					 something to this track
 		""" 
 		#print "OnDragOver"
@@ -183,44 +178,38 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def setupScrolling(self, obj = None, evt = None, arg = None):
 		"""
-		Created: 21.08.2005, KP
-		Description: Set the scrollbars
+		Set the scrollbars
 		"""         
 		print "my size now=", self.GetSize()
 		self.SetupScrolling()
 		
 	def getSplineTracks(self):
 		"""
-		Created: 18.04.2005, KP
-		Description: Return the camera path tracks
+		Return the camera path tracks
 		""" 
 		return self.splinepointTracks
 		
 	def getTimepointTracks(self):
 		"""
-		Created: 19.04.2005, KP
-		Description: Return the timepoint tracks
+		Return the timepoint tracks
 		""" 
 		return self.timepointTracks
 		
 	def getKeyframeTracks(self):
 		"""
-		Created: 18.08.2005, KP
-		Description: Return the keyframe tracks
+		Return the keyframe tracks
 		""" 
 		return self.keyframeTracks
 		
 	def getSelectedTrack(self):
 		"""
-		Created: 14.04.2005, KP
-		Description: Return the track that is currently selected
+		Return the track that is currently selected
 		""" 
 		return self.selectedTrack
 		
 	def setSelectedTrack(self, track):
 		"""
-		Created: 14.04.2005, KP
-		Description: Set the track that is currently selected
+		Set the track that is currently selected
 		""" 
 		if self.selectedTrack and track != self.selectedTrack:
 			self.selectedTrack.setSelected(None)
@@ -230,8 +219,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def setBeginningToPrevious(self, track):
 		"""
-		Created: 18.04.2005, KP
-		Description: Set the given track to start at the position where
+		Set the given track to start at the position where
 					 the previous track ends
 		""" 
 		i = self.splinepointTracks.index(track)
@@ -245,8 +233,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def setEndToNext(self, track):
 		"""
-		Created: 18.04.2005, KP
-		Description: Set the given track to end at the position where
+		Set the given track to end at the position where
 					 the next track begins
 		""" 
 		i = self.splinepointTracks.index(track)
@@ -263,8 +250,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Method called by UrmasPersist to allow the object
+		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
 		Logging.info("Setting pure state of timeline", kw = "animator")
@@ -295,8 +281,7 @@ class Timeline(scrolled.ScrolledPanel):
 			
 	def moveTracks(self, sizer, moveFrom, moveTo, howMany):
 		"""
-		Created: 13.04.2005, KP
-		Description: Moves the tracks placed on a sizer
+		Moves the tracks placed on a sizer
 		Parameters:
 			moveFrom    Start moving the tracks from here
 			moveTo      Move them here
@@ -324,8 +309,7 @@ class Timeline(scrolled.ScrolledPanel):
 			
 	def addTrack(self, label, n = 0):
 		"""
-		Created: 06.04.2005, KP
-		Description: Adds a track to the timeline
+		Adds a track to the timeline
 		"""    
 		if label == "":
 			label = "Timepoints %d" % len(self.timepointTracks)
@@ -366,7 +350,6 @@ class Timeline(scrolled.ScrolledPanel):
 			
 	def addSplinepointTrack(self, label):
 		"""
-		Created: 11.04.2005, KP
 		Description:
 		"""
 		if not self.haveSp:
@@ -397,7 +380,6 @@ class Timeline(scrolled.ScrolledPanel):
 
 	def addKeyframeTrack(self, label):
 		"""
-		Created: 18.08.2005, KP
 		Description:
 		"""
 		if not self.haveKf:
@@ -427,8 +409,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def getLargestTrackLength(self, cmptrack):
 		"""
-		Created: 16.02.2005, KP
-		Description: Return the length of the largest track that is the
+		Return the length of the largest track that is the
 					 same type as the argument, but not the same
 		"""
 		tracks = []
@@ -448,15 +429,13 @@ class Timeline(scrolled.ScrolledPanel):
 			
 	def setDisabled(self, flag):
 		"""
-		Created: 04.02.2005, KP
-		Description: Disables / Enables this timeline
+		Disables / Enables this timeline
 		"""
 		self.timeScale.setDisabled(flag)
 
 	def setAnimationMode(self, flag):
 		"""
-		Created: 04.02.2005, KP
-		Description: Sets animation mode on or off. This affects the spline points
+		Sets animation mode on or off. This affects the spline points
 					 track.
 		"""
 		self.setDisabled(not flag)
@@ -470,8 +449,7 @@ class Timeline(scrolled.ScrolledPanel):
 	
 	def clearTracks(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: Remove all tracks
+		Remove all tracks
 		"""    
 		self.control.setSplineInteractionCallback(None)
 		for track in self.timepointTracks:
@@ -486,8 +464,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def removeTrack(self, track, reorder = 0):
 		"""
-		Created: 06.04.2005, KP
-		Description: Remove a track from the GUI
+		Remove a track from the GUI
 		"""    
 		if track in self.timepointTracks:
 			sizer = self.timepointSizer
@@ -514,8 +491,7 @@ class Timeline(scrolled.ScrolledPanel):
 
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 04.02.2005, KP
-		Description: Sets the dataunit on this timeline
+		Sets the dataunit on this timeline
 		"""
 		self.dataUnit = dataUnit
 		for track in self.timepointTracks:
@@ -524,8 +500,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def onSetDuration(self, obj, evt, duration):
 		"""
-		Created: 20.09.2005, KP
-		Description: Method to set the timeline duration
+		Method to set the timeline duration
 		"""
 		if self.seconds != duration:
 			self.seconds = duration
@@ -533,15 +508,13 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def onSetFrames(self, obj, evt, frames):
 		"""
-		Created: 20.09.2005, KP
-		Description: Method to set the timeline duration
+		Method to set the timeline duration
 		"""
 		self.frames = frames
 		
 	def reconfigureTimeline(self):
 		"""
-		Created: 19.03.2005, KP
-		Description: Method to reconfigure items on timeline with
+		Method to reconfigure items on timeline with
 					 the same duration and frame amount
 		"""    
 		self.configureTimeline(self.control.getDuration(), self.control.getFrames())
@@ -549,8 +522,7 @@ class Timeline(scrolled.ScrolledPanel):
 		
 	def configureTimeline(self, seconds, frames):
 		"""
-		Created: 04.02.2005, KP
-		Description: Method that sets the duration of the timeline to
+		Method that sets the duration of the timeline to
 					 given amount of seconds, and the frame amount to
 					 given amount of frames
 		"""
@@ -564,8 +536,7 @@ class Timeline(scrolled.ScrolledPanel):
 
 	def __str__(self):
 		"""
-		Created: 05.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""        
 		s = "Timepoint tracks: {"
 		s += ", ".join(map(str, self.timepointTracks))
@@ -580,8 +551,7 @@ class Timeline(scrolled.ScrolledPanel):
 	
 	def __getstate__(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""      
 		odict = {}
 		keys = [""]

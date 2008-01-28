@@ -24,8 +24,7 @@ class TestSample(unittest.TestCase):
 
 	def testDifferentlySizedParameterLists(self):
 		"""
-		Created: 08.06.2007, SG
-		Description: Check that an exception is raised when two differently sized lists are given as parameters.
+		Check that an exception is raised when two differently sized lists are given as parameters.
 		"""
 		parameterList1 = [1, 2, 3]
 		parameterList2 = [1, 2]
@@ -34,7 +33,6 @@ class TestSample(unittest.TestCase):
 	
 	def testCorrectResultForSimpleList(self):
 		"""
-		Created: 11.06.2007, SG
 		Test that a correct result is returned for two small lists.
 		"""
 		parameterList1 = [2, 4, 3]
@@ -46,7 +44,6 @@ class TestSample(unittest.TestCase):
 
 	def testEmptyListReturnedWhenNIsZero(self):
 		"""
-		Created: 11.06.2007, SG
 		Test that an empty list is returned when n is 0.
 		"""
 		parameterList1 = [1.2, 3.4, 4.5]
@@ -67,7 +64,6 @@ class TestSample(unittest.TestCase):
 
 	def testEmptyListReturnedWhenNIsNegative(self):
 		"""
-		Created: 11.06.2007, SG
 		Test that an empty list is returned when n is negative.
 		"""
 		parameterList1 = [1.2, 3.4, 4.5]

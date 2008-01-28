@@ -68,8 +68,7 @@ class VideoGenerationDialog(wx.Dialog):
 		
 	def onClose(self, *args):
 		"""
-		Created: 30.09.2007, KP
-		Description: close the dialog
+		close the dialog
 		"""
 		self.Close()
 		if self.videoGeneration.abort:
@@ -103,31 +102,27 @@ class VideoEncoder:
 		
 	def getExtensionForCodec(self, codec):
 		"""
-		Created: 10.01.2008, KP
-		Description: return the proper file extension for given codec
+		return the proper file extension for given codec
 		"""
 		if codec not in self.outputCodecs:return ""
 		return self.outputCodecs[codec][1]
 		
 	def getFrameAmount(self): 
 		"""
-		Created: 30.09.2007, KP
-		Description: return the number of frames
+		return the number of frames
 		"""
 		return len(self.frameList)
 	
 	def getFormat(self): return self.format
 	def setFormat(self, format):
 		"""
-		Created: 30.09.2007, KP
-		Description: set the format of the filenames
+		set the format of the filenames
 		"""
 		self.format = format
 	def getPreset(self): return self.preset
 	def setPreset(self, i):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the parameters according to the given preset
+		set the parameters according to the given preset
 		"""
 		if not self.preset and i:
 			self.oldSize, self.oldFps, self.oldBitrate, self.oldTarget = self.size, self.fps, self.bitrate, self.target
@@ -141,71 +136,62 @@ class VideoEncoder:
 	def getVideoFileName(self): return self.videoFileName
 	def setVideoFileName(self, name):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the video file name
+		set the video file name
 		"""
 		self.videoFileName = name
 	
 	def getFPS(self): return self.fps
 	def setFPS(self, fps):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the frames per second
+		set the frames per second
 		"""
 		self.fps = fps
 		
 	def getFrameList(self): return self.frameList
 	def setFrameList(self, frameList):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the frame list
+		set the frame list
 		"""
 		self.frameList = frameList
 		
 	def getSize(self): return self.size
 	def setSize(self, w, h):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the frame size
+		set the frame size
 		"""
 		self.size = (w, h)
 
 	def getQuality(self): return self.quality
 	def setQuality(self, quality):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the quality of the rendered video
+		set the quality of the rendered video
 		"""
 		self.quality = quality
 		
 	def getPath(self): return self.path
 	def setPath(self, path):
 		"""
-		Created: 22.09.2007, KP
-		Description: set the path in which the frames are located
+		set the path in which the frames are located
 		"""
 		self.path = path
 		
 	def getFrameName(self): return self.name
 	def setFrameName(self, name):
 		"""
-		Created: 22.09.2007, KP
-		Description: Set the frame name
+		Set the frame name
 		"""
 		self.name = name
 		
 	def getCodec(self): return (self.codec)
 	def setCodec(self, codec):
 		"""
-		Created: 22.09.2007, KP
-		Description: Set the codec ) used to render the movie
+		Set the codec ) used to render the movie
 		"""
 		self.codec = codec
 		
 	def encode(self):
 		"""
-		Created: 22.09.2007, KP
-		Description: encode the movie
+		encode the movie
 		"""
 		codec = self.getCodec()
 		vcodec, ext = self.outputCodecs[codec]
@@ -219,8 +205,7 @@ class VideoEncoder:
 		
 	def deleteFrames(self):
 		"""
-		Created: 22.09.2007, KP
-		Description: clean up the frames after the rendering
+		clean up the frames after the rendering
 		"""
 		for file in self.frameList:
 			os.unlink(file)
@@ -228,8 +213,7 @@ class VideoEncoder:
 		
 	def writeOut(self, filename):
 		"""
-		Created: 22.09.2007, KP
-		Description: write out a project file with the necessary info
+		write out a project file with the necessary info
 		"""
 		f = open(filename,"w")
 		f.write("%s # video file\n"%self.videoFileName)
@@ -247,8 +231,7 @@ class VideoEncoder:
 		
 	def readIn(self, filename):
 		"""
-		Created: 22.09.2007, KP
-		Description: read a project file with the information necessary 
+		read a project file with the information necessary 
 		"""
 		f = open(filename, "r")
 		lines = []
@@ -274,8 +257,7 @@ class VideoEncoder:
 		
 	def getPattern(self):
 		"""
-		Created: 22.09.2007, KP
-		Description: return the filename pattern
+		return the filename pattern
 		"""
 		if not self.format:
 			renderingInterface = lib.RenderingInterface.getRenderingInterface()
@@ -297,8 +279,7 @@ class VideoEncoder:
 
 	def getCommandLine(self, vcodec, filename):
 		"""
-		Created: 22.09.2007, KP
-		Description: return the command line for using ffmpeg to render the video
+		return the command line for using ffmpeg to render the video
 		"""
 		target = ""
 		pattern = self.getPattern()
@@ -357,8 +338,7 @@ class VideoGeneration(wx.Panel):
 	"""
 	def __init__(self, parent, control = None, visualizer = None, filename = ""):
 		"""
-		Created: 05.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		wx.Panel.__init__(self, parent, -1)
 		self.encoder = VideoEncoder()
@@ -436,8 +416,7 @@ class VideoGeneration(wx.Panel):
 		
 	def onLoadProject(self, event):
 		"""
-		Created: 27.09.2007, KP
-		Description: load a project file for re-rendering
+		load a project file for re-rendering
 		"""
 		filenames = GUI.Dialogs.askOpenFileName(self, "Open rendering project", "Rendering project (*.bxr)|*.bxr")
 		if filenames:
@@ -449,8 +428,7 @@ class VideoGeneration(wx.Panel):
 				
 	def onCancelButton(self, event):
 		"""
-		Created: 15.12.2005, KP
-		Description: Close the video generation window
+		Close the video generation window
 		"""
 		if self.rendering:
 			lib.messenger.send(None, "stop_rendering")
@@ -460,8 +438,7 @@ class VideoGeneration(wx.Panel):
 		
 	def onOkButton(self, event):
 		"""
-		Created: 26.04.2005, KP
-		Description: Render the whole damn thing
+		Render the whole damn thing
 		"""
 		self.okButton.Enable(0)
 		self.encoder.setPath(self.rendir.GetValue())
@@ -529,8 +506,7 @@ class VideoGeneration(wx.Panel):
 			
 	def cleanUp(self, *args):
 		"""
-		Created: 30.1.2006, KP
-		Description: Method to clean up after rendering is done
+		Method to clean up after rendering is done
 		""" 
 		if not self.renderingDone:
 			renderingInterface = lib.RenderingInterface.getRenderingInterface()
@@ -558,8 +534,7 @@ class VideoGeneration(wx.Panel):
 
 	def encodeVideo(self):
 		"""
-		Created: 27.04.2005, KP
-		Description: Encode video from the frames produced
+		Encode video from the frames produced
 		""" 
 		self.encoder.encode()
 		success = 0
@@ -584,8 +559,7 @@ class VideoGeneration(wx.Panel):
 			
 	def readProjectFile(self, filename):
 		"""
-		Created: 22.09.2007, KP
-		Description: read the relevant settings from a project file
+		read the relevant settings from a project file
 		"""
 		self.encoder.readIn(filename)
 		self.encodingDone = 1
@@ -593,15 +567,13 @@ class VideoGeneration(wx.Panel):
 		
 	def saveProjectFile(self, filename):
 		"""
-		Created: 21.09.2007, KP
-		Description: save a project file to enable later rendering of the project
+		save a project file to enable later rendering of the project
 		"""
 		self.encoder.writeOut(filename)
 		
 	def onUpdateFormat(self, event):
 		"""
-		Created: 26.04.2005, KP
-		Description: Update the gui based on the selected output format
+		Update the gui based on the selected output format
 		""" 
 		sel = self.formatMenu.GetSelection()
 		
@@ -625,8 +597,7 @@ class VideoGeneration(wx.Panel):
 			
 	def onUpdateCodec(self, event):
 		"""
-		Created: 26.04.2005, KP
-		Description: Update the gui based on the selected output codec
+		Update the gui based on the selected output codec
 		""" 
 		sel = self.formatMenu.GetSelection()
 		if sel == 1:
@@ -642,8 +613,7 @@ class VideoGeneration(wx.Panel):
 			
 	def onUpdatePreset(self, event = None):
 		"""
-		Created: 07.02.2006, KP
-		Description: Update the GUI based on the selected preset
+		Update the GUI based on the selected preset
 		""" 
 		sel = self.preset.GetSelection()
 		flag = (sel == 0)
@@ -665,8 +635,7 @@ class VideoGeneration(wx.Panel):
 			
 	def generateGUI(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Generate the GUI
+		Generate the GUI
 		""" 
 		self.outputsizer = wx.GridBagSizer(0, 5)
 		box = wx.StaticBox(self, wx.HORIZONTAL, "Rendering")
@@ -781,8 +750,7 @@ class VideoGeneration(wx.Panel):
 		
 	def updateGUIFromEncoder(self):
 		"""
-		Created: 22.09.2007, KP
-		Description: update the GUI entries based on values from the encoder
+		update the GUI entries based on values from the encoder
 		"""
 		self.rendir.SetValue(self.encoder.getPath())
 		self.videofile.SetValue(self.encoder.getVideoFileName())
@@ -798,8 +766,7 @@ class VideoGeneration(wx.Panel):
 		
 	def onSelectDirectory(self, event = None):
 		"""
-		Created: 10.11.2004, KP
-		Description: A callback that is used to select the directory where
+		A callback that is used to select the directory where
 					 the rendered frames are stored
 		"""
 		dirname = GUI.Dialogs.askDirectory(self, "Directory for rendered frames", ".")
@@ -809,8 +776,7 @@ class VideoGeneration(wx.Panel):
 			
 	def onSelectOutputFile(self, event = None):
 		"""
-		Created: 26.04.2005, KP
-		Description: A callback that is used to select the video file 
+		A callback that is used to select the video file 
 					 that is produced.
 		"""
 		sel = self.formatMenu.GetSelection()

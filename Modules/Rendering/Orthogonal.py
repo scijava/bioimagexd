@@ -50,13 +50,11 @@ def getQuickKeyCombo():
 
 class OrthogonalPlaneModule(VisualizationModule):
 	"""
-	Created: 03.05.2005, KP
-	Description: A module for slicing the dataset
+	A module for slicing the dataset
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
@@ -117,8 +115,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 	   
 	def __getstate__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""            
 		odict = VisualizationModule.__getstate__(self)
 		odict.update({"planeWidgetX":self.getVTKState(self.planeWidgetX)})
@@ -136,8 +133,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""        
 		
 		self.setVTKState(self.planeWidgetX, state.planeWidgetX)
@@ -156,8 +152,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 		if self.dataUnit.isProcessed():
@@ -185,8 +180,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 	
 	def setZ(self, obj, evt, arg):
 		"""
-		Created: 04.05.2005, KP
-		Description: Set the slices to display
+		Set the slices to display
 		"""         
 		self.z = arg
 		self.updateRendering()
@@ -194,8 +188,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 	
 	def setDisplaySlice(self, x, y, z):
 		"""
-		Created: 04.05.2005, KP
-		Description: Set the slices to display
+		Set the slices to display
 		"""           
 		self.x, self.y, self.z = x, y, z
 		#self.parent.getRenderer().ResetCameraClippingRange()
@@ -204,16 +197,14 @@ class OrthogonalPlaneModule(VisualizationModule):
 
 	def showTimepoint(self, value):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
 		
 	def alignCamera(self, widget):
 		"""
-		Created: 15.05.2005, KP
-		Description: Align the camera so that it shows a given widget
+		Align the camera so that it shows a given widget
 		"""          
 		xMin, xMax, yMin, yMax, zMin, zMax = self.extent
 		sx, sy, sz = self.spacing
@@ -259,8 +250,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		
 	def updateRendering(self):
 		"""
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		self.outline.SetInput(self.data)
 		self.outlineMapper.SetInput(self.outline.GetOutput())
@@ -290,8 +280,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 
 	def disableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""          
 		self.renderer.RemoveActor(self.outlineActor)
 		self.planeWidgetX.Off()
@@ -301,8 +290,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		
 	def enableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""          
 		self.renderer.AddActor(self.outlineActor)
 		self.planeWidgetX.On()
@@ -312,8 +300,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the ambient, diffuse and specular lighting of this module
+		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		for widget in [self.planeWidgetX, self.planeWidgetY, self.planeWidgetZ]:
 			property = widget.GetTexturePlaneProperty()
@@ -324,8 +311,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		
 	def setShading(self, shading):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set shading on / off
+		Set shading on / off
 		"""          
 		for widget in [self.planeWidgetX, self.planeWidgetY, self.planeWidgetZ]:
 			property = widget.GetTexturePlaneProperty()
@@ -337,15 +323,13 @@ class OrthogonalPlaneModule(VisualizationModule):
 class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Orthogonal Slices", **kws):
 		"""
-		Created: 04.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""  
 		
 		self.xLbl = wx.StaticText(self, -1, "X Slice:")
@@ -399,16 +383,14 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		
 	def onCheckShading(self, event):
 		"""
-		Created: 16.05.2005, KP
-		Description: Toggle use of shading
+		Toggle use of shading
 		"""  
 		self.shading = event.IsChecked()        
 		
 		
 	def alignCamera(self, event):
 		"""
-		Created: 15.05.2005, KP
-		Description: Align the camera to face a certain plane
+		Align the camera to face a certain plane
 		"""  
 		if event.GetId() == self.ID_X:
 			Logging.info("aliging to X", kw = "rendering")
@@ -422,8 +404,7 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		dataUnit = module.getDataUnit()
@@ -448,8 +429,7 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		
 	def onUpdateSlice(self, event):
 		"""
-		Created: 04.05.2005, KP
-		Description: Update the slice to be displayed
+		Update the slice to be displayed
 		"""  
 		x = self.xSlider.GetValue()
 		y = self.ySlider.GetValue()
@@ -460,8 +440,7 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		
 	def onApply(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		ModuleConfigurationPanel.onApply(self, event)
 		self.module.updateData()

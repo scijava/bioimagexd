@@ -44,8 +44,7 @@ from lib.persistence import state_pickler
 
 def getVTKState(obj):
 	"""
-	Created: 02.08.2005, KP
-	Description: Get state of vtk object
+	Get state of vtk object
 	"""     
 	state = {}
 	blocked = ["GetOutput", "GetReleaseDataFlag", "GetOutputPort", "GetViewPlaneNormal"]
@@ -63,8 +62,7 @@ def getVTKState(obj):
 	
 def setVTKState(obj, state):
 	"""
-	Created: 02.08.2005, KP
-	Description: Set state of vtk object
+	Set state of vtk object
 	"""     
 	for key in state.keys():
 		setfunc = key.replace("Get", "Set")
@@ -82,22 +80,19 @@ class UrmasPersist:
 	"""    
 	def __init__(self, control):
 		"""
-		Created: 11.04.2005, KP
-		Description: Initialize
+		Initialize
 		"""           
 		self.control = control
 	
 	def persist(self, filename):
 		"""
-		Created: 11.04.2005, KP
-		Description: Write the given control object out to the given file
+		Write the given control object out to the given file
 		"""    
 		state_pickler.dump(self.control, open(filename, "w"))
 		
 	def depersist(self, filename):
 		"""
-		Created: 11.04.2005, KP
-		Description: Read the given control object from a given file
+		Read the given control object from a given file
 		"""               
 		state = state_pickler.load_state(open(filename, "r"))
 		state_pickler.set_state(self.control, state)

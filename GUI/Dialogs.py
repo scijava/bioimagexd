@@ -36,8 +36,7 @@ import wx
 
 def showmessage(parent, message, title, flags = wx.OK):
 	"""
-	Created: 28.01.2005, KP
-	Description: A method to show a message
+	A method to show a message
 	"""
 	dlg = wx.MessageDialog(parent, message, title, flags)
 	dlg.ShowModal()
@@ -45,23 +44,20 @@ def showmessage(parent, message, title, flags = wx.OK):
 
 def showwarning(parent, message, title, flags = wx.OK | wx.ICON_WARNING):
 	"""
-	Created: 28.01.2005, KP
-	Description: A method to show a warning
+	A method to show a warning
 	"""    
 	showmessage(parent, message, title, flags)
 	
 def showerror(parent, message, title, flags = wx.OK | wx.ICON_ERROR):
 	"""
-	Created: 28.01.2005, KP
-	Description: A method to show an error message
+	A method to show an error message
 	"""    
 	showmessage(parent, message, title, flags)
 
 
 def askDirectory(parent, title, initialDir = None):
 	"""
-	Created: 28.01.2005, KP
-	Description: A method for showing a directory selection dialog
+	A method for showing a directory selection dialog
 	"""    
 	filepath = ""
 	conf = Configuration.getConfiguration()
@@ -85,8 +81,7 @@ def askDirectory(parent, title, initialDir = None):
 
 def askOpenFileName(parent, title, wc, remember =- 1, filetype = None):
 	"""
-	Created: 12.03.2005, KP
-	Description: A method to show a open file dialog that supports multiple files
+	A method to show a open file dialog that supports multiple files
 	"""
 	asklist = []
 	if remember == -1:
@@ -116,8 +111,7 @@ def askOpenFileName(parent, title, wc, remember =- 1, filetype = None):
 	
 def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 	"""
-	Created: 28.01.2005, KP
-	Description: A method to show a save as dialog
+	A method to show a save as dialog
 	"""    
 	initialDir = None
 	conf = Configuration.getConfiguration()

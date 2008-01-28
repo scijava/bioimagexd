@@ -38,8 +38,7 @@ class MergingDataUnit(CombinedDataUnit):
 	"""
 	def __init__(self, name = ""):
 		"""
-		Created: 03.11.2004, JM
-		Description: Constructor
+		Constructor
 		"""
 		CombinedDataUnit.__init__(self, name)
 		self.handleOriginal = 0
@@ -48,8 +47,7 @@ class MergingDataUnit(CombinedDataUnit):
 
 	def getBitDepth(self):
 		"""
-		Created: KP
-		Description: return the bit depth of theoutput this dataunit produces
+		return the bit depth of theoutput this dataunit produces
 		"""
 		if scripting.wantAlphaChannel:
 			return 32
@@ -57,23 +55,20 @@ class MergingDataUnit(CombinedDataUnit):
 		
 	def getSingleComponentBitDepth(self):
 		"""
-		Created: 13.06.2007, KP
-		Description: return the bit depth of a single component"
+		return the bit depth of a single component"
 		"""
 		# Merging will always create 8-bit data
 		return 8
 		
 	def getSettingsClass(self):
 		"""
-		Created: 02.04.2005, KP
-		Description: Return the class that represents settings for this dataunit
+		Return the class that represents settings for this dataunit
 		"""
 		return MergingSettings.MergingSettings
 		
 	def setOutputChannel(self, ch, flag):
 		"""
-		Created: 22.07.2005, KP
-		Description: Mark a channel as being part of the output
+		Mark a channel as being part of the output
 		"""
 		# We duplicate a bit of functionality from combined data unit
 		# with this, but because they need to function differently, it

@@ -42,8 +42,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 31.07.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		
@@ -54,15 +53,13 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("Timepoint1", "Timepoint2")]]
 		
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""				 
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		if not self.box:
@@ -78,15 +75,13 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return GUI.GUIBuilder.SLICE
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""		
 		if parameter == "Timepoint1":
 			return 0
@@ -94,15 +89,13 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the range for the parameter
+		Return the range for the parameter
 		"""				
 		return (0, self.dataUnit.getNumberOfTimepoints())
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 31.07.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

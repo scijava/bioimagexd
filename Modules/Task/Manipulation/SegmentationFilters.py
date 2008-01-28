@@ -47,8 +47,7 @@ from lib.FilterTypes import *
 
 def getFilters():
 	"""
-	Created: 10.8.2007, SS
-	Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [MaskFilter, ITKWatershedSegmentationFilter,
 			 ConnectedComponentFilter,
@@ -67,8 +66,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (2, 2)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageMask()
@@ -78,15 +76,13 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 			
 	def getDesc(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""	   
 		return self.descs[parameter]
 			
 	def getInputName(self, n):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return the name of the input #n
+		Return the name of the input #n
 		"""			 
 		if n == 1:
 			return "Source dataset %d" % n	  
@@ -94,22 +90,19 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		return 0
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("OutputValue", )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -151,8 +144,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -165,15 +157,13 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_INTERMEDIATE
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "Threshold":
 			return 0.01
@@ -183,22 +173,19 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.FloatType
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("Threshold", "Level")]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -227,8 +214,7 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.ignoreObjects = 1
@@ -241,45 +227,39 @@ class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_INTERMEDIATE
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		return 0
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.IntType
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		#return [["",("Level",)]]
 		return [["Minimum object size (in pixels)", ("Threshold", )]]
 
 	def onRemove(self):
 		"""
-		Created: 26.1.2006, KP
-		Description: Restore palette upon filter removal
+		Restore palette upon filter removal
 		"""		   
 		if self.origCtf:			
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -330,8 +310,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -343,15 +322,13 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_INTERMEDIATE
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "MinSize":
 			return 15
@@ -359,22 +336,19 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.IntType
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["", ("MinSize", )]]
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -405,8 +379,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -418,36 +391,31 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		return scripting.COLOR_INTERMEDIATE
 
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		return 0
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.IntType
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Minimum object size (in pixels)", ("Threshold", )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -478,8 +446,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 				
@@ -489,29 +456,25 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""
 		return 0
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.IntType
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return []
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -543,8 +506,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 26.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -558,8 +520,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["Multiplier", "Iterations"]:
 			return scripting.COLOR_EXPERIENCED
@@ -570,8 +531,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "Seed":
 			return []
@@ -584,8 +544,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			
 	def getType(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter == "Seed":
 			return GUIBuilder.PIXELS
@@ -598,16 +557,14 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Segmentation", ("Neighborhood", "Multiplier", "Iterations")]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -651,8 +608,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 26.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)		
 		
@@ -665,8 +621,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "Seed":
 			return []
@@ -677,8 +632,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["Lower", "Upper"]:
 			return GUIBuilder.THRESHOLD
@@ -686,16 +640,14 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 				
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Threshold", (("Lower", "Upper"), )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -738,8 +690,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 29.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.setImageType("UC3")
@@ -755,8 +706,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 1.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["RadiusX", "RadiusY", "RadiusZ"]:
 			return scripting.COLOR_INTERMEDIATE
@@ -765,8 +715,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 29.05.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "Seed":
 			return []
@@ -780,8 +729,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		
 	def getType(self, parameter):
 		"""
-		Created: 29.05.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["Lower", "Upper"]:
 			return GUIBuilder.THRESHOLD
@@ -791,8 +739,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 				
 	def getParameters(self):
 		"""
-		Created: 29.05.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["Seed", (("Seed", ), )],
 		["Threshold", (("Lower", "Upper"), )],
@@ -800,8 +747,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 29.05.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
@@ -848,8 +794,7 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 26.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -861,30 +806,26 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		return 0
 		
 	def getType(self, parameter):
 		"""
-		Created: 26.05.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["Lower", "Upper"]:
 			return GUIBuilder.THRESHOLD
 				
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""   
 		return [["Threshold", (("Lower", "Upper"), )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

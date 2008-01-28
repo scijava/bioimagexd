@@ -7,7 +7,7 @@ class CommandTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Description: Creating a test Command and other test data
+		Creating a test Command and other test data
 		"""
 		self.testUndocmd = "Test UndoCommand"
 		self.testCategory = "Test Category"
@@ -27,7 +27,7 @@ class CommandTest(unittest.TestCase):
 
 	def testFunctionizeEmptyValues(self):
 		"""
-		Description: A test for the functionize() method
+		A test for the functionize() method
 		Tests that functionize modifies the inputtext, even with empty values
 		"""
 		testCodeModified = self.testCommand.functionize(self.testCodeEmpty, self.testImports)
@@ -35,7 +35,7 @@ class CommandTest(unittest.TestCase):
 		
 	def testFunctionize(self):
 		"""
-		Description: A test for the functionize() method
+		A test for the functionize() method
 		Tests that functionize modifies the text correctly
 		Every line in modifiedLines[i] should be equal to ("    " + originalLines[i])
 		"""
@@ -48,14 +48,14 @@ class CommandTest(unittest.TestCase):
 
 	def testGetDesc(self):
 		"""
-		Description: A test for the getDesc() method
+		A test for the getDesc() method
 		Checks that getDesc() returns the "desc" input value of a Command object
 		"""
 		self.assertEqual(self.testDesc, self.testCommand.getDesc())
 
 	def testIsUndoed(self):
 		"""
-		Description: A test for the isUndoed() method
+		A test for the isUndoed() method
 		Tests that isUndoed() returns the correct "_undoed" value
 		"""
 		self.testCommand._undoed = self.test_Undoed
@@ -63,7 +63,7 @@ class CommandTest(unittest.TestCase):
 
 	def testCanUndo(self):
 		"""
-		Description: A test for the CanUndo() method
+		A test for the CanUndo() method
 		Tests that the output is true or false
 		"""
 		self.assertEqual(self.testCommand.canUndo(), bool(self.testCommand.undocmd))
@@ -78,7 +78,7 @@ class CommandTest(unittest.TestCase):
 
 	def testGetCategory(self):
 		"""
-		Description: A test for the getCategory() method
+		A test for the getCategory() method
 		Tests that getCategory() returns the "category" input value of a Command object
 		"""
 		self.assertEqual(self.testCategory, self.testCommand.getCategory())

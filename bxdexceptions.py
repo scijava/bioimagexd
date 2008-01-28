@@ -10,8 +10,7 @@ class ParameterException(Exception):
 	"""
 	def __init__(self, message):
 		"""
-		Created: 15.06.2007, SG
-		Description: Basic constructor that sets a message for the message
+		Basic constructor that sets a message for the message
 		"""
 		Exception.__init__(self)
 		self.message = message
@@ -24,8 +23,7 @@ class IncorrectSizeException(ParameterException):
 	"""
 	def __init__(self, message):
 		"""
-		Created: 08.06.2007, SG
-		Description: Basic overriden constructor, nothing special for this subclass
+		Basic overriden constructor, nothing special for this subclass
 		"""
 		ParameterException.__init__(self, message)
 

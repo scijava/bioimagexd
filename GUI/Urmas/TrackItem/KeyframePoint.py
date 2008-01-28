@@ -55,8 +55,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def __init__(self, parent, text, size, **kws):
 		"""
 		Method: __init__
-		Created: 20.03.2005, KP
-		Description: Initialize the keyframe item
+		Initialize the keyframe item
 		""" 
 		self.point = (0, 0, 0)
 		self.itemnum = kws.get("itemnum", 0)
@@ -70,8 +69,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def getItemNumber(self):
 		"""
 		Method: getItemNumber()
-		Created: 14.04.2005, KP
-		Description: Return the item number of this item
+		Return the item number of this item
 		"""       
 		return self.itemnum
 		 
@@ -79,16 +77,14 @@ class KeyframePoint(TrackItem.TrackItem):
 	def setPoint(self, pt):
 		"""
 		Method: setPoint(self)
-		Created: 14.04.2005, KP
-		Description: Return the point this spline point represents
+		Return the point this spline point represents
 		"""      
 		self.point = pt
 		
 	def drawItem(self, hilight = -1):
 		"""
 		Method: drawItem()
-		Created: 10.02.2005, KP
-		Description: A method that draws this track item
+		A method that draws this track item
 		"""
 		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		self.dc = wx.MemoryDC()
@@ -128,8 +124,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def getThumbnail(self):
 		"""
 		Method: getThumbnail
-		Created: 18.08.2005, KP
-		Description: Get the thumbnail image
+		Get the thumbnail image
 		"""     
 		self.image = self.parent.splineEditor.getAsImage()        
 		vx, vy, vz = self.image.GetDimensions()
@@ -146,8 +141,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def updateThumbnail(self):
 		"""
 		Method: updateThumbnail()
-		Created: 15.12.2005, KP
-		Description: A method that first sets the camera of the renderwindow
+		A method that first sets the camera of the renderwindow
 					 and then generates the thumbnail
 		"""
 		self.parent.splineEditor.setCamera(self.cam)
@@ -157,8 +151,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def drawThumbnail(self):
 		"""
 		Method: drawThumbnail()
-		Created: 10.02.2005, KP
-		Description: A method that draws a thumbnail on an item. If no thumbnail exists,
+		A method that draws a thumbnail on an item. If no thumbnail exists,
 					 this will create one
 		"""   
 		if not self.thumbnailbmp:
@@ -174,8 +167,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def updateItem(self):
 		"""
 		Method: updateItem()
-		Created: 06.04.2005, KP
-		Description: A method called when the item has been resized
+		A method called when the item has been resized
 		"""     
 		TrackItem.TrackItem.updateItem(self)  
 #        pos=self.parent.getSplinePoint(self.itemnum)
@@ -184,8 +176,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def __set_pure_state__(self, state):
 		"""
 		Method: __set_pure_state__()
-		Created: 11.04.2005, KP
-		Description: Update the item
+		Update the item
 		"""       
 		TrackItem.TrackItem.__set_pure_state__(self, state)
 		self.point = state.point
@@ -197,8 +188,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def __getstate__(self):
 		"""
 		Method: __getstate__
-		Created: 11.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""     
 		odict = TrackItem.TrackItem.__getstate__(self)
 		for key in ["point"]:
@@ -209,8 +199,7 @@ class KeyframePoint(TrackItem.TrackItem):
 	def __str__(self):
 		"""
 		Method: __str__
-		Created: 05.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""  
 		start, end = self.position
 		desc = "SP%d(%d,%d,%d)" % (self.itemnum, self.point[0], self.point[1], self.point[2])
@@ -221,14 +210,12 @@ class KeyframePoint(TrackItem.TrackItem):
 class KeyframeEndPoint(KeyframePoint):
 	"""
 	Class: KeyframeEndPoint
-	Created: 14.12.2005, KP
-	Description: A class representing the last item in a keyframe track
+	A class representing the last item in a keyframe track
 	"""       
 	def __init__(self, parent, text, size, **kws):
 		"""
 		Method: __init__
-		Created: 14.12.2005, KP
-		Description: Initialize the item
+		Initialize the item
 		"""
 		text = "End Point"
 		self.init_done = 0
@@ -249,15 +236,13 @@ class KeyframeEndPoint(KeyframePoint):
 	def setColor(self, col, headercolor):
 		"""
 		Method: setColor(color, headercolor)
-		Created: 10.02.2005, KP
-		Description: Set the color and header color for this item
+		Set the color and header color for this item
 		"""       
 		self.color = col
 		self.drawItem()        
 	def setText(self, s):
 		"""
 		Method: setText
-		Created: 14.04.2005, KP
-		Description: Set the text number of this item
+		Set the text number of this item
 		"""       
 		pass        

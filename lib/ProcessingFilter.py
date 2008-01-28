@@ -53,8 +53,7 @@ class ProcessingFilter:
 
 	def __init__(self, numberOfInputs = (1, 1), changeCallback = None):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.taskPanel = None
 		self.dataUnit = None
@@ -105,38 +104,33 @@ class ProcessingFilter:
 		
 	def resetFilters(self):
 		"""
-		Created: 08.01.2008, KP
-		Description: reset the filter instances
+		reset the filter instances
 		"""
 		self.itkfilter = None
 		self.relabelFilter = None
 
 	def setInitialization(self, flag):
 		"""
-		Created: 07.12.2007, KP
-		Description: toggle a flag indicating, whether the filter should be re-initialized
+		toggle a flag indicating, whether the filter should be re-initialized
 		"""
 		self.initialization = flag
 		
 	def getColorTransferFunction(self):
 		"""
-		Created: 08.12.2007, KP
-		Description: return a color transfer function that is modified by this filter, or
+		return a color transfer function that is modified by this filter, or
 					 None, if the ctf doesn't need to be modified
 		"""
 		return self.replacementColorTransferFunction
 		
 	def getResultVariables(self):
 		"""
-		Created: 20.11.2007, KP
-		Description: return the result variables of this filter
+		return the result variables of this filter
 		"""
 		return self.resultVariables.keys()
 		
 	def setResultVariable(self, variable, value):
 		"""
-		Created: 20.11.2007, KP
-		Description: set a result variable to a value
+		set a result variable to a value
 		"""
 		if variable not in self.getResultVariables():
 			raise Exception("No such result variable '%s'"%(variable))
@@ -144,22 +138,19 @@ class ProcessingFilter:
 		
 	def getResultVariable(self, variable):
 		"""
-		Created: 20.11.2007, KP
-		Description: return a value of a result variable
+		return a value of a result variable
 		"""
 		return self.resultVar.get(variable, None)
 		
 	def getResultVariableDesc(self, variable):
 		"""
-		Created: 27.11.2007, KP
-		Description: return the description of a result variable
+		return the description of a result variable
 		"""
 		return self.resultVariables.get(variable,"")
 		
 	def getEventDesc(self):
 		"""
-		Created: 08.11.2007, KP
-		Description: return a string describing the event being currently executed
+		return a string describing the event being currently executed
 		"""
 		if self.eventDesc:
 			return self.eventDesc
@@ -167,22 +158,19 @@ class ProcessingFilter:
 		
 	def setExecutive(self, executive):
 		"""
-		Created: 08.11.2007, KP
-		Description: set the object controlling the execution of this filter
+		set the object controlling the execution of this filter
 		"""
 		self.executive = executive
 
 	def onRemove(self):
 		"""
-		Created: 25.1.2007, KP
-		Description: Callback for when the filter is removed
+		Callback for when the filter is removed
 		"""
 		pass
 
 	def updateProgress(self, obj, evt):
 		"""
-		Created: 13.07.2004, KP
-		Description: Sends progress update event
+		Sends progress update event
 		"""
 		if self.executive:
 			if self.itkFlag:
@@ -192,8 +180,7 @@ class ProcessingFilter:
 
 	def set(self, parameter, value):
 		"""
-		Created: 21.07.2006, KP
-		Description: Set the given parameter to given value
+		Set the given parameter to given value
 		"""
 		self.parameters[parameter] = value
 		if self.modCallback:
@@ -203,8 +190,7 @@ class ProcessingFilter:
 
 	def setParameter(self, parameter, value):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set a value for the parameter
+		Set a value for the parameter
 		"""
 		if self.taskPanel:
 			listOfFilters = self.taskPanel.filterEditor.getFilters(self.name)
@@ -222,52 +208,45 @@ class ProcessingFilter:
 			
 	def getParameter(self, parameter):
 		"""
-		Created: 29.05.2006, KP
-		Description: Get a value for the parameter
+		Get a value for the parameter
 		"""	   
 		return self.parameters.get(parameter, None)
 
 			
 	def writeOutput(self, dataUnit, timePoint):
 		"""
-		Created: 09.07.2006, KP
-		Description: Optionally write the output of this module during the processing
+		Optionally write the output of this module during the processing
 		"""
 		pass
 
 	def notifyTaskPanel(self, module):
 		"""
-		Created: 31.05.2006, KP
-		Description: Notify the task panel that filter has changed
+		Notify the task panel that filter has changed
 		"""
 		if self.taskPanel:
 			self.taskPanel.filterModified(self)
 
 	def setImageType(self, imageType):
 		"""
-		Created: 15.05.2006, KP
-		Description: Set the image type of the ITK image
+		Set the image type of the ITK image
 		"""
 		self.imageType = imageType
 
 	def getImageType(self):
 		"""
-		Created: 15.05.2006, KP
-		Description: Get the image type of the ITK image
+		Get the image type of the ITK image
 		"""
 		return self.imageType
 
 	def setTaskPanel(self, taskPanel):
 		"""
-		Created: 14.05.2006, KP
-		Description: Set the task panel that controls this filter
+		Set the task panel that controls this filter
 		"""
 		self.taskPanel = taskPanel
 
 	def convertVTKtoITK(self, image, cast = None):
 		"""
-		Created: 18.04.2006, KP
-		Description: Convert the image data to ITK image
+		Convert the image data to ITK image
 		"""
 		try:
 			import itk
@@ -318,8 +297,7 @@ class ProcessingFilter:
 
 	def convertITKtoVTK(self, image, cast = None, force = 0):
 		"""
-		Created: 18.04.2006, KP
-		Description: Convert the ITK image data to VTK image
+		Convert the ITK image data to VTK image
 		"""
 		# For non-ITK images, do nothing
 		if image.__class__ == vtk.vtkImageData:
@@ -355,36 +333,31 @@ class ProcessingFilter:
 
 	def setNextFilter(self, nfilter):
 		"""
-		Created: 18.04.2006, KP
-		Description: Set the next filter in the chain
+		Set the next filter in the chain
 		"""
 		self.nextFilter = nfilter
 
 	def setPrevFilter(self, pfilter):
 		"""
-		Created: 18.04.2006, KP
-		Description: Set the previous filter in the chain
+		Set the previous filter in the chain
 		"""
 		self.prevFilter = pfilter
 
 	def getITK(self):
 		"""
-		Created: 18.04.2006, KP
-		Description: Return whether this filter is working on ITK side of the pipeline
+		Return whether this filter is working on ITK side of the pipeline
 		"""
 		return self.itkFlag
 
 	def getEnabled(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return whether this filter is enabled or not
+		Return whether this filter is enabled or not
 		"""
 		return self.enabled
 
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 15.04.2006, KP
-		Description: Set the dataunit that is the input of this filter
+		Set the dataunit that is the input of this filter
 		"""
 		self.dataUnit = dataUnit
 		self.sourceUnits = []
@@ -393,23 +366,20 @@ class ProcessingFilter:
 			
 	def getDataUnit(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: return the dataunit
+		return the dataunit
 		"""
 		return self.dataUnit
 
 	def setEnabled(self, flag):
 		"""
-		Created: 13.04.2006, KP
-		Description: Set whether this filter is enabled or not
+		Set whether this filter is enabled or not
 		"""
 		print "Setting ", self, "to enabled = ", flag
 		self.enabled = flag
 
 	def getGUI(self, parent, taskPanel):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the GUI for this filter
+		Return the GUI for this filter
 		"""
 		self.taskPanel = taskPanel
 		if not self.gui:
@@ -420,31 +390,27 @@ class ProcessingFilter:
 	@classmethod
 	def getName(cls):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the name of the filter
+		Return the name of the filter
 		"""
 		return cls.name
 
 	@classmethod
 	def getCategory(cls):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the category this filter should be classified to
+		Return the category this filter should be classified to
 		"""
 		return cls.category
 
 	def execute(self, inputs):
 		"""
-		Created: 13.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""
 		self.inputs = inputs
 		return 1
 
 	def getSelectedInputChannelNames(self):
 		"""
-		Created: 07.12.2007, KP
-		Description: return the names of the selected input channels
+		return the names of the selected input channels
 		"""
 		oldText = self.processInputText
 		self.processInputText = "output"
@@ -461,8 +427,7 @@ class ProcessingFilter:
 		
 	def getInputChannelNames(self, fromStack = 1):
 		"""
-		Created: 07.12.2007, KP
-		Description: return the names of the input channels
+		return the names of the input channels
 		"""
 		if fromStack:
 			choices = [self.processInputText]
@@ -481,8 +446,7 @@ class ProcessingFilter:
 		
 	def getInputChannel(self, mapIndex):
 		"""
-		Created: 07.12.2007, KP
-		Description: return the index of the channel tht corresponds to given input number
+		return the index of the channel tht corresponds to given input number
 		"""
 		if mapIndex not in self.inputMapping:
 			self.setInputChannel(mapIndex, mapIndex-1)
@@ -490,8 +454,7 @@ class ProcessingFilter:
 		
 	def getInput(self, mapIndex):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return the input imagedata #n
+		Return the input imagedata #n
 		"""
 		if not self.dataUnit:
 			self.dataUnit = scripting.combinedDataUnit
@@ -521,8 +484,7 @@ class ProcessingFilter:
 		
 	def getInputDataUnit(self, mapIndex):
 		"""
-		Created: 12.03.2007, KP
-		Description: Return the input dataunit for input #n
+		Return the input dataunit for input #n
 		"""	  
 		if mapIndex not in self.inputMapping:
 			return None
@@ -534,8 +496,7 @@ class ProcessingFilter:
 		
 	def getCurrentTimepoint(self):
 		"""
-		Created: 14.03.2007, KP
-		Description: return the current timepoint 
+		return the current timepoint 
 		"""
 		timePoint = scripting.visualizer.getTimepoint()
 		if scripting.processingTimepoint != -1:
@@ -544,8 +505,7 @@ class ProcessingFilter:
 		
 	def getInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return an imagedata object that is the current timepoint for channel #n
+		Return an imagedata object that is the current timepoint for channel #n
 		"""
 		if self.dataUnit.isProcessed():
 			if not self.sourceUnits:
@@ -565,8 +525,7 @@ class ProcessingFilter:
 		
 	def updateDefaultValues(self):
 		"""
-		Created: 08.11.2007, KP
-		Description: update the default values
+		update the default values
 		"""
 		if not self.initialization:
 			return
@@ -577,37 +536,32 @@ class ProcessingFilter:
 		
 	def getNumberOfInputs(self):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return the number of inputs required for this filter
+		Return the number of inputs required for this filter
 		"""
 		return self.numberOfInputs
 		
 	def setInputChannel(self, inputNumber, channel):
 		"""
-		Created: 17.04.2006, KP
-		Description: Set the input channel for input #inputNum
+		Set the input channel for input #inputNum
 		"""
 
 		self.inputMapping[inputNumber] = channel
 		
 	def getInputName(self, n):
 		"""
-		Created: 17.04.2006, KP
-		Description: Return the name of the input #n
+		Return the name of the input #n
 		"""
 		return "Source dataset %d" % n
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 1.11.2006, KP
-		Description: Return the level of the given parameter. This is used to color code the GUI options
+		Return the level of the given parameter. This is used to color code the GUI options
 		"""
 		return scripting.COLOR_BEGINNER
 			
 	def sendUpdateGUI(self, parameters = []):
 		"""
-		Created: 05.06.2006, KP
-		Description: Method to update the GUI elements that correspond to the parameters
+		Method to update the GUI elements that correspond to the parameters
 					 If a list of parameters is defined, then only those gui entries are updated.
 		"""
 		if not parameters:
@@ -619,22 +573,19 @@ class ProcessingFilter:
 			
 	def canSelectChannels(self):
 		"""
-		Created: 31.05.2006, KP
-		Description: Should it be possible to select the channel
+		Should it be possible to select the channel
 		"""
 		return 1
 	
 	def getParameters(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""	 
 		return []
 	
 	def getPlainParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return whether this filter is enabled or not
+		Return whether this filter is enabled or not
 		"""
 		returnList = []
 		for item in self.getParameters():
@@ -651,8 +602,7 @@ class ProcessingFilter:
 		
 	def recordParameterChange(self, parameter, value, modpath):
 		"""
-		Created: 14.06.2007, KP
-		Description: record the change of a parameter along with information for how to undo it
+		record the change of a parameter along with information for how to undo it
 		"""
 		oldval = self.parameters.get(parameter, None)
 		if oldval == value:
@@ -687,35 +637,30 @@ class ProcessingFilter:
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""	   
 		return self.descs.get(parameter,"")
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the long description of the parameter
+		Return the long description of the parameter
 		"""	   
 		return ""
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		return types.IntType
 		
 	def getRange(self, parameter):
 		"""
-		Created: 31.05.2006, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""
 		return -1, -1
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""
 		return 0

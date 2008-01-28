@@ -40,14 +40,12 @@ def getClass(): return LIFDataSource
 
 class LIFDataSource(DataSource):
 	"""
-	Created: 19.07.2007, LP
-	Description: Manages 4D data stored in a LIF-file.
+	Manages 4D data stored in a LIF-file.
 	"""
 
 	def __init__(self, filename = "", imageNum = -1, channelNum = -1, reader = None):
 		"""
-		Created: 19.07.2007, LP
-		Description: Constructor of LIF DataSource
+		Constructor of LIF DataSource
 		"""
 		DataSource.__init__(self)
 		self.filename = filename
@@ -88,8 +86,7 @@ class LIFDataSource(DataSource):
 
 	def getDataSetCount(self):
 		"""
-		Created: 24.07.2007, LP
-		Description: Returns the count of time points of the data set
+		Returns the count of time points of the data set
 		"""
 		if not self.dimensions:
 			self.dimensions = self.internalGetDimensions()
@@ -97,15 +94,14 @@ class LIFDataSource(DataSource):
 
 	def getFileName(self):
 		"""
-		Created: 23.07.2007, LP
-		Description: Returns the file name with image name
+		Returns the file name with image name
 		"""
 		return self.filename + "_" + self.imageName;
 
 	def getDataSet(self, i, raw = 0):
 		"""
 		Created 24.07.2007, LP
-		Description: Returns the defined timepoint of current image and channel
+		Returns the defined timepoint of current image and channel
 		Parameters: i	 The timepoint of data to return
 					raw	 A flag indicating that the data is not to be processed
 						 in any way
@@ -134,8 +130,7 @@ class LIFDataSource(DataSource):
 
 	def getName(self):
 		"""
-		Created: 20.07.2007, LP
-		Description: Returns the name of the dataset handled by this DataSource
+		Returns the name of the dataset handled by this DataSource
 		"""
 		if self.imageNum < 0 or self.channelNum < 0:
 			Logging.error("Image or channel number not specified",
@@ -146,7 +141,7 @@ class LIFDataSource(DataSource):
 	def internalGetDimensions(self):
 		"""
 		Created 20.07.2007, LP
-		Description: Returns the (x,y,z) dimensions of the dataset this
+		Returns the (x,y,z) dimensions of the dataset this
 					 dataunit contains
 		"""
 		dimensions = self.reader.GetImageDims()
@@ -169,8 +164,7 @@ class LIFDataSource(DataSource):
 
 	def loadFromFile(self, filename):
 		"""
-		Created: 20.07.2007, LP
-		Description: Loads images from LIF-file and generates own DataSource
+		Loads images from LIF-file and generates own DataSource
 					 for each image in file. Returns list of tuples which
 					 includes image name and DataUnit.
 		Parameters:	 filename: path to file where images should be loaded
@@ -201,8 +195,7 @@ class LIFDataSource(DataSource):
 
 	def getSpacing(self):
 		"""
-		Created: 20.07.2007, LP
-		Description: Returns normalized spacing between voxels
+		Returns normalized spacing between voxels
 		"""
 		if not self.spacing:
 			x, y, z = self.getVoxelSize()
@@ -211,8 +204,7 @@ class LIFDataSource(DataSource):
 
 	def getVoxelSize(self):
 		"""
-		Created: 20.07.2007, LP
-		Description: Returns size of voxel as 3-tuple
+		Returns size of voxel as 3-tuple
 		"""
 		if not self.voxelSize:
 			self.voxelSize = self.reader.GetImageVoxels()
@@ -220,7 +212,6 @@ class LIFDataSource(DataSource):
 
 	def getColorTransferFunction(self):
 		"""
-		Created: 24.07.2007, LP
 		Description:
 		"""
 		if not self.ctf:
@@ -253,16 +244,14 @@ class LIFDataSource(DataSource):
 
 	def resetColorTransferFunction(self):
 		"""
-		Created: 03.08.2007, LP
-		Description: Resets the CTF of the data source.
+		Resets the CTF of the data source.
 		"""
 		self.ctf = None
 		return self.getColorTransferFunction()
 
 	def getBitDepth(self):
 		"""
-		Created: 24.07.2007, LP
-		Description: Returns resolution of the current image's current channel.
+		Returns resolution of the current image's current channel.
 		"""
 		if not self.bitDepth:
 			if self.imageNum < 0 or self.channelNum < 0:
@@ -274,8 +263,7 @@ class LIFDataSource(DataSource):
 
 	def getScalarRange(self):
 		"""
-		Created: 24.07.2007, LP
-		Description: Returns pair that contains range of data values
+		Returns pair that contains range of data values
 		"""
 		if not self.scalarRange:
 			bitDepth = self.getBitDepth()
@@ -284,15 +272,13 @@ class LIFDataSource(DataSource):
 
 	def uniqueID(self):
 		"""
-		Created: 01.08.2007, LP
-		Description: Returns a string identifying the dataset
+		Returns a string identifying the dataset
 		"""
 		return self.imageName + "|" + self.getName()
 
 	def __str__(self):
 		"""
-		Created: 03.08.2007, LP
-		Description: Returns the basic info of this instance as a string
+		Returns the basic info of this instance as a string
 		"""
 		return "LIF DataSource (%s, image %d, channel %d)"%(self.filename,self.imageNum,self.channelNum)
 

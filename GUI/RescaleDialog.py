@@ -43,8 +43,7 @@ class RescaleDialog(wx.Dialog):
 	"""
 	def __init__(self, parent):
 		"""
-		Created: 1.09.2005, KP
-		Description: Initialize the dialog
+		Initialize the dialog
 		"""    
 		wx.Dialog.__init__(self, parent, -1, 'Select mapping to 8-bit values', size = (640, 480))
 		
@@ -84,8 +83,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 	 
 	def onNoScaling(self, event):
 		"""
-		Created: 11.07.2006, KP
-		Description: Do not use any intensity scaling
+		Do not use any intensity scaling
 		"""        
 		self.result = 1
 		for i, dataUnit in enumerate(self.dataUnits):
@@ -96,8 +94,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		
 	def onCancelButton(self, event):
 		"""
-		Created: 12.04.2006, KP
-		Description: Cancel the procedure
+		Cancel the procedure
 		"""
 		#for i, dataUnit in enumerate(self.dataUnits):
 			#ds = dataUnit.getDataSource()
@@ -109,8 +106,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		
 	def onOkButton(self, event):
 		"""
-		Created: 21.04.2005, KP
-		Description: Executes the procedure
+		Executes the procedure
 		"""
 		for i, dataUnit in enumerate(self.dataUnits):
 			ds = dataUnit.getDataSource()
@@ -128,8 +124,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		
 	def setDataUnits(self, dataunits):
 		"""
-		Created: 1.09.2005, KP
-		Description: Set the dataunits to be resampled
+		Set the dataunits to be resampled
 		"""        
 		self.dataUnits = dataunits
 		unitclass = self.taskPanels["Merging"][2].getDataUnit()
@@ -170,8 +165,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		
 	def onSetThreshold(self, obj, event, lower, upper):
 		"""
-		Created: 12.04.2006, KP
-		Description: An event handler for updating the thresholds based on one of the histograms
+		An event handler for updating the thresholds based on one of the histograms
 		"""
 		n = self.histograms.index(obj)
 		dataUnit = self.dataUnits[n]
@@ -193,8 +187,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		
 	def createRescale(self):
 		"""
-		Created: 11.04.2006, KP
-		Description: Creates the GUI for controlling the rescaling
+		Creates the GUI for controlling the rescaling
 		"""            
 		box = wx.StaticBox(self, -1, "Preview selected mapping")
 		previewBox = wx.StaticBoxSizer(box, wx.HORIZONTAL)
@@ -219,8 +212,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 		
 	def onChangeZSlice(self, event):
 		"""
-		Created: 12.04.2006, KP
-		Description: Set the zslice displayed
+		Set the zslice displayed
 		"""             
 		self.preview.setZSlice(self.zslider.GetValue() - 1)
 		#print "Setting preview to ",self.zslider.GetValue()-1

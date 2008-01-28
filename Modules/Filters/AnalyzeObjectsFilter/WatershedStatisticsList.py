@@ -30,8 +30,7 @@ class WatershedTotalsList(wx.ListCtrl):
 	"""
 	def __init__(self, parent, log):
 		"""
-		Created: KP
-		Description: initialize the list ctrl
+		initialize the list ctrl
 		"""
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
@@ -63,14 +62,12 @@ class WatershedTotalsList(wx.ListCtrl):
 
 	def setStats(self, stats):
 		"""
-		Created: KP
-		Description: set the averages to be shown in the listctrl
+		set the averages to be shown in the listctrl
 		"""
 		self.stats = stats
 		
 	def getColumnText(self, index, col):
 		"""
-		Created: KP
 		Descrition: return the text for the given row and column
 		"""
 		item = self.GetItem(index, col)
@@ -105,8 +102,7 @@ class WatershedTotalsList(wx.ListCtrl):
 
 class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 	"""
-	Created: KP
-	Description: A list control object that is used to display a list of the results of
+	A list control object that is used to display a list of the results of
 				 a watershed segmentation or a connected components analysis
 	"""
 	def __init__(self, parent, wid, gsize = (350, 250)):
@@ -149,8 +145,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 
 	def setSelectionHighlighting(self, flag):
 		"""
-		Created: 26.11.2006, KP
-		Description: Set the flag indicating whether the selection of the objects will be highlighted
+		Set the flag indicating whether the selection of the objects will be highlighted
 		"""
 		self.highlightSelected = flag
 	def setCentersOfMass(self, centersofmassList):
@@ -177,8 +172,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		
 	def setAverageIntensities(self, avgIntList):
 		"""
-		Created: KP
-		Description: Set the list of average intensities that is displayed
+		Set the list of average intensities that is displayed
 		"""
 		self.avgIntList = avgIntList
 		for i, avgint in enumerate(avgIntList):
@@ -201,8 +195,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		event.Skip()
 	def sendHighlight(self):
 		"""
-		Created: 26.11.2006, KP
-		Description: Send an event that will highlight the selected objects
+		Send an event that will highlight the selected objects
 		"""
 		
 		self.counter -= 1

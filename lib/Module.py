@@ -39,8 +39,7 @@ class Module:
 	"""
 	def __init__(self, **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.images = []
 		self.dataunits = []
@@ -61,31 +60,27 @@ class Module:
 		
 	def getEventDesc(self):
 		"""
-		Created: 08.11.2007, KP
-		Description: Get the event description. More complex modules can overwrite this for
+		Get the event description. More complex modules can overwrite this for
 					 more dynamic descriptions
 		"""
 		return self.eventDesc
 		
 	def updateITKProgress(self, name, itkprogress):
 		"""
-		Created: 08.11.2007, KP
-		Description: update the progress from the itk side
+		update the progress from the itk side
 		"""
 		progress = self.shift + itkprogress * self.scale
 		scripting.mainWindow.updateProgressBar(None, "ProgressEvent", progress, self.getEventDesc(), 0)
 		
 	def setControlDataUnit(self, dataunit):
 		"""
-		Created: 10.07.2006, KP
-		Description: Set the dataunit that is controlling the execution of this module
+		Set the dataunit that is controlling the execution of this module
 		"""
 		self.controlUnit = dataunit
 		
 	def getControlDataUnit(self):
 		"""
-		Created: 10.07.2006, KP
-		Description: Set the dataunit that is controlling the execution of this module
+		Set the dataunit that is controlling the execution of this module
 		"""
 		return self.controlUnit
 	
@@ -93,8 +88,7 @@ class Module:
 
 	def updateProgress(self, obj, evt):
 		"""
-		Created: 13.07.2004, KP
-		Description: Sends progress update event
+		Sends progress update event
 		"""		   
 		# The shift and scale variables allow the processing method to affect the reported progress
 		# since it may combine several different VTK classes that will each report progress from 
@@ -107,22 +101,19 @@ class Module:
 		
 	def setTimepoint(self, timePoint):
 		"""
-		Created: 21.06.2005, KP
-		Description: Sets the timepoint this module is processing
+		Sets the timepoint this module is processing
 		"""
 		self.timepoint = timePoint
 		
 	def setSettings(self, settings):
 		"""
-		Created: 27.03.2005, KP
-		Description: Sets the settings object of this module
+		Sets the settings object of this module
 		"""
 		self.settings = settings
 
 	def reset(self):
 		"""
-		Created: 04.11.2004, KP
-		Description: Resets the module to initial state
+		Resets the module to initial state
 		"""
 		self.images = []
 
@@ -133,8 +124,7 @@ class Module:
 
 	def addInput(self, dataunit, imageData):
 		"""
-		 Created: 03.11.2004, KP
-		 Description: Adds an input a vtkImageData object and the corresponding dataunit
+		 Adds an input a vtkImageData object and the corresponding dataunit
 		"""
 		#imageData.SetScalarTypeToUnsignedChar()
 		newxSize, newySize, newzSize = imageData.GetDimensions()
@@ -163,15 +153,13 @@ class Module:
 
 	def getPreview(self, zDepth):	#does the same as processData and doOperation (below)
 		"""
-		Created: 03.11.2004, KP
-		Description: Does a preview calculation for the x-y plane at depth z
+		Does a preview calculation for the x-y plane at depth z
 		"""
 		return self.images[0]
 
 	def processData(self, zDepth, newData, toZ = None):	#does the same as processPreview and doOperation (above and below)
 		"""
-		Created: 03.11.2004, KP
-		Description: Processes the input data
+		Processes the input data
 		Parameters: z		 The z coordinate of the plane to be processed
 					newData  The output vtkImageData object
 					toZ		 Optional parameter defining the z coordinate
@@ -181,8 +169,7 @@ class Module:
 
 	def doOperation(self):	#does the same as processPreview and processData (look above)
 		"""
-		Created: 01.12.2004, KP
-		Description: Does the operation for the specified datasets.
+		Does the operation for the specified datasets.
 		"""
 		return self.images[0]
 

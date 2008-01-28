@@ -54,8 +54,7 @@ class FilterEditor(wx.Panel):
 	"""
 	def __init__(self, parent, filtersModule = None, filterList = None, taskPanel = None, scriptingId = "scripting.mainWindow.tasks['Process'].filterEditor", fbSize = (300,300)):
 		"""
-		Created: 13.11.2007, KP
-		Description: Initialization
+		Initialization
 		"""
 		wx.Panel.__init__(self, parent)
 		self.filterBoxSize = fbSize
@@ -87,46 +86,40 @@ class FilterEditor(wx.Panel):
 
 	def setFilterList(self, filterList):
 		"""
-		Created: 27.11.2007, KP
-		Description: set the filter list edited by this filter editor
+		set the filter list edited by this filter editor
 		"""
 		self.filterList = filterList
 		
 
 	def getFilters(self, name):
 		"""
-		Created: 21.07.2006, KP
-		Description: Retrieve the filters with the given name
+		Retrieve the filters with the given name
 		"""	 
 		return self.filterList.getFiltersWithName(name)
 	
 	def getFilter(self, name, index = 0):
 		"""
-		Created: 21.07.2006, KP
-		Description: Retrieve the filter with the given name, using optionally an index 
+		Retrieve the filter with the given name, using optionally an index 
 								if there are more than one filter with the same name
 		"""	 
 		return self.getFilters(name)[index]
 		
 	def getFilterList(self):
 		"""
-		Created: 20.11.2007, KP
-		Description: return the filter list
+		return the filter list
 		"""
 		return self.filterList
 
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 19.11.2007, KP
-		Description: set the dataunit that is controlled by this editor
+		set the dataunit that is controlled by this editor
 		"""
 		self.dataUnit = dataUnit
 		self.filterList.setDataUnit(dataUnit)
 		
 	def initializeGUI(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a frame that contains the various widgets
+		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
 		self.sizer = wx.GridBagSizer()
@@ -214,8 +207,7 @@ class FilterEditor(wx.Panel):
 		
 	def updateFromFilterList(self):
 		"""
-		Created: 15.11.2007, KP
-		Description: update the list box to reflect the filter list
+		update the list box to reflect the filter list
 		"""
 		self.filterListbox.Clear()
 		filterList = self.filterList.getFilters()
@@ -226,8 +218,7 @@ class FilterEditor(wx.Panel):
 		
 	def onMoveFilterDown(self, event):
 		"""
-		Created: 13.04.2006, KP
-		Description: Move a filter down in the list
+		Move a filter down in the list
 		"""
 		index = self.filterListbox.GetSelection()
 		if index == -1:
@@ -247,8 +238,7 @@ class FilterEditor(wx.Panel):
 		
 	def onMoveFilterUp(self, event):
 		"""
-		Created: 13.04.2006, KP
-		Description: Move a filter up in the list
+		Move a filter up in the list
 		"""
 		index = self.filterListbox.GetSelection()
 		if index == -1:
@@ -268,8 +258,7 @@ class FilterEditor(wx.Panel):
 		
 	def onRemoveFilter(self, event):
 		"""
-		Created: 13.04.2006, KP
-		Description: Remove a filter from the list
+		Remove a filter from the list
 		"""
 		index = self.filterListbox.GetSelection()
 		if index == -1:
@@ -286,8 +275,7 @@ class FilterEditor(wx.Panel):
 		
 	def onCheckFilter(self, event):
 		"""
-		Created: 13.04.2006, KP
-		Description: Event handler called when user toggles filter on or off
+		Event handler called when user toggles filter on or off
 		"""
 		index = event.GetSelection()
 		name = self.filterList.getFilter(index).getName()
@@ -307,8 +295,7 @@ class FilterEditor(wx.Panel):
 		
 	def setFilter(self, status, index = -1, name = ""):
 		"""
-		Created: 21.07.2006, KP
-		Description: Set the status of a given filter by either it's index, or
+		Set the status of a given filter by either it's index, or
 					 if index is not given, it's name
 		"""        
 		if index == -1:
@@ -322,8 +309,7 @@ class FilterEditor(wx.Panel):
 		
 	def removeGUI(self):
 		"""
-		Created: 18.04.2006, KP
-		Description: Remove the GUI
+		Remove the GUI
 		"""        
 		if self.currentGUI:
 			self.sizer.Detach(self.currentGUI)
@@ -331,8 +317,7 @@ class FilterEditor(wx.Panel):
 
 	def resetGUI(self):
 		"""
-		Created: 07.12.2007, KP
-		Description: reset the shown GUI
+		reset the shown GUI
 		"""
 		self.removeGUI()
 		self.Layout()
@@ -343,8 +328,7 @@ class FilterEditor(wx.Panel):
 		
 	def onSelectFilter(self, event):
 		"""
-		Created: 13.04.2006, KP
-		Description: Event handler called when user selects a filter in the listbox
+		Event handler called when user selects a filter in the listbox
 		"""
 		self.selected = event.GetSelection()
 		if self.selected == self.currentSelected:
@@ -369,16 +353,14 @@ class FilterEditor(wx.Panel):
 		
 	def loadFilter(self, className):
 		"""
-		Created: 21.07.2006, KP
-		Description: Add a filter with the given name to the stack
+		Add a filter with the given name to the stack
 		"""
 		filterclass = self.filterList.getClassForName(className)
 		return self.addFilter(None, filterclass)
 		
 	def deleteFilter(self, index = -1, name = ""):
 		"""
-		Created: 21.07.2006, KP
-		Description: Delete a filter by either it's index, or
+		Delete a filter by either it's index, or
 					 if index is not given, it's name
 		"""           
 		if index == -1:
@@ -396,8 +378,7 @@ class FilterEditor(wx.Panel):
 		
 	def addFilter(self, event, filterclass):
 		"""
-		Created: 13.04.2006, KP
-		Description: Add a filter to the stack
+		Add a filter to the stack
 		"""        
 		if not filterclass:
 			return
@@ -415,8 +396,7 @@ class FilterEditor(wx.Panel):
 		
 	def onShowPresetsMenu(self, event):
 		"""
-		Created: 03.03.2007, KP
-		Description: show a menu with preloaded presets for different tasks
+		show a menu with preloaded presets for different tasks
 		"""
 		if not self.presetMenu:
 			self.presetMenu = wx.Menu()
@@ -443,8 +423,7 @@ class FilterEditor(wx.Panel):
 				
 	def loadPreset(self, name):
 		"""
-		Created: 03.03.2007, KP
-		Description: load the given preset
+		load the given preset
 		"""
 		parser = ConfigParser.RawConfigParser()
 		parser.optionxform = str
@@ -461,8 +440,7 @@ class FilterEditor(wx.Panel):
 		
 	def saveAsPreset(self, name):
 		"""
-		Created: 03.03.2007, KP
-		Description: save the procedure list as preset
+		save the procedure list as preset
 		"""
 		filename = os.path.join("Presets", name + ".bxp")
 		parser = ConfigParser.RawConfigParser()
@@ -472,15 +450,13 @@ class FilterEditor(wx.Panel):
 
 	def setModified(self, flag):
 		"""
-		Created: 20.11.2007, KP
-		Description: set the status of the filter list
+		set the status of the filter list
 		"""
 		self.filterList.setModified(flag)
 
 	def onSavePreset(self, evt):
 		"""
-		Created: 03.03.2007, KP
-		Description: eventhandler called when the user selects save as preset
+		eventhandler called when the user selects save as preset
 		"""
 		dlg = wx.TextEntryDialog(
 		self, 'Enter name for preset',
@@ -497,8 +473,7 @@ class FilterEditor(wx.Panel):
 
 	def onShowAddMenu(self, event, btn, categories = ()):
 		"""
-		Created: 13.04.2006, KP
-		Description: Show a menu for adding filters to the stack
+		Show a menu for adding filters to the stack
 		"""
 		if categories not in self.menus:
 			menu = wx.Menu()
@@ -528,8 +503,7 @@ class FilterEditor(wx.Panel):
 
 	def doFilterCheckCallback(self, event = None):
 		"""
-		Created: 14.12.2004, JV
-		Description: A callback function called when the neither of the
+		A callback function called when the neither of the
 					 filtering checkbox changes state
 		"""
 		pass

@@ -119,15 +119,13 @@ class Track(wx.Panel):
 
 	def getStartOfTrack(self):
 		"""
-		Created: 15.11.2006, KP
-		Description: return the starting position of track, in pixels
+		return the starting position of track, in pixels
 		"""
 		return self.startOfTrack
 		
 	def onShowTimePosition(self, obj, evt, arg):
 		"""
-		Created: 15.08.2005, KP
-		Description: Show the frame position
+		Show the frame position
 		"""     
 		#print "showtimePos",obj,evt,arg
 		self.timePos = arg
@@ -136,8 +134,7 @@ class Track(wx.Panel):
 		
 	def onPaint(self, event):
 		"""
-		Created: 17.07.2005, KP
-		Description: Blit the buffer
+		Blit the buffer
 		""" 
 		if self.renew:
 			try:
@@ -150,8 +147,7 @@ class Track(wx.Panel):
 		
 	def paintTrack(self):
 		"""
-		Created: 17.07.2005, KP
-		Description: Paint the track
+		Paint the track
 		""" 
 		#print "Painting track",self.buffer.GetWidth(),self.buffer.GetHeight()
 		self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
@@ -209,8 +205,7 @@ class Track(wx.Panel):
 
 	def onPaintOverlay(self):
 		"""
-		Created: 22.08.2005, KP
-		Description: Called by Track so that track types can do their own painting
+		Called by Track so that track types can do their own painting
 		"""
 		if self.renew != 2 and self.overlayPosInPixels:
 			self.dc.Blit(self.overlayPosInPixels - 1, 0, self.overlayPosInPixelsEnd, self.height, self.mdc, self.overlayPosInPixels - 1, 0)                    
@@ -258,8 +253,7 @@ class Track(wx.Panel):
 	   
 	def updateItemSizes(self):
 		"""
-		Created: 15.12.2005, KP
-		Description: Update each item's width based on it's position
+		Update each item's width based on it's position
 		"""       
 		pps = self.timescale.getPixelsPerSecond()
 		for item in self.items:
@@ -268,8 +262,7 @@ class Track(wx.Panel):
 		
 	def updatePositions(self):
 		"""
-		Created: 17.07.2005, KP
-		Description: Update each item with new position
+		Update each item with new position
 		"""
 		x = self.startOfTrack + self.getLabelWidth()
 		for item in self.items:
@@ -280,8 +273,7 @@ class Track(wx.Panel):
 		
 	def onEvent(self, etype, event):
 		"""
-		Created: 17.07.2005, KP
-		Description: Item is dragged
+		Item is dragged
 		"""    
 		ex, ey = event.GetPosition()
 		for item in self.items:
@@ -295,8 +287,7 @@ class Track(wx.Panel):
 				
 	def onDrag(self, event):
 		"""
-		Created: 17.07.2005, KP
-		Description: Item is clicked
+		Item is clicked
 		"""
 		if self.dragItem and self.dragItem.dragMode:
 			self.dragItem.onDrag(event)
@@ -307,8 +298,7 @@ class Track(wx.Panel):
 				
 	def onDown(self, event):
 		"""
-		Created: 17.07.2005, KP
-		Description: Item is clicked
+		Item is clicked
 		"""
 		ret = self.onEvent("Down", event)
 		#print "ret=",ret,"selectedItem=",self.selectedItem
@@ -336,8 +326,7 @@ class Track(wx.Panel):
 
 	def removeActiveItem(self):
 		"""
-		Created: 31.01.2006, KP
-		Description: Remove the currently selected item
+		Remove the currently selected item
 		"""        
 		if self.selectedItem:
 			self.items.remove(self.selectedItem)
@@ -351,8 +340,7 @@ class Track(wx.Panel):
 			
 	def onUp(self, event):
 		"""
-		Created: 17.07.2005, KP
-		Description: Item is clicked
+		Item is clicked
 		"""
 		if self.selectedItem:
 			self.selectedItem.onUp(event)
@@ -362,15 +350,13 @@ class Track(wx.Panel):
 				
 	def getItems(self):
 		"""
-		Created: 19.04.2005, KP
-		Description: Return items in this track
+		Return items in this track
 		""" 
 		return self.items
 		
 	def setSelected(self, event):
 		"""
-		Created: 14.04.2005, KP
-		Description: Selects this track
+		Selects this track
 		"""
 		#print "setSelected(",event,")"
 		if event:
@@ -390,8 +376,7 @@ class Track(wx.Panel):
 			
 	def setEnabled(self, flag):
 		"""
-		Created: 14.04.2005, KP
-		Description: Enables / disables this track
+		Enables / disables this track
 		""" 
 		self.enabled = flag
 		if not flag:
@@ -407,8 +392,7 @@ class Track(wx.Panel):
 		
 	def OnDragOver(self, x, y, d):
 		"""
-		Created: 12.04.2005, KP
-		Description: Method called to indicate that a user is dragging
+		Method called to indicate that a user is dragging
 					 something to this track
 		""" 
 		if not self.oldNamePanelColor:
@@ -451,8 +435,7 @@ class Track(wx.Panel):
 		
 	def OnDragLeave(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Method called to indicate that a user is no longer dragging
+		Method called to indicate that a user is no longer dragging
 					 something to this track
 		"""     
 		self.oldNamePanelColor = None
@@ -463,8 +446,7 @@ class Track(wx.Panel):
 
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Method called by UrmasPersist to allow the object
+		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
 		print "Setting pure state of track"
@@ -477,8 +459,7 @@ class Track(wx.Panel):
 		
 	def updateLabels(self):
 		"""
-		Created: 19.03.2005, KP
-		Description: A method that updates all the items in this track
+		A method that updates all the items in this track
 		"""           
 		#print "Updating labels"
 		for item in self.items:
@@ -491,8 +472,7 @@ class Track(wx.Panel):
 
 	def getMinItemSize(self):
 		"""
-		Created: 15.11.2006, KP
-		Description: Return a minimal item size in pixels based on duration and amount of frames
+		Return a minimal item size in pixels based on duration and amount of frames
 		"""
 		
 		spf = self.control.getSecondsPerFrame()
@@ -502,8 +482,7 @@ class Track(wx.Panel):
 		
 	def onDragItem(self, trackitem, event):
 		"""
-		Created: 16.07.2005, KP
-		Description: Execute dragging of item
+		Execute dragging of item
 		"""         
 		x, y = event.GetPosition()
 		
@@ -570,55 +549,48 @@ class Track(wx.Panel):
 		
 	def remove(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: Remove all items from self
+		Remove all items from self
 		"""               
 		for i in range(len(self.items) - 1, 0, -1):
 			self.removeItem(i)
 		
 	def removeItem(self, position):
 		"""
-		Created: 14.04.2005, KP
-		Description: Remove an item from this track
+		Remove an item from this track
 		"""              
 		item = self.items[position]
 		self.items.remove(item)
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method to set the dataunit this track contains
+		A method to set the dataunit this track contains
 		"""           
 		self.dataUnit = dataUnit
 		
 	def getNumberOfTimepoints(self):
 		"""
-		Created: 04.02.2005, KP
-		Description: Return the number of items in this track
+		Return the number of items in this track
 		"""               
 		return len(self.items)
 		
 	  
 	def itemCanResize(self, fromWidth, toWidth):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method that tells whether an item can change its size
+		A method that tells whether an item can change its size
 					 from the specified size to a new size
 		"""               
 		return 1
 		
 	def initTrack(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Initialize the GUI portion of this track
+		Initialize the GUI portion of this track
 		"""
 		self.items = []
    
 		
 	def setDuration(self, seconds, frames, **kws):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method to set the length of this track, affecting
+		A method to set the length of this track, affecting
 					 size of its items
 		"""              
 		self.duration = seconds
@@ -635,8 +607,7 @@ class Track(wx.Panel):
 
 	def expandToMax(self, keep_ratio = 0):
 		"""
-		Created: 19.04.2005, KP
-		Description: Expand this track to it's maximum size
+		Expand this track to it's maximum size
 		"""              
 		n = len(self.items)
 		if not n:
@@ -664,16 +635,14 @@ class Track(wx.Panel):
 		
 	def setToSizeTotal(self, size):
 		"""
-		Created: 19.04.2005, KP
-		Description: Set duration of all items in this track
+		Set duration of all items in this track
 		"""              
 		n = float(size) / len(self.items)
 		self.setToSize(n)
 
 	def setToSize(self, size = 8):
 		"""
-		Created: 19.04.2005, KP
-		Description: Set each item on this track to given size
+		Set each item on this track to given size
 		"""              
 		n = len(self.items)
 		if not n:
@@ -690,8 +659,7 @@ class Track(wx.Panel):
 
 	def setEmptySpace(self, space):
 		"""
-		Created: 15.04.2005, KP
-		Description: Sets the empty space at the beginning of a track
+		Sets the empty space at the beginning of a track
 		"""        
 		maxempty = self.parent.getLargestTrackLength(self)
 		if space < 0:
@@ -715,15 +683,13 @@ class Track(wx.Panel):
 		
 	def getLabelWidth(self):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method that returns the width of the name panel
+		A method that returns the width of the name panel
 		"""               
 		return self.timescale.getLabelWidth()
 
 	def setColor(self, col):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method that sets the color of this track's items
+		A method that sets the color of this track's items
 		"""               
 		self.color = col
 		self.headercolor = (127, 127, 127)
@@ -733,8 +699,7 @@ class Track(wx.Panel):
 			
 	def updateLayout(self):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method that updates the layout of this track
+		A method that updates the layout of this track
 		"""               
 		#self.Layout()
 		#self.parent.Layout()
@@ -745,8 +710,7 @@ class Track(wx.Panel):
 
 	def shiftItems(self, direction):
 		"""
-		Created: 15.12.2005, KP
-		Description: Shift items in the given direction
+		Shift items in the given direction
 		"""      
 		print "Shifting items ", direction
 		nitems = []
@@ -761,24 +725,21 @@ class Track(wx.Panel):
 		
 	def getDuration(self, pixels):
 		"""
-		Created: 20.03.2005, KP
-		Description: A method that returns the time the camera takes to travel
+		A method that returns the time the camera takes to travel
 					 given part of the spline
 		""" 
 		return float(pixels) / self.control.getPixelsPerSecond()
 		
 	def getPixels(self, duration):
 		"""
-		Created: 11.04.2005, KP
-		Description: A method that returns the amount of pixels a given
+		A method that returns the amount of pixels a given
 					 number of seconds streches on the timeline
 		""" 
 		return float(duration) * self.control.getPixelsPerSecond()
 		
 	def __str__(self):
 		"""
-		Created: 05.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""        
 		s = "%s [\n" % self.label
 		s += ", ".join(map(str, self.items))
@@ -787,8 +748,7 @@ class Track(wx.Panel):
 		
 	def __getstate__(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""      
 		odict = {}
 		keys = [""]

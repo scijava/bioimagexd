@@ -45,8 +45,7 @@ class ChannelTray(wx.Panel):
 	"""
 	def __init__(self, parent, **kws):
 		"""
-		Created: 20.06.2006, KP
-		Description: Initialization
+		Initialization
 		"""          
 		wx.Panel.__init__(self, parent, -1)
 				
@@ -69,8 +68,7 @@ class ChannelTray(wx.Panel):
 		
 	def addChannel(self, name, color, filename, dims, bmp):
 		"""
-		Created: 20.06.2006, KP
-		Description: Add a channel to the tray
+		Add a channel to the tray
 		"""                 
 		b = buttons.GenBitmapToggleButton(self.scroll, -1, bmp)
 		self.Bind(wx.EVT_BUTTON, self.onToggleButton, b)
@@ -84,8 +82,7 @@ class ChannelTray(wx.Panel):
 
 	def clear(self):
 		"""
-		Created: 26.10.2007, KP
-		Description: clear the items bar
+		clear the items bar
 		"""
 		for btn in self.buttons:
 			btn.Show(0)
@@ -99,8 +96,7 @@ class ChannelTray(wx.Panel):
 		
 	def setPreview(self, i, bmp):
 		"""
-		Created: 07.02.2007, KP
-		Description: set the bitmap for this channel
+		set the bitmap for this channel
 		"""
 		name, filename, color, dims = self.units[i]
 		bmp = self.getPreviewBitmap(bmp, name, dims, color)
@@ -110,8 +106,7 @@ class ChannelTray(wx.Panel):
 		
 	def onToggleButton(self, evt):
 		"""
-		Created: 20.06.2006, KP
-		Description: A callback for when the user toggles a button
+		A callback for when the user toggles a button
 		"""   
 		for i, btn in enumerate(self.buttons):
 			if btn.GetId() != evt.GetId():
@@ -121,8 +116,7 @@ class ChannelTray(wx.Panel):
 				lib.messenger.send(None, "channel_selected", self.selectedChannel)
 	def SetSelection(self, n):
 		"""
-		Created: 07.02.2007, KP
-		Description: select a given channel
+		select a given channel
 		"""
 		for i, btn in enumerate(self.buttons):
 			btn.SetValue(i == n)
@@ -131,8 +125,7 @@ class ChannelTray(wx.Panel):
 		
 	def getPreviewBitmap(self, preview, name, size, color):
 		"""
-		Created: 07.02.2007, KP
-		Description: return an image of a channel with relevant info like channel name coupled to it's preview bitmap
+		return an image of a channel with relevant info like channel name coupled to it's preview bitmap
 		"""        
 		bmp = wx.EmptyBitmap(60, 80, -1)
 		dc = wx.MemoryDC()
@@ -161,8 +154,7 @@ class ChannelTray(wx.Panel):
 
 	def setDataUnit(self, dataunit, toolImage = (32, 32)):
 		"""
-		Created: 26.07.2005, KP
-		Description: Set the dataunit to be listed
+		Set the dataunit to be listed
 		"""
 		w, h = toolImage
 		self.imageW, self.imageH = w, h

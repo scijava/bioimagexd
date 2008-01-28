@@ -42,8 +42,7 @@ excludeFiles = ["SurfaceConstruction", "Reslice"]
 
 def get_files(directory, asmodule=0):
 	"""
-	Created: Unknown date, KP
-	Description: Get all files from a directory, excluding SVN files
+	Get all files from a directory, excluding SVN files
 	Docstring: 15.06.2007 twikstro
 	"""
 	modules = []
@@ -69,8 +68,7 @@ def get_files(directory, asmodule=0):
 
 def build():
 	"""
-	Created: Unknown date, KP
-	Description: Builds the appropriate command-line options 
+	Builds the appropriate command-line options 
 	Docstring: 15.06.2007 twikstro
 	"""
 	print "build()"

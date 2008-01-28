@@ -37,36 +37,31 @@ from Visualizer.VisualizationMode import VisualizationMode
 
 def getName():
 	"""
-	Created: KP
 	Description:Return the name of this visualization mode (used to identify mode internally)
 	"""
 	return "sections"
 
 def isDefaultMode():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether this mode should be used as the default visualization mode
+	Return a boolean indicating whether this mode should be used as the default visualization mode
 	"""
 	return 0    
 
 def showInfoWindow():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether the info window should be kept visible when this mode is loaded
+	Return a boolean indicating whether the info window should be kept visible when this mode is loaded
 	"""
 	return 1
 
 def showFileTree():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether the file tree should be kept visible when this mode is loaded
+	Return a boolean indicating whether the file tree should be kept visible when this mode is loaded
 	"""
 	return 1
 
 def showSeparator():
 	"""
-	Created: KP
-	Description: return two boolean values indicating whether to place toolbar separator before or after this icon
+	return two boolean values indicating whether to place toolbar separator before or after this icon
 	"""
 	return (0, 0)
 
@@ -75,59 +70,51 @@ def getToolbarPos():
 
 def getIcon():
 	"""
-	Created: KP
-	Description: return the icon name for this visualization mode
+	return the icon name for this visualization mode
 	"""
 	return "view_sections.jpg"
 
 def getShortDesc():
 	"""
-	Created: KP
-	Description: return a short description (used as menu items etc.) of this visualization mode
+	return a short description (used as menu items etc.) of this visualization mode
 	"""
 	return "Orthographic view"
 
 def getDesc():
 	"""
-	Created: KP
-	Description: return a description (used as tooltips etc.) of this visualization mode
+	return a description (used as tooltips etc.) of this visualization mode
 	"""
 	return "Display three orthographic sections of the dataset"    
 
 def getClass():
 	"""
-	Created: KP
-	Description: return the class that is instantiated as the actual visualization mode
+	return the class that is instantiated as the actual visualization mode
 	"""
 	return SectionsMode
 
 def getImmediateRendering():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether this mode should in general update it's 
+	Return a boolean indicating whether this mode should in general update it's 
 				 rendering after each and every change to a configuration affecting the rendering
 	"""
 	return False
 
 def getConfigPanel():
 	"""
-	Created: KP
-	Description: return the class that is instantiated as the configuration panel for the mode
+	return the class that is instantiated as the configuration panel for the mode
 	"""
 	return None
 
 def getRenderingDelay():
 	"""
-	Created: KP
-	Description: return a value in milliseconds that is the minimum delay between two rendering events being sent
+	return a value in milliseconds that is the minimum delay between two rendering events being sent
 				 to this visualization mode. In general, the smaller the value, the faster the rendering should be
 	"""
 	return 500
 
 def showZoomToolbar():
 	"""
-	Created: KP
-	Description: return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
+	return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
 	"""
 	return True    
 		
@@ -135,16 +122,14 @@ class SectionsMode(VisualizationMode):
 
 	def __init__(self, parent, visualizer):
 		"""
-		Created: 24.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		VisualizationMode.__init__(self, parent, visualizer)
 		self.sectionsPanel = None
 		
 	def updateRendering(self):
 		"""
-		Created: 26.05.2005, KP
-		Description: Update the rendering
+		Update the rendering
 		"""      
 		self.sectionsPanel.setTimepoint(self.timepoint)
 		self.sectionsPanel.updatePreview()
@@ -152,24 +137,21 @@ class SectionsMode(VisualizationMode):
 		
 	def showSliceSlider(self):
 		"""
-		Created: 07.08.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the zslider
 		"""
 		return True
 		
 	def showSideBar(self):
 		"""
-		Created: 24.05.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the sidebar
 		"""
 		return False
   
 	def activate(self, sidebarwin):
 		"""
-		Created: 24.05.2005, KP
-		Description: Set the mode of visualization
+		Set the mode of visualization
 		"""
 		scripting.wantWholeDataset = 1
 

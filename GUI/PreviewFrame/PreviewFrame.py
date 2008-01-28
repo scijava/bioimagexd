@@ -53,8 +53,7 @@ class PreviewFrame(InteractivePanel):
 	count = 0
 	def __init__(self, parent, **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialize the panel
+		Initialize the panel
 		"""
 		self.zoomToFitFlag = False
 		xframe = sys._getframe(1)
@@ -158,8 +157,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def calculateBuffer(self):
 		"""
-		Created: 23.05.2005, KP
-		Description: Calculate the drawing buffer required
+		Calculate the drawing buffer required
 		"""
 		cx, cy = self.GetClientSize()
 		Logging.info("Calculating buffer from client size %d,%d"%(cx, cy), kw="preview")
@@ -199,8 +197,7 @@ class PreviewFrame(InteractivePanel):
 				
 	def makeBackground(self, newX, newY):
 		"""
-		Created: 06.09.2007, KP
-		Description: create a buffer that is gray
+		create a buffer that is gray
 		"""
 		buffer = wx.EmptyBitmap(newX, newY)
 		dc = wx.MemoryDC()
@@ -218,8 +215,7 @@ class PreviewFrame(InteractivePanel):
 
 	def onSize(self, event):
 		"""
-		Created: 23.05.2005, KP
-		Description: Size event handler
+		Size event handler
 		"""
 		if event.GetSize() == self.lastEventSize:
 			return
@@ -234,15 +230,13 @@ class PreviewFrame(InteractivePanel):
 		
 	def setRenewFlag(self, *args):
 		"""
-		Created: 12.08.2005, KP
-		Description: Set the flag telling the preview to renew
+		Set the flag telling the preview to renew
 		"""
 		self.renewNext = 1
 		
 	def setSelectedItem(self, item, update = 1):
 		"""
-		Created: 05.04.2005, KP
-		Description: Set the channel of the combined dataunit selected for viewing
+		Set the channel of the combined dataunit selected for viewing
 		"""
 		Logging.info("Selected item " + str(item), kw = "preview")
 		self.selectedItem = item
@@ -256,8 +250,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def onRightClick(self, event):
 		"""
-		Created: 02.04.2005, KP
-		Description: Method that is called when the right mouse button is
+		Method that is called when the right mouse button is
 					 pressed down on this item
 		""" 
 		x, y = event.GetPosition()
@@ -267,8 +260,7 @@ class PreviewFrame(InteractivePanel):
 
 	def getVoxelValue(self, event):
 		"""
-		Created: 23.05.2005, KP
-		Description: Send an event containing the current voxel position
+		Send an event containing the current voxel position
 		"""
 		self.onLeftDown(event)
 		event.Skip()
@@ -337,8 +329,7 @@ class PreviewFrame(InteractivePanel):
 			
 	def setPreviewedSlice(self, obj, event, newz = -1):
 		"""
-		Created: 4.11.2004, KP
-		Description: Sets the preview to display the selected z slice
+		Sets the preview to display the selected z slice
 		"""
 		if self.z != newz:
 			self.z = newz
@@ -346,8 +337,7 @@ class PreviewFrame(InteractivePanel):
 
 	def setTimepoint(self, timePoint):
 		"""
-		Created: 09.12.2004, KP
-		Description: The previewed timepoint is set to the given timepoint
+		The previewed timepoint is set to the given timepoint
 		Parameters:
 				timePoint	The timepoint to show
 		"""
@@ -357,8 +347,7 @@ class PreviewFrame(InteractivePanel):
 
 	def setDataUnit(self, dataUnit, selectedItem = -1):
 		"""
-		Created: 04.11.2004, KP
-		Description: Set the dataunit used for preview. Should be a combined 
+		Set the dataunit used for preview. Should be a combined 
 					 data unit, the source units of which we can get and read 
 					 as ImageData
 		"""
@@ -404,8 +393,7 @@ class PreviewFrame(InteractivePanel):
 
 	def updatePreview(self, renew = 1):
 		"""
-		Created: 03.04.2005, KP
-		Description: Update the preview
+		Update the preview
 		Parameters:
 		renew    Whether the method should recalculate the images
 		"""
@@ -488,8 +476,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def processOutputData(self, data):
 		"""
-		Created: 03.04.2005, KP	
-		Description: Process the data before it's send to the preview
+		Process the data before it's send to the preview
 		"""
 		data.UpdateInformation()
 		ncomps = data.GetNumberOfScalarComponents()
@@ -514,8 +501,7 @@ class PreviewFrame(InteractivePanel):
 
 	def saveSnapshot(self, filename):
 		"""
-		Created: 05.06.2005, KP
-		Description: Save a snapshot of the scene
+		Save a snapshot of the scene
 		"""
 		ext = filename.split(".")[-1].lower()
 		if ext == "jpg":
@@ -538,8 +524,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def enable(self, flag):
 		"""
-		Created: 02.06.2005, KP
-		Description: Enable/Disable updates
+		Enable/Disable updates
 		"""
 		self.enabled = flag
 		if flag:
@@ -547,8 +532,7 @@ class PreviewFrame(InteractivePanel):
 				
 	def updateColor(self):
 		"""
-		Created: 20.11.2004, KP
-		Description: Update the preview to use the selected color transfer 
+		Update the preview to use the selected color transfer 
 					 function
 		"""
 		if self.dataUnit:
@@ -566,15 +550,13 @@ class PreviewFrame(InteractivePanel):
 
 	def setZSlice(self, z):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the optical slice to preview
+		Sets the optical slice to preview
 		"""
 		self.z = z
 		
 	def setImage(self, image):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the image to display
+		Sets the image to display
 		"""
 		self.imagedata = image
 		
@@ -590,8 +572,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def setZoomFactor(self, newFactor):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the factor by which the image should be zoomed
+		Sets the factor by which the image should be zoomed
 		"""
 		self.zoomToFitFlag = False
 		if newFactor > 10:
@@ -620,8 +601,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def zoomToFit(self):
 		"""
-		Created: 25.03.2005, KP
-		Description: Sets the zoom factor so that the image will fit into the screen
+		Sets the zoom factor so that the image will fit into the screen
 		"""
 		if self.dataUnit:
 			x, y, z = self.dataUnit.getDimensions()
@@ -647,8 +627,7 @@ class PreviewFrame(InteractivePanel):
 		
 	def updateScrolling(self, event = None):
 		"""
-		Created: 24.03.2005, KP
-		Description: Updates the scroll settings
+		Updates the scroll settings
 		"""
 		if not self.bmp:
 			return
@@ -664,8 +643,7 @@ class PreviewFrame(InteractivePanel):
 
 	def paintPreview(self, clientdc = None):
 		"""
-		Created: 24.03.2005, KP
-		Description: Paints the image to a DC
+		Paints the image to a DC
 		"""
 		Logging.info("PreviewFrame is enabled=", bool(self.enabled), kw="preview")
 		# Don't paint anything if there's going to be a redraw anyway
@@ -741,8 +719,7 @@ class PreviewFrame(InteractivePanel):
 
 	def makeBackgroundBuffer(self, dc):
 		"""
-		Created: 06.10.2006, KP
-		Description: Copy the current buffer to a background buffer
+		Copy the current buffer to a background buffer
 		"""
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		self.bgbuffer = wx.EmptyBitmap(w, h)

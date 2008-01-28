@@ -34,8 +34,7 @@ class TestSample(unittest.TestCase):
 
 	def testGetRenderingModules(self):
 		"""
-		Created: 10.07.2007, SG
-		Description: Simply tests that the keys in the dictionary returned by getRenderingModules
+		Simply tests that the keys in the dictionary returned by getRenderingModules
 		is the same as the combined list of strings that would be returned from the getName methods for
 		each of the modules in the corresponding directory. The unit test might break if ignore is changed
 		or if the files in Rendering dir changes.
@@ -49,8 +48,7 @@ class TestSample(unittest.TestCase):
 
 	def testGetVisualizationModes(self):
 		"""
-		Created: 10.07.2007, SG
-		Description: Simply tests that the keys in the dictionary returned by getVisualizationModes
+		Simply tests that the keys in the dictionary returned by getVisualizationModes
 		is the same as the combined list of strings that would be returned from the getName methods for
 		each of the modules in the corresponding directory. The unit test might break if ignore is changed
 		or if the files in Visualization dir changes.
@@ -62,8 +60,7 @@ class TestSample(unittest.TestCase):
 
 	def testGetReaders(self):
 		"""
-		Created: 10.07.2007, SG
-		Description: Simply tests that the keys in the dictionary returned by getReaders
+		Simply tests that the keys in the dictionary returned by getReaders
 		is the same as the combined list of strings that would be returned from the getName methods for
 		each of the modules in the corresponding directory. The unit test might break if ignore is changed
 		or if the files in Readers dir changes.
@@ -76,8 +73,7 @@ class TestSample(unittest.TestCase):
 
 	def testGetTaskModules(self):
 		"""
-		Created: 10.07.2007, SG
-		Description: Simply tests that the keys in the dictionary returned by getTaskModules
+		Simply tests that the keys in the dictionary returned by getTaskModules
 		is the same as the combined list of strings that would be returned from the getName methods for
 		each of the __init__.py files in the dirs in the corresponding directory. The unit test might break
 		if ignore is changed or if the directories and files in Tasks dir changes.
@@ -89,8 +85,7 @@ class TestSample(unittest.TestCase):
 	
 	def testModuleNameCreation(self):
 		"""
-		Created: 10.07.2007, SG
-		Description: Tests getting of module name from a path to a python source file and getting a module
+		Tests getting of module name from a path to a python source file and getting a module
 		name from a path to a directory
 		"""
 		pathThatIsPythonSource = "Modules/Readers/BXCDataSource.py"
@@ -104,8 +99,7 @@ class TestSample(unittest.TestCase):
 
 	def testListOfImportsIsSameAsPythonFiles(self):
 		"""
-		Created: 12.06.2007, SG
-		Description: Tests if the list of keys in the dictionary returned from
+		Tests if the list of keys in the dictionary returned from
 			DynamicLoader.getModules is equal to list of .py files in the
 			requested module directory
 		"""
@@ -118,8 +112,7 @@ class TestSample(unittest.TestCase):
 
 	def testEmptyDictionaryReturnedForUnexistingPackage(self):
 		"""
-		Created: 12.06.2007, SG
-		Description: Tests that an empty dictionary is returned when a parameter
+		Tests that an empty dictionary is returned when a parameter
 			is given that does not match a directory in the module directory.
 		"""
 		resultDictionary = Modules.DynamicLoader.getModules("ModuleThatDoesNotExist")
@@ -127,8 +120,7 @@ class TestSample(unittest.TestCase):
 	
 	def testThatIgnoringModulesWorks(self):
 		"""
-		Created: 12.06.2007, SG
-		Description: Checks that modules in ignore are not imported. We check this by: Importing the
+		Checks that modules in ignore are not imported. We check this by: Importing the
 		Readers modules. Emptying the mcache so that we won't get the earlier cached result. Adding the
 		name of one module in the directory to ignore. Importing Readers again. Checking that the amount
 		of keys is one less than before and that our ignored module is not in the list of keys.
@@ -157,8 +149,7 @@ class TestSample(unittest.TestCase):
 	# usable test data.
 	def doNotTestLoadingOfModulesInSubdirectory(self):
 		"""
-		Created: 13.06.2007, SG
-		Description: Checks that you can import modules from a directory that is a subdirectory of
+		Checks that you can import modules from a directory that is a subdirectory of
 		a directory in the Modules directory. For this test I try to import Task/Adjust and check that
 		the list of modules is the same as the list of python files in that directory.
 		"""
@@ -179,8 +170,7 @@ class TestSample(unittest.TestCase):
 	# getModules tries to load modules from there.
 	def testThatIgnoringOnlyIgnoresExactMatches(self):
 		"""
-		Created: 12.06.2007, SG
-		Description: Ignoring should only match exact module or package names. In unittest/testdata
+		Ignoring should only match exact module or package names. In unittest/testdata
 		is a FakeModulesDir/FakeModule containing the modules TestingBox.py and Box.py. Then Box.py
 		is added to ignore and we try to load this FakeModule dir. Box.py should now be ignored but not
 		TestingBox.py because "Box.py" does not exactly match it's module name.
@@ -204,8 +194,7 @@ class TestSample(unittest.TestCase):
 	
 	def testRemoveIgnoredModules(self):
 		"""
-		Created: 19.06.2007, SG
-		Description: Test that Spline.py gets removed because it's in ignore. If ignore changes
+		Test that Spline.py gets removed because it's in ignore. If ignore changes
 		the unit test might break.
 		"""
 		testModuleList = ["DynamicLoader.py", "Adjust.py", "Module.py", "Spline.py"]
@@ -214,8 +203,7 @@ class TestSample(unittest.TestCase):
 	
 	def testCreateGlobPathAndSysPath(self):
 		"""
-		Created: 19.06.2007, SG
-		Description: Tests that the rights path are returned for extension *.py and * with module dir Readers
+		Tests that the rights path are returned for extension *.py and * with module dir Readers
 		"""
 		globPathDir = os.path.join("Modules", "Readers")
 		expectedSysPath = globPathDir

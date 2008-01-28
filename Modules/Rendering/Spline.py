@@ -46,14 +46,12 @@ def getName():
 class SplineModule(VisualizationModule):
 	"""
 	Class: SplinePlaneModule
-	Created: 03.05.2005, KP
-	Description: A module for slicing the dataset
+	A module for slicing the dataset
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
 		Method: __init__(parent)
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
@@ -87,8 +85,7 @@ class SplineModule(VisualizationModule):
 	def __getstate__(self):
 		"""
 		Method: __getstate__
-		Created: 02.08.2005, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""            
 		odict = VisualizationModule.__getstate__(self)
 		odict.update({"spline":self.getVTKState(self.spline)})
@@ -99,8 +96,7 @@ class SplineModule(VisualizationModule):
 	def __set_pure_state__(self, state):
 		"""
 		Method: __set_pure_state__()
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""        
 		
 		self.setVTKState(self.spline, state.spline)
@@ -113,8 +109,7 @@ class SplineModule(VisualizationModule):
 	def setDataUnit(self, dataunit):
 		"""
 		Method: setDataUnit(self)
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 		if self.visualizer.getProcessedMode():
@@ -127,8 +122,7 @@ class SplineModule(VisualizationModule):
 	def showTimepoint(self, value):
 		"""
 		Method: showTimepoint(tp)
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
@@ -137,8 +131,7 @@ class SplineModule(VisualizationModule):
 	def updateRendering(self):
 		"""
 		Method: updateRendering()
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		if self.renew:
 			self.spline.SetInput(self.data)
@@ -154,8 +147,7 @@ class SplineModule(VisualizationModule):
 	def disableRendering(self):
 		"""
 		Method: disableRendering()
-		Created: 15.05.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""          
 		self.spline.Off()
 		self.wxrenwin.Render()
@@ -163,8 +155,7 @@ class SplineModule(VisualizationModule):
 	def enableRendering(self):
 		"""
 		Method: enableRendering()
-		Created: 15.05.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""          
 		self.spline.On()
 		self.wxrenwin.Render()
@@ -172,8 +163,7 @@ class SplineModule(VisualizationModule):
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
 		Method: setProperties(ambient,diffuse,specular,specularpower)
-		Created: 16.05.2005, KP
-		Description: Set the ambient, diffuse and specular lighting of this module
+		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		for widget in [self.spline]:
 			property = widget.GetProperty()
@@ -185,8 +175,7 @@ class SplineModule(VisualizationModule):
 	def setShading(self, shading):
 		"""
 		Method: setShading(shading)
-		Created: 16.05.2005, KP
-		Description: Set shading on / off
+		Set shading on / off
 		"""          
 		pass
 		
@@ -195,16 +184,14 @@ class SplineConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Camera Path", **kws):
 		"""
 		Method: __init__(parent)
-		Created: 04.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
 		Method: initializeGUI()
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""  
 		
 		self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
@@ -217,16 +204,14 @@ class SplineConfigurationPanel(ModuleConfigurationPanel):
 	def onCheckShading(self, event):
 		"""
 		Method: onCheckShading
-		Created: 16.05.2005, KP
-		Description: Toggle use of shading
+		Toggle use of shading
 		"""  
 		self.shading = event.IsChecked()        
 		
 	def setModule(self, module):
 		"""
 		Method: setModule(module)
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 
@@ -234,8 +219,7 @@ class SplineConfigurationPanel(ModuleConfigurationPanel):
 	def onApply(self, event):
 		"""
 		Method: onApply()
-		Created: 28.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		ModuleConfigurationPanel.onApply(self, event)
 		self.module.updateData()

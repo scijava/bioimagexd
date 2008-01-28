@@ -47,8 +47,7 @@ class MyConfigParser(ConfigParser.RawConfigParser):
 	"""
 	def optionxform(self, optionstr):
 		"""
-		Created: KP
-		Description: A method used to transform the option names. Does not transform the names in any way
+		A method used to transform the option names. Does not transform the names in any way
 		"""
 		return optionstr
 
@@ -87,8 +86,7 @@ dialogs = {}
 
 def getCacheKey(paths, names, taskname):
 	"""
-	Created: 23.10.2006, KP
-	Description: Return a key for caching of settings data based on the task name and the filepaths
+	Return a key for caching of settings data based on the task name and the filepaths
 	"""
 	keyList = paths[:]
 	keyList.append(taskname)
@@ -97,8 +95,7 @@ def getCacheKey(paths, names, taskname):
 
 def getSettingsFromCache(key):
 	"""
-	Created: 23.10.2006, KP
-	Description: Return the settings stored under a given key in the cache
+	Return the settings stored under a given key in the cache
 	"""
 	global settingsCache
 	data = settingsCache.get(tuple(key), None)
@@ -120,8 +117,7 @@ def getSettingsFromCache(key):
 
 def storeSettingsToCache(key, settingsList):
 	"""
-	Created: 23.10.2006, KP
-	Description: Store the given settings to cache
+	Store the given settings to cache
 	"""
 	global settingsCache
 	key = tuple(key)
@@ -138,8 +134,7 @@ def storeSettingsToCache(key, settingsList):
 
 def registerDialog(dialogName, dialog):
 	"""
-	Created: KP
-	Description: Register a dialog object with a given name. This can be used when creating
+	Register a dialog object with a given name. This can be used when creating
 				 a script requires that a dialog be accesible from various different parts
 				 of the software.
 	"""
@@ -148,15 +143,13 @@ def registerDialog(dialogName, dialog):
 
 def unregisterDialog(dialogName):
 	"""
-	Created: KP
-	Description: unregister a dialog with a given name. this just removes the reference
+	unregister a dialog with a given name. this just removes the reference
 	"""
 	del dialogs[dialogName]
 
 def main_is_frozen():
 	"""
-	Created: Unknown, KP
-	Description: Checks if the application is "frozen", ie. packaged with py2exe for windows, py2app for mac or freeze for linux.
+	Checks if the application is "frozen", ie. packaged with py2exe for windows, py2app for mac or freeze for linux.
 	"""
 	return (hasattr(sys, "frozen") or # new py2exe
 			hasattr(sys, "importers") # old py2exe
@@ -164,8 +157,7 @@ def main_is_frozen():
 
 def get_main_dir():
 	"""
-	Created: Unknown, KP
-	Description: Gets the main directory. Varies depending on if the app is packaged or run from source
+	Gets the main directory. Varies depending on if the app is packaged or run from source
 	"""
 	if "checker.py" in sys.argv[0]:
 		return "."
@@ -175,8 +167,7 @@ def get_main_dir():
 	
 def get_windows_appdir():
 	"""
-	Created: 01.08.2007, KP
-	Description: return the base directory where application settings, logs etc. should be stored on windows
+	return the base directory where application settings, logs etc. should be stored on windows
 	"""
 	if "AppData" in os.environ:
 		appbase = os.environ["AppData"]
@@ -188,8 +179,7 @@ def get_windows_appdir():
 	
 def get_log_dir():
 	"""
-	Created: Unknown, KP
-	Description: Tries to create and return a path to a directory for logging
+	Tries to create and return a path to a directory for logging
 	"""
 	if platform.system()=="Darwin":
 		return os.path.expanduser("~/Library/Logs/BioImageXD")
@@ -222,8 +212,7 @@ def get_log_dir():
 	
 def get_preview_dir():
 	"""
-	Created: 7.11.2006, KP
-	Description: Return a directory where preview images can be stored
+	Return a directory where preview images can be stored
 	"""
 	if platform.system() == "Darwin":
 		dirpath = os.path.expanduser("~/Library/Caches/BioImageXD")
@@ -259,8 +248,7 @@ def get_preview_dir():
 	
 def get_config_dir():
 	"""
-	Created: Unknown, KP
-	Description: Returns the path to the config file
+	Returns the path to the config file
 	"""
 	if platform.system() == "Darwin":
 		return os.path.expanduser("~/Library/Preferences")
@@ -290,8 +278,7 @@ def get_config_dir():
 
 def get_help_dir():
 	"""
-	Created: Unknown, KP
-	Description: Returns the path where help files are located
+	Returns the path where help files are located
 	"""
 	if platform.system() == "Darwin" and main_is_frozen():
 		resourcePath = os.environ['RESOURCEPATH']
@@ -302,8 +289,7 @@ def get_help_dir():
 		
 def get_icon_dir():
 	"""
-	Created: Unknown, KP
-	Description: Returns the path where icons are located
+	Returns the path where icons are located
 	"""
 	if platform.system() == "Darwin" and main_is_frozen():
 		resourcePath = os.environ['RESOURCEPATH']
@@ -315,8 +301,7 @@ def get_icon_dir():
 		
 def get_module_dir():
 	"""
-	Created: Unknown, KP
-	Description: Returns the path where modules are located
+	Returns the path where modules are located
 	"""
 	if platform.system() == "Darwin" and main_is_frozen():
 		resourcePath = os.environ['RESOURCEPATH']

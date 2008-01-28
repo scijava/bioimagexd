@@ -90,8 +90,7 @@ i = w.GetInstance()
 
 def exceptHook(type, value, traceback):
 	"""
-	Created: 16.10.2007, KP
-	Description: mark an unhandled exception as happened
+	mark an unhandled exception as happened
 	"""
 	scripting.unhandledException = 1
 	sys.__excepthook__(type, value, traceback)
@@ -100,8 +99,7 @@ sys.excepthook = exceptHook
 
 def onWarning(obj, evt, *args):
 	"""
-	Created: Unknown date, KP
-	Description: Show VTK error messages
+	Show VTK error messages
 	"""
 	Logging.backtrace()
 	print "VTK message:\n", evt
@@ -112,8 +110,7 @@ w.AddObserver("ErrorEvent", onWarning)
 
 def usage():
 	"""
-	Created: Unknown, KP
-	Description: Prints command line usage of program
+	Prints command line usage of program
 	"""
 	print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file]\
 [-d directory|--directory=directory]"

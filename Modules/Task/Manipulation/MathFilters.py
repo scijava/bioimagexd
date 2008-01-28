@@ -46,23 +46,20 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (2, 2)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageMathematics()
 	
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return []
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""                 
 		lib.ProcessingFilter.ProcessingFilter.execute(self, inputs)
 		image = self.getInput(1)
@@ -84,8 +81,7 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 
 def getFilters():
     """
-    Created: 10.8.2007, SS
-    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
     return [AndFilter, OrFilter, XorFilter, NotFilter,
             NorFilter, NandFilter, SubtractFilter, AddFilter,
@@ -104,8 +100,7 @@ class LogicFilter(MathFilter):
 	def __init__(self, inputs = (2, 2)):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageLogic()
@@ -121,8 +116,7 @@ class AndFilter(LogicFilter):
    
 	def __init__(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		LogicFilter.__init__(self)
 		self.operation = "And"    
@@ -136,8 +130,7 @@ class OrFilter(LogicFilter):
    
 	def __init__(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		LogicFilter.__init__(self)
 		self.operation = "Or"
@@ -152,8 +145,7 @@ class XorFilter(LogicFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		LogicFilter.__init__(self)
 		self.operation = "Xor"   
@@ -167,8 +159,7 @@ class NotFilter(LogicFilter):
 				
 	def __init__(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		LogicFilter.__init__(self, inputs = (1, 1))
 		self.operation = "Not"       
@@ -182,8 +173,7 @@ class NorFilter(LogicFilter):
    
 	def __init__(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		LogicFilter.__init__(self)
 		self.operation = "Nor"    
@@ -197,8 +187,7 @@ class NandFilter(LogicFilter):
    
 	def __init__(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		LogicFilter.__init__(self)
 		self.operation = "Nand"          
@@ -213,8 +202,7 @@ class SubtractFilter(MathFilter):
 	
 	def __init__(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Subtract"
@@ -230,8 +218,7 @@ class AddFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 15.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Add"
@@ -248,8 +235,7 @@ class DivideFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Divide"
@@ -266,8 +252,7 @@ class MultiplyFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Multiply"     
@@ -284,8 +269,7 @@ class SinFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
 		self.operation = "Sin"        
@@ -302,8 +286,7 @@ class CosFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
 		self.operation = "Cos"   
@@ -320,8 +303,7 @@ class ExpFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
 		self.operation = "Exp" 
@@ -338,8 +320,7 @@ class LogFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
 		self.operation = "Log"    
@@ -356,8 +337,7 @@ class SQRTFilter(MathFilter):
 	def __init__(self):
 		"""
 		Method: __init__()
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
 		self.operation = "SquareRoot"   

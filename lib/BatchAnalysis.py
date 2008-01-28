@@ -69,8 +69,7 @@ class BatchAnalysis:
 		
 	def renameList(self, name, newName):
 		"""
-		Created: 04.12.2007, KP
-		Description: rename a given procedure list
+		rename a given procedure list
 		"""
 		if name == newName:
 			return
@@ -89,37 +88,32 @@ class BatchAnalysis:
 the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedureLists.keys())))
 	def getFileName(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: return the filename as which the analysis is being saved
+		return the filename as which the analysis is being saved
 		"""
 		return self.filename
 		
 	def setProcedureListGrouping(self, value):
 		"""
-		Created: 1.12.2007, KP
-		Description: select whether to group the processed channels by the procedure list or not
+		select whether to group the processed channels by the procedure list or not
 		"""
 		self.procListGrouping = value
 		
 	def setChannelGrouping(self, value):
 		"""
-		Created: 1.12.2007, KP
-		Description: select whether to group channels or not
+		select whether to group channels or not
 		"""
 		self.channelGrouping = value
 		
 	def setChannelGroupingByProcedureList(self, value):
 		"""
-		Created: 07.12.2007, KP
-		Description: Set the grouping of channels of a single file that are
+		Set the grouping of channels of a single file that are
 					 processed by different procedure lists
 		"""
 		self.procListGrouping = value
 		
 	def setChannelProcessing(self, value):
 		"""
-		Created: 1.12.2007, KP
-		Description: Set the way the channnels are processed. Valid values are:
+		Set the way the channnels are processed. Valid values are:
 			0	Each channel of a file is processed separately through the procedure lists
 			1	All the channels in a single file are passed as input to a procedure list
 		"""
@@ -127,8 +121,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def sortNumerically(self, item1, item2):
 		"""
-		Created: 17.03.2005, KP
-		Description: A method that compares two filenames and sorts them by the number in their filename
+		A method that compares two filenames and sorts them by the number in their filename
 		"""   
 		r = self.numRE
 		s = r.findall(item1)
@@ -152,8 +145,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 
 	def getGroupedDataUnits(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: return the source data units grouped according to how the user has selected
+		return the source data units grouped according to how the user has selected
 					 in the GUI
 		"""
 		if self.channelProcessing == PROCESS_SEPARATELY:
@@ -166,8 +158,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 
 	def getDataUnitsByFilename(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: return the dataunits grouped by the filenames
+		return the dataunits grouped by the filenames
 		"""
 		perFile = {}
 		filenames = []
@@ -185,8 +176,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 
 	def createSingleGroupedBXDFile(self, directory, procListName, dataUnits):
 		"""
-		Created: 1.12.2007, KP
-		Description: Create a bxd file that groups the selected dataunits.
+		Create a bxd file that groups the selected dataunits.
 					 This is used when the option to process each channel separately is selected,
 					 instead of having all channels as input
 		"""
@@ -201,8 +191,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			
 	def createProcListGroupedBXDFile(self, directory, writtenOutFilenames):
 		"""
-		Created: 07.12.2007, KP
-		Description: Write out a bxd file that groups together all the channels of the source datasets.
+		Write out a bxd file that groups together all the channels of the source datasets.
 					 This is used when the option to use all channels as input is selected
 		"""
 		origFileToOutput = {}
@@ -229,8 +218,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			
 	def execute(self, csvfile, directory, timepoints):
 		"""
-		Created: 1.12.2007, KP
-		Description: execute the analysis
+		execute the analysis
 		"""
 		# Create a CSV file writer
 		csvfp = codecs.open(csvfile, "wb", "latin-1")
@@ -314,8 +302,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 				
 	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders):
 		"""
-		Created: 1.12.2007, KP
-		Description: write the csv results out
+		write the csv results out
 		"""
 		selectedVars = self.getSelectedVariables(procListName)
 		row=[""]*len(varHeaders)
@@ -340,15 +327,13 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def getDataUnit(self):
 		"""
-		Created: 30.11.2007, KP
-		Description: return the dataunit
+		return the dataunit
 		"""
 		return self.dataUnit
 		
 	def determineColorTransferFunction(self, procedureList, dataunits):
 		"""
-		Created: 08.12.2007, KP
-		Description: determine the color transfer function out of the source dataunits
+		determine the color transfer function out of the source dataunits
 		"""
 		if len(dataunits)==1:
 			return dataunits[0].getColorTransferFunction()
@@ -360,8 +345,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def saveAnalysisAs(self, filename):
 		"""
-		Created: 30.11.2007, KP
-		Description: save the batch analysis with the given filename
+		save the batch analysis with the given filename
 		"""
 		self.filename = filename
 		parser = ConfigParser.RawConfigParser()
@@ -387,8 +371,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			
 	def readAnalysisFrom(self, filename):
 		"""
-		Created: 30.11.2007, KP
-		Description: read the batch analysis from the given filename
+		read the batch analysis from the given filename
 		"""
 		parser = ConfigParser.RawConfigParser()
 		parser.optionxform = str
@@ -414,30 +397,26 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			
 	def getFileNames(self):
 		"""
-		Created: 29.11.2007
-		Description: return the files names loaded into the analysis
+		return the files names loaded into the analysis
 		"""
 		return [x.getFileName() for x in self.inputDataUnits]
 		
 	def setSelectedVariables(self, procListName, variables):
 		"""
-		Created: 27.11.2007, KP
-		Description: Set the variables that are selected for retrieval from a given procedure list
+		Set the variables that are selected for retrieval from a given procedure list
 		"""
 		print "Setting selected variables to",variables
 		self.selectedVariables[procListName] = variables
 		
 	def getProcedureListNames(self):
 		"""
-		Created: 30.11.2007, KP
-		Description: return the names of the procedure lists
+		return the names of the procedure lists
 		"""
 		return self.procedureLists.keys()
 		
 	def getAllSelectedVariables(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: return the selected variables of all procedure lists
+		return the selected variables of all procedure lists
 		"""
 		ret = {}
 		for procListName in self.getProcedureListNames():
@@ -446,15 +425,13 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def getSelectedVariables(self, procListName):
 		"""
-		Created: 27.11.2007, KP
-		Description: Get the variables that are selected for retrieval from a given procedure list
+		Get the variables that are selected for retrieval from a given procedure list
 		"""
 		return self.selectedVariables.get(procListName,{})
 		
 	def addProcedureList(self, name):
 		"""
-		Created: 27.11.2007, KP
-		Description: add a procedure list to the list of analyses
+		add a procedure list to the list of analyses
 		"""
 		filterList = lib.FilterBasedModule.FilterList()
 		filterList.setDataUnit(self.dataUnit)
@@ -462,8 +439,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def getProcedureList(self, name = ""):
 		"""
-		Created: 27.11.2007, KP
-		Description: return the requested procedure list
+		return the requested procedure list
 		"""
 		if not name:
 			name = self.selectedList
@@ -472,29 +448,26 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def getSelectedProcedureList(self):
 		"""
-		Created: 27.11.2007, KP
-		Description: return the name of the selected procedure list
+		return the name of the selected procedure list
 		"""
 		return self.selectedList
 		
 	def setSelectedProcedureList(self, name):
 		"""
 		Creted: 27.11.2007, KP
-		Description: Set the currently selected procedure list
+		Set the currently selected procedure list
 		"""
 		self.selectedList = name
 		
 	def getSourceDataUnits(self):
 		"""
-		Created: 25.11.2007, KP
-		Description: return the input data units
+		return the input data units
 		"""
 		return self.inputDataUnits
 		
 	def setInputDataUnits(self, fileList):
 		"""
-		Created: 25.11.2007, KP
-		Description: set the input files used by this model
+		set the input files used by this model
 		"""
 		pluginLoader = Modules.DynamicLoader.getPluginLoader()
 		taskMod = pluginLoader.getPluginModule("Task", "Process")

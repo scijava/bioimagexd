@@ -66,8 +66,7 @@ class FilterList:
 			
 	def getResultVariable(self, var, nth = 0):
 		"""
-		Created: 1.12.2007, KP
-		Description: return the value of a result variable
+		return the value of a result variable
 		"""
 		i = 0
 		for f in self.filters:
@@ -78,8 +77,7 @@ class FilterList:
 			
 	def clear(self):
 		"""
-		Created: 1.12.2007, KP
-		Description: clear the filter list
+		clear the filter list
 		"""
 
 		self.categories = []
@@ -90,8 +88,7 @@ class FilterList:
 			
 	def addFilter(self, filter):
 		"""
-		Created: 20.11.2007, KP
-		Description: add a filter to the list
+		add a filter to the list
 		"""
 		self.filters.append(filter)
 		filter.setDataUnit(self.dataUnit)
@@ -99,8 +96,7 @@ class FilterList:
 
 	def setDataUnit(self, dataUnit, initializeFilters = 1):
 		"""
-		Created: 20.11.2007, KP
-		Description: set the dataunit 
+		set the dataunit 
 		"""
 		self.dataUnit = dataUnit
 		self.modified = 1
@@ -112,8 +108,7 @@ class FilterList:
 			
 	def populate(self, filterNames):
 		"""
-		Created: 15.11.2007, KP
-		Description: populate the filter list from a string
+		populate the filter list from a string
 		"""
 		filterList = []
 		nameToFilter = {}
@@ -132,8 +127,7 @@ class FilterList:
 		
 	def writeOut(self, parser, prefix = ""):
 		"""
-		Created: 13.11.2007, KP
-		Description: Write the filter list out to a configuration parser object
+		Write the filter list out to a configuration parser object
 		"""
 		if not parser.has_section("%sFilterList"%prefix):
 			parser.add_section("%sFilterList"%prefix)
@@ -162,8 +156,7 @@ class FilterList:
 				
 	def readValuesFrom(self, parser, prefix = ""):
 		"""
-		Created: 19.11.2007, KP
-		Description: read the values for the parameters of the filters in this filterlist from a parser object
+		read the values for the parameters of the filters in this filterlist from a parser object
 		"""
 		self.setModified(1)
 		filterNames = [x.getName() for x in self.filters]
@@ -207,36 +200,31 @@ class FilterList:
 				
 	def getCount(self):
 		"""
-		Created: 13.11.2007, KP
-		Description: return the number of filters in the filter list
+		return the number of filters in the filter list
 		"""
 		return len(self.filters)
 			
 	def getCategories(self):
 		"""
-		Created: 13.11.2007, KP
-		Description: return the categories of the different filters
+		return the categories of the different filters
 		"""
 		return self.categories
 		
 	def getFiltersInCategory(self, category):
 		"""
-		Created: 13.11.2007, KP
-		Description: return the filters in a given category
+		return the filters in a given category
 		"""
 		return self.filtersByCategory.get(category, [])
 
 	def getClassForName(self, name):
 		"""
-		Created: 13.11.2007, KP
-		Description: return the a class corresponding to the given filter name
+		return the a class corresponding to the given filter name
 		"""
 		return self.filtersByName.get(name, None)
 
 	def removeFilter(self, index):
 		"""
-		Created: 13.11.2007, KP
-		Description: remove the filter at the given index
+		remove the filter at the given index
 		"""
 		self.filters[index].onRemove()
 		del self.filters[index]
@@ -244,29 +232,25 @@ class FilterList:
 			
 	def setModified(self, status):
 		"""
-		Created: 13.11.2007, KP
-		Description: set a status flag indicating whether the list has been modified
+		set a status flag indicating whether the list has been modified
 		"""
 		self.modified = bool(status)
 			
 	def getModified(self):
 		"""
-		Created: 26.11.2007, KP
-		Description: return the status of this filter list
+		return the status of this filter list
 		"""
 		return self.modified
 
 	def getFilter(self, index):
 		"""
-		Created: 13.11.2007, KP
-		Description: return the filter at the given index
+		return the filter at the given index
 		"""
 		return self.filters[index]
 	
 	def getFiltersWithName(self, name):
 		"""
-		Created: 20.11.2007, KP
-		Description: return the filter with the given name
+		return the filter with the given name
 		"""
 		ret = []
 		for i in self.filters:
@@ -276,8 +260,7 @@ class FilterList:
 		
 	def getIndexForName(self, name):
 		"""
-		Created: 13.11.2007, KP
-		Description: return the index of the filter corresponding to the given name
+		return the index of the filter corresponding to the given name
 		"""
 		index = -1
 		for i, currFilter in enumerate(self.filters):
@@ -289,8 +272,7 @@ class FilterList:
 
 	def registerFilter(self, category, currfilter):
 		"""
-		Created: 03.11.2004, KP
-		Description: Register a filter in a given category
+		Register a filter in a given category
 		"""
 		if category not in self.categories:
 			self.categories.append(category)
@@ -300,45 +282,40 @@ class FilterList:
 		
 	def moveDown(self, index):
 		"""
-		Created: 13.11.2007, KP
-		Description: move a filter down
+		move a filter down
 		"""
 		self.filters[index + 1], self.filters[index] = self.filters[index], self.filters[index + 1]
 		self.setModified(1)
 		
 	def moveUp(self, index):
 		"""
-		Created: 13.11.2007, KP
-		Description: move a filter at given index up in the list
+		move a filter at given index up in the list
 		"""
 		self.filters[index - 1], self.filters[index] = self.filters[index], self.filters[index - 1]
 		self.setModified(1)
 		
 	def getEnabledFilters(self):
 		"""
-		Created: 15.11.2007, KP
-		Description: return the enabled filters
+		return the enabled filters
 		"""
 		return [filterModule for filterModule in self.filters if filterModule.getEnabled()]
 		
 	def getFilters(self):
 		"""
 		Created 13.11.2007, KP
-		Description: get the list of filters
+		get the list of filters
 		"""
 		return self.filters
 		
 	def getFilterNames(self):
 		"""
-		Created: 20.11.2007, KP
-		Description: return the filter names
+		return the filter names
 		"""
 		return [x.getName() for x in self.filters]
 		
 	def setEnabled(self, index, status):
 		"""
-		Created: 13.11.2007, KP
-		Description: set the status of a given filter
+		set the status of a given filter
 		"""
 		self.filters[index].setEnabled(status)
 		self.setModified(1)
@@ -352,8 +329,7 @@ class FilterBasedModule(lib.Module.Module):
 
 	def __init__(self, **kws):
 		"""
-		Created: 25.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		lib.Module.Module.__init__(self, **kws)
 
@@ -371,8 +347,7 @@ class FilterBasedModule(lib.Module.Module):
 
 	def getEventDesc(self):
 		"""
-		Created: 08.11.2007, KP
-		Description: Get the event description. More complex modules can overwrite this for
+		Get the event description. More complex modules can overwrite this for
 					 more dynamic descriptions
 		"""
 		if self.currentExecutingFilter:
@@ -382,8 +357,7 @@ class FilterBasedModule(lib.Module.Module):
 			
 	def reset(self):
 		"""
-		Created: 25.11.2004, KP
-		Description: Resets the module to initial state. This method is
+		Resets the module to initial state. This method is
 					 used mainly when doing previews, when the parameters
 					 that control the processing are changed and the
 					 preview data becomes invalid.
@@ -395,8 +369,7 @@ class FilterBasedModule(lib.Module.Module):
 
 	def addInput(self, dataunit, data): #TODO: test
 		"""
-		Created: 04.04.2006, KP
-		Description: Adds an input for the single dataunit Manipulationing filter
+		Adds an input for the single dataunit Manipulationing filter
 		"""
 		lib.Module.Module.addInput(self, dataunit, data)
 		self.settings = dataunit.getSettings()
@@ -404,8 +377,7 @@ class FilterBasedModule(lib.Module.Module):
 
 	def getPreview(self, depth):
 		"""
-		Created: 04.04.2006, KP
-		Description: Does a preview calculation for the x-y plane at depth depth
+		Does a preview calculation for the x-y plane at depth depth
 		"""
 		if self.settings.get("ShowOriginal"):
 			Logging.info("Returning original data", kw="dataunit")
@@ -427,8 +399,7 @@ class FilterBasedModule(lib.Module.Module):
 
 	def doOperation(self, preview=0):
 		"""
-		Created: 04.04.2006, KP
-		Description: Manipulationes the dataset in specified ways
+		Manipulationes the dataset in specified ways
 		"""
 		filterlist = self.settings.get("FilterList")
 		modified = filterlist.getModified()

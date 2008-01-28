@@ -43,8 +43,7 @@ class ResampleDialog(wx.Dialog):
 	"""
 	def __init__(self, parent, imageMode = 1):
 		"""
-		Created: 1.09.2005, KP
-		Description: Initialize the dialog
+		Initialize the dialog
 		"""
 		wx.Dialog.__init__(self, parent, -1, 'Resample dataset', style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self.dataUnits = []
@@ -66,8 +65,7 @@ class ResampleDialog(wx.Dialog):
 		
 	def onOkButton(self, event):
 		"""
-		Created: 21.04.2005, KP
-		Description: Executes the procedure
+		Executes the procedure
 		"""
 		for i in self.dataUnits:
 			i.dataSource.setResampleDimensions(self.currSize)
@@ -82,8 +80,7 @@ class ResampleDialog(wx.Dialog):
 		
 	def setDataUnits(self, dataunits):
 		"""
-		Created: 1.09.2005, KP
-		Description: Set the dataunits to be resampled
+		Set the dataunits to be resampled
 		"""
 		self.dataUnits = dataunits
 		
@@ -97,8 +94,7 @@ class ResampleDialog(wx.Dialog):
 		self.onSetToHalfSize(None)
 	def onUpdateDims(self, evt):
 		"""
-		Created: 1.09.2005, KP
-		Description: Update the dimensions
+		Update the dimensions
 		"""
 		if self.blockDimUpdate:
 			return
@@ -122,8 +118,7 @@ class ResampleDialog(wx.Dialog):
 		
 	def onUpdateFactors(self, evt):
 		"""
-		Created: 23.07.2006, KP
-		Description: Update the factors, resulting in change in the dimensions
+		Update the factors, resulting in change in the dimensions
 		"""
 		if self.blockFactorUpdate:
 			print "Blocking factor update"
@@ -151,8 +146,7 @@ class ResampleDialog(wx.Dialog):
 
 	def createResample(self):
 		"""
-		Created: 1.09.2005, KP
-		Description: Creates the GUI for setting the resampled size
+		Creates the GUI for setting the resampled size
 		"""
 		box = wx.StaticBox(self, -1, "Resample now to")
 		self.currDimText = u"Current dataset original dimensions: %d x %d x %d"
@@ -264,8 +258,7 @@ class ResampleDialog(wx.Dialog):
 
 	def onSetToCustDims(self, evt):
 		"""
-		Created: 19.12.2006, KP
-		Description: Select the custom dimensions to be used for resampling
+		Select the custom dimensions to be used for resampling
 		"""
 		self.halfResampleZ.Enable(0)
 		self.fourthResampleZ.Enable(0)
@@ -283,8 +276,7 @@ class ResampleDialog(wx.Dialog):
 		
 	def onSetToHalfSize(self, evt):
 		"""
-		Created: 19.12.2006, KP
-		Description: Select a half size to be used for resampling
+		Select a half size to be used for resampling
 		"""
 		self.halfResampleZ.Enable(1)
 		if self.dataUnits:
@@ -300,8 +292,7 @@ class ResampleDialog(wx.Dialog):
 		
 	def onSetToFourthSize(self, evt):
 		"""
-		Created: 19.12.2006, KP
-		Description: Select a fourth size to be used for resampling
+		Select a fourth size to be used for resampling
 		"""
 		self.halfResampleZ.Enable(0)
 		self.fourthResampleZ.Enable(1)

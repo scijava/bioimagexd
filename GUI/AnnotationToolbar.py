@@ -67,8 +67,7 @@ class AnnotationToolbar(wx.Window):
 		
 	def onLoadMode(self, obj, evt, vismode):
 		"""
-		Created: 23.04.2007, KP
-		Description: an event handler for when visualizer is loading a mode
+		an event handler for when visualizer is loading a mode
 		"""
 		renwin = vismode.getRenderWindow()
 		if renwin:
@@ -79,8 +78,7 @@ class AnnotationToolbar(wx.Window):
 			
 	def createAnnotationToolbar(self):
 		"""
-		Created: 05.10.2006, KP
-		Description: Method to create a toolbar for the annotations
+		Method to create a toolbar for the annotations
 		"""		   
 		def createBtn(bid, gifname, tooltip, btnclass = buttons.GenBitmapToggleButton):
 			icondir = scripting.get_icon_dir()	
@@ -188,8 +186,7 @@ class AnnotationToolbar(wx.Window):
 		
 	def onRecord(self, evt):
 		"""
-		Created: 23.04.2007, KP
-		Description: Start / stop recording events
+		Start / stop recording events
 		"""
 		flag = evt.GetIsDown()
 		#TODO: playBtn and stopBtn are defined in commented code and therefore not working
@@ -207,21 +204,18 @@ class AnnotationToolbar(wx.Window):
 			
 	def onPlayRecording(self, evt):
 		"""
-		Created: 23.04.2007, KP
-		Description: play a recorded event sequence
+		play a recorded event sequence
 		"""
 		self.eventRecorder.Play()
 	def onStopPlaying(self, evt):
 		"""
-		Created: 23.04.2007, KP
-		Description: stop playing a recorded event sequence
+		stop playing a recorded event sequence
 		"""
 		self.eventRecorder.Stop()
 
 	def onResampleToFit(self, evt):
 		"""
-		Created: 23.07.2006, KP
-		Description: Toggle the resampling on / off
+		Toggle the resampling on / off
 		"""
 #		 flag=self.resampleBtn.GetValue()
 		
@@ -232,8 +226,7 @@ class AnnotationToolbar(wx.Window):
 
 	def onResampleData(self, evt):
 		"""
-		Created: 23.07.2006, KP
-		Description: Toggle the resampling on / off
+		Toggle the resampling on / off
 		"""
 		flag = evt.GetIsDown()
 		scripting.resamplingDisabled = not flag
@@ -246,8 +239,7 @@ class AnnotationToolbar(wx.Window):
 		
 	def clearChannelItems(self):
 		"""
-		Created: 06.11.2006, KP
-		Description: Remove all the channel items
+		Remove all the channel items
 		"""
 		for key in self.channelButtons.keys():
 			btn = self.channelButtons[key]
@@ -260,8 +252,7 @@ class AnnotationToolbar(wx.Window):
 		
 	def addChannelItem(self, name, bitmap, toolid, func):
 		"""
-		Created: 01.06.2005, KP
-		Description: Add a channel item
+		Add a channel item
 		""" 
 		icondir = scripting.get_icon_dir()		   
 		btn = buttons.GenBitmapToggleButton(self, toolid, bitmap)
@@ -278,15 +269,13 @@ class AnnotationToolbar(wx.Window):
 		
 	def toggleChannelItem(self, toolid, flag):
 		"""
-		Created: 06.11.2006, KP
-		Description: Toggle a channel item on or off
+		Toggle a channel item on or off
 		"""
 		self.channelButtons[toolid].SetToggle(flag)
 		
 	def addAnnotation(self, event):
 		"""
-		Created: 03.07.2005, KP
-		Description: Draw a scale to the visualization
+		Draw a scale to the visualization
 		"""
 		if not self.visualizer.currMode:
 			return
@@ -312,16 +301,14 @@ class AnnotationToolbar(wx.Window):
 		
 	def deleteAnnotation(self, event):
 		"""
-		Created: 04.07.2005, KP
-		Description: DElete annotations on the image
+		DElete annotations on the image
 		"""
 		if self.visualizer.currMode:
 			self.visualizer.currMode.deleteAnnotation()
 
 	def updateAnnotations(self, *args):
 		"""
-		Created: 05.10.2006, KP
-		Description: Untoggle the annotation buttons because an annotation was added
+		Untoggle the annotation buttons because an annotation was added
 		"""
 		self.scaleBtn.SetToggle(False)
 		self.circleBtn.SetToggle(False)
@@ -331,8 +318,7 @@ class AnnotationToolbar(wx.Window):
 				
 	def roiToMask(self, evt):
 		"""
-		Created: 20.06.2006, KP
-		Description: Convert the selected ROI to mask
+		Convert the selected ROI to mask
 		"""
 		if hasattr(self.visualizer.currentWindow, "roiToMask"):
 			imagedata, names = self.visualizer.currentWindow.roiToMask()

@@ -10,8 +10,7 @@ class ColocalizationDataUnit(CombinedDataUnit):
 
 	def getColorTransferFunction(self):
 		"""
-		Created: 20.07.2005, KP
-		Description: Returns the ctf of the source dataunit
+		Returns the ctf of the source dataunit
 		"""
 		return self.settings.get("ColorTransferFunction")
 

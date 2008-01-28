@@ -114,8 +114,7 @@ def possibly_ignore(arg):
 
 def enableFull():
 	"""
-	Created: Unknown, KP
-	Description: Empties the hide_debug list which allows all log messages to be printed.
+	Empties the hide_debug list which allows all log messages to be printed.
 	"""
 	global HIDE_DEBUG
 	HIDE_DEBUG = []
@@ -127,8 +126,7 @@ class GUIError(Exception):
 	"""
 	def __init__(self, title, msg):
 		"""
-		Created: 13.12.2004, KP
-		Description: Constructor
+		Constructor
 		Parameters:
 			title	   Title for the error message
 			msg		   The actual error message
@@ -140,8 +138,7 @@ class GUIError(Exception):
 
 	def show(self):
 		"""
-		Created: 13.12.2004, KP
-		Description: Displays the error message in a tkMessageBox.
+		Displays the error message in a tkMessageBox.
 		"""
 		dlg = self.wx.MessageDialog(None, self.msg, self.title, wx.OK|wx.ICON_ERROR)
 		dlg.ShowModal()
@@ -149,23 +146,20 @@ class GUIError(Exception):
 
 	def __str__(self):
 		"""
-		Created: 13.12.2004, KP
-		Description: Returns the error message in a string.
+		Returns the error message in a string.
 		"""
 		return "[Error: %s: %s]" % (self.title, self.msg)
 
 	def __repr__(self):
 		"""
-		Created: 13.12.2004, KP
-		Description: Returns the error message in a string.
+		Returns the error message in a string.
 		"""
 		return str(self)
 
 #@possibly_ignore
 def error(title, msg, xframe = sys._getframe()):
 	"""
-	Created: 13.12.2004, KP
-	Description: Raises an GuiError.
+	Raises an GuiError.
 	Parameters:
 			title	   Title for the error message
 			msg		   The actual error message
@@ -177,8 +171,7 @@ def error(title, msg, xframe = sys._getframe()):
 #@possibly_ignore
 def info(msg, *args, **kws):
 	"""
-	Created: 13.12.2004, KP
-	Description: Prints information
+	Prints information
 	Parameters:
 			msg		   The message
 			args	   Arguments to be converted to strings and printed along with message
@@ -201,8 +194,7 @@ def info(msg, *args, **kws):
 #@possibly_ignore
 def backtrace():
 	"""
-	Created: 02.07.2005, KP
-	Description: Prints backtrace of callers
+	Prints backtrace of callers
 	"""
 	i = 0
 	xframe = sys._getframe(1)

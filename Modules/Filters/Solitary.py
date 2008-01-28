@@ -39,8 +39,7 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""		   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtkbxd.vtkImageSolitaryFilter()
@@ -50,15 +49,13 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [ "Thresholds:", ["", ("HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold")]]
 		
 	def getXMLDescription(self):
 		"""
-		Created: 26.01.2008, KP
-		Description: return XMl describing this filter's GUI
+		return XMl describing this filter's GUI
 		"""
 		return """
 <Filter name="Solitary filter">
@@ -90,15 +87,13 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the description of the parameter
+		Return the description of the parameter
 		"""	   
 		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return a long description of the parameter
+		Return a long description of the parameter
 		""" 
 		Xhelp = "Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed."
 		Yhelp = "Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed."
@@ -114,23 +109,20 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter in ["HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold"]:
 			return types.IntType
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""		
 		return 0
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""			   
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

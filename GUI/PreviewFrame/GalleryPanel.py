@@ -46,8 +46,7 @@ class GalleryPanel(InteractivePanel):
 	"""
 	def __init__(self, parent, visualizer, size = (512, 512), **kws):
 		"""
-		Created: 24.03.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.imagedata = None
 		self.visualizer = visualizer
@@ -95,8 +94,7 @@ class GalleryPanel(InteractivePanel):
 		
 	def setShowTimepoints(self, showtps, slice):
 		"""
-		Created: 21.07.2005, KP
-		Description: Configure whether to show z slices or timepoints
+		Configure whether to show z slices or timepoints
 		"""
 		self.slice = slice
 		self.showTimepoints = showtps
@@ -107,23 +105,20 @@ class GalleryPanel(InteractivePanel):
 		
 	def getDrawableRectangles(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Return the rectangles can be drawn on as four-tuples
+		Return the rectangles can be drawn on as four-tuples
 		"""
 		return self.drawableRects
 		
 	def zoomToFit(self):
 		"""
-		Created: 05.06.2005, KP
-		Description: Zoom the dataset to fit the available screen space
+		Zoom the dataset to fit the available screen space
 		"""
 		self.zoomToFitFlag = 1
 		self.calculateBuffer()
 		
 	def setZoomFactor(self, factor):
 		"""
-		Created: 05.06.2005, KP
-		Description: Set the factor by which the image is zoomed
+		Set the factor by which the image is zoomed
 		"""
 		self.zoomFactor = factor
 		self.zoomToFitFlag = 0
@@ -142,15 +137,13 @@ class GalleryPanel(InteractivePanel):
 		
 	def setBackground(self, r, g, b):
 		"""
-		Created: 24.05.2005, KP
-		Description: Set the background color
+		Set the background color
 		"""
 		self.bgcolor = (r, g, b)
 
 	def onSize(self, event):
 		"""
-		Created: 23.05.2005, KP
-		Description: Size event handler
+		Size event handler
 		"""
 		InteractivePanel.OnSize(self, event)
 		self.paintSize = self.GetClientSize()
@@ -162,8 +155,7 @@ class GalleryPanel(InteractivePanel):
 
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 23.05.2005, KP
-		Description: Sets the dataunit to display
+		Sets the dataunit to display
 		"""
 		self.dataUnit = dataunit
 		if not dataunit:
@@ -183,8 +175,7 @@ class GalleryPanel(InteractivePanel):
 		
 	def setTimepoint(self, timepoint, update = 1):
 		"""
-		Created: 23.05.2005, KP
-		Description: Sets the timepoint to display
+		Sets the timepoint to display
 		"""
 		if self.timepoint == timepoint and self.slices:
 			return
@@ -241,8 +232,7 @@ class GalleryPanel(InteractivePanel):
 			
 	def forceUpdate(self):
 		"""
-		Created: 17.1.2007, KP
-		Description: force update of the preview
+		force update of the preview
 		"""
 		tp = self.timepoint
 		self.slices = []
@@ -253,8 +243,7 @@ class GalleryPanel(InteractivePanel):
 		
 	def setSlice(self, slice):
 		"""
-		Created: 21.07.2005, KP
-		Description: Sets the slice to show
+		Sets the slice to show
 		"""
 		self.slice = slice
 		# if we're showing each slice of one timepoint
@@ -290,8 +279,7 @@ class GalleryPanel(InteractivePanel):
 
 	def calculateBuffer(self):
 		"""
-		Created: 23.05.2005, KP
-		Description: Calculate the drawing buffer required
+		Calculate the drawing buffer required
 		"""
 		if not self.imagedata:
 			return
@@ -361,16 +349,14 @@ class GalleryPanel(InteractivePanel):
 
 	def resetScroll(self):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the scrollbars to their initial values
+		Sets the scrollbars to their initial values
 		"""
 		self.Scroll(0, 0)
 
 
 	def enable(self, flag):
 		"""
-		Created: 02.06.2005, KP
-		Description: Enable/Disable updates
+		Enable/Disable updates
 		"""
 		self.enabled = flag
 		if flag:
@@ -378,8 +364,7 @@ class GalleryPanel(InteractivePanel):
 
 	def updatePreview(self):
 		"""
-		Created: 24.03.2005, KP
-		Description: Updates the viewed image
+		Updates the viewed image
 		"""
 		if not self.enabled:
 			Logging.info("Won't draw gallery cause not enabled", kw = "preview")
@@ -397,8 +382,7 @@ class GalleryPanel(InteractivePanel):
 		
 	def updateScrolling(self, event = None):
 		"""
-		Created: 24.03.2005, KP
-		Description: Updates the scroll settings
+		Updates the scroll settings
 		"""
 		if self.scrollTo:
 			x, y = self.scrollTo
@@ -412,8 +396,7 @@ class GalleryPanel(InteractivePanel):
 
 	def OnPaint(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Does the actual blitting of the bitmap
+		Does the actual blitting of the bitmap
 		"""
 #		if self.sizeChanged:
 #			#Logging.info("size changed, calculating buffer",kw="preview")
@@ -426,8 +409,7 @@ class GalleryPanel(InteractivePanel):
 
 	def paintPreview(self):
 		"""
-		Created: 24.03.2005, KP
-		Description: Paints the image to a DC
+		Paints the image to a DC
 		"""
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
@@ -476,8 +458,7 @@ class GalleryPanel(InteractivePanel):
 		
 	def saveSnapshot(self, filename):
 		"""
-		Created: 05.06.2005, KP
-		Description: Save a snapshot of the scene
+		Save a snapshot of the scene
 		"""
 		ext = filename.split(".")[-1].lower()
 		if ext == "jpg":

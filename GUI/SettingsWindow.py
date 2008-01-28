@@ -109,8 +109,7 @@ class GeneralSettings(wx.Panel):
 		
 	def writeSettings(self, conf):
 		"""
-		Created: 05.04.2005, KP
-		Description: A method that writes out the settings that have been modified
+		A method that writes out the settings that have been modified
 					 in this window.
 		""" 
 		format = self.choice.GetStringSelection()
@@ -168,8 +167,7 @@ class PathSettings(wx.Panel):
 		
 	def writeSettings(self, conf):
 		"""
-		Created: 12.03.2005, KP
-		Description: A method that writes out the settings that have been modified
+		A method that writes out the settings that have been modified
 					 in this window.
 		"""
 		datapath = self.databrowse.GetValue()
@@ -374,8 +372,7 @@ class PerformanceSettings(wx.Panel):
 		
 	def onSetResampleToFitSizeToCustom(self, evt):
 		"""
-		Created: 22.12.2006, KP
-		Description: Set the maximum size of resample-to-fit feature t a custom size
+		Set the maximum size of resample-to-fit feature t a custom size
 		"""
 		self.resampleToFitX.Enable(1)
 		self.resampleToFitY.Enable(1)
@@ -383,8 +380,7 @@ class PerformanceSettings(wx.Panel):
 		
 	def onSetResampleToFitSizeToOriginal(self, evt):
 		"""
-		Created: 22.12.2006, KP
-		Description: Set the maximum size of resample-to-fit feature to the original size of the data
+		Set the maximum size of resample-to-fit feature to the original size of the data
 		"""
 		self.resampleToFitX.Enable(0)
 		self.resampleToFitY.Enable(0)
@@ -392,32 +388,28 @@ class PerformanceSettings(wx.Panel):
 		
 	def onSelectLimitMemory(self, evt):
 		"""
-		Created: 11.11.2006, KP
-		Description: Method called if the "limit memory" option is selected
+		Method called if the "limit memory" option is selected
 		"""
 		self.memoryLimit.Enable(1)
 		self.numberOfDivisions.Enable(0)
 		
 	def onSelectNoLimits(self, evt = None):
 		"""
-		Created: 14.12.2006, KP
-		Description: Method called if the no limit option is selected
+		Method called if the no limit option is selected
 		"""
 		self.memoryLimit.Enable(0)
 		self.numberOfDivisions.Enable(0)
 		
 	def onSelectSplitToThreads(self, evt):
 		"""
-		Created: 11.11.2006, KP
-		Description: Method called if the "split to threads" option is selected
+		Method called if the "split to threads" option is selected
 		"""
 		self.memoryLimit.Enable(0)
 		self.numberOfDivisions.Enable(1)
 		
 	def writeSettings(self, conf):
 		"""
-		Created: 12.03.2005, KP
-		Description: A method that writes out the settings that have been modified
+		A method that writes out the settings that have been modified
 					 in this window.
 		""" 
 		forceResample = self.resampleCheckbox.GetValue()
@@ -473,8 +465,7 @@ class MovieSettings(wx.Panel):
 
 class SettingsWindow(wx.Dialog):
 	"""
-	Created: 09.02.2005, KP
-	Description: A window for controlling the settings of the application
+	A window for controlling the settings of the application
 	""" 
 	def __init__(self, parent):
 		wx.Dialog.__init__(self, parent, -1, "Settings for BioImageXD", style = wx.CAPTION | wx.STAY_ON_TOP | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX | wx.RESIZE_BORDER | wx.DIALOG_EX_CONTEXTHELP,

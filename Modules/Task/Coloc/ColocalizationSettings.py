@@ -47,8 +47,7 @@ class ColocalizationSettings(DataUnitSettings):
 	def __init__(self, n = -1):
 		"""
 		Method: __init__
-		Created: 26.03.2005, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataUnitSettings.__init__(self, n)
 		
@@ -83,8 +82,7 @@ class ColocalizationSettings(DataUnitSettings):
 
 	def initialize(self, dataunit, channels, timepoints):
 		"""
-		Created: 27.03.2005
-		Description: Set initial values for settings based on 
+		Set initial values for settings based on 
 					 number of channels and timepoints
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)

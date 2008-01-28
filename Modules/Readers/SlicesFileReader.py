@@ -48,8 +48,7 @@ def getClass():
 
 class SlicesDataSource(DataSource):
 	"""
-	Created: 09.01.2008, KP
-	Description: A datasource for reading a directory of image slices
+	A datasource for reading a directory of image slices
 	"""
 	def __init__(self, filename = ""):
 
@@ -58,37 +57,32 @@ class SlicesDataSource(DataSource):
 
 	def getTimeStamp(self, timepoint):
 		"""
-		Created: 02.07.2007, KP
-		Description: return the timestamp for given timepoint
+		return the timestamp for given timepoint
 		"""
 		return timepoint
 
 	def getDataSetCount(self):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the number of individual DataSets (=time points)
+		Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
 		return 0
   
 	def getBitDepth(self):
 		"""
-		Created: 07.08.2006, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		return 8
 		
 	def getScalarRange(self):
 		"""
-		Created: 28.05.2005, KP
-		Description: Return the bit depth of data
+		Return the bit depth of data
 		"""
 		return 0,255
 
 	def internalGetDimensions(self):
 		"""
-		Created: 14.12.2004, KP
-		Description: Return the original dimensions of the dataset
+		Return the original dimensions of the dataset
 		"""
 		return (0,0,0)
 
@@ -101,15 +95,13 @@ class SlicesDataSource(DataSource):
 		
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""
 		return ""
 		
 	def loadFromFile(self, filename):
 		"""
-		Created: 09.1.2008, KP
-		Description: Loads a directory of slices
+		Loads a directory of slices
 		"""
 		self.filename = filename
 		filebase, ext = os.path.splitext(filename)
@@ -133,8 +125,7 @@ class SlicesDataSource(DataSource):
 		return [dataunit]
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		return None
@@ -142,16 +133,14 @@ class SlicesDataSource(DataSource):
 		
 	def getName(self):
 		"""
-		Created: 18.11.2004, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		return os.path.basename(os.path.dirname(self.filename))
 
 	def uniqueId(self):
 		"""
-		Created: 07.02.2007, KP
-		Description: return a string identifying the dataset
+		return a string identifying the dataset
 		"""
 		return self.filename
 

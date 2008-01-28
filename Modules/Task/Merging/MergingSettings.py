@@ -46,8 +46,7 @@ class MergingSettings(DataUnitSettings):
 	"""
 	def __init__(self, n = -1):
 		"""
-		Created: 27.03.2005, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataUnitSettings.__init__(self, n)
 		#self.registerCounted("MergingColorTransferFunction",1)       
@@ -63,8 +62,7 @@ class MergingSettings(DataUnitSettings):
 
 	def initialize(self, dataunit, channels, timepoints):
 		"""
-		Created: 27.03.2005
-		Description: Set initial values for settings based on 
+		Set initial values for settings based on 
 					 number of channels and timepoints
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
@@ -82,8 +80,7 @@ class MergingSettings(DataUnitSettings):
 			
 	def get(self, name):
 		"""
-		Created: 03.07.2005
-		Description: Return the value of a key
+		Return the value of a key
 		"""
 		val = DataUnitSettings.get(self, name)
 		if name == "MergingColorTransferFunction" and not val:

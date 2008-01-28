@@ -57,30 +57,26 @@ class PluginLoader:
 		
 	def getPluginModule(self, variety, name):
 		"""
-		Created: 25.11.2007, KP
-		Description: return a plugin module of a given type with the given name
+		return a plugin module of a given type with the given name
 		"""
 		return self.getPluginItem(variety, name, 2)
 
 	def getPluginModule(self, variety, name):
 		"""
-		Created: 25.11.2007, KP
-		Description: return a plugin module of a given type with the given name
+		return a plugin module of a given type with the given name
 		"""
 		return self.getPluginItem(variety, name, 2)
 
 		
 	def getPluginClass(self, variety, name):
 		"""
-		Created: 25.11.2007, KP
-		Description: return a plugin class of a given type with the given name
+		return a plugin class of a given type with the given name
 		"""
 		return self.getPluginItem(variety, name, 0)
 		
 	def getPluginItem(self, variety, name, entry):
 		"""
-		Created: 26.11.2007, KP
-		Description: return the selected entry from the module table
+		return the selected entry from the module table
 		"""
 		if not variety in self.mcache:
 			self.getModules(variety)
@@ -91,8 +87,7 @@ class PluginLoader:
 			
 	def _removeIgnoredModules(self, moduleNameList):
 		"""
-		Created: 18.06.2007, SG
-		Description: Helper method for removing the modules to ignore from a list of method names
+		Helper method for removing the modules to ignore from a list of method names
 		"""
 		toRemoveList = []
 		for fileName in moduleNameList:
@@ -110,8 +105,7 @@ class PluginLoader:
 	
 	def _createGlobPathAndSysPath(self, moduleSubDir, globExtension):
 		"""
-		Created: 19.06.2007, SG
-		Description: Creates a path to be used in a glob expression and a path to add to sys.path
+		Creates a path to be used in a glob expression and a path to add to sys.path
 		so that modules that the glob expression will fetch can be imported. Returns these in a tuple:
 		(globPath, pathForSysPath)
 		Ex. ("moduleSubDir = Readers, globExtension = *.py") -> (Modules/Readers/*.py, Modules/Readers)
@@ -128,8 +122,7 @@ class PluginLoader:
 	
 	def _createModuleNameToLoad(self, modulePathWithExtension):
 		"""
-		Created: 19.06.2007, SG
-		Description: Takes a path to a module or a path to a package. If the path ends with .py this extension is removed.
+		Takes a path to a module or a path to a package. If the path ends with .py this extension is removed.
 		The "/" and "\" in the path are changed to ".". However only the last part of the module name is required.
 		Example "Modules/Readers/BioradDataSource.py" -> "BioradDataSource"
 		"""
@@ -148,8 +141,7 @@ class PluginLoader:
 	
 	def getModules(self, moduleSubDir, globExtension = None, callback = None, moduleType = "Module", classEndsWith = ""):
 		"""
-		Created: 02.07.2005, KP
-		Description: Dynamically loads classes in a directory and returns a dictionary that contains information about
+		Dynamically loads classes in a directory and returns a dictionary that contains information about
 		them. The returned directory will contain entries like:
 		moddict["BXCDataSource"] -> (moduleClass, settingClass, loadedModule)
 		The method adds a relative path with the dir that contains the modules to load, to sys.path. It then uses
@@ -203,40 +195,35 @@ class PluginLoader:
 	
 def getRenderingModules(callback = None):
 	"""
-	Created: Unknown, KP
-	Description: Helper method for getting the Rendering modules
+	Helper method for getting the Rendering modules
 	"""
 	pl = getPluginLoader()
 	return pl.getModules("Rendering", callback = callback, moduleType = "3D rendering module")
 	
 def getFilterModules(callback = None):
 	"""
-	Created: 19.11.2007, KP
-	Description: Return the filter modules for use in process task and similiar
+	Return the filter modules for use in process task and similiar
 	"""
 	pl = getPluginLoader()
 	return pl.getModules("Filters",callback = callback, moduleType = "Image processing filters", classEndsWith = "Filter")
 
 def getVisualizationModes(callback = None):
 	"""
-	Created: Unknown, KP
-	Description: Helper method for getting the Visualization modules
+	Helper method for getting the Visualization modules
 	"""
 	pl = getPluginLoader()	
 	return pl.getModules("Visualization", callback = callback, moduleType = "")
 
 def getReaders(callback = None):
 	"""
-	Created: Unknown, KP
-	Description: Helper method for getting the Reader modules
+	Helper method for getting the Reader modules
 	"""
 	pl = getPluginLoader()
 	return pl.getModules("Readers", callback = callback, moduleType = "Image format reader")
 
 def getTaskModules(callback = None):
 	"""
-	Created: Unknown, KP
-	Description: Helper method for getting the Task modules
+	Helper method for getting the Task modules
 	"""
 	pl = getPluginLoader()
 	return pl.getModules("Task", callback = callback, moduleType = "Task module")

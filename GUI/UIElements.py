@@ -92,8 +92,7 @@ class AcceptedValidator(wx.PyValidator):
 
 class MyStaticBox(wx.StaticBox):
 	"""
-	Created: 1.11.2006, KP
-	Description: A static box replacement that allows us to control how it is painted
+	A static box replacement that allows us to control how it is painted
 	"""
 	def __init__(self, parent, wid, label, pos = wx.DefaultPosition, \
 					size  = wx.DefaultSize, style = 0, name = "MyStaticBox"):
@@ -117,15 +116,13 @@ class MyStaticBox(wx.StaticBox):
 		
 	def onPaint(self, evt):
 		"""
-		Created: 1.11.2006, KP
-		Description: Paint the static box
+		Paint the static box
 		"""
 		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
 
 	def onSize(self, evt):
 		"""
-		Created: 1.11.2006, KP
-		Description: Repaint self when size changes
+		Repaint self when size changes
 		"""
 		w, h = evt.GetSize()
 		self.buffer = wx.EmptyBitmap(w, h, -1)
@@ -134,8 +131,7 @@ class MyStaticBox(wx.StaticBox):
 		self.Raise()
 	def paintSelf(self):
 		"""
-		Created: 05.05.2005, KP
-		Description: Paints the label
+		Paints the label
 		"""
 		self.dc = wx.MemoryDC()
 		self.dc.SelectObject(self.buffer)
@@ -198,8 +194,7 @@ class DimensionInfo(wx.Window):
 		
 	def onSetResampleDims(self, obj, evt, dims, origDims):
 		"""
-		Created: 19.12.2006, KP
-		Description: set the resampled dimensions to show
+		set the resampled dimensions to show
 		"""
 		self.currX, self.currY, self.currZ = dims
 		self.origX, self.origY, self.origZ = origDims
@@ -208,8 +203,7 @@ class DimensionInfo(wx.Window):
 
 	def onSetCurrentDims(self, obj, evt, dims):
 		"""
-		Created: 19.12.2006, KP
-		Description: set the current dimensions to show
+		set the current dimensions to show
 		"""
 		self.currX, self.currY, self.currZ = dims
 		self.origX, self.origY, self.origZ = dims
@@ -224,15 +218,13 @@ class DimensionInfo(wx.Window):
 		
 	def onPaint(self, evt):
 		"""
-		Created: 1.11.2006, KP
-		Description: Paint the static box
+		Paint the static box
 		"""
 		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
 
 	def onSize(self, evt):
 		"""
-		Created: 1.11.2006, KP
-		Description: Repaint self when size changes
+		Repaint self when size changes
 		"""
 		w, h = evt.GetSize()
 		self.buffer = wx.EmptyBitmap(w, h, -1)
@@ -241,8 +233,7 @@ class DimensionInfo(wx.Window):
 		
 	def paintSelf(self):
 		"""
-		Created: 05.05.2005, KP
-		Description: Paints the label
+		Paints the label
 		"""
 		
 		self.dc = wx.MemoryDC()
@@ -333,8 +324,7 @@ class NamePanel(wx.Window):
 			
 	def onToggle(self, event):
 		"""
-		Created: 26.05.2005, KP
-		Description: Handle toggle events
+		Handle toggle events
 		"""
 		val = self.btn.GetValue()
 		if val == 0:
@@ -345,8 +335,7 @@ class NamePanel(wx.Window):
 		
 	def onSize(self, event):
 		"""
-		Created: 26.05.2005, KP
-		Description: Size event handler
+		Size event handler
 		"""
 		w, h = self.origsize
 		self.size = event.GetSize()
@@ -360,16 +349,14 @@ class NamePanel(wx.Window):
 		 
 	def setWeight(self, bold):
 		"""
-		Created: 05.05.2005, KP
-		Description: Set the weight of the font
+		Set the weight of the font
 		"""
 		self.bold = bold
 		self.paintLabel()
 
 	def setLabel(self, label):
 		"""
-		Created: 05.05.2005, KP
-		Description: Set the label
+		Set the label
 		"""
 		self.label = label
 		self.paintLabel()
@@ -377,8 +364,7 @@ class NamePanel(wx.Window):
 
 	def setColor(self, fg, bg):
 		"""
-		Created: 05.05.2005, KP
-		Description: Set the color to use
+		Set the color to use
 		"""
 		self.fg = fg
 		self.bg = bg
@@ -393,8 +379,7 @@ class NamePanel(wx.Window):
 
 	def paintLabel(self, bold = None):
 		"""
-		Created: 05.05.2005, KP
-		Description: Paints the label
+		Paints the label
 		"""
 		self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		

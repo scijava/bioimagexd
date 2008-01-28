@@ -48,13 +48,11 @@ def getClass():
 
 class BioradDataSource(DataSource):
 	"""
-	Created: 12.04.2005, KP
-	Description: BioRad .PIC files datasource
+	BioRad .PIC files datasource
 	"""
 	def __init__(self, filename = ""):
 		"""
-		Created: 12.04.2005, KP
-		Description: Constructor
+		Constructor
 		"""	   
 		DataSource.__init__(self)
 		self.setPath(filename)
@@ -81,8 +79,7 @@ class BioradDataSource(DataSource):
 		
 	def getName(self):
 		"""
-		Created: 05.11.2007, KP
-		Description: return the name of the dataset
+		return the name of the dataset
 		"""
 		if not self.filename:
 			return ""
@@ -91,8 +88,7 @@ class BioradDataSource(DataSource):
 		
 	def getDataSetCount(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the number of individual DataSets (=time points)
+		Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
 		# This seems to rely on the fact that tps is set to -1 in the constructor
@@ -120,15 +116,13 @@ class BioradDataSource(DataSource):
 
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""
 		return self.filename
 
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the DataSet at the specified index
+		Returns the DataSet at the specified index
 		Parameters:	  i		  The index
 		"""
 		data = self.getTimepoint(i)
@@ -153,8 +147,7 @@ class BioradDataSource(DataSource):
 
 	def getTimepoint(self, requestedTimePoint, onlyDims = 0):
 		"""
-		Created: 16.02.2006, KP
-		Description: Return the nth timepoint
+		Return the nth timepoint
 		"""
 		if self.filepattern:
 			self.reader.SetFileName(self.filepattern % (requestedTimePoint + 1))
@@ -185,8 +178,7 @@ class BioradDataSource(DataSource):
 		
 	def internalGetDimensions(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the (x, y, z) dimensions of the datasets this 
+		Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		""" 
 		self.getVoxelSize()
@@ -195,8 +187,7 @@ class BioradDataSource(DataSource):
 		
 	def getSpacing(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the spacing of the datasets this 
+		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
 		if not self.spacing:
@@ -206,8 +197,7 @@ class BioradDataSource(DataSource):
 		
 	def getVoxelSize(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the voxel size of the datasets this 
+		Returns the voxel size of the datasets this 
 					 dataunit contains
 		"""
 		if not self.voxelsize:
@@ -217,8 +207,7 @@ class BioradDataSource(DataSource):
 	@staticmethod
 	def loadFromFile(filename):
 		"""
-		Created: 12.04.2005, KP
-		Description: Loads the specified .oif-file and imports data from it.
+		Loads the specified .oif-file and imports data from it.
 		Parameters:	  filename	The .oif-file to be loaded
 		"""
 		dataunit = DataUnit()
@@ -229,8 +218,7 @@ class BioradDataSource(DataSource):
 
 	def getDataSetName(self):
 		"""
-		Created: 18.11.2005, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		return self.dataSetName
@@ -238,8 +226,7 @@ class BioradDataSource(DataSource):
 		
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		if not self.ctf:

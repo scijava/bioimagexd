@@ -42,101 +42,87 @@ import wx
 
 def getName():
 	"""
-	Created: KP
 	Description:Return the name of this visualization mode (used to identify mode internally)
 	"""
 	return "3d"
 
 def isDefaultMode():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether this mode should be used as the default visualization mode
+	Return a boolean indicating whether this mode should be used as the default visualization mode
 	"""
 	return 0
 
 def showInfoWindow():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether the info window should be kept visible when this mode is loaded
+	Return a boolean indicating whether the info window should be kept visible when this mode is loaded
 	"""
 	return 1
 
 def showFileTree():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether the file tree should be kept visible when this mode is loaded
+	Return a boolean indicating whether the file tree should be kept visible when this mode is loaded
 	"""
 	return 1
 
 def showSeparator():
 	"""
-	Created: KP
-	Description: return two boolean values indicating whether to place toolbar separator before or after this icon
+	return two boolean values indicating whether to place toolbar separator before or after this icon
 	"""
 	return (0, 0)
 
 def getToolbarPos():
 	"""
-	Created: KP
-	Description: return requested toolbar position for this visualization mode
+	return requested toolbar position for this visualization mode
 	"""
 	return 8
 
 def getIcon():
 	"""
-	Created: KP
-	Description: return the icon name for this visualization mode
+	return the icon name for this visualization mode
 	"""
 	return "view_rendering_3d.jpg"
 
 def getShortDesc():
 	"""
-	Created: KP
-	Description: return a short description (used as menu items etc.) of this visualization mode
+	return a short description (used as menu items etc.) of this visualization mode
 	"""
 	return "3D view"
 
 def getDesc():
 	"""
-	Created: KP
-	Description: return a description (used as tooltips etc.) of this visualization mode
+	return a description (used as tooltips etc.) of this visualization mode
 	"""
 	return "Render the dataset in three dimensions" 
 
 def getClass():
 	"""
-	Created: KP
-	Description: return the class that is instantiated as the actual visualization mode
+	return the class that is instantiated as the actual visualization mode
 	"""
 	return RenderingMode
 
 def getImmediateRendering():
 	"""
-	Created: KP
-	Description: Return a boolean indicating whether this mode should in general update it's 
+	Return a boolean indicating whether this mode should in general update it's 
 				 rendering after each and every change to a configuration affecting the rendering
 	"""
 	return False
 
 def getConfigPanel():
 	"""
-	Created: KP
-	Description: return the class that is instantiated as the configuration panel for the mode
+	return the class that is instantiated as the configuration panel for the mode
 	"""
 	return None
 
 def getRenderingDelay():
 	"""
-	Created: KP
-	Description: return a value in milliseconds that is the minimum delay between two rendering events being sent
+	return a value in milliseconds that is the minimum delay between two rendering events being sent
 				 to this visualization mode. In general, the smaller the value, the faster the rendering should be
 	"""
 	return 5000
 
 def showZoomToolbar():
 	"""
-	Created: KP
-	Description: return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
+	return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
 	"""
 	return True
 		
@@ -144,8 +130,7 @@ class RenderingMode(VisualizationMode):
 
 	def __init__(self, parent, visualizer):
 		"""
-		Created: 24.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		VisualizationMode.__init__(self, parent, visualizer)
 		self.PitchStep, self.YawStep, self.RollStep, self.ElevationStep = 2, 2, 2, 5
@@ -166,15 +151,13 @@ class RenderingMode(VisualizationMode):
 		
 	def getRenderWindow(self):
 		"""
-		Created: 24.04.2007, KP
-		Description: return a render window, if this mode uses one
+		return a render window, if this mode uses one
 		"""
 		return self.renwin
 		
 	def reloadModules(self):
 		"""
-		Created: 24.05.2005, KP
-		Description: Reload all the visualization modules.
+		Reload all the visualization modules.
 		"""
 		for key in self.mapping.keys():
 			mod, conf, module = self.mapping[key]
@@ -183,31 +166,27 @@ class RenderingMode(VisualizationMode):
 			
 	def zoomObject(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Zoom to a user selected portion of the image
+		Zoom to a user selected portion of the image
 		"""
 		self.wxrenwin.zoomToRubberband()
 
 	def showSideBar(self):
 		"""
-		Created: 24.05.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the sidebar
 		"""
 		return True
 
 	def showViewAngleCombo(self):
 		"""
-		Created: 11.08.2005, KP
-		Description: Method that is queried to determine whether
+		Method that is queried to determine whether
 					 to show the view angle combo box in the toolbar
 		"""
 		return True
 
 	def setStereoMode(self, mode):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the stereo rendering mode
+		Set the stereo rendering mode
 		"""
 		if mode:
 			self.renwin.StereoRenderOn()
@@ -218,15 +197,13 @@ class RenderingMode(VisualizationMode):
 			
 	def getSidebarWindow(self):
 		"""
-		Created: 16.10.2007, KP
-		Description: return the sidebar window
+		return the sidebar window
 		"""
 		return self.configPanel
   
 	def activate(self, sidebarwin):
 		"""
-		Created: 24.05.2005, KP
-		Description: Set the mode of visualization
+		Set the mode of visualization
 		"""
 		scripting.preferRGB = 0
 		scripting.wantAlphaChannel = 1
@@ -291,94 +268,82 @@ class RenderingMode(VisualizationMode):
 		
 	def saveSnapshot(self, filename):
 		"""
-		Created: 05.06.2005, KP
-		Description: Save a snapshot of the scene
+		Save a snapshot of the scene
 		"""
 		self.wxrenwin.save_screen(filename)
 		
 	def Render(self):
 		"""
-		Created: 24.05.2005, KP
-		Description: Update the rendering
+		Update the rendering
 		"""
 		self.wxrenwin.Render()
 		
 	def onElevationUp(self, evt):
 		"""
-		Created: KP
-		Description: adjust the elevation of the 3D scene upwards
+		adjust the elevation of the 3D scene upwards
 		"""
 		self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
 		self.Render()
 
 	def onElevationDown(self, evt):
 		"""
-		Created: KP
-		Description: adjust the elevation of the 3D scene downwards
+		adjust the elevation of the 3D scene downwards
 		"""
 		self.getRenderer().GetActiveCamera().Elevation(-self.ElevationStep)
 		self.Render()
 
 	def onPitchUp(self, evt):
 		"""
-		Created: KP
-		Description: adjust the pitch of the 3D scene upwards
+		adjust the pitch of the 3D scene upwards
 		"""	
 		self.getRenderer().GetActiveCamera().Pitch(self.PitchStep)
 		self.Render()
 
 	def onPitchDown(self, evt):
 		"""
-		Created: KP
-		Description: adjust the pitch of the 3D scene downwards
+		adjust the pitch of the 3D scene downwards
 		"""	
 		self.getRenderer().GetActiveCamera().Pitch(-self.PitchStep)
 		self.Render()
 
 	def onRollUp(self, evt):
 		"""
-		Created: KP
-		Description: adjust the roll of the 3D scene upwards
+		adjust the roll of the 3D scene upwards
 		"""
 		self.getRenderer().GetActiveCamera().Roll(self.RollStep)
 		self.Render()
 
 	def onRollDown(self, evt):
 		"""
-		Created: KP
-		Description: adjust the roll of the 3D scene downwards
+		adjust the roll of the 3D scene downwards
 		"""	
 		self.getRenderer().GetActiveCamera().Roll(-self.RollStep)
 		self.Render()
 
 	def onYawUp(self, evt):
 		"""
-		Created: KP
-		Description: adjust the yaw of the 3D scene upwards
+		adjust the yaw of the 3D scene upwards
 		"""	
 		self.getRenderer().GetActiveCamera().Yaw(self.YawStep)
 		self.Render()
 
 	def onYawDown(self, evt):
 		"""
-		Created: KP
-		Description: adjust the yaw of the 3D scene upwards
+		adjust the yaw of the 3D scene upwards
 		"""	
 		self.getRenderer().GetActiveCamera().Yaw(-self.YawStep)
 		self.Render()
 			
 	def setBackground(self, r, g, b):
 		"""
-		Created: 24.05.2005, KP
-		Description: Set the background color
+		Set the background color
 		"""
 		ren = self.wxrenwin.getRenderer()
 		ren.SetBackground(r / 255.0, g / 255.0, b / 255.0)
 		
 	def updateRendering(self):
 		"""
-		Created: 26.05.2005, KP
-		Description: Update the rendering
+		Update the rendering
 		"""
 		if not self.wxrenwin.enabled:
 			Logging.info("Visualizer is disabled, won't render 3D scene", kw="visualizer")
@@ -389,8 +354,7 @@ class RenderingMode(VisualizationMode):
 		
 	def deactivate(self, newmode = None):
 		"""
-		Created: 24.05.2005, KP
-		Description: Unset the mode of visualization
+		Unset the mode of visualization
 		"""
 		mgr = self.menuManager
 		mgr.remove(GUI.MenuManager.ID_SAVE_SCENE)
@@ -420,8 +384,7 @@ class RenderingMode(VisualizationMode):
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 25.05.2005, KP
-		Description: Set the dataunit to be visualized
+		Set the dataunit to be visualized
 		"""
 		self.dataUnit = dataUnit
 	
@@ -438,16 +401,14 @@ class RenderingMode(VisualizationMode):
 			
 	def getConfigurationPanel(self, name):
 		"""
-		Created: 23.05.2005, KP
-		Description: Return the configuration panel of a module
+		Return the configuration panel of a module
 		"""
 		conf = None
 		return self.mapping[name][1]
 
 	def removeModule(self, name):
 		"""
-		Created: 28.04.2005, KP
-		Description: Remove a visualization module
+		Remove a visualization module
 		"""
 		to_be_removed = []
 		if name in self.nameToModule:
@@ -462,8 +423,7 @@ class RenderingMode(VisualizationMode):
 
 	def setRenderingStatus(self, name, status):
 		"""
-		Created: 15.05.2005, KP
-		Description: Enable / disable rendering of a module
+		Enable / disable rendering of a module
 		"""
 		for module in self.modules:
 			if module.getName() == name:
@@ -474,16 +434,14 @@ class RenderingMode(VisualizationMode):
 
 	def getModule(self, name):
 		"""
-		Created: 14.06.2007, KP
-		Description: return the module with the given name
+		return the module with the given name
 		"""
 		return self.nameToModule.get(name,None)
 		
 
 	def loadModule(self, name, lbl = None, render = 1):
 		"""
-		Created: 28.04.2005, KP
-		Description: Load a visualization module
+		Load a visualization module
 		"""
 		if not lbl:
 			lbl = name
@@ -505,15 +463,13 @@ class RenderingMode(VisualizationMode):
 			
 	def getModules(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Return the modules
+		Return the modules
 		"""	 
 		return self.modules
 		
 	def setTimepoint(self, tp):
 		"""
-		Created: 25.05.2005, KP
-		Description: Set the timepoint to be visualized
+		Set the timepoint to be visualized
 		"""
 		self.timepoint = tp
 		for module in self.modules:
@@ -521,8 +477,7 @@ class RenderingMode(VisualizationMode):
 
 	def __getstate__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""
 		print "Saving state, modules = ",self.modules
 		odict = {"lightsManager":self.lightsManager,
@@ -532,8 +487,7 @@ class RenderingMode(VisualizationMode):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""
 		self.lightsManager.__set_pure_state__(state.lightsManager)
 		self.setTimepoint(state.timepoint)
@@ -548,8 +502,7 @@ class RenderingMode(VisualizationMode):
 
 	def zoomToFit(self):
 		"""
-		Created: 05.06.2005, KP
-		Description: Zoom the dataset to fit the available screen space
+		Zoom the dataset to fit the available screen space
 		"""
 		pass
 		

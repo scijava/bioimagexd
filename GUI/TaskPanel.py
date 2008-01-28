@@ -55,8 +55,7 @@ class TaskPanel(ScrolledPanel):
 	"""
 	def __init__(self, root, tb, wantNotebook = 1):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		Parameters:
 				root	Is the parent widget of this window
 		"""
@@ -130,22 +129,19 @@ class TaskPanel(ScrolledPanel):
   
 	def setCacheKey(self, key):
 		"""
-		Created: 30.10.2006, KP
-		Description: Set the cached settings for this task, so that they can be restored later on
+		Set the cached settings for this task, so that they can be restored later on
 		"""
 		self.cacheKey = key
 		
 	def onUpdateGUI(self, *arg):
 		"""
-		Created: 07.02.2006, KP
-		Description: A callback for updating the GUI when settings have been changed
+		A callback for updating the GUI when settings have been changed
 		"""			
 		self.updateSettings(1)
 		
 	def restoreFromCache(self, cachedSettings = None):
 		"""
-		Created: 30.10.2006, KP
-		Description: Restore settings for the dataunit and source dataunits from a cache entry
+		Restore settings for the dataunit and source dataunits from a cache entry
 		"""
 		# Load the cached settings
 		
@@ -173,8 +169,7 @@ class TaskPanel(ScrolledPanel):
 		
 	def cacheSettings(self):
 		"""
-		Created: 23.10.2006, KP
-		Description: Store the settings of the dataunit in a cache from which they can be
+		Store the settings of the dataunit in a cache from which they can be
 					 later retrieved at will
 		"""
 		# It is possible we do not have dataunit if the task was closed for example, because of
@@ -195,8 +190,7 @@ class TaskPanel(ScrolledPanel):
 		
 	def onSwitchDatasets(self, obj, evt, args):
 		"""
-		Created: 11.08.2005, KP
-		Description: Switch the used source datasets
+		Switch the used source datasets
 		"""
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
@@ -211,8 +205,7 @@ class TaskPanel(ScrolledPanel):
 			
 	def getChannelItemBitmap(self, chbmp, color = (255, 255, 255)):
 		"""
-		Created: 7.11.2006, KP
-		Description: Draw a bitmap that can be used as a label for the channel selection buttonsSizer
+		Draw a bitmap that can be used as a label for the channel selection buttonsSizer
 		"""
 		if chbmp.GetWidth() != TOOL_W or chbmp.GetHeight() != TOOL_H:
 			chbmp = chbmp.ConvertToImage()
@@ -241,8 +234,7 @@ class TaskPanel(ScrolledPanel):
 		
 	def createItemToolbar(self, force = 0):
 		"""
-		Created: 31.03.2005, KP
-		Description: Method to create a toolbar for the window that allows use to select processed channel
+		Method to create a toolbar for the window that allows use to select processed channel
 		"""
 		self.toolMgr.clearItemsBar()
 		n = 0
@@ -277,8 +269,7 @@ class TaskPanel(ScrolledPanel):
 
 	def createButtonBox(self):
 		"""
-		Created: KP
-		Description: create the buttons on the bottom of the	 panel
+		create the buttons on the bottom of the	 panel
 		"""
 		self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -290,15 +281,13 @@ class TaskPanel(ScrolledPanel):
 
 	def onHelp(self, evt):
 		"""
-		Created: 03.11.2004, KP
-		Description: Shows a help for this task panel
+		Shows a help for this task panel
 		"""
 		lib.messenger.send(None, "view_help", self.operationName)
 		
 	def createOptionsFrame(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a frame that contains the various widgets
+		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
 
@@ -308,8 +297,7 @@ class TaskPanel(ScrolledPanel):
 
 	def setPreviewedData(self, event, index = -1):
 		"""
-		Created: 22.07.2005, KP
-		Description: A callback function for marking channels to be rendered
+		A callback function for marking channels to be rendered
 					 in the preview.
 		"""
 		flag0, flag1 = 0, 0
@@ -327,8 +315,7 @@ class TaskPanel(ScrolledPanel):
 		
 	def selectItem(self, obj, event, index = -1):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback function called when a channel is selected in
+		A callback function called when a channel is selected in
 					 the menu
 		"""
 		Logging.info("Select item %d" % index, kw = "dataunit")
@@ -342,8 +329,7 @@ class TaskPanel(ScrolledPanel):
 
 	def updateSettings(self, force = 0):
 		"""
-		Created: 03.11.2004, KP
-		Description: A method used to set the GUI widgets to their proper values
+		A method used to set the GUI widgets to their proper values
 					 based on the selected channel, the settings of which are
 					 stored in the instance variable self.settings
 		"""
@@ -351,8 +337,7 @@ class TaskPanel(ScrolledPanel):
 
 	def doOperation(self):
 		"""
-		Created: 03.2.2005, KP
-		Description: A method that executes the operation on the selected
+		A method that executes the operation on the selected
 					 dataset
 		"""		   
 		mgr = ProcessingManager.ProcessingManager(self, self.operationName)
@@ -371,8 +356,7 @@ class TaskPanel(ScrolledPanel):
 
 	def grayOut(self, enable = 0):
 		"""
-		Created: 16.11.2004, KP
-		Description: Grays out the widget while doing colocalization
+		Grays out the widget while doing colocalization
 		Parameters:
 			enable		If the enable parameter is defined, the effect of the
 						function is reversed and the widgets are set to normal
@@ -383,8 +367,7 @@ class TaskPanel(ScrolledPanel):
 
 	def doPreviewCallback(self, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: A callback for the button "Preview" and other events
+		A callback for the button "Preview" and other events
 					 that wish to update the preview
 		"""
 		Logging.info("Sending preview update event", kw = "event")
@@ -392,8 +375,7 @@ class TaskPanel(ScrolledPanel):
 
 	def saveSettingsCallback(self, event):
 		"""
-		Created: 30.11.2004, KP
-		Description: A callback to save the settings for this operation to a 
+		A callback to save the settings for this operation to a 
 					 du file
 		"""
 		wc = "Dataset settings (*.bxd)|*.bxd"
@@ -416,8 +398,7 @@ class TaskPanel(ScrolledPanel):
 
 	def setCombinedDataUnit(self, dataUnit):
 		"""
-		Created: 23.11.2004, KP
-		Description: Sets the combined dataunit that is to be processed.
+		Sets the combined dataunit that is to be processed.
 					 It is then used to get the names of all the source data
 					 units and they are added to the menu.
 		"""

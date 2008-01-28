@@ -47,13 +47,11 @@ def getName():
 
 class WarpScalarModule(VisualizationModule):
 	"""
-	Created: 24.06.2005, KP
-	Description: A module for clipping the dataset
+	A module for clipping the dataset
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
@@ -88,24 +86,21 @@ class WarpScalarModule(VisualizationModule):
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["FeatureAngle", "Scale"]:
 			return scripting.COLOR_INTERMEDIATE
 		
 	def getParameters(self):
 		"""
-		Created: 31.05.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [ ["Smoothing", ("Normals", "FeatureAngle")],
 	   ["Warping", ("Slice", "Scale")] ]
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""           
 		if parameter == "Slice":
 			return 0
@@ -118,8 +113,7 @@ class WarpScalarModule(VisualizationModule):
 			
 	def getRange(self, parameter):
 		"""
-		Created: 31.05.2006, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""     
 		if parameter == "Slice":
 			x, y = (0, self.dataUnit.getDimensions()[2])
@@ -129,8 +123,7 @@ class WarpScalarModule(VisualizationModule):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter == "Slice":
 			return GUI.GUIBuilder.SLICE
@@ -143,8 +136,7 @@ class WarpScalarModule(VisualizationModule):
 		
 	def __getstate__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""            
 		odict = VisualizationModule.__getstate__(self)
 		#print "Saving Slice =" ,self.parameters["Slice"]
@@ -154,8 +146,7 @@ class WarpScalarModule(VisualizationModule):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""        
 		VisualizationModule.__set_pure_state__(self, state)
 		self.parameters = state.parameters
@@ -163,15 +154,13 @@ class WarpScalarModule(VisualizationModule):
 				
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 
 	def showTimepoint(self, value):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
@@ -179,8 +168,7 @@ class WarpScalarModule(VisualizationModule):
 		
 	def updateRendering(self):
 		"""
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		data = self.data
 		if data.GetNumberOfScalarComponents() > 3:
@@ -240,14 +228,12 @@ class WarpScalarModule(VisualizationModule):
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the ambient, diffuse and specular lighting of this module
+		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
 	def setShading(self, shading):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set shading on / off
+		Set shading on / off
 		"""          
 		pass
 
@@ -255,22 +241,19 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
 
 	def __init__(self, parent, visualizer, name = "WarpScalar", **kws):
 		"""
-		Created: 29.05.2006, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""          
 		pass
 		
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		print "module=", module
@@ -281,7 +264,6 @@ class WarpScalarConfigurationPanel(ModuleConfigurationPanel):
 
 	def onApply(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		self.module.updateRendering()

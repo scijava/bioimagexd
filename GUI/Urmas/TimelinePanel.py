@@ -65,16 +65,14 @@ class FSplitPanel(wx.Panel):
 
 class SplitPanel(wx.SplitterWindow):
 	"""
-	Created: 25.01.2006, KP
-	Description: A splitterwindow containing the timeline and it's configuration
+	A splitterwindow containing the timeline and it's configuration
 	"""    
 	def __init__(self, parent, ID):
 		wx.SplitterWindow.__init__(self, parent, ID,
 								   )        
 class TimelinePanel(wx.Panel):
 	"""
-	Created: 04.02.2005, KP
-	Description: Contains the timescale and the different "tracks"
+	Contains the timescale and the different "tracks"
 	"""    
 	def __init__(self, parent, control, size = (750, 300), p = None):
 
@@ -135,8 +133,7 @@ class TimelinePanel(wx.Panel):
 		
 	def reinitializeRendering(self):
 		"""
-		Created: 30.09.2007, KP
-		Description: re-initialize the rendering after everything else is done
+		re-initialize the rendering after everything else is done
 		"""
 		#self.wxrenwin.GetRenderWindow().Finalize()
 		#self.wxrenwin.GetRenderWindow().Initialize()
@@ -146,8 +143,7 @@ class TimelinePanel(wx.Panel):
 
 	def onSetFrameSize(self, obj, evt, size, onlyAspect):
 		"""
-		Created: 19.12.2005, KP
-		Description: Event to change the size of the rendering preview
+		Event to change the size of the rendering preview
 					 based on the size of the actual rendered frames
 		"""
 		if not self.wxrenwin:
@@ -168,15 +164,13 @@ class TimelinePanel(wx.Panel):
 
 	def onSetKeyframeMode(self, obj, evt, arg):
 		"""
-		Created: 18.08.2005, KP
-		Description: Toggles the keyframe mode on / off
+		Toggles the keyframe mode on / off
 		"""            
 		pass
 		
 	def useSettings(self, evt):
 		"""
-		Created: 16.08.2005, KP
-		Description: Use the configured settings
+		Use the configured settings
 		"""    
 		self.timelineConfig.useSettings(evt)
 		n = self.timelineConfig.getFrameAmount()

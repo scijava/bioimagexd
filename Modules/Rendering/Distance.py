@@ -46,13 +46,11 @@ def getName():
 
 class DistanceModule(VisualizationModule):
 	"""
-	Created: 03.04.2005, KP
-	Description: A module for measuring the distance between two points
+	A module for measuring the distance between two points
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 03.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
@@ -77,8 +75,7 @@ class DistanceModule(VisualizationModule):
 	  
 	def onPlacePoint(self, obj, event):
 		"""
-		Created: 15.04.2006, KP
-		Description: onPlacePoint
+		onPlacePoint
 		"""        
 		p1 = [0, 0, 0]
 		p2 = [0, 0, 0]
@@ -106,8 +103,7 @@ class DistanceModule(VisualizationModule):
 		
 	def __getstate__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""            
 		odict = VisualizationModule.__getstate__(self)
 		odict.update({"distanceWidget":self.getVTKState(self.distanceWidget)})
@@ -118,8 +114,7 @@ class DistanceModule(VisualizationModule):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""        
 		self.setVTKState(self.distanceWidget, state.distanceWidget)
 		self.setVTKState(self.currentPlane, state.currentPlane)
@@ -129,8 +124,7 @@ class DistanceModule(VisualizationModule):
 				
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 		if self.visualizer.getProcessedMode():
@@ -150,8 +144,7 @@ class DistanceModule(VisualizationModule):
 
 	def showTimepoint(self, value):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
@@ -159,8 +152,7 @@ class DistanceModule(VisualizationModule):
 		
 	def updateRendering(self):
 		"""
-		Created: 03.05.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		
 		if self.renew:
@@ -178,16 +170,14 @@ class DistanceModule(VisualizationModule):
 
 	def disableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""          
 		self.distanceWidget.Off()
 		self.wxrenwin.Render()
 		
 	def showPlane(self, flag):
 		"""
-		Created: 24.06.2005, KP
-		Description: Show / hide the plane controls
+		Show / hide the plane controls
 		"""          
 		if flag:
 			self.distanceWidget.On()
@@ -197,22 +187,19 @@ class DistanceModule(VisualizationModule):
 		
 	def enableRendering(self):
 		"""
-		Created: 24.06.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""          
 		self.distanceWidget.On()
 		self.wxrenwin.Render()
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set the ambient, diffuse and specular lighting of this module
+		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
 	def setShading(self, shading):
 		"""
-		Created: 16.05.2005, KP
-		Description: Set shading on / off
+		Set shading on / off
 		"""          
 		pass
 
@@ -220,21 +207,18 @@ class DistanceConfigurationPanel(ModuleConfigurationPanel):
 
 	def __init__(self, parent, visualizer, name = "Distance", **kws):
 		"""
-		Created: 04.05.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""  
 		pass
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		print "module=", module
@@ -242,7 +226,6 @@ class DistanceConfigurationPanel(ModuleConfigurationPanel):
 		
 	def onApply(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		pass

@@ -18,7 +18,6 @@ class ManipulationFiltersTest(unittest.TestCase):
 	
 	def setUp(self):
 		"""
-		Created: 24.7.2007 SS
 		Description:
 		"""
 		os.chdir(bioimagepath)
@@ -65,8 +64,7 @@ class ManipulationFiltersTest(unittest.TestCase):
 
 	def testGetFilterList(self):
 		"""
-		Created: 24.7.2007, SS
-		Description: A test for method getFilterList()
+		A test for method getFilterList()
 		"""
 		self.assertEqual(set(self.ManipulationFilters.getFilterList()), set(self.expectedFilterList))
 

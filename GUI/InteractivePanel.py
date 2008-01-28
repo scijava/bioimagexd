@@ -60,8 +60,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 	"""
 	def __init__(self, parent, **kws):
 		"""
-		Created: 24.03.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		ogl.OGLInitialize()
 		# boolean for indicating whether or not the annotations are enabled on this interactivepanel
@@ -174,8 +173,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def onKeyUp(self,event):
 		"""
-		Created: 19.10.2007, LP
-		Description: An event handler of keyboard key release
+		An event handler of keyboard key release
 		"""
 		keyCode = event.GetKeyCode()
 		print "KEY CODE=",keyCode
@@ -191,8 +189,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def onUpdateDataDimensions(self, *args):
 		"""
-		Created: 01.10.2007, KP
-		Description: update the preview because data dimensions may have changed
+		update the preview because data dimensions may have changed
 		"""
 		x, y, z = self.dataUnit.getDimensions()
 		self.dataDimX, self.dataDimY, self.dataDimZ = x, y, z
@@ -205,15 +202,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def disableAnnotations(self):
 		"""
-		Created: 25.07.2007, KP
-		Description: disable the annotations
+		disable the annotations
 		"""
 		self.annotationsEnabled = 0
 		
 	def onSubtractBackground(self, event):
 		"""
-		Created: 20.04.2007, KP
-		Description: subtract a background using the given ROI
+		subtract a background using the given ROI
 		"""
 		if not self.subtractROI: return
 		mx, my, mz = self.dataUnit.getDimensions()
@@ -264,8 +259,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def onSetInterpolation(self, event):
 		"""
-		Created: 01.08.2005, KP
-		Description: Set the inteprolation method
+		Set the inteprolation method
 		"""
 		eID = event.GetId()
 		flags = (1, 0, 0, 0)
@@ -291,8 +285,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 	
 	def setOffset(self, x, y):
 		"""
-		Created: 24.10.2006, KP
-		Description: Set the offset of this interactive panel. The offset is variable
+		Set the offset of this interactive panel. The offset is variable
 					 based on the size of the screen vs. the dataset size.
 		"""
 
@@ -315,8 +308,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def unOffset(self, *args):
 		"""
-		Created: 24.10.2006, KP
-		Description: Return a coordinate from which the offsets have been subtracted
+		Return a coordinate from which the offsets have been subtracted
 		"""
 		if type(args[0]) == types.TupleType:
 			return (args[0][0] - self.xoffset, args[0][1] - self.yoffset)
@@ -325,15 +317,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def getOffset(self):
 		"""
-		Created: 24.10.2006, KP
-		Description: Return the offset
+		Return the offset
 		"""
 		return self.xoffset, self.yoffset
 		
 	def addListener(self, evt, func):
 		"""
-		Created: 10.10.2006, KP
-		Description: Add a listener to an event
+		Add a listener to an event
 		"""		   
 		if not self.listeners.has_key(evt):
 			self.listeners [evt] = [func]
@@ -343,15 +333,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def registerPainter(self, painter):
 		"""
-		Created: 06.10.2006, KP
-		Description: Add a painter helper that will be used to paint on the DC after everything else
+		Add a painter helper that will be used to paint on the DC after everything else
 		"""
 		self.painterHelpers.append(painter)		 
 	  
 	def onUpdateHelpers(self, obj, evt, update):
 		"""
-		Created: KP
-		Description: a callback for updating the helpers based on messenger messages
+		a callback for updating the helpers based on messenger messages
 		"""
 		self.repaintHelpers(update)
 		if update:
@@ -359,8 +347,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			
 	def repaintHelpers(self, update = 1):
 		"""
-		Created: 06.10.2006, KP
-		Description: Repaint the helpers but nothing else
+		Repaint the helpers but nothing else
 		"""
 		
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
@@ -380,8 +367,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			
 	def getRegionsOfInterest(self):
 		"""
-		Created: 04.08.2006
-		Description: Return all the regions of interest draw in this panel	  
+		Return all the regions of interest draw in this panel	  
 		"""
 		shapelist = self.diagram.GetShapeList()
 		rois = []
@@ -392,8 +378,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def roiToMask(self):
 		"""
-		Created: 20.06.2006, KP
-		Description: Convert the selected ROI to mask
+		Convert the selected ROI to mask
 		"""
 		mx, my, mz = self.dataUnit.getDimensions()
 		rois = self.getRegionsOfInterest()
@@ -405,8 +390,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def createPolygon(self, points, zoomFactor = -1):
 		"""
-		Created: 07.05.2006, KP
-		Description: Create a polygon
+		Create a polygon
 		"""
 		if zoomFactor == -1:
 			zoomFactor = self.zoomFactor
@@ -428,23 +412,20 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def OnSize(self, evt):
 		"""
-		Created: 11.08.2005, KP
-		Description: The size evet
+		The size evet
 		"""
 		self.maxClientSizeX, self.maxClientSizeY = self.GetClientSize()
 		evt.Skip()
 		
 	def setBackgroundColor(self, bg):
 		"""
-		Created: 04.07.2005, KP
-		Description: Sets the background color
+		Sets the background color
 		"""	   
 		self.bgColor = bg
 		
 	def getDrawableRectangles(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Return the rectangles can be drawn on as four-tuples
+		Return the rectangles can be drawn on as four-tuples
 		"""	   
 		a, b, c, d = self.GetClientRect()
 		return [(a, c, b, d)]
@@ -452,8 +433,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def onRightClickROI(self, event):
 		"""
-		Created: 20.04.2007, KP
-		Description: a method that checks whether a right click event happens on a ROI
+		a method that checks whether a right click event happens on a ROI
 					 and acts upon it
 		"""
 		x, y = event.GetPosition()
@@ -464,8 +444,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 	
 	def onMouseWheel(self, event):
 		"""
-		Created: 01.09.2007, KP
-		Description: react to a mouse wheel rotation, where three consecutive rotations
+		react to a mouse wheel rotation, where three consecutive rotations
 					 in the same direction will trigger a change in zoom level
 		"""
 		direction = event.GetWheelRotation() / abs(event.GetWheelRotation())
@@ -479,8 +458,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			
 	def onRightDown(self, event):
 		"""
-		Created: 10.10.2006, KP
-		Description: An event handler for when the right button is clicked down
+		An event handler for when the right button is clicked down
 		"""
 		if wx.EVT_RIGHT_DOWN in self.listeners:
 			for method in self.listeners[wx.EVT_RIGHT_DOWN]:
@@ -496,8 +474,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def onFinishPolygon(self, event):
 		"""
-		Created: 10.10.2006, KP
-		Description: Turn the sketch polygon into a real polygon
+		Turn the sketch polygon into a real polygon
 		"""
 		if self.currentSketch:
 			pts = self.currentSketch.getPoints()
@@ -518,8 +495,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def onLeftDown(self, event):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the starting position of rubber band for zooming
+		Sets the starting position of rubber band for zooming
 		"""
 		self.SetFocus()
 		event.Skip()
@@ -544,8 +520,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def onMouseMotion(self, event):
 		"""
-		Created: 24.03.2005, KP
-		Description: Update the mouse position and the rendering according to user action,
+		Update the mouse position and the rendering according to user action,
 					 e.g. draw a rubber band when zooming to selected region
 		"""
 		if not event.Dragging():
@@ -595,8 +570,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def getInterpolationForSize(self, x, y,  factor):
 		"""
-		Created: 08.10.2007, KP
-		Description: return the proper interpolation for INTERPOLATION_VARY for the given width and height
+		return the proper interpolation for INTERPOLATION_VARY for the given width and height
 		"""
 		pixels = (x * factor) * (y * factor)
 		if pixels <= 1024 * 1024:
@@ -609,8 +583,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def zoomImageWithInterpolation(self, image, zoomFactor, interpolation, z):
 		"""
-		Created: 08.10.2007, KP
-		Description: zoom an image with the given zoomFactor using the given interpolation
+		zoom an image with the given zoomFactor using the given interpolation
 		"""
 		if interpolation == INTERPOLATION_VARY:
 			#x, y, z = image.GetDimensions()
@@ -631,8 +604,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def changeScrollByDifference(self, start, end):
 		"""
-		Created: 01.09.2007, KP
-		Description: scroll by the difference of the starting and ending coordinates
+		scroll by the difference of the starting and ending coordinates
 		"""
 #		Logging.info("Scrolling by difference of %s and %s"%(str(start),str(end)), kw="preview")
 		x, y = self.CalcUnscrolledPosition(0,0)
@@ -649,8 +621,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def onDeactivate(self):
 		"""
-		Created: 28.05.2007, KP
-		Description: event handler called when the visualization mode is about to be deactivated
+		event handler called when the visualization mode is about to be deactivated
 		"""
 		if not self.dataUnit:
 			return
@@ -663,8 +634,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 					   
 	def getDuplicateDC(self, dc):
 		"""
-		Created: 04.04.2007, KP
-		Description: return a duplicate of the current client dc as a buffer
+		return a duplicate of the current client dc as a buffer
 		"""
 		x0, y0, w, h = self.GetClientRect()
 		retbuf = wx.EmptyBitmap(w, h)
@@ -675,8 +645,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def actionEnd(self, event):
 		"""
-		Created: 05.07.2005, KP
-		Description: Unconditionally end the current action
+		Unconditionally end the current action
 		"""	   
 		
 		self.action = 0
@@ -689,8 +658,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def executeAction(self, event):
 		"""
-		Created: 03.07.2005, KP
-		Description: Call the right callback depending on what we're doing
+		Call the right callback depending on what we're doing
 		"""
 		self.rubberbandAllowed = 0
 		if self.action == ZOOM_TO_BAND:
@@ -730,8 +698,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def addNewAnnotation(self, annotationClass, x, y, ex, ey, noUpdate = 0, scaleFactor = -1):
 		"""
-		Created: 03.07.2007, KP
-		Description: add an annotaiton of given type
+		add an annotaiton of given type
 		"""
 		if scaleFactor == -1:
 			scaleFactor = self.zoomFactor
@@ -801,8 +768,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def saveAnnotations(self):
 		"""
-		Created: 25.10.2006, KP
-		Description: Save the annotations to the settings
+		Save the annotations to the settings
 		"""
 		annotations = self.diagram.GetShapeList()
 			
@@ -815,8 +781,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 	
 	def addNewShape(self, shape, noUpdate = 0):
 		"""
-		Created: 07.05.2005, KP
-		Description: Add a new shape to the canvas
+		Add a new shape to the canvas
 		"""
 		evthandler = GUI.OGLAnnotations.MyEvtHandler(self)
 		evthandler.SetShape(shape)
@@ -836,8 +801,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def updateAnnotations(self):
 		"""
-		Created: 04.07.2005, KP
-		Description: Update all the annotations
+		Update all the annotations
 		"""
 		for i in self.diagram.GetShapeList():
 			if hasattr(i, "setScaleFactor"):
@@ -845,30 +809,26 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def markROI(self, roitype):
 		"""
-		Created: 05.07.2005
-		Description: Add a ROI to the panel
+		Add a ROI to the panel
 		"""
 		Logging.info("Adding a %s region of interest" % roitype, kw = "iactivepanel")
 		self.action = ADD_ROI
 		
 	def startRubberband(self):
 		"""
-		Created: 03.07.2005
-		Description: Start rubber band
+		Start rubber band
 		"""
 		self.action = ZOOM_TO_BAND
 		
 	def deleteAnnotation(self):
 		"""
-		Created: 15.08.2005, KP
-		Description: Delete annotations on the scene
+		Delete annotations on the scene
 		"""
 		self.action = DELETE_ANNOTATION
 		
 	def addAnnotation(self, annClass, **kws):
 		"""
-		Created: 04.07.2005, KP
-		Description: Add an annotation to the scene
+		Add an annotation to the scene
 		"""
 		self.action = ADD_ANNOTATION
 		self.annotationClass = annClass
@@ -876,8 +836,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def zoomToRubberband(self, event):
 		"""
-		Created: 24.03.2005, KP
-		Description: Zooms to the rubberband
+		Zooms to the rubberband
 		""" 
 		x1, y1 = self.actionstart
 		x2, y2 = self.actionend
@@ -909,15 +868,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def getZoomFactor(self):
 		"""
-		Created: 1.08.2005, KP
-		Description: Return the zoom factor
+		Return the zoom factor
 		"""		   
 		return self.zoomFactor
 		
 	def getScrolledXY(self, x, y):
 		"""
-		Created: 24.03.2005, KP
-		Description: Returns the x and y coordinates moved by the 
+		Returns the x and y coordinates moved by the 
 					 x and y scroll offset
 		"""
 		tpl = self.CalcUnscrolledPosition(x, y)
@@ -928,15 +885,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def resetScroll(self):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the scrollbars to their initial values
+		Sets the scrollbars to their initial values
 		"""	   
 		self.Scroll(0, 0)
 		
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 04.07.2005, KP
-		Description: Sets the data unit that is displayed
+		Sets the data unit that is displayed
 		"""	   
 		self.dataUnit = dataUnit
 		self.voxelSize = dataUnit.getVoxelSize()
@@ -948,8 +903,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def readAnnotationsFromCache(self):
 		"""
-		Created: 04.07.2007, KP
-		Description: a method that iwll read cached annotations and show them after the panel has bee initialized
+		a method that iwll read cached annotations and show them after the panel has bee initialized
 		"""
 		if not self.annotationsEnabled:
 			return
@@ -963,8 +917,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def restoreAnnotations(self, settings):
 		"""
-		Created: 03.07.2007, KP
-		Description: restore annotations from cache
+		restore annotations from cache
 		"""
 		annotations = settings.get("Annotations")
 				
@@ -983,8 +936,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def OnPaint(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Does the actual blitting of the bitmap
+		Does the actual blitting of the bitmap
 		"""
 		scrolledWinDC = 0
 		if 1 or self.is_windows or self.is_mac:
@@ -1009,8 +961,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def paintPreview(self, dc):
 		"""
-		Created: 24.03.2005, KP
-		Description: Paints the image to a DC
+		Paints the image to a DC
 		"""
 		if self.rubberbandAllowed and (self.action == ZOOM_TO_BAND or self.action == ADD_ANNOTATION):
 			xr,yr,wr,hr = self.GetClientRect()
@@ -1038,8 +989,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 	def setScrollbars(self, xdim, ydim):
 		"""
-		Created: 24.03.2005, KP
-		Description: Configures scroll bar behavior depending on the
+		Configures scroll bar behavior depending on the
 					 size of the dataset, which is given as parameters.
 		"""
 		Logging.info("Requested size = %d, %d, client size = %d, %d" % (self.maxClientSizeX, self.maxClientSizeY, xdim, ydim), kw = "iactivepanel")
@@ -1065,8 +1015,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 	def makeBackgroundBuffer(self, dc):
 		"""
-		Created: 06.10.2006, KP
-		Description: Copy the current buffer to a background buffer that is used 
+		Copy the current buffer to a background buffer that is used 
 					 among other things to restore the background after painting
 					 over the image (e.g. annotations)
 		"""

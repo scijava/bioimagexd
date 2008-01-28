@@ -53,8 +53,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 14.03.2007, KP
-		Description: Initialization
+		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
@@ -70,8 +69,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def updateProgress(self):
 		"""
-		Created: 20.12.2007, LP
-		Description: Updates progress of the registration
+		Updates progress of the registration
 		"""
 		# ImageRegistrationMethod doesn't update progress so we need to do it
 		self.registration.SetProgress(self.optimizer.GetCurrentIteration().__float__()/self.optimizer.GetNumberOfIterations().__float__())
@@ -79,8 +77,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 14.03.2007, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["FixedTimepoint","BackgroundPixelValue","MaxIterations","UsePreviousAsFixed"]:
 			return scripting.COLOR_INTERMEDIATE
@@ -91,8 +88,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 14.03.2007, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""    
 		if parameter == "FixedTimepoint":
 			return 1
@@ -111,8 +107,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 14.03.2007, KP
-		Description: Return the range for a given parameter
+		Return the range for a given parameter
 		"""
 		if parameter == "FixedTimepoint":
 			return (1, self.dataUnit.getNumberOfTimepoints())
@@ -121,8 +116,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getType(self, parameter):
 		"""
-		Created: 14.03.2007, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""
 		if parameter == "FixedTimepoint":
 			return GUIBuilder.SLICE
@@ -139,15 +133,13 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 			 
 	def getParameters(self):
 		"""
-		Created: 14.03.2007, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [["Fixed image", ("UsePreviousAsFixed","FixedTimepoint")], ["", ("BackgroundPixelValue",)], ["Accuracy and speed settings", ("MaxIterations","MaxStepLength","MinStepLength")]]
 
 	def setParameter(self, parameter, value):
 		"""
-		Created: 23.1.2008, LP
-		Description: Set value of parameter
+		Set value of parameter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self,parameter,value)
 		if parameter == "UsePreviousAsFixed" and self.gui:
@@ -163,7 +155,6 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 def getFilters():
     """
-    Created: 10.8.2007, SS
-    Description: This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
     return []

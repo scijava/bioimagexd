@@ -47,8 +47,7 @@ class MyConfigParser(ConfigParser.RawConfigParser):
 	"""
 	def optionxform(self, optionstr):
 		"""
-		Created: Unknown, KP
-		Description: This method converts option strings to be used as "keys"
+		This method converts option strings to be used as "keys"
 		to this parser.
 		"""
 		return optionstr
@@ -64,13 +63,11 @@ def getClass():
 
 class BXCDataSource(DataSource):
 	"""
-	Created: 03.11.2004, JM
-	Description: Manages 4D data stored in du- and vti-files
+	Manages 4D data stored in du- and vti-files
 	"""
 	def __init__(self, filename = ""):
 		"""
-		Created: 03.11.2004, JM
-		Description: Constructor
+		Constructor
 		"""
 		DataSource.__init__(self)
 		# list of references to individual datasets (= timepoints) stored in 
@@ -97,8 +94,7 @@ class BXCDataSource(DataSource):
 		
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""
 		if not self.baseFilename:
 			return self.filename
@@ -106,30 +102,26 @@ class BXCDataSource(DataSource):
 		
 	def setBaseFileName(self, filename):
 		"""
-		Created: 08.12.2007, KP
-		Description: set the base filename. This interface is mainly for BXD reader to utilize
+		set the base filename. This interface is mainly for BXD reader to utilize
 		"""
 		self.baseFilename = filename
 		
 	def getParser(self):
 		"""
-		Created: 27.03.2005, KP
-		Description: Returns the parser that is used to read the .du file
+		Returns the parser that is used to read the .du file
 		"""
 		return self.parser
 		
 	def getDataSetCount(self):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the number of individual DataSets (= time points)
+		Returns the number of individual DataSets (= time points)
 		managed by this DataSource
 		"""
 		return len(self.dataSets)
 
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 03.11.2004, JM
-		Description: Returns the DataSet at the specified index
+		Returns the DataSet at the specified index
 		Parameters:   i		  The index
 		"""
 		data = self.loadVti(self.dataSets[i])
@@ -145,8 +137,7 @@ class BXCDataSource(DataSource):
 
 	def readInfo(self, data):
 		"""
-		Created: 28.5.2005, KP
-		Description: Read various bits of info from the dataset
+		Read various bits of info from the dataset
 		"""
 		self.dimensions = data.GetDimensions()
 		self.spacing = data.GetSpacing()
@@ -154,8 +145,7 @@ class BXCDataSource(DataSource):
 
 	def internalGetDimensions(self):
 		"""
-		Created: 14.12.2004, KP
-		Description: Returns the (x, y, z) dimensions of the datasets this 
+		Returns the (x, y, z) dimensions of the datasets this 
 					 dataunit contains
 		"""
 		return eval(self.settings.get("Dimensions"))
@@ -163,8 +153,7 @@ class BXCDataSource(DataSource):
 	def updateProgress(self, obj, evt):
 		"""
 		Method: updateProgress
-		Created: 13.07.2004, KP
-		Description: Sends progress update event
+		Sends progress update event
 		"""		   
 		if not obj:
 			progress = 1.0
@@ -178,8 +167,7 @@ class BXCDataSource(DataSource):
 	def getSpacing(self):
 		"""
 		Method: getSpacing()
-		Created: 31.03.2005, KP
-		Description: Returns the spacing of the datasets this 
+		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
 		if not self.spacing:
@@ -190,8 +178,7 @@ class BXCDataSource(DataSource):
 		
 	def getVoxelSize(self):
 		"""
-		Created: 31.03.2005, KP
-		Description: Returns the spacing of the datasets this 
+		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
 		try:
@@ -204,8 +191,7 @@ class BXCDataSource(DataSource):
 	
 	def loadVti(self, filename):
 		"""
-		Created: 03.11.2004, JM
-		Description: Loads the specified DataSet from disk and returns
+		Loads the specified DataSet from disk and returns
 					 it as vtkImageData
 		Parameters:   filename	The file where Dataset is loaded from
 		"""
@@ -225,8 +211,7 @@ class BXCDataSource(DataSource):
 
 	def loadBxdFile(self, filename):
 		"""
-		Created: 15.12.2004, JM, JV
-		Description: Loads the specified .bxc-file, the checks the format
+		Loads the specified .bxc-file, the checks the format
 					 of the loaded dataunit and returns it
 
 		Parameters:   filename	The .du-file to be loaded
@@ -252,8 +237,7 @@ class BXCDataSource(DataSource):
 
 	def loadFromFile(self, filename):
 		"""
-		Created: 09.11.2004, JM
-		Description: Loads the specified .bxc-file and imports data from it.
+		Loads the specified .bxc-file and imports data from it.
 					 Also returns a DataUnit of the type stored in the loaded
 					 .bxc-file or None if something goes wrong. The dataunit is
 					 returned in a list with one item for interoperability with
@@ -323,8 +307,7 @@ class BXCDataSource(DataSource):
 
 	def getName(self):
 		"""
-		Created: 18.11.2004, KPloadFrom
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		return self.settings.get("Name")
@@ -333,8 +316,7 @@ class BXCDataSource(DataSource):
 
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		Logging.info("Getting colortransferfunction from settings", kw = "ctf")

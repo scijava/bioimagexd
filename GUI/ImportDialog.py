@@ -59,8 +59,7 @@ class ImportDialog(wx.Dialog):
 	"""
 	def __init__(self, parent, imageMode = 1):
 		"""
-		Created: 17.03.2005, KP
-		Description: Initialize the dialog
+		Initialize the dialog
 		"""    
 		scripting.registerDialog("import", self)
 		self.dataUnit = DataUnit()
@@ -101,8 +100,7 @@ class ImportDialog(wx.Dialog):
 		
 	def setInputFile(self, filename):
 		"""
-		Created: 07.05.2007, KP
-		Description: Set a file that is used as an initial input for the import
+		Set a file that is used as an initial input for the import
 		"""        
 		if not os.path.exists(filename):
 			GUI.Dialogs.showerror(self, "The specified file (%s) does not exist."%os.path.basename(filename), "File does not exist")
@@ -115,15 +113,13 @@ class ImportDialog(wx.Dialog):
 		
 	def getDatasetName(self):
 		"""
-		Created: 6.11.2006, KP
-		Description: Return the name of the resultant dataset
+		Return the name of the resultant dataset
 		"""
 		return self.resultDataset
 		
 	def onOkButton(self, event):
 		"""
-		Created: 21.04.2005, KP
-		Description: Executes the procedure
+		Executes the procedure
 		"""
 		if not self.spacing:
 			GUI.Dialogs.showerror(self, "Please define the size of the voxels in the dataset", "No voxel size defined")
@@ -141,8 +137,7 @@ class ImportDialog(wx.Dialog):
 
 	def convertFiles(self, outname):
 		"""
-		Created: 21.04.2005, KP
-		Description: Method that reads the files that user has selected
+		Method that reads the files that user has selected
 		"""          
 		idxs = self.sourceListbox.GetSelections()
 		files = []
@@ -176,8 +171,7 @@ class ImportDialog(wx.Dialog):
 		
 	def writeDataUnitFile(self):
 		"""
-		Created: 25.04.2005, KP
-		Description: Writes a .bxd file
+		Writes a .bxd file
 		""" 
 		settings = self.dataUnit.getSettings()
 
@@ -214,8 +208,7 @@ class ImportDialog(wx.Dialog):
 			
 	def createImageImport(self):
 		"""
-		Created: 17.03.2005, KP
-		Description: Creates a panel for importing of images as slices of a volume
+		Creates a panel for importing of images as slices of a volume
 		"""            
 		self.imageSizer = wx.GridBagSizer(5, 5)
 		self.imageSourcebox = wx.StaticBox(self, -1, "Source file")
@@ -411,8 +404,7 @@ enter the information below.""")
 			
 	def onUpdatePreview(self, event = None):
 		"""
-		Created: 04.07.2007, KP
-		Description: Update the preview based on the user input
+		Update the preview based on the user input
 		"""
 		try:
 			slices = int(float(self.depthEdit.GetValue()))
@@ -435,8 +427,7 @@ enter the information below.""")
 
 	def onChangeZSlice(self, event):
 		"""
-		Created: 07.05.2007, KP
-		Description: Set the zslice displayed in the preview
+		Set the zslice displayed in the preview
 		"""             
 		assert self.zslider.GetValue() > 0, "Cannot set negative slide"
 		self.preview.setZSlice(self.zslider.GetValue() - 1)
@@ -445,8 +436,7 @@ enter the information below.""")
 		
 	def onChangeTimepoint(self, event):
 		"""
-		Created: 07.05.2007, KP
-		Description: Set the timepoint displayed in the preview
+		Set the timepoint displayed in the preview
 		"""
 		assert self.timeslider.GetValue() > 0, "Cannot set negative timepoint"
 		self.preview.setTimepoint(self.timeslider.GetValue() - 1)
@@ -454,8 +444,7 @@ enter the information below.""")
 		
 	def onUpdateVoxelSize(self, filename):
 		"""
-		Created: 21.04.2005, KP
-		Description: A method to update the spacing depending on the voxel size
+		A method to update the spacing depending on the voxel size
 		"""                       
 		try:
 			vx = float(self.voxelX.GetValue())
@@ -486,8 +475,7 @@ enter the information below.""")
  
  	def getPatternFromFilename(self, filename):
  		"""
- 		Created: 22.10.2007, KP
- 		Description: convert a filename into a pattern that matches the filename
+ 		convert a filename into a pattern that matches the filename
  		"""
 		r = re.compile("z[0-9]+", re.IGNORECASE)
 		ret = filename
@@ -508,15 +496,13 @@ enter the information below.""")
  
 	def setInputType(self, event):
 		"""
-		Created: 17.03.2005, KP
-		Description: A method called when the input type is changed
+		A method called when the input type is changed
 		"""        
 		self.patternEdit.Enable(self.choice.GetSelection() == 0)
 	 
 	def updateSelection(self, event, updatePreview = 0):
 		"""
-		Created: 17.03.2005, KP
-		Description: This method is called when user selects items in the listbox
+		This method is called when user selects items in the listbox
 		"""   
 		idxs = self.sourceListbox.GetSelections()
 		files = []
@@ -541,8 +527,7 @@ enter the information below.""")
 		
 	def onUpdateNumberOfTimepoints(self, evt):
 		"""
-		Created: 07.05.2007, KP
-		Description: set the number of timepoints, and adjust the number of slices per timepoint accordingly
+		set the number of timepoints, and adjust the number of slices per timepoint accordingly
 		"""
 		timepointStr = self.timepointEdit.GetValue().strip()
 		if not timepointStr:
@@ -573,15 +558,13 @@ enter the information below.""")
 	
 	def onUpdateNumberOfImages(self, evt):
 		"""
-		Created: 24.10.2007, KP
-		Description: update the number of images
+		update the number of images
 		"""
 		self.setNumberOfImages(self.imageAmount)
 		
 	def setNumberOfImages(self, n = -1):
 		"""
-		Created: 17.03.2005, KP
-		Description: Sets the number of images we're reading
+		Sets the number of images we're reading
 		"""
 		Logging.info("n=", n, kw = "io")
 		self.imageAmountLbl.SetLabel("%d" % n)#"
@@ -611,8 +594,7 @@ enter the information below.""")
 	
 	def sortNumerically(self, item1, item2):
 		"""
-		Created: 17.03.2005, KP
-		Description: A method that compares two filenames and sorts them by the number in their filename
+		A method that compares two filenames and sorts them by the number in their filename
 		"""        
 		r = self.numRE
 		s = r.findall(item1)
@@ -636,8 +618,7 @@ enter the information below.""")
 		
 	def getBestMatchingMethod(self, filenames):
 		"""
-		Created: 24.10.2007, KP
-		Description: return the best method for selecting the imported files (all files in dir or using pattern),
+		return the best method for selecting the imported files (all files in dir or using pattern),
 					 based on the filenames given. The selection is done based on the image dimensions and file names
 		"""
 		r = re.compile("[0-9]+")
@@ -654,8 +635,7 @@ enter the information below.""")
 	
 	def loadAllFilesBasedOnFile(self, filename):
 		"""
-		Created: 22.10.2007, KP
-		Description: load all files from a directory based on a given filename
+		load all files from a directory based on a given filename
 		"""
 		ext = filename.split(".")[-1]
 		dirn = os.path.dirname(filename)
@@ -685,8 +665,7 @@ enter the information below.""")
 		
 	def matchSingleDigitPattern(self, fileList, pattern, startFrom, endTo):
 		"""
-		Created: 22.10.2007, KP
-		Description: find files following given numbering pattern, having numbers in certain range
+		find files following given numbering pattern, having numbers in certain range
 		"""
 		print "trying range", startFrom,"-", endTo, "pattern=", pattern
 		matches = []
@@ -702,8 +681,7 @@ enter the information below.""")
 		
 	def matchDoubleDigitPattern(self, fileList, pattern, fileCount):
 		"""
-		Created: 22.10.2007, KP
-		Description: find files following given numbering pattern with two different numbers, from a given amount of files
+		find files following given numbering pattern with two different numbers, from a given amount of files
 		"""
 		matches = []
 		everfound = 0
@@ -726,8 +704,7 @@ enter the information below.""")
 		
 	def setSourceFile(self, event = None):
 		"""
-		Created: 17.03.2005, KP
-		Description: Set the file used to determine which images to import
+		Set the file used to determine which images to import
 		"""       
 		filename = self.browsedir.GetValue()
 
@@ -749,8 +726,7 @@ enter the information below.""")
 		
 	def getNameFromFilename(self, filename):
 		"""
-		Created: 24.10.2007, KP
-		Description: parse the dataset name from the initial filename
+		parse the dataset name from the initial filename
 		"""
 		r = re.compile("_z[0-9]+", re.IGNORECASE)
 		filename = r.sub("",os.path.basename(filename))
@@ -773,8 +749,7 @@ enter the information below.""")
 		
 	def updateListOfImages(self, event = None):
 		"""
-		Created: 23.10.2007, KP
-		Description: update the list of images based on the selected method (all files in directory, files following pattern)
+		update the list of images based on the selected method (all files in directory, files following pattern)
 		"""
 		# clear the box with filenames since we're going to repopulate it		
 		self.sourceListbox.Clear()
@@ -802,8 +777,7 @@ enter the information below.""")
 
 	def selectMethodBasedOnFile(self, filename):
 		"""
-		Created: 24.10.2007, KP
-		Description: set the method for selecting files based on a single filename
+		set the method for selecting files based on a single filename
 		"""
 		print "Selecting method based on file", filename
 		if "." not in filename:return
@@ -814,8 +788,7 @@ enter the information below.""")
 		
 	def loadFilesBasedOnPattern(self):
 		"""
-		Created: 23.10.2007, KP
-		Description: update the file list based on a pattern modified by user, or calculated from file name
+		update the file list based on a pattern modified by user, or calculated from file name
 		"""
 		pattern = self.patternEdit.GetValue()
 		# First see that we find files using the extension in the pattern
@@ -874,8 +847,7 @@ enter the information below.""")
 			
 	def updateImageInfo(self, obj = None, event = ""):
 		"""
-		Created: 21.04.2005, KP
-		Description: A method that reads information from an image
+		A method that reads information from an image
 		"""                
 		print "Getting dimensions..."
 		self.dimensions = (self.x, self.y, self.z) = self.dataSource.getDimensions()
@@ -905,7 +877,6 @@ enter the information below.""")
 
 	def onUpdateCtf(self, obj, event):
 		"""
-		Created: 24.10.2007, KP
-		Description: update the ctf
+		update the ctf
 		"""
 		self.preview.updatePreview(1)

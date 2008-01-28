@@ -82,23 +82,20 @@ class SplineTrack(Track):
 			
 	def setMaintainUpDirection(self, flag):
 		"""
-		Created: 25.06.2005, KP
-		Description: Toggles whether up direction is maintained in track
+		Toggles whether up direction is maintained in track
 		"""     
 		Logging.info("Will maintain up direction: %s" % (flag != 0), kw = "animator")
 		self.maintainUpDirection = flag
 		
 	def getClosed(self):
 		"""
-		Created: 14.04.2005, KP
-		Description: Is this spline closed or not
+		Is this spline closed or not
 		"""     
 		return self.closed
 		
 	def onDown(self, event):
 		"""
-		Created: 17.07.2005, KP
-		Description: Item is clicked
+		Item is clicked
 		"""
 		ret = Track.onDown(self, event)
 		if self.overlayItem and self.overlayPos != -1:
@@ -108,8 +105,7 @@ class SplineTrack(Track):
 		
 	def setClosed(self, flag, add = 1):
 		"""
-		Created: 14.04.2005, KP
-		Description: Sets the spline represented by this flag to be closed
+		Sets the spline represented by this flag to be closed
 		"""     
 		Logging.info("Track is closed: %s" % (flag != 0), kw = "animator")
 		self.closed = flag
@@ -124,8 +120,7 @@ class SplineTrack(Track):
 
 	def AcceptDrop(self, x, y, data):
 		"""
-		Created: 12.04.2005, KP
-		Description: Method called to indicate that a user is no longer dragging
+		Method called to indicate that a user is no longer dragging
 					 something to this track
 		"""     
 		if self.noMoreItems:
@@ -200,8 +195,7 @@ class SplineTrack(Track):
 			
 	def getSplineLength(self, splinepoint):
 		"""
-		Created: 19.03.2005, KP
-		Description: A method that returns the physical length of a spline
+		A method that returns the physical length of a spline
 					 range given the spline points width
 		""" 
 		if not self.duration:
@@ -210,8 +204,7 @@ class SplineTrack(Track):
 
 	def setToRelativeSize(self, size):
 		"""
-		Created: 19.04.2005, KP
-		Description: Set duration of all items in this track
+		Set duration of all items in this track
 		"""              
 		n = len(self.items)
 		total = self.splineEditor.getSplineLength(0, n - 1)
@@ -242,24 +235,21 @@ class SplineTrack(Track):
 
 	def getSplinePoint(self, point):
 		"""
-		Created: 06.04.2005, KP
-		Description: A method that returns the physical position of a spline
+		A method that returns the physical position of a spline
 					 control point
 		""" 
 		return self.splineEditor.findControlPoint(point)
 
 	def setSplinePoint(self, pointnum, point):
 		"""
-		Created: 11.04.2005, KP
-		Description: A method that sets the physical position of a spline
+		A method that sets the physical position of a spline
 					 control point
 		""" 
 		return self.splineEditor.setSplinePoint(pointnum, point)   
 
 	def removeItem(self, position):
 		"""
-		Created: 14.04.2005, KP
-		Description: Remove an item from this track
+		Remove an item from this track
 		"""
 		#self.removeItem(position)
 		spc = 0
@@ -274,8 +264,7 @@ class SplineTrack(Track):
 		
 	def removeActiveItem(self):
 		"""
-		Created: 31.01.2006, KP
-		Description: Remove the currently selected item
+		Remove the currently selected item
 		"""       
 		Track.removeActiveItem(self)
 		spc = 0
@@ -288,8 +277,7 @@ class SplineTrack(Track):
 
 	def addStopPoint(self, position):
 		"""
-		Created: 24.06.2005, KP
-		Description: A method to add a stop in the camera movement
+		A method to add a stop in the camera movement
 		"""
 		h = self.height
 		item = StopItem(self, (30, h))
@@ -299,8 +287,7 @@ class SplineTrack(Track):
 		
 	def addSplinePoint(self, position, update = 1, **kws):
 		"""
-		Created: 04.02.2005, KP
-		Description: A method to add a new item to this track
+		A method to add a new item to this track
 		"""
 		h = self.height
 		itemkws = {"itemnum":position, "editable":self.editable}
@@ -361,8 +348,7 @@ class SplineTrack(Track):
 			
 	def __getstate__(self):
 		"""
-		Created: 14.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""      
 		odict = Track.__getstate__(self)
 		n = 0
@@ -373,8 +359,7 @@ class SplineTrack(Track):
 		
 	def setSelected(self, event):
 		"""
-		Created: 14.04.2005, KP
-		Description: Selects this track
+		Selects this track
 		""" 
 		Track.setSelected(self, event)
 		lib.messenger.send(None, "set_keyframe_mode", 0)
@@ -385,8 +370,7 @@ class SplineTrack(Track):
 
 	def shiftItems(self, direction):
 		"""
-		Created: 15.12.2005, KP
-		Description: Shift items in the given direction
+		Shift items in the given direction
 		"""        
 		Track.shiftItems(self, direction)
 		for i in self.items:
@@ -403,8 +387,7 @@ class SplineTrack(Track):
 			
 	def showSpline(self):
 		"""
-		Created: 18.04.2005, KP
-		Description: Show spline represented by this track
+		Show spline represented by this track
 		""" 
 		lib.messenger.send(None, "set_keyframe_mode", 0)
 		pts = []
@@ -419,8 +402,7 @@ class SplineTrack(Track):
 			
 	def setItemAmount(self, n):
 		"""
-		Created: 20.04.2005, KP
-		Description: A method to set the amount of items in this track
+		A method to set the amount of items in this track
 		"""               
 		self.remove()
 		self.initTrack()
@@ -429,8 +411,7 @@ class SplineTrack(Track):
 			
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Method called by UrmasPersist to allow the object
+		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
 		Track.__set_pure_state__(self, state)

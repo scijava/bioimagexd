@@ -40,8 +40,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Created: 10.08.2006, KP
-		Description: Initialization
+		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.reportGUI = None
@@ -56,16 +55,14 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [["Region of Interest", ("UseROI", "ROI")], ["Slices", ("FirstSlice", "LastSlice")]]
 		
 
 	def getRange(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the range for the parameter
+		Return the range for the parameter
 		"""       
 		if self.dataUnit:
 			x, y, z = self.dataUnit.getDimensions()
@@ -76,8 +73,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter == "ROI":
 			return GUI.GUIBuilder.ROISELECTION
@@ -87,8 +83,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 31.07.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""     
 		if parameter == "UseROI":
 			return 0
@@ -108,8 +103,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 31.07.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

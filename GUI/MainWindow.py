@@ -75,8 +75,7 @@ class MainWindow(wx.Frame):
 	"""
 	def __init__(self, parent, id, app, splash):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		# A flag indicating whether we've loaded files at startup (i.e. they were given on command line or dragged over the icon)
 		self.loadFilesAtStartup = False
@@ -308,8 +307,7 @@ class MainWindow(wx.Frame):
 
 	def reportCrash(self):
 		"""
-		Created: 25.06.2007, KP
-		Description: send a bug report reporting the latest crash
+		send a bug report reporting the latest crash
 		"""
 		dlg = BugDialog.BugDialog(self, crashMode = 1)
 		dlg.crashModeOn(scripting.uncleanLog)
@@ -324,8 +322,7 @@ class MainWindow(wx.Frame):
 
 	def Cleanup(self, *args):
 		"""
-		Created: 29.1.2007, KP
-		Description: clean up the file history
+		clean up the file history
 		"""
 		# A little extra cleanup is required for the FileHistory control
 		del self.filehistory
@@ -333,8 +330,7 @@ class MainWindow(wx.Frame):
 		
 	def OnFileHistory(self, evt):
 		"""
-		Created: 29.1.2007, KP
-		Description: An event handler for when the user selects a history item from file menu
+		An event handler for when the user selects a history item from file menu
 		"""
 		# get the file based on the menu ID
 
@@ -346,8 +342,7 @@ class MainWindow(wx.Frame):
 
 	def loadScript(self, filename):
 		"""
-		Created: 17.07.2006, KP
-		Description: Load a given script file
+		Load a given script file
 		"""
 		Logging.info("Loading script %s" % filename, kw = "scripting")
 		f = open(filename)
@@ -360,8 +355,7 @@ class MainWindow(wx.Frame):
 		
 	def loadFiles(self, files, noWarn = 0):
 		"""
-		Created: 17.07.2006, KP
-		Description: Load the given data files
+		Load the given data files
 		"""
 		self.loadFilesAtStartup = True
 		for file in files:
@@ -370,8 +364,7 @@ class MainWindow(wx.Frame):
 
 	def onMenuUndo(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Undo a previous command
+		Undo a previous command
 		"""
 		cmd = self.menuManager.getLastCommand()
 		if cmd and cmd.canUndo():		# Undo the previous command if there has been a previous command.
@@ -381,8 +374,7 @@ class MainWindow(wx.Frame):
 		
 	def onMenuRedo(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Redo a previously undo'd action
+		Redo a previously undo'd action
 		"""
 		cmd = self.menuManager.getUndoedCommand()
 		cmd.run()
@@ -391,8 +383,7 @@ class MainWindow(wx.Frame):
 		
 	def onExecuteCommand(self, obj, evt, command, undo = 0):
 		"""
-		Created: 13.02.2006, KP
-		Description: A command was executed
+		A command was executed
 		"""
 		if not undo:
 			if command.canUndo():
@@ -406,8 +397,7 @@ class MainWindow(wx.Frame):
 		
 	def onDeleteDataset(self, obj, evt, arg):
 		"""
-		Created: 12.08.2005, KP
-		Description: Remove a dataset from the program
+		Remove a dataset from the program
 		"""
 		close = 0
 		Logging.info("onDeleteDataset, visualizer dataset = ", self.visualizer.dataUnit, "deleted=", arg)
@@ -427,16 +417,14 @@ class MainWindow(wx.Frame):
 		
 	def onSwitchDataset(self, evt):
 		"""
-		Created: 11.08.2005, KP
-		Description: Switch the datasets used by a task module
+		Switch the datasets used by a task module
 		"""
 		selectedFiles = self.tree.getSelectedDataUnits()
 		lib.messenger.send(None, "switch_datasets", selectedFiles)
 		
 	def showTip(self):
 		"""
-		Created: 08.08.2005, KP
-		Description: Show a tip to the user
+		Show a tip to the user
 		"""
 		conf = Configuration.getConfiguration()
 		showTip = conf.getConfigItem("ShowTip", "General")
@@ -455,8 +443,7 @@ class MainWindow(wx.Frame):
 			
 	def onTreeSelectionChanged(self, obj, evt, data):
 		"""
-		Created: 22.07.2005, KP
-		Description: A method for updating the dataset based on tree selection
+		A method for updating the dataset based on tree selection
 		"""
 		selected = self.tree.getSelectedDataUnits()
 		dataunits = {}
@@ -491,8 +478,7 @@ class MainWindow(wx.Frame):
 		
 	def updateTitle(self, obj, evt, data):
 		"""
-		Created: 22.07.2005, KP
-		Description: A method for updating the title of this window
+		A method for updating the title of this window
 		"""
 		
 		if evt == "current_task":
@@ -506,8 +492,7 @@ class MainWindow(wx.Frame):
 		
 	def onSashDrag(self, event):
 		"""
-		Created: 24.5.2005, KP
-		Description: A method for laying out the window
+		A method for laying out the window
 		"""
 		if event.GetDragStatus() == wx.SASH_STATUS_OUT_OF_RANGE:
 			return
@@ -540,8 +525,7 @@ class MainWindow(wx.Frame):
 
 	def OnSize(self, event):
 		"""
-		Created: KP
-		Description: the size event handler for main window
+		the size event handler for main window
 		"""
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		if self.statusbar:
@@ -554,8 +538,7 @@ class MainWindow(wx.Frame):
 
 	def showVisualization(self, window):
 		"""
-		Created: 20.5.2005, KP
-		Description: Changes the window to show in the split window
+		Changes the window to show in the split window
 		"""
 		if window == self.currentVisualizationWindow:
 			return
@@ -577,22 +560,19 @@ class MainWindow(wx.Frame):
 
 	def onSetStatus(self, obj, event, arg):
 		"""
-		Created: 04.04.2006, KP
-		Description: Set the status text
+		Set the status text
 		"""
 		self.statusbar.SetStatusText(arg)
 	
 	def onShowError(self, obj, event, title, msg):
 		"""
-		Created: 04.04.2006, KP
-		Description: Show an error message
+		Show an error message
 		"""
 		Dialogs.showerror(self, msg, title)
 
 	def updateProgressBar(self, obj, event, arg, text = None, allow_gui = 1):
 		"""
-		Created: 03.11.2004, KP
-		Description: Updates the progress bar
+		Updates the progress bar
 		"""
 		if self.progressObject and obj != self.progressObject:
 			return
@@ -625,8 +605,7 @@ class MainWindow(wx.Frame):
 				
 	def clearProgressBar(self,*args):
 		"""
-		Created: 08.11.2007, KP
-		Description: clear the progress bar
+		clear the progress bar
 		"""
 		self.statusbar.SetStatusText("")
 		self.statusbar.Update()
@@ -635,8 +614,7 @@ class MainWindow(wx.Frame):
 			
 	def updateVoxelInfo(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
 		"""
-		Created: 22.07.2004, KP
-		Description: Update the voxel info in status bar
+		Update the voxel info in status bar
 		"""
 		z += 1
 		if scalar != 0xdeadbeef:
@@ -671,8 +649,7 @@ class MainWindow(wx.Frame):
 		
 	def createToolBar(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a tool bar for the window
+		Creates a tool bar for the window
 		"""
 		iconpath = scripting.get_icon_dir()
 		self.CreateToolBar( wx.TB_HORIZONTAL)
@@ -769,8 +746,7 @@ class MainWindow(wx.Frame):
 
 	def onToolbarHelp(self, evt):
 		"""
-		Created: 1.11.2006, KP
-		Description: An event handler for the toolbar help button that will launch a help
+		An event handler for the toolbar help button that will launch a help
 					 page that depends on what task or visualization mode the user is currently using
 		"""
 		if self.currentTaskWindow:
@@ -780,8 +756,7 @@ class MainWindow(wx.Frame):
 
 	def onSaveDataset(self, *args):
 		"""
-		Created: 24.05.2006, KP
-		Description: Process the dataset
+		Process the dataset
 		"""
 		if self.currentTaskWindow:
 			do_cmd = "mainWindow.processDataset(modal = 0)"
@@ -802,8 +777,7 @@ class MainWindow(wx.Frame):
 			
 	def saveSelectedDatasets(self, filename):
 		"""
-		Created: 08.02.2007, KP
-		Description: Save the selected datasets into a .bxd file
+		Save the selected datasets into a .bxd file
 		"""
 		selectedUnits = self.tree.getSelectedDataUnits()
 		bxdwriter =  lib.DataSource.BXDDataWriter.BXDDataWriter(filename)
@@ -837,23 +811,20 @@ class MainWindow(wx.Frame):
 		
 	def processDataset(self, modal = 1):
 		"""
-		Created: KP
-		Description: send the message to use the current task for processing the data
+		send the message to use the current task for processing the data
 		"""
 		scripting.modal = modal
 		lib.messenger.send(None, "process_dataset")
 
 	def onContextHelp(self, evt):
 		"""
-		Created: 02.11.2005, KP
-		Description: Put the app in a context help mode
+		Put the app in a context help mode
 		"""
 		wx.ContextHelp(self)
 		
 	def createMenu(self):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a menu for the window
+		Creates a menu for the window
 		"""
 		self.menu = wx.MenuBar()
 		mgr = self.menuManager
@@ -1001,8 +972,7 @@ class MainWindow(wx.Frame):
 			
 	def createStatusBar(self):
 		"""
-		Created: 13.7.2006, KP
-		Description: Creates a status bar for the window
+		Creates a status bar for the window
 		"""
 		self.statusbar = wx.StatusBar(self)
 		self.SetStatusBar(self.statusbar)
@@ -1022,8 +992,7 @@ class MainWindow(wx.Frame):
 		
 	def onSetProgressObject(self, obj, evt, arg):
 		"""
-		Created: 14.12.2005, KP
-		Description: Set the object that is allowed to send progress updates
+		Set the object that is allowed to send progress updates
 		"""
 		if not arg and self.progressObject:
 			lib.messenger.disconnect(self.progressObject, "update_progress")
@@ -1033,8 +1002,7 @@ class MainWindow(wx.Frame):
 	
 	def onShowCommandHistory(self, evt = None):
 		"""
-		Created: 13.02.2006, KP
-		Description: Show the command history
+		Show the command history
 		"""
 		# Use a clever contraption in where if we're called from the menu
 		# then we create a command object that will call us, but with an
@@ -1057,8 +1025,7 @@ class MainWindow(wx.Frame):
 			
 	def onMenuBatchProcessor(self, evt):
 		"""
-		Created: 25.11.2007, KP
-		Description: show the batch processor tool
+		show the batch processor tool
 		"""
 		self.batchProcessor = BatchProcessor.BatchProcessor(self)
 		scripting.registerDialog("BatchProcessor", self.batchProcessor)
@@ -1069,8 +1036,7 @@ class MainWindow(wx.Frame):
 
 	def onMenuBugReport(self, evt):
 		"""
-		Created: 25.06.2007, KP
-		Description: Show a dialog for sending a bug report to the developers
+		Show a dialog for sending a bug report to the developers
 		"""
 		dlg = BugDialog.BugDialog(self)
 		dlg.ShowModal()
@@ -1078,24 +1044,21 @@ class MainWindow(wx.Frame):
 
 	def onMenuImmediateRender(self, evt):
 		"""
-		Created: 14.02.2006, KP
-		Description: Toggle immediate render updates on or off
+		Toggle immediate render updates on or off
 		"""
 		flag = evt.IsChecked()
 		self.visualizer.setImmediateRender(flag)
 
 	def onMenuNoRender(self, evt):
 		"""
-		Created: 14.02.2006, KP
-		Description: Toggle immediate render updates on or off
+		Toggle immediate render updates on or off
 		"""
 		flag = evt.IsChecked()
 		self.visualizer.setNoRendering(flag)
 		
 	def onMenuShowScriptEditor(self, evt):
 		"""
-		Created: 13.02.2006, KP
-		Description: Show the script editor
+		Show the script editor
 		"""
 		if scripting.record:
 			self.scriptEditor.Show()
@@ -1106,8 +1069,7 @@ class MainWindow(wx.Frame):
 		
 	def onMenuHideInfo(self, evt):
 		"""
-		Created: 21.09.2005, KP
-		Description: Hide info windows, giving visualizer maximum screen estate
+		Hide info windows, giving visualizer maximum screen estate
 		"""
 		gts = self.GetToolBar().GetToolState
 		status = not (gts(MenuManager.ID_SHOW_TREE) or self.menuManager.isChecked(MenuManager.ID_VIEW_INFO))
@@ -1123,8 +1085,7 @@ class MainWindow(wx.Frame):
 
 	def onMenuResampleData(self, evt):
 		"""
-		Created: 1.09.2005, KP
-		Description: Resize data to be smaller or larger
+		Resize data to be smaller or larger
 		"""
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
@@ -1145,8 +1106,7 @@ class MainWindow(wx.Frame):
 		
 	def onMenuRescaleData(self, evt):
 		"""
-		Created: 1.09.2005, KP
-		Description: Rescale data to 8-bit intensity range
+		Rescale data to 8-bit intensity range
 		"""
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
@@ -1169,8 +1129,7 @@ class MainWindow(wx.Frame):
 
 	def onMenuToggleVisibility(self, evt):
 		"""
-		Created: 16.03.2005, KP
-		Description: A callback function for toggling the visibility of different UI elements
+		A callback function for toggling the visibility of different UI elements
 		"""
 		eid = evt.GetId()
 		flag = evt.IsChecked()
@@ -1224,8 +1183,7 @@ class MainWindow(wx.Frame):
 		
 	def onCloseTaskPanel(self, event):
 		"""
-		Created: 14.07.2005, KP
-		Description: Called when the user wants to close the task panel
+		Called when the user wants to close the task panel
 		"""
 		undo_cmd = ""
 		do_cmd = "mainWindow.closeTaskPanel()"
@@ -1235,15 +1193,13 @@ class MainWindow(wx.Frame):
 		
 	def getCurrentTaskName(self):
 		"""
-		Created: 17.08.2007, KP
-		Description: return the name of the current task
+		return the name of the current task
 		"""
 		return self.currentTaskWindowName
 
 	def closeTaskPanel(self):
 		"""
-		Created: 15.08.2006, KP
-		Description: A method that actually clsoes the task panel
+		A method that actually clsoes the task panel
 		"""
 		if self.currentTaskWindow:
 			self.currentTaskWindow.cacheSettings()
@@ -1284,8 +1240,7 @@ class MainWindow(wx.Frame):
 	
 	def onMenuImport(self, evt, startFile = ""):
 		"""
-		Created: 16.03.2005, KP
-		Description: Callback function for menu item "Import"
+		Callback function for menu item "Import"
 		"""
 		import_code = """
 importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
@@ -1303,8 +1258,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def onMenuExport(self, evt):
 		"""
-		Created: 20.04.2005, KP
-		Description: Callback function for menu item "Export"
+		Callback function for menu item "Export"
 		"""
 		selectedFiles = self.tree.getSelectedDataUnits()
 		if len(selectedFiles) > 1:
@@ -1324,16 +1278,14 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 	
 	def onMenuPreferences(self, evt):
 		"""
-		Created: 09.02.2005, KP
-		Description: Callback function for menu item "Preferences"
+		Callback function for menu item "Preferences"
 		"""
 		self.settingswindow = SettingsWindow.SettingsWindow(self)
 		self.settingswindow.ShowModal()
 
 	def onMenuVisualizer(self, evt):
 		"""
-		Created: 26.04.2005, KP
-		Description: Callback function for launching the visualizer
+		Callback function for launching the visualizer
 		"""
 		# Hide the infowin and toggle the menu item accordingly
 
@@ -1358,8 +1310,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def loadVisualizerMode(self, mode):
 		"""
-		Created: 14.06.2007, KP
-		Description: Load the visualizer mode with the given name
+		Load the visualizer mode with the given name
 		"""
 		eid = self.visToId[mode]
 		if scripting.currentVisualizationMode == mode:
@@ -1428,8 +1379,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def onMenuOpenSettings(self, event):
 		"""
-		Created: 03.11.2004, KP
-		Description: Callback function for menu item "Load settings"
+		Callback function for menu item "Load settings"
 		"""
 		if self.visualizer:
 			dataunit = self.visualizer.getDataUnit()
@@ -1452,8 +1402,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				
 	def loadSettings(self, filenames):
 		"""
-		Created: 03.03.2007, KP
-		Description: Load settings from given filename
+		Load settings from given filename
 		"""
 		dataunit = self.visualizer.getDataUnit()
 		parser = ConfigParser.RawConfigParser()
@@ -1465,8 +1414,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 	def onMenuSaveSettings(self, event):
 		"""
-		Created: 03.11.2004, KP
-		Description: Callback function for menu item "Save settings"
+		Callback function for menu item "Save settings"
 		"""
 		if self.visualizer:
 			dataunit = self.visualizer.getDataUnit()
@@ -1486,8 +1434,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def onMenuOpen(self, evt, evt2 = None, *args):
 		"""
-		Created: 03.11.2004, KP
-		Description: Callback function for menu item "Open VTK File"
+		Callback function for menu item "Open VTK File"
 		"""
 		if not evt2:
 			self.onMenuShowTree(None, 1)
@@ -1526,8 +1473,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def loadEncodingProject(self, filename):
 		"""
-		Created: 29.09.2007, KP
-		Description: present a GUI for re-encoding an encoding project file
+		present a GUI for re-encoding an encoding project file
 		"""
 		import GUI.Urmas.VideoGeneration
 
@@ -1538,15 +1484,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 	def openFile(self, filepath):
 		"""
-		Created: 06.11.2006, KP
-		Description: Open a file extracting the dataset name from the filename
+		Open a file extracting the dataset name from the filename
 		"""
 		self.createDataUnit(os.path.basename(filepath), filepath)
 		
 	def createDataUnit(self, name, path, noWarn = 0):
 		"""
-		Created: 03.11.2004, KP
-		Description: Creates a dataunit with the given name and path
+		Creates a dataunit with the given name and path
 		Parameters:
 			name    Name used to identify this dataunit
 			path    Path to the file this dataunit points to
@@ -1622,8 +1566,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 	def onMenuShowTaskWindow(self, event):
 		"""
-		Created: 11.1.2005, KP
-		Description: A method that shows a taskwindow of given type
+		A method that shows a taskwindow of given type
 		"""
 		eid = event.GetId()
 		tb = self.GetToolBar()
@@ -1654,8 +1597,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def closeTask(self):
 		"""
-		Created: 16.07.2006, KP
-		Description: Close the current task window
+		Close the current task window
 		"""   
 		self.onCloseTaskPanel(None)
 		self.onMenuShowTree(None, 1)
@@ -1663,8 +1605,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			
 	def loadTask(self, taskname):
 		"""
-		Created: 16.07.2006, KP
-		Description: Load the task with the given name
+		Load the task with the given name
 		"""   
 		moduletype, windowtype, mod = self.taskPanels[taskname]
 		filesAtLeast, filesAtMost = mod.getInputLimits()
@@ -1777,8 +1718,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def onMenuShowTree(self, event, show = -1):
 		"""
-		Created: 21.07.2005, KP
-		Description: A method that shows the file management tree
+		A method that shows the file management tree
 		"""
 		tb = self.GetToolBar()
 		if show == -1:
@@ -1801,8 +1741,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 	def loadVisualizer(self, mode, processed = 0, dataunit = None, **kws):
 		"""
-		Created: 25.05.2005, KP
-		Description: Load a dataunit and a given mode to visualizer
+		Load a dataunit and a given mode to visualizer
 		"""
 		scripting.currentVisualizationMode = mode
 
@@ -1839,8 +1778,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 	def setButtonSelection(self, eid, all = 0):
 		"""
-		Created: 01.06.2005, KP
-		Description: Select only the selected button
+		Select only the selected button
 		"""
 		lst = []
 		# If the selection is to be set among all buttons (both task & vis mode) then go thorugh 
@@ -1863,8 +1801,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 	def onMenuAbout(self, evt):
 		"""
-		Created: 03.11.2004, KP
-		Description: Callback function for menu item "About"
+		Callback function for menu item "About"
 		"""
 		about = GUI.AboutDialog.AboutDialog(self)
 		about.ShowModal()
@@ -1872,8 +1809,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def onViewHelp(self, obj, evt, args):
 		"""
-		Created: 05.08.2004, KP
-		Description: A method that shows a help of some item
+		A method that shows a help of some item
 		"""
 		if not self.help:
 			self.help = wx.html.HtmlHelpController()
@@ -1887,15 +1823,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			
 	def onMenuHelp(self, evt):
 		"""
-		Created: 02.08.2004, KP
-		Description: Callback function for menu item "Help"
+		Callback function for menu item "Help"
 		"""
 		self.onViewHelp(None, None, None)
 		
 	def saveWindowSizes(self):
 		"""
-		Created: 13.04.2006, KP
-		Description: Save window sizes to the settings
+		Save window sizes to the settings
 		"""
 		conf = Configuration.getConfiguration()
 
@@ -1905,8 +1839,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 	
 	def quitApp(self, evt):
 		"""
-		Created: 03.11.2004, KP
-		Description: Possibly queries the user before quitting, then quits
+		Possibly queries the user before quitting, then quits
 		"""
 		
 		conf = Configuration.getConfiguration()

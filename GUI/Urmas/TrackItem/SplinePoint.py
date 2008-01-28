@@ -59,8 +59,7 @@ class SplinePoint(TrackItem.TrackItem):
 	"""       
 	def __init__(self, parent, text, size, **kws):
 		"""
-		Created: 20.03.2005, KP
-		Description: Initialize the method
+		Initialize the method
 		""" 
 		self.point = (0, 0, 0)
 		self.itemnum = kws.get("itemnum", 0)
@@ -73,23 +72,20 @@ class SplinePoint(TrackItem.TrackItem):
 				
 	def getItemNumber(self):
 		"""
-		Created: 14.04.2005, KP
-		Description: Return the item number of this item
+		Return the item number of this item
 		"""       
 		return self.itemnum
 		 
 	def getPoint(self): return self.point
 	def setPoint(self, pt):
 		"""
-		Created: 14.04.2005, KP
-		Description: Return the point this spline point represents
+		Return the point this spline point represents
 		"""      
 		self.point = pt
 		
 	def drawItem(self, hilight = -1):
 		"""
-		Created: 19.03.2005, KP
-		Description: A method that draws the splinetrack item.
+		A method that draws the splinetrack item.
 		"""       
 		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		self.dc = wx.MemoryDC()
@@ -149,8 +145,7 @@ class SplinePoint(TrackItem.TrackItem):
 	
 	def updateItem(self):
 		"""
-		Created: 06.04.2005, KP
-		Description: A method called when the item has been resized
+		A method called when the item has been resized
 		"""     
 		TrackItem.TrackItem.updateItem(self)  
 		pos = self.parent.getSplinePoint(self.itemnum)
@@ -158,8 +153,7 @@ class SplinePoint(TrackItem.TrackItem):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Update the item
+		Update the item
 		"""       
 		TrackItem.TrackItem.__set_pure_state__(self, state)
 		self.point = state.point
@@ -171,8 +165,7 @@ class SplinePoint(TrackItem.TrackItem):
 		
 	def __getstate__(self):
 		"""
-		Created: 11.04.2005, KP
-		Description: Return the dict that is to be pickled to disk
+		Return the dict that is to be pickled to disk
 		"""     
 		odict = TrackItem.TrackItem.__getstate__(self)
 		for key in ["point", "focalPoint"]:
@@ -181,8 +174,7 @@ class SplinePoint(TrackItem.TrackItem):
 		
 	def __str__(self):
 		"""
-		Created: 05.04.2005, KP
-		Description: Return string representation of self
+		Return string representation of self
 		"""  
 		start, end = self.position
 		desc = "SP%d(%d,%d,%d)" % (self.itemnum, self.point[0], self.point[1], self.point[2])
@@ -193,8 +185,7 @@ class SplinePoint(TrackItem.TrackItem):
 
 	def onDown(self, event):
 		"""
-		Created: 14.12.2005, KP
-		Description: Event handler for when the mouse is pressed down over
+		Event handler for when the mouse is pressed down over
 					 this item. 
 		"""      
 		TrackItem.TrackItem.onDown(self, event)
@@ -208,8 +199,7 @@ class SplineEndPoint(SplinePoint):
 	"""       
 	def __init__(self, parent, text, size, **kws):
 		"""
-		Created: 14.12.2005, KP
-		Description: Initialize the item
+		Initialize the item
 		"""
 		text = "End Point"
 		self.init_done = 0
@@ -229,15 +219,13 @@ class SplineEndPoint(SplinePoint):
 		KeyframePoint.KeyframePoint.setWidth(self, w)
 	def setColor(self, col, headercolor):
 		"""
-		Created: 10.02.2005, KP
-		Description: Set the color and header color for this item
+		Set the color and header color for this item
 		"""       
 		self.color = col
 		self.drawItem()        
 	def setText(self, s):
 		"""
-		Created: 14.04.2005, KP
-		Description: Set the text number of this item
+		Set the text number of this item
 		"""       
 		pass        
 		

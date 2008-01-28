@@ -37,13 +37,11 @@ class Example:
 
 	def __init__(self):
 		"""
-		Created: 00.00.2004, XX
-		Description: Initialization
+		Initialization
 		"""
 
 	def method(self, xCoordinate, yCoordinate):
 		"""
-		Created: 00.00.2004, XX
 		Description:
 		Parameters:   xCoordinate		  The x-coordinate
 					  yCoordinate		  The y-coordinate

@@ -54,14 +54,12 @@ class ThresholdEvent(wx.PyCommandEvent):
 
 class Histogram(wx.Panel):
 	"""
-	Created: 11.07.2005, KP
-	Description: A widget that can paint a histogram
+	A widget that can paint a histogram
 	"""
 	def __init__(self, parent, **kws):
 		"""
 		Method: __init__(parent)
-		Created: 24.03.2005, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.scale = kws.get("scale", 1)
 		self.lowerThreshold = kws.get("lowerThreshold", 0)
@@ -117,16 +115,14 @@ class Histogram(wx.Panel):
 	   
 	def setReplacementCTF(self, colorTransferFunction):
 		"""
-		Created: 15.04.2006, KP
-		Description: Set a CTF that will replace the original CTF
+		Set a CTF that will replace the original CTF
 		"""
 		self.replaceCTF = colorTransferFunction
 		self.colorTransferFunction = colorTransferFunction
 		
 	def setLowerThreshold(self, lowerThreshhold):
 		"""
-		Created: 06.06.2006, KP
-		Description: Set the lower threshold showin with this widget
+		Set the lower threshold showin with this widget
 		"""
 		self.lowerThreshold = lowerThreshhold
 		self.actionstart = None
@@ -135,8 +131,7 @@ class Histogram(wx.Panel):
 
 	def setUpperThreshold(self, upperThreshhold):
 		"""
-		Created: 06.06.2006, KP
-		Description: Set the upper threshold showin with this widget
+		Set the upper threshold showin with this widget
 		"""
 		self.upperThreshold = upperThreshhold
 		self.actionstart = None
@@ -145,22 +140,19 @@ class Histogram(wx.Panel):
 
 	def getLowerThreshold(self):
 		"""
-		Created: 12.04.2006, KP
-		Description: Return the lower threshold selected with this widget
+		Return the lower threshold selected with this widget
 		"""			   
 		return self.lowerThreshold
 		
 	def getUpperThreshold(self):
 		"""
-		Created: 12.04.2006, KP
-		Description: Return the upper threshold selected with this widget
+		Return the upper threshold selected with this widget
 		"""					
 		return self.upperThreshold
 		
 	def setThresholdMode(self, flag):
 		"""
-		Created: 12.04.2006, KP
-		Description: Sets the flag indicating that the threshold selectors need to be
+		Sets the flag indicating that the threshold selectors need to be
 					 activated even if the dataset is not colocalization dataset
 		"""	   
 
@@ -169,8 +161,7 @@ class Histogram(wx.Panel):
 
 	def markActionStart(self, event):
 		"""
-		Created: 12.07.2005, KP
-		Description: Sets the starting position of rubber band for zooming
+		Sets the starting position of rubber band for zooming
 		"""
 		position = event.GetPosition()
 		x, y = position
@@ -218,8 +209,7 @@ class Histogram(wx.Panel):
 			
 	def updateActionEnd(self, event):
 		"""
-		Created: 12.07.2005, KP
-		Description: Draws the rubber band to current mouse pos
+		Draws the rubber band to current mouse pos
 		"""
 		if event.LeftIsDown():
 			x, y = event.GetPosition()
@@ -238,8 +228,7 @@ class Histogram(wx.Panel):
 			
 	def setThreshold(self, event = None):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the thresholds based on user's selection
+		Sets the thresholds based on user's selection
 		"""
 		if not self.actionstart:
 			return
@@ -296,16 +285,14 @@ class Histogram(wx.Panel):
 		
 	def onRightClick(self, event):
 		"""
-		Created: 02.04.2005, KP
-		Description: Method that is called when the right mouse button is
+		Method that is called when the right mouse button is
 					 pressed down on this item
 		"""		 
 		self.PopupMenu(self.menu, event.GetPosition())
 
 	def onSetLogarithmic(self, event):
 		"""
-		Created: 12.07.2005, KP
-		Description: Set the scale to logarithmic
+		Set the scale to logarithmic
 		"""
 		self.logarithmic = not self.logarithmic
 		self.menu.Check(self.ID_LOGARITHMIC, self.logarithmic)
@@ -316,8 +303,7 @@ class Histogram(wx.Panel):
 	def onSetIgnoreBorder(self, event):
 		"""
 		Method: onSetLogarithmic
-		Created: 12.07.2005, KP
-		Description: Set the scale to logarithmic
+		Set the scale to logarithmic
 		"""
 		self.ignoreBorder = not self.ignoreBorder
 		self.menu.Check(self.ID_IGNORE_BORDER, self.ignoreBorder)
@@ -326,8 +312,7 @@ class Histogram(wx.Panel):
 		
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
-		Created: 12.07.2005, KP
-		Description: Set the timepoint to be shown
+		Set the timepoint to be shown
 		"""
 		self.timePoint = timepoint
 		self.renew = 1
@@ -335,8 +320,7 @@ class Histogram(wx.Panel):
 		
 	def setDataUnit(self, dataUnit, noupdate = 0):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the dataunit from which the histogram is drawn
+		Set the dataunit from which the histogram is drawn
 		"""
 		self.dataUnit = dataUnit
 		
@@ -350,8 +334,7 @@ class Histogram(wx.Panel):
 		
 	def updatePreview(self, *args, **kws):
 		"""
-		Created: 12.07.2005, KP
-		Description: Update the histogram
+		Update the histogram
 		"""
 		get = self.dataUnit.getSettings().get
 		if not self.thresholdMode and get("ColocalizationLowerThreshold"):
@@ -402,8 +385,7 @@ class Histogram(wx.Panel):
 		
 	def paintPreview(self):
 		"""
-		Created: 12.07.2005, KP
-		Description: Paints the scatterplot
+		Paints the scatterplot
 		"""
 		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		dc.BeginDrawing()
@@ -511,8 +493,7 @@ class Histogram(wx.Panel):
 		
 	def OnPaint(self, event):
 		"""
-		Created: 28.04.2005, KP
-		Description: Does the actual blitting of the bitmap
+		Does the actual blitting of the bitmap
 		"""
 		dc = wx.BufferedPaintDC(self, self.buffer)#, self.buffer)
 		

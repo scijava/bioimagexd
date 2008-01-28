@@ -46,8 +46,7 @@ class BXDDataWriter(DataWriter):
 
 	def __init__(self, filename):
 		"""
-		Created: 26.03.2005, KP
-		Description: Constructor
+		Constructor
 		"""
 		DataWriter.__init__(self)
 		# list of references to individual channels (.bxc files)
@@ -73,8 +72,7 @@ class BXDDataWriter(DataWriter):
 		
 	def getBXCFileName(self, bxdFile):
 		"""
-		Created: 08.02.2007, KP
-		Description: return a corresponding .bxc filename when given a bxd file name
+		return a corresponding .bxc filename when given a bxd file name
 		"""
 		bxdFile = os.path.basename(bxdFile)
 		if bxdFile[-4:].lower() != ".bxd":
@@ -84,21 +82,18 @@ class BXDDataWriter(DataWriter):
 		return os.path.join(self.getPath(), bxcFile)
 	def getPath(self):
 		"""
-		Created: 08.02.2007, KP
-		Description: return the actual (created) path where the files should be written
+		return the actual (created) path where the files should be written
 		"""
 		return self.filedir
 		
 	def getFilename(self):
 		"""
-		Created: 08.02.2007, KP
 		Descriptio: return the filename
 		"""
 		return self.filename
 	def write(self):
 		"""
-		Created: 08.0.2007, KP
-		Description: Writes the given datasets and their information to a du file
+		Writes the given datasets and their information to a du file
 		"""
    
 		try:
@@ -116,7 +111,6 @@ class BXDDataWriter(DataWriter):
 
 	def addChannelWriter(self, writer):
 		"""
-		Created: 1.12.2004, KP
-		Description: Add a vtkImageData object to be written to the disk.
+		Add a vtkImageData object to be written to the disk.
 		"""
 		self.writers.append(writer)

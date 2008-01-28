@@ -43,8 +43,7 @@ import optimize
 
 def paintLogarithmicScale(ctfbmp, ctf, vertical = 1):
 	"""
-	Created: 04.08.2006
-	Description: Paint a logarithmic scale on a bitmap that represents the given ctf
+	Paint a logarithmic scale on a bitmap that represents the given ctf
 	"""
 	maxval = ctf.GetRange()[1]
 	width, height = ctfbmp.GetWidth(), ctfbmp.GetHeight()
@@ -84,7 +83,7 @@ def paintLogarithmicScale(ctfbmp, ctf, vertical = 1):
 	
 def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars = 0):
 	"""
-	Description: Paint a bar representing a CTF
+	Paint a bar representing a CTF
 	
 	@author: Kalle Pahajoki
 	@since: 18.04.2005
@@ -178,8 +177,7 @@ def paintBoundaryValues(deviceContext, ctfLowerBound, ctfUpperBound, vertical, h
 
 def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor = 0.0, yfactor = 0.0):
 	"""
-	Created: 01.08.2005, KP
-	Description: Scale an image with cubic interpolation
+	Scale an image with cubic interpolation
 	"""    
 	if zDimension != -1:
 		data = getSlice(data, zDimension)
@@ -225,8 +223,7 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 	
 def loadNIHLut(data):
 	"""
-	Created: 17.04.2005, KP
-	Description: Load an NIH Image LUT and return it as CTF
+	Load an NIH Image LUT and return it as CTF
 	"""    
 	if not len(data):
 		raise "loadNIHLut got no data"
@@ -249,8 +246,7 @@ def loadNIHLut(data):
 def loadLUT(filename, ctf = None, ctfrange = (0, 256)):
 	"""
 	Method: loadLUT(filename)
-	Created: 17.04.2005, KP
-	Description: Load an ImageJ binary LUT and return it as CTF. If a ctf
+	Load an ImageJ binary LUT and return it as CTF. If a ctf
 				 is passed as parameter, it is modified in place
 	"""    
 	if ctf:
@@ -265,8 +261,7 @@ def loadLUT(filename, ctf = None, ctfrange = (0, 256)):
 	
 def loadBXDLutFromString(lut, ctf):
 	"""
-	Created: 20.11.2006, KP
-	Description: Load a BXD format lut from a given string
+	Load a BXD format lut from a given string
 	"""
 	lut = lut[6: ]
 	start, end = struct.unpack("ff", lut[0: 8])
@@ -295,8 +290,7 @@ def loadBXDLutFromString(lut, ctf):
 			
 def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 	"""
-	Created: 18.04.2005, KP
-	Description: Load an ImageJ binary LUT from string
+	Load an ImageJ binary LUT from string
 	Parameters:
 		lut		 A binary string representing the lookup table
 		ctf		 The CTF to modify
@@ -335,8 +329,7 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 	
 def saveLUT(ctf, filename):
 	"""
-	Created: 17.04.2005, KP
-	Description: Save a CTF as ImageJ binary LUT
+	Save a CTF as ImageJ binary LUT
 	"""    
 	ext = filename.split(".")[-1]
 	ltype = "ImageJ"
@@ -349,8 +342,7 @@ def saveLUT(ctf, filename):
 	
 def lutToString(ctf, luttype = "ImageJ"):
 	"""
-	Created: 18.04.2005, KP
-	Description: Write a lut to a string
+	Write a lut to a string
 	"""    
 	stringOfLUT = ""
 	minval, maxval = ctf.GetRange()
@@ -395,8 +387,7 @@ def lutToString(ctf, luttype = "ImageJ"):
 		
 def getAsParameterList(iTF):
 	"""
-	Created: Unknown, KP
-	Description: Returns a list of iTF parameters
+	Returns a list of iTF parameters
 	"""
 	lst = [	iTF.GetBrightness(),
 			iTF.GetContrast(),
@@ -411,8 +402,7 @@ def getAsParameterList(iTF):
 	
 def setFromParameterList(iTF, listOfValuesToSet):
 	"""
-	Created: Unknown, KP
-	Description: Set the parameters from the input list
+	Set the parameters from the input list
 	"""
 	brightness, contrast, gamma, minimumThreshold, minimumValue, maximumThreshold, \
 	maximumValue, processingThreshold, rangemax = listOfValuesToSet
@@ -428,8 +418,7 @@ def setFromParameterList(iTF, listOfValuesToSet):
 
 def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None):
 	"""
-	Created: Unknown, KP
-	Description: Converts vtk-ImageData to a WxImage
+	Converts vtk-ImageData to a WxImage
 	"""
 	if sliceNumber >= 0:
 		data = getSlice(data, sliceNumber, startpos, endpos)
@@ -449,8 +438,7 @@ def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None
 	
 def vtkImageDataToPngString(data, sliceNumber = -1, startpos = None, endpos = None):
 	"""
-	Created: 26.07.2005, KP
-	Description: A function that returns a vtkImageData object as png
+	A function that returns a vtkImageData object as png
 				 data in a string
 	"""    
 	if sliceNumber >= 0:
@@ -468,8 +456,7 @@ def vtkImageDataToPngString(data, sliceNumber = -1, startpos = None, endpos = No
 	
 def getMIP(imageData, color):
 	"""
-	Created: 1.9.2005, KP
-	Description: A function that will take a volume and do a simple
+	A function that will take a volume and do a simple
 				 maximum intensity projection that will be converted to a
 				 wxBitmap
 	"""   
@@ -505,8 +492,7 @@ def getMIP(imageData, color):
 
 def getColorTransferFunction(color):
 	"""
-	Created: 06.11.2006, KP
-	Description: Convert a color to a ctf and pass a ctf through
+	Convert a color to a ctf and pass a ctf through
 	"""
 	if isinstance(color, vtk.vtkColorTransferFunction):
 		return color
@@ -523,8 +509,7 @@ def getColorTransferFunction(color):
 	
 def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 0, getvtkImage = 0):
 	"""
-	Created: KP
-	Description: A function that will take a volume and do a simple
+	A function that will take a volume and do a simple
 				 Maximum Intensity Projection that will be converted to a
 				 wxBitmap
 	"""   
@@ -575,8 +560,7 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	
 def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2):
 	"""
-	Created: Unknown, KP
-	Description: Returns a randomly created CTF.
+	Returns a randomly created CTF.
 	"""
 	ctf = vtk.vtkColorTransferFunction()
 	for i in range(0, ignoreColors):
@@ -598,8 +582,7 @@ def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2):
 
 def fire(ctfLowerBound, ctfUpperBound):
 	"""
-	Created: 
-	Description: return a color transfer function with colors ranging from red to white
+	return a color transfer function with colors ranging from red to white
 	"""
 	reds = [
 		  0,   0,   1,  25,  49,  73,  98, 122, 
@@ -635,8 +618,7 @@ def fire(ctfLowerBound, ctfUpperBound):
 def getOverlay(width, height, color, alpha):
 	"""
 	Method: getOverlay(width, height, color, alpha)
-	Created: 11.07.2005, KP
-	Description: Create an overlay of given color with given alpha
+	Create an overlay of given color with given alpha
 	"""		  
 	size = width * height * 3
 	formatString = "%ds" % size
@@ -656,8 +638,7 @@ def getOverlay(width, height, color, alpha):
 	
 def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	"""
-	Created: 12.04.2005, KP
-	Description: Create borders for an overlay that are only very little transparent
+	Create borders for an overlay that are only very little transparent
 	"""		  
 	size = width * height * 3
 	formatString = "%ds" % size	
@@ -686,8 +667,7 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	
 def getImageScalarRange(image):
 	"""
-	Created: 14.01.2008, KP
-	Description: get the minimum and maximum value of an image based on it's datatype
+	get the minimum and maximum value of an image based on it's datatype
 	"""
 	x0, x1 = image.GetScalarRange()
 
@@ -700,8 +680,7 @@ def getImageScalarRange(image):
 	
 def get_histogram(image, maxval = 0):
 	"""
-	Created: 06.08.2006, KP
-	Description: Return the histogram of the image as a list of floats
+	Return the histogram of the image as a list of floats
 	"""
 	accu = vtk.vtkImageAccumulate()
 	accu.SetInputConnection(image.GetProducerPort())
@@ -727,8 +706,7 @@ def get_histogram(image, maxval = 0):
 def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), logarithmic = 1, \
 				ignore_border = 0, lower = 0, upper = 0, percent_only = 0, maxval = 255):
 	"""
-	Created: 11.07.2005, KP
-	Description: Draw a histogram of a volume
+	Draw a histogram of a volume
 	"""
 	values = get_histogram(imagedata,maxval)
 	sum = 0
@@ -837,8 +815,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 
 def getMaskFromROIs(rois, mx, my, mz):
 	"""
-	Created: 06.08.2006, KP
-	Description: Create a mask that contains all given Regions of Interest
+	Create a mask that contains all given Regions of Interest
 	"""
 	insideMap = {}
 	for shape in rois:
@@ -851,8 +828,7 @@ def getMaskFromROIs(rois, mx, my, mz):
 	
 def getMaskFromPoints(points, mx, my, mz):
 	"""
-	Created: KP
-	Description: Create a mask where all given points are set to 255
+	Create a mask where all given points are set to 255
 	"""
 	size = mx * my
 	pointStructString = "%dB" % size
@@ -881,8 +857,7 @@ def getMaskFromPoints(points, mx, my, mz):
 	
 def equalize(imagedata, ctf):
 	"""
-	Created: Unknown, KP
-	Description: Creates a set of lookup values from a histogram from the imagedata parameter.
+	Creates a set of lookup values from a histogram from the imagedata parameter.
 	Then creates a color transfer function from these values and returns it.
 	"""
 	histogram = get_histogram(imagedata)
@@ -924,8 +899,7 @@ def equalize(imagedata, ctf):
 def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarithmic = 1, 
 	dataunits = [], timepoint = 0):
 	"""
-	Created: 25.03.2005, KP
-	Description: Create scatterplot
+	Create scatterplot
 	"""		  
 	imagedata1.SetUpdateExtent(imagedata1.GetWholeExtent())
 	imagedata2.SetUpdateExtent(imagedata1.GetWholeExtent())
@@ -987,8 +961,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarit
 	
 def getZoomFactor(imageWidth, imageHeight, screenWidth, screenHeight):
 	"""
-	Created: KP
-	Description: Calculate a zoom factor so that the image
+	Calculate a zoom factor so that the image
 				 will be zoomed to be as large as possible
 				 while fitting to screenWidth, screenHeight
 	"""		  
@@ -998,8 +971,7 @@ def getZoomFactor(imageWidth, imageHeight, screenWidth, screenHeight):
 	
 def vtkZoomImage(image, zoomInFactor):
 	"""
-	Created: KP
-	Description: Zoom a volume
+	Zoom a volume
 	"""
 	zoomOutFactor = 1.0 / zoomInFactor
 	reslice = vtk.vtkImageReslice()
@@ -1030,15 +1002,13 @@ def vtkZoomImage(image, zoomInFactor):
 	
 def zoomImageToSize(image, width, height):
 	"""
-	Created: KP
-	Description: Scale an image to a given size
+	Scale an image to a given size
 	"""			  
 	return image.Scale(width, height)
 	
 def zoomImageByFactor(image, zoomFactor):
 	"""
-	Created: KP
-	Description: Scale an image by a given factor
+	Scale an image by a given factor
 	"""		  
 	oldWidth, oldHeight = image.GetWidth(), image.GetHeight()
 	newWidth, newHeight = int(zoomFactor * oldWidth), int(zoomFactor * oldHeight)
@@ -1046,8 +1016,7 @@ def zoomImageByFactor(image, zoomFactor):
 
 def getSlice(volume, zslice, startpos = None, endpos = None):
 	"""
-	Created: KP
-	Description: Extract a given slice from a volume
+	Extract a given slice from a volume
 	"""
 	voi = vtk.vtkExtractVOI()
 	voi.SetInputConnection(volume.GetProducerPort())
@@ -1065,8 +1034,7 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 	
 def saveImageAs(imagedata, zslice, filename):
 	"""
-	Created: KP
-	Description: Save a given slice of a volume
+	Save a given slice of a volume
 	"""		  
 	if not filename:
 		return
@@ -1084,8 +1052,7 @@ def saveImageAs(imagedata, zslice, filename):
 	
 def imageDataTo3Component(image, ctf):
 	"""
-	Created: 22.07.2005, KP
-	Description: Processes image data to get it to proper 3 component RGB data
+	Processes image data to get it to proper 3 component RGB data
 	"""			
 	image.UpdateInformation()
 	ncomps = image.GetNumberOfScalarComponents()

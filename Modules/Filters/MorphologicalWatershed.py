@@ -41,8 +41,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
-		Created: 13.04.2006, KP
-		Description: Initialization
+		Initialization
 		"""   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.descs = {"Level": "Segmentation Level", "MarkWatershedLine": "Mark the watershed line",
@@ -58,8 +57,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 9.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["Leve", "Threshold", "Level"]:
 			return scripting.COLOR_INTERMEDIATE
@@ -68,8 +66,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""	   
 		if parameter == "Level":
 			return 5
@@ -78,8 +75,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getType(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""	   
 		if parameter == "MarkWatershedLine":
 			return types.BooleanType
@@ -88,15 +84,13 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def getParameters(self):
 		"""
-		Created: 15.04.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [["", ("Level", "MarkWatershedLine")], ["Minimum object size (in pixels)", ("Threshold", )]]
 
 	def onRemove(self):
 		"""
-		Created: 26.1.2006, KP
-		Description: Restore palette upon filter removal
+		Restore palette upon filter removal
 		"""
 		if self.origCtf:
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
@@ -104,8 +98,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Created: 15.04.2006, KP
-		Description: Execute the filter with given inputs and return the output
+		Execute the filter with given inputs and return the output
 		"""					   
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

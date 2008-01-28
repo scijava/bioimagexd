@@ -47,13 +47,11 @@ def getName():
 
 class CutBoxModule(VisualizationModule):
 	"""
-	Created: 22.04.2007, KP
-	Description: A module for clipping the dataset
+	A module for clipping the dataset
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 22.04.2007, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.boxWidget = None
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
@@ -87,16 +85,14 @@ class CutBoxModule(VisualizationModule):
 
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 22.04.2007, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["ShowControls", "ClippedModule", "AllModules", "InsideOut"]:
 			return scripting.COLOR_BEGINNER
 
 	def getModulesToClip(self):
 		"""
-		Created: 18.04.2007, KP
-		Description: return all the visualizer modules that are to be clipped based on user choices
+		return all the visualizer modules that are to be clipped based on user choices
 		"""
 		if not self.parameters.get("AllModules", 0):
 			modname = self.parent.getModules()[self.parameters["ClippedModule"]].getName()
@@ -107,8 +103,7 @@ class CutBoxModule(VisualizationModule):
 		
 	def setParameter(self, parameter, value):
 		"""
-		Created: 22.04.2007, KP
-		Description: set a parameter to given value
+		set a parameter to given value
 		"""
 		VisualizationModule.setParameter(self, parameter, value)
 		if parameter == "ShowControls" and self.boxWidget:
@@ -117,8 +112,7 @@ class CutBoxModule(VisualizationModule):
 		
 	def getParameters(self):
 		"""
-		Created: 22.04.2007, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		# return [ ["Smoothing",("Normals","FeatureAngle")],
 		#["Warping",("Slice","Scale")] ]
@@ -126,8 +120,7 @@ class CutBoxModule(VisualizationModule):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 22.04.2007, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""           
 		if parameter == "ShowControls":
 			return 1
@@ -140,8 +133,7 @@ class CutBoxModule(VisualizationModule):
 
 	def getRange(self, parameter):
 		"""
-		Created: 22.04.2007, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""     
 		names = [module.getName() for module in self.parent.getModules()]
 		names.remove(self.getName())
@@ -149,8 +141,7 @@ class CutBoxModule(VisualizationModule):
 		
 	def getType(self, parameter):
 		"""
-		Created: 22.04.2007, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""    
 		if parameter in ["ShowControls", "AllModules", "InsideOut"]:
 			return types.BooleanType
@@ -159,8 +150,7 @@ class CutBoxModule(VisualizationModule):
 		
 	def __getstate__(self):
 		"""
-		Created: 22.04.2007, KP
-		Description: A getstate method that saves the lights
+		A getstate method that saves the lights
 		"""            
 		odict = VisualizationModule.__getstate__(self)
 		#print "Saving Slice =" ,self.parameters["Slice"]
@@ -170,8 +160,7 @@ class CutBoxModule(VisualizationModule):
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 22.04.2007, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""        
 		VisualizationModule.__set_pure_state__(self, state)
 		self.parameters = state.parameters
@@ -179,8 +168,7 @@ class CutBoxModule(VisualizationModule):
 				
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 22.04.2007, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 		data = self.getInput(1)
@@ -192,8 +180,7 @@ class CutBoxModule(VisualizationModule):
 
 	def showTimepoint(self, value):
 		"""
-		Created: 22.04.2007, KP
-		Description: Set the timepoint to be displayed
+		Set the timepoint to be displayed
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
@@ -201,7 +188,7 @@ class CutBoxModule(VisualizationModule):
 	def clipVolumeRender(self, obj, evt, *args):
 		"""
 		CreateD: 22.04.2007, KP
-		Description: clip the module based on the given clipping planes
+		clip the module based on the given clipping planes
 		"""
 		modules = self.getModulesToClip()
 		planes = vtk.vtkPlanes()
@@ -221,8 +208,7 @@ class CutBoxModule(VisualizationModule):
 #                    module.mapper.RemoveAllClippingPlanes()
 	def updateRendering(self):
 		"""
-		Created: 22.04.2007, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""             
 		input = self.getInput(1)
 
@@ -242,20 +228,17 @@ class CutBoxModule(VisualizationModule):
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
-		Created: 22.04.2007, KP
-		Description: Set the ambient, diffuse and specular lighting of this module
+		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
 	def setShading(self, shading):
 		"""
-		Created: 22.04.2007, KP
-		Description: Set shading on / off
+		Set shading on / off
 		"""          
 		pass
 	def disableRendering(self):
 		"""
-		Created: 15.05.2005, KP
-		Description: Disable the Rendering of this module
+		Disable the Rendering of this module
 		"""          
 		for mapper in self.clippedMappers:
 			mapper.RemoveAllClippingPlanes()        
@@ -263,15 +246,13 @@ class CutBoxModule(VisualizationModule):
 		self.wxrenwin.Render()
 	def enableRendering(self):
 		"""
-		Created: 24.06.2005, KP
-		Description: Enable the Rendering of this module
+		Enable the Rendering of this module
 		"""          
 		self.boxWidget.On()
 		self.wxrenwin.Render()        
 	def showPlane(self, flag):
 		"""
-		Created: 24.06.2005, KP
-		Description: Show / hide the plane controls
+		Show / hide the plane controls
 		"""          
 		if flag:
 			self.boxWidget.On()
@@ -282,8 +263,7 @@ class CutBoxConfigurationPanel(ModuleConfigurationPanel):
 		
 	def __init__(self, parent, visualizer, name = "CutBox", **kws):
 		"""
-		Created: 29.05.2007, KP
-		Description: Initialization
+		Initialization
 		"""     
 		self.cut = 0
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
@@ -291,15 +271,13 @@ class CutBoxConfigurationPanel(ModuleConfigurationPanel):
 	
 	def initializeGUI(self):
 		"""
-		Created: 22.04.2007, KP
-		Description: Initialization
+		Initialization
 		"""          
 		pass
 		
 	def setModule(self, module):
 		"""
-		Created: 22.04.2007, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		self.module = module
@@ -309,7 +287,6 @@ class CutBoxConfigurationPanel(ModuleConfigurationPanel):
 
 	def onApply(self, event):
 		"""
-		Created: 22.04.2007, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		self.module.updateRendering()

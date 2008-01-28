@@ -44,8 +44,7 @@ class Colocalization(Module):
 	"""
 	def __init__(self, **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialization
+		Initialization
 		"""
 		Module.__init__(self, **kws)
 		self.running = 0
@@ -54,8 +53,7 @@ class Colocalization(Module):
 
 	def reset(self):
 		"""
-		Created: 04.11.2004, KP
-		Description: Resets the module to initial state. This method is
+		Resets the module to initial state. This method is
 					 used mainly when doing previews, when the parameters
 					 that control the colocalization are changed and the
 					 preview data becomes invalid.
@@ -74,8 +72,7 @@ class Colocalization(Module):
 
 	def addInput(self, dataunit, data):
 		"""
-		Created: 03.11.2004, KP
-		Description: Adds an input for the colocalization filter
+		Adds an input for the colocalization filter
 		"""
 
 		Module.addInput(self, dataunit, data)
@@ -89,8 +86,7 @@ class Colocalization(Module):
 
 	def getPreview(self, z):
 		"""
-		Created: 03.11.2004, KP
-		Description: Does a preview calculation for the x-y plane at depth z
+		Does a preview calculation for the x-y plane at depth z
 		"""
 		if not self.preview:
 			self.preview = self.doOperation()
@@ -98,8 +94,7 @@ class Colocalization(Module):
 
 	def doOperation(self):
 		"""
-		Created: 10.11.2004, KP
-		Description: Calculates the colocalization map and optionally the thresholds used
+		Calculates the colocalization map and optionally the thresholds used
 		"""
 
 		Logging.info("Doing ", self.depth, "-bit colocalization", kw = "processing")

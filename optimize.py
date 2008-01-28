@@ -47,8 +47,7 @@ executing = 0
 
 def set_target_size(xDimension, yDimension, zDimension = 0):
 	"""
-	Created: Unknown, KP
-	Description: Resizes the target sample
+	Resizes the target sample
 	"""
 	assert xDimension > 0 and yDimension > 0 and zDimension > 0,"Target dimensions need to be > 0"
 	
@@ -69,8 +68,7 @@ def set_target_size(xDimension, yDimension, zDimension = 0):
 
 def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 0):
 	"""
-	Created: 11.11.2006, KP
-	Description: Execute a pipeline and optimize it
+	Execute a pipeline and optimize it
 	"""
 	if image:
 		filterInUse = image.GetProducerPort().GetProducer()
@@ -93,8 +91,7 @@ def optimize(image = None, vtkFilter = None, updateExtent = None, releaseData = 
 	
 def execute_limited(pipeline, updateExtent = None):
 	"""
-	Created: Unknown
-	Description: 
+	
 	"""
 	global memLimit, noLimits, alwaysSplit
 	global numberOfDivisions
@@ -136,8 +133,7 @@ def execute_limited(pipeline, updateExtent = None):
 
 def get_memory_limit():
 	"""
-	Created: Unknown, KP
-	Description: Get memory limits from configuration
+	Get memory limits from configuration
 	"""
 	global conf, memLimit, alwaysSplit, numberOfDivisions, noLimits
 	if memLimit:
@@ -163,8 +159,7 @@ def get_memory_limit():
 
 def optimizePipeline(ifilter, numberNotUsed = 0, releaseData = 0):
 	"""
-	Created: 10.11.2006, KP
-	Description: Optimize the pipeline
+	Optimize the pipeline
 	"""
 	stack = []
 	

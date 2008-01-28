@@ -53,15 +53,13 @@ def getClass():
 	
 class OlympusDataSource(DataSource):
 	"""
-	Created: 12.04.2005, KP
-	Description: Olympus OIF files datasource
+	Olympus OIF files datasource
 	"""
 	def __init__(self, filename = "", channel = -1, \
 					name = "", dimensions = (0, 0, 0), time = 0, voxelsize = (1, 1, 1), \
 					reverse = 0, emission = 0, excitation = 0, bitdepth = 12):
 		"""
-		Created: 12.04.2005, KP
-		Description: Constructor
+		Constructor
 		"""	   
 		DataSource.__init__(self)
 		self.channel = channel
@@ -123,8 +121,7 @@ class OlympusDataSource(DataSource):
 		
 	def getDataSetCount(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the number of individual DataSets (=time points)
+		Returns the number of individual DataSets (=time points)
 		managed by this DataSource
 		"""
 		if not self.timepoints:
@@ -133,31 +130,27 @@ class OlympusDataSource(DataSource):
 		
 	def getEmissionWavelength(self):
 		"""
-		Created: 07.04.2006, KP
-		Description: Returns the emission wavelength used to image this channel
+		Returns the emission wavelength used to image this channel
 		managed by this DataSource
 		"""
 		return self.emission
 			
 	def getExcitationWavelength(self):
 		"""
-		Created: 07.04.2006, KP
-		Description: Returns the excitation wavelength used to image the channel
+		Returns the excitation wavelength used to image the channel
 		managed by this DataSource
 		"""
 		return self.excitation
 
 	def getFileName(self):
 		"""
-		Created: 21.07.2005
-		Description: Return the file name
+		Return the file name
 		"""	   
 		return self.filename
 	
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the image data for timepoint i
+		Returns the image data for timepoint i
 		"""
 		data = self.getTimepoint(i)
 		if raw:
@@ -174,8 +167,7 @@ class OlympusDataSource(DataSource):
 		
 	def updateProgress(self, object, event):
 		"""
-		Created: 12.11.2006, KP
-		Description: Sends progress update event
+		Sends progress update event
 		"""		   
 		if not object:
 			progress = 1.0
@@ -202,8 +194,7 @@ class OlympusDataSource(DataSource):
 		
 	def getTimepoint(self, timepointIndex):
 		"""
-		Created: 16.02.2006, KP
-		Description: Return the timepointIndexth timepoint
+		Return the timepointIndexth timepoint
 		"""		   
 		self.timepoint = timepointIndex
 		path = self.path[:]
@@ -241,15 +232,13 @@ class OlympusDataSource(DataSource):
 		
 	def internalGetDimensions(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: get the dimensions for this dataset, used by the getDimensions()
+		get the dimensions for this dataset, used by the getDimensions()
 		"""
 		return self.dimensions
 
 	def readLUT(self): 
 		"""
-		Created: 16.02.2006, KP
-		Description: Read the LUT for this dataset
+		Read the LUT for this dataset
 		"""
 		lutFile = os.path.join(self.path, self.lutFileName)
 		print "self.path=",self.path
@@ -302,16 +291,14 @@ class OlympusDataSource(DataSource):
 	
 	def getTimeStamp(self, timepoint):
 		"""
-		Created: 02.07.2007, KP
-		Description: return the timestamp for given timepoint
+		return the timestamp for given timepoint
 		"""
 		pass
 
 	
 	def getSpacing(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the spacing of the datasets this 
+		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
 		if not self.spacing:
@@ -321,8 +308,7 @@ class OlympusDataSource(DataSource):
 		
 	def getVoxelSize(self):
 		"""
-		Created: 12.04.2005, KP
-		Description: Returns the voxel size of the datasets this 
+		Returns the voxel size of the datasets this 
 					 dataunit contains
 		"""
 		if not self.voxelsize:
@@ -336,8 +322,7 @@ class OlympusDataSource(DataSource):
 	
 	def getAllDimensions(self, parser):
 		"""
-		Created: 16.02.2006, KP
-		Description: Read the number of timepoints, channels and XYZ from the OIF file
+		Read the number of timepoints, channels and XYZ from the OIF file
 		"""	   
 		timepoints = 0
 		channels = 0
@@ -395,8 +380,7 @@ class OlympusDataSource(DataSource):
 				
 	def getLUTPath(self, channel):
 		"""
-		Created: 05.09.2006, KP
-		Description: Read the path and filename for the LUT file of given channel which can also be used
+		Read the path and filename for the LUT file of given channel which can also be used
 					 for the paths of the TIFF files
 		"""
 		path = self.parser.get("ProfileSaveInfo", "LutFileName%d"%(channel-1))
@@ -411,8 +395,7 @@ class OlympusDataSource(DataSource):
 		
 	def getDyes(self, parser, numberOfChannels):
 		"""
-		Created: 16.02.2006, KP
-		Description: Read the dye names for numberOfChannels channels
+		Read the dye names for numberOfChannels channels
 		""" 
 		names = []
 		exs = []
@@ -430,8 +413,7 @@ class OlympusDataSource(DataSource):
 			
 	def loadFromFile(self, filename):
 		"""
-		Created: 12.04.2005, KP
-		Description: Loads the specified .oif-file and imports data from it.
+		Loads the specified .oif-file and imports data from it.
 		Parameters:	  filename	The .oif-file to be loaded
 		"""
 		self.filename = filename
@@ -475,23 +457,20 @@ class OlympusDataSource(DataSource):
 
 	def getName(self):
 		"""
-		Created: 18.11.2005, KP
-		Description: Returns the name of the dataset series which this datasource
+		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
 		return self.name
 		
 	def uniqueId(self):
 		"""
-		Created: 07.02.2007, KP
-		Description: return a string identifying the dataset
+		return a string identifying the dataset
 		"""
 		return self.getFileName() + "|" + str(self.channel) 
 
 	def resetColorTransferFunction(self):
 		"""
-		Created: 12.10.2006, KP
-		Description: A method that will reset the CTF from the datasource.
+		A method that will reset the CTF from the datasource.
 					 This is useful e.g. when scaling the intensities of the	
 					 dataset
 		"""
@@ -500,22 +479,19 @@ class OlympusDataSource(DataSource):
 	
 	def getBitDepth(self):
 		"""
-		Created: 03.08.2007, KP
-		Description: return the bit depth of the imagesr eturned by this datasource
+		return the bit depth of the imagesr eturned by this datasource
 		"""
 		return self.bitdepth
 	
 	def getSingleComponentBitDepth(self):
 		"""
-		Created: 03.08.2007, KP
-		Description: return the bit depth of a single component of the image returned by this datasource
+		return the bit depth of a single component of the image returned by this datasource
 		"""
 		return self.getBitDepth()
 	
 	def getColorTransferFunction(self):
 		"""
-		Created: 26.04.2005, KP
-		Description: Returns the ctf of the dataset series which this datasource
+		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		if not self.ctf:

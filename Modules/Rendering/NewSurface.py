@@ -54,13 +54,11 @@ def getQuickKeyCombo():
 
 class SurfaceModule(VisualizationModule):
 	"""
-	Created: 28.04.2005, KP
-	Description: A surface Rendering module
+	A surface Rendering module
 	"""    
 	def __init__(self, parent, visualizer, **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 		#self.name = "Surface Rendering"
@@ -91,8 +89,7 @@ class SurfaceModule(VisualizationModule):
 		
 	def getParameterLevel(self, parameter):
 		"""
-		Created: 1.11.2006, KP
-		Description: Return the level of the given parameter
+		Return the level of the given parameter
 		"""
 		if parameter in ["FeatureAngle", "Normals"]:
 			return scripting.COLOR_EXPERIENCED
@@ -105,8 +102,7 @@ class SurfaceModule(VisualizationModule):
 
 	def setScalarRange(self, min, max):
 		"""
-		Created: 21.07.2006, KP
-		Description: Set the scalar range of this module
+		Set the scalar range of this module
 		"""   
 		self.scalarRange = (min, max)
 		lib.messenger.send(self, "update_SurfaceRangeBegin")
@@ -117,8 +113,7 @@ class SurfaceModule(VisualizationModule):
 		
 	def getParameters(self):
 		"""
-		Created: 31.05.2006, KP
-		Description: Return the list of parameters needed for configuring this GUI
+		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [["", ("Method", )], \
 				["Smoothing options", \
@@ -130,8 +125,7 @@ class SurfaceModule(VisualizationModule):
 		
 	def getRange(self, parameter):
 		"""
-		Created: 21.07.2006, KP
-		Description: If a parameter has a certain range of valid values, the values can be queried with this function
+		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""     
 		if parameter == "Method":
 			return ["Contour Filter", "Marching Cubes", "Discrete Marching Cubes", "Iso-Surface Volume Rendering"]
@@ -146,8 +140,7 @@ class SurfaceModule(VisualizationModule):
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Created: 13.04.2006, KP
-		Description: Return the default value of a parameter
+		Return the default value of a parameter
 		"""           
 		if parameter == "Method":
 			return 1
@@ -176,8 +169,7 @@ class SurfaceModule(VisualizationModule):
 			
 	def getType(self, parameter):
 		"""
-		Created: 20.07.2006, KP
-		Description: Return the type of the parameter
+		Return the type of the parameter
 		"""   
 		if parameter == "Method":
 			return GUI.GUIBuilder.CHOICE
@@ -190,16 +182,14 @@ class SurfaceModule(VisualizationModule):
 		
 	def setDataUnit(self, dataunit):
 		"""
-		Created: 28.04.2005, KP
-		Description: Sets the dataunit this module uses for visualization
+		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
 #        self.data=self.dataUnit.getTimepoint(0)
 		
 	def showTimepoint(self, value, update = 1):
 		"""
-		Created: 06.11.2006, KP
-		Description: Show the given timepoint
+		Show the given timepoint
 		"""
 		VisualizationModule.showTimepoint(self, value, update)
 		min, max = self.data.GetScalarRange()
@@ -209,8 +199,7 @@ class SurfaceModule(VisualizationModule):
 
 	def setMethod(self, method):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the Rendering method used
+		Set the Rendering method used
 		"""             
 		self.method = method
 		if method < 3:
@@ -234,8 +223,7 @@ class SurfaceModule(VisualizationModule):
 
 	def updateRendering(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Update the Rendering of this module
+		Update the Rendering of this module
 		"""           
 		method = self.parameters["Method"]
 		self.setMethod(method)
@@ -338,24 +326,21 @@ class SurfaceModule(VisualizationModule):
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Surface rendering", **kws):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""     
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 		self.method = 0
 		
 #	def setModule(self, module): #TODO: why two modules named setModule() ?
 #		"""
-#		Created: 28.04.2005, KP
-#		Description: Set the module to be configured
+#		Set the module to be configured
 #		"""  
 #		ModuleConfigurationPanel.setModule(self, module)
 #		self.module.sendUpdateGUI()
 		
 	def onApply(self, event):
 		"""
-		Created: 30.04.2005, KP
-		Description: Apply the changes
+		Apply the changes
 		"""     
 		ModuleConfigurationPanel.onApply(self, event)
 			
@@ -364,8 +349,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 		
 	def onSelectMethod(self, event):
 		"""
-		Created: 30.04.2005, KP
-		Description: Select the surface rendering method
+		Select the surface rendering method
 		"""  
 		self.method = self.moduleChoice.GetSelection() #TODO: no variable moduleChoice
 		flag = (self.method != 3)
@@ -376,15 +360,13 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 
 	def initializeGUI(self):
 		"""
-		Created: 28.04.2005, KP
-		Description: Initialization
+		Initialization
 		"""          
 		pass
 		
 	def setModule(self, module):
 		"""
-		Created: 28.04.2005, KP
-		Description: Set the module to be configured
+		Set the module to be configured
 		"""  
 		ModuleConfigurationPanel.setModule(self, module)
 		#print "module=",module

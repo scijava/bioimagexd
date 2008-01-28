@@ -45,8 +45,7 @@ class Mask:
 	"""
 	def __init__(self, name, size, image):
 		"""
-		Created: 20.06.2006, KP
-		Description: Initialization
+		Initialization
 		"""
 		self.name = name
 		self.size = size
@@ -57,15 +56,13 @@ class Mask:
 		
 	def getMaskImage(self):
 		"""
-		Created: 26.06.2006, KP
-		Description: Return the mask image
+		Return the mask image
 		"""   
 		return self.image
 		
 	def getAsBitmap(self, bg = wx.Colour(255, 255, 255)):
 		"""
-		Created: 20.06.2006, KP
-		Description: Return a preview bitmap of the mask
+		Return a preview bitmap of the mask
 		"""           
 		preview = lib.ImageOperations.getMIP(self.image, self.ctf)
 		preview = lib.ImageOperations.vtkImageDataToWxImage(preview)
@@ -103,8 +100,7 @@ class MaskTray(wx.MiniFrame):
 	"""
 	def __init__(self, parent, **kws):
 		"""
-		Created: 20.06.2006, KP
-		Description: Initialization
+		Initialization
 		"""          
 		wx.MiniFrame.__init__(self, parent, -1, "Mask selection", size = (400, 200), style = wx.DEFAULT_FRAME_STYLE)
 				
@@ -148,16 +144,14 @@ class MaskTray(wx.MiniFrame):
 		
 	def onSetNoMask(self, evt):
 		"""
-		Created: 26.06.2006, KP
-		Description: Disable the use of masks
+		Disable the use of masks
 		"""   
 		self.dataUnit.setMask(None)
 		self.Close(True)
 		
 	def addMask(self, mask = None, name = "Mask", imagedata = None):
 		"""
-		Created: 20.06.2006, KP
-		Description: Add a mask to the tray
+		Add a mask to the tray
 		"""   
 #		if not mask and (name and imagedata):
 #			m = Mask(name, imagedata.GetDimensions(), imagedata)
@@ -186,8 +180,7 @@ class MaskTray(wx.MiniFrame):
 		
 	def onToggleButton(self, evt):
 		"""
-		Created: 20.06.2006, KP
-		Description: A callback for when the user toggles a button
+		A callback for when the user toggles a button
 		"""   
 		for i, btn in enumerate(self.buttons):
 			if btn.GetId() != evt.GetId():
@@ -197,15 +190,13 @@ class MaskTray(wx.MiniFrame):
 				
 	def setDataUnit(self, dataUnit):
 		"""
-		Created: 20.06.2006, KP
-		Description: Set the dataunit to which the selected mask will be applied
+		Set the dataunit to which the selected mask will be applied
 		"""   
 		self.dataUnit = dataUnit
 		
 	def onSelectMask(self, evt):
 		"""
-		Created: 20.06.2006, KP
-		Description: A callback for when the user has selected a mask
+		A callback for when the user has selected a mask
 		"""   
 		if self.selectedMask:
 			self.dataUnit.setMask(self.selectedMask)
@@ -213,7 +204,6 @@ class MaskTray(wx.MiniFrame):
 		
 	def onCancel(self, evt):
 		"""
-		Created: 20.06.2006, KP
-		Description: A callback for when the user wishes to cancel the selection
+		A callback for when the user wishes to cancel the selection
 		"""   
 		self.Close(True)

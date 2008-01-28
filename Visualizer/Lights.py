@@ -42,8 +42,7 @@ class Light:
 		
 	def __getState__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getState method that saves the lights
+		A getState method that saves the lights
 		"""            
 		self.save()
 		odict = {"saved":self.saved}
@@ -51,8 +50,7 @@ class Light:
 		
 	def __set_pure_state__(self, state):
 		"""
-		Created: 02.08.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""
 		self.saved = state.saved
 		self.restore()
@@ -805,16 +803,14 @@ class LightManager:
 		
 	def __getState__(self):
 		"""
-		Created: 02.08.2005, KP
-		Description: A getState method that saves the lights
+		A getState method that saves the lights
 		"""            
 		odict = {"lights":self.lights}
 		return odict
 
 	def __set_pure_state__(self, state):
 		"""
-		Created: 11.04.2005, KP
-		Description: Set the state of the light
+		Set the state of the light
 		"""
 		for i, light in enumerate(state.lights):
 			self.lights[i].__set_pure_state__(light)

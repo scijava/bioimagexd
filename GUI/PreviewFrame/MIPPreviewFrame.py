@@ -55,8 +55,7 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 	count = 0
 	def __init__(self, parent, **kws):
 		"""
-		Created: 03.11.2004, KP
-		Description: Initialize the panel
+		Initialize the panel
 		"""
 		self.mip = None
 		PreviewFrame.PreviewFrame.__init__(self, parent, **kws)
@@ -64,8 +63,7 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 
 	def getVoxelValue(self, event):
 		"""
-		Created: 23.05.2005, KP
-		Description: Send an event containing the current voxel position
+		Send an event containing the current voxel position
 		"""
 		self.rawImage = self.currentImage
 		self.rawImages = [self.rawImage]
@@ -74,22 +72,19 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 
 	def setPreviewedSlice(self, obj, event, newz = -1):
 		"""
-		Created: 4.11.2004, KP
-		Description: Sets the preview to display the selected z slice
+		Sets the preview to display the selected z slice
 		"""
 		self.z = -1
 	def setZSlice(self, z):
 		"""
-		Created: 24.03.2005, KP
-		Description: Sets the optical slice to preview
+		Sets the optical slice to preview
 		"""
 		self.z = -1
 		
 
 	def processOutputData(self, data):
 		"""
-		Created: 03.04.2005, KP
-		Description: Process the data before it's send to the preview
+		Process the data before it's send to the preview
 		"""
 		data.UpdateInformation()
 		if not self.mip:
