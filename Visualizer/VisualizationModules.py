@@ -46,7 +46,6 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""
 		self.processInputText = "Task output"
-		lib.ProcessingFilter.ProcessingFilter.__init__(self, changeCallback = self.parameterChanged)
 		self.name = kws["label"]
 
 		self.moduleName = kws["moduleName"]
@@ -62,11 +61,14 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		self.view = None
 		self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
 		self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
+		
+
 		self.inputs = []
 		self.dataUnit = None
 		self.inputIndex = 0
 		self.data = None
 		self.vtkObjects = []
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, changeCallback = self.parameterChanged)
 
 	def set(self, parameter, value):
 		"""

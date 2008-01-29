@@ -306,13 +306,14 @@ class VolumeModule(VisualizationModule):
 		Set the input channel for input #inputNum
 		"""			   
 		VisualizationModule.setInputChannel(self, inputNum, chl)
-		inputDataUnit = self.getInputDataUnit(1)
-		if not inputDataUnit:
-			inputDataUnit = self.dataUnit
-		self.colorTransferFunction =	ctf = inputDataUnit.getColorTransferFunction()
-		lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
-			 
-		self.volumeProperty.SetColor(self.colorTransferFunction)
+		if self.dataUnit:
+			inputDataUnit = self.getInputDataUnit(1)
+			if not inputDataUnit:
+				inputDataUnit = self.dataUnit
+			self.colorTransferFunction =	ctf = inputDataUnit.getColorTransferFunction()
+			lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
+				 
+			self.volumeProperty.SetColor(self.colorTransferFunction)
 
 		
 	def updateInterpolation(self):
