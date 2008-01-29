@@ -93,7 +93,7 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
 
   const char* GetFileExtensions();
   int GetImageCount();
-  long GetFileSize();
+  unsigned long long GetFileSize();
   int GetChannelCount(int);
   int GetChannelCount();
   int GetDimensionCount(int);
@@ -153,7 +153,7 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
 // Protected attributes
   ifstream *File;
   char *FileName;
-  long FileSize;
+  unsigned long long FileSize;
   int HeaderInfoRead;
   int CurrentImage;
   int CurrentChannel;
@@ -161,7 +161,7 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   DimensionVector *Dimensions;
   ChannelVector *Channels;
   ImageVector *Images;
-  vtkUnsignedIntArray *Offsets;
+  vtkUnsignedLongLongArray *Offsets;
   vtkUnsignedLongLongArray *ImageSizes;
   int ImageDims[4];
   double ImageVoxels[3];
