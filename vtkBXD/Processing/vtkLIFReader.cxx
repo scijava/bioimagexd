@@ -167,7 +167,7 @@ int vtkLIFReader::OpenFile()
   this->Channels = new ChannelVector;
   this->Dimensions = new DimensionVector;
   this->Images = new ImageVector;
-  this->Offsets = vtkUnsignedIntArray::New();
+  this->Offsets = vtkUnsignedLongLongArray::New();
   this->ImageSizes = vtkUnsignedLongLongArray::New();
   this->Modified();
   
@@ -206,7 +206,7 @@ int vtkLIFReader::GetImageCount()
   return this->Images->size();
 }
 
-long vtkLIFReader::GetFileSize()
+unsigned long long vtkLIFReader::GetFileSize()
 {
   return this->FileSize;
 }
@@ -462,9 +462,11 @@ int vtkLIFReader::ReadLIFHeader()
   if (this->HeaderInfoRead) return 1;
 
   // Check LIF test value from first 4 bytes of file
-  long lifCheck = this->ReadInt(this->File);
+  int lifCheck = this->ReadInt(this->File);
   if (lifCheck != MemBlockCode) {
-    vtkErrorMacro(<< "ReadLIFHeader: File contains wrong MemBlockCode: " << lifCheck);
+	long long fileOffset = this->File->tellg();
+	fileOffset -= 4;
+    vtkErrorMacro(<< "ReadLIFHeader: File contains wrong MemBlockCode: " << lifCheck << " at: " << fileOffset);
     return 0;
   }
 
@@ -474,10 +476,13 @@ int vtkLIFReader::ReadLIFHeader()
   // Check memblock separator code and read xml size
   char lifChar = this->ReadChar(this->File);
   if (lifChar != TestCode) {
-    vtkErrorMacro(<< "ReadLIFHeader: File contains wrong TestCode" << lifChar);
+	long long fileOffset = this->File->tellg();
+	fileOffset -= 1;
+    vtkErrorMacro(<< "ReadLIFHeader: File contains wrong TestCode: " << lifChar << " at: " << fileOffset);
     return 0;
   }
-  unsigned long xmlChars = this->ReadUnsignedInt(this->File) * 2;
+
+  unsigned int xmlChars = this->ReadUnsignedInt(this->File) * 2;
   char *xmlHeader = new char[xmlChars];
   // Read and parse xml header
   this->File->read(xmlHeader,xmlChars);
@@ -492,14 +497,10 @@ int vtkLIFReader::ReadLIFHeader()
     // Check LIF test value
     lifCheck = this->ReadInt(this->File);
 
-	// DEBUG
-	long readBlock = this->File->tellg();
-	readBlock -= 4;
-	cout << "ReadLIFHeader: Read MemBlockCode (" << readBlock << "): " << lifCheck << endl;
-	// END DEBUG
-
     if (lifCheck != MemBlockCode) {
-      vtkErrorMacro(<< "ReadLIFHeader: File contains wrong MemBlockCode: " << lifCheck);
+	  long long fileOffset = this->File->tellg();
+	  fileOffset -= 4;
+      vtkErrorMacro(<< "ReadLIFHeader: File contains wrong MemBlockCode: " << lifCheck << " at: " << fileOffset);
       return 0;
     }
   
@@ -508,7 +509,9 @@ int vtkLIFReader::ReadLIFHeader()
     // Read testcode
     lifChar = this->ReadChar(this->File);
     if (lifChar != TestCode) {
-      vtkErrorMacro(<< "ReadLIFHeader: File contains wrong TestCode " << lifChar);
+	  long long fileOffset = this->File->tellg();
+	  fileOffset -= 1;
+      vtkErrorMacro(<< "ReadLIFHeader: File contains wrong TestCode: " << lifChar << " at: " << fileOffset);
       return 0;
     }
   
