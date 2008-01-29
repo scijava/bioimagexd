@@ -53,38 +53,7 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [ "Thresholds:", ["", ("HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold")]]
 		
-	def getXMLDescription(self):
-		"""
-		return XMl describing this filter's GUI
-		"""
-		return """
-<Filter name="Solitary filter">
-	<Parameters>
-		<Param id="HorizontalThreshold" type="Integer" defaultValue="0" />
-		<Param id="VerticalThreshold" type="Integer" defaultValue="0"  />
-		<Param id="ProcessingThreshold" type="Integer"  defaultValue="0" />
-	</Parameters>
-	<UserInterface>
-		<Grouping label="Thresholds">
-			<Input id="HorizontalThreshold" label="X:"/>
-			<Input id="VerticalThreshold" label="Y:"/>
-			<Input id="ProcessingThreshold" label="Processing threshold:" />
-		</Grouping>
-	</UserInterface>
-	<Descriptions>
-		<LongDesc id="HorizontalThreshold">
-			Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed.
-		</LongDesc>
-		<LongDesc id="VerticalThreshold">
-			Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed.
-		</LongDesc>
-		<LongDesc id="ProcessingThreshold">
-			Threshold that a pixel needs to be over to get processed by solitary filter.
-		</LongDesc>
-	</Descriptions>
-</Filter>
-"""
-		
+
 	def getDesc(self, parameter):
 		"""
 		Return the description of the parameter

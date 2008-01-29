@@ -544,7 +544,6 @@ class ProcessingFilter:
 		"""
 		Set the input channel for input #inputNum
 		"""
-
 		self.inputMapping[inputNumber] = channel
 		
 	def getInputName(self, n):
