@@ -205,5 +205,4 @@ class BXCDataWriter(DataWriter):
 			Logging.error("Failed to write image data",
 			"Failed to write vtkImageData object to file %s" % self.filename, ex)
 			return
-		print "done"
 

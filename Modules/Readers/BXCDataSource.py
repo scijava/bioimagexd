@@ -223,11 +223,9 @@ class BXCDataSource(DataSource):
 			# A SafeConfigParser is used to parse the .du-file
 			self.parser = MyConfigParser()
 			self.parser.read([filename])
-			# First, the DataUnit format is checked
-			try:
-				dataUnitFormat = self.parser.get("Type", "Type")
-			except ConfigParser.NoOptionError:
-				dataUnitFormat = self.parser.get("Type", "type")
+			dataUnitFormat = "NOOP"
+			if self.parser.has_option("Type","Type"):
+				dataUnitFormat = self.parser.get("Type","Type")
 		except ConfigParser.ParsingError, ex:
 			#Logging.error("Failed to open file for reading",
 			#"BXCDataSource failed to open %s for reading. Reason: %s"%(filename, str(ex)))
