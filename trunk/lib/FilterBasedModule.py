@@ -471,6 +471,6 @@ class FilterBasedModule(lib.Module.Module):
 			data = lastfilter.convertITKtoVTK(data)
 
 		filterlist.setModified(0)
-		#data.ReleaseDataFlagOff()
 		
+		print "data=",data
 		return data
