@@ -797,13 +797,14 @@ class MainWindow(wx.Frame):
 			for i in range(0, n):
 				data = dataUnit.getTimepoint(i)
 				writer.addImageData(data)
+				writer.sync()
 			parser = writer.getParser()
 			
 			dataUnit.getSettings().set("Name", dataUnit.getName())
 			dataUnit.updateSettings()
 			dataUnit.getSettings().writeTo(parser)
 			writer.write()
-			writer.sync()
+		
 			
 			bxdwriter.addChannelWriter(writer)
 		bxdwriter.write()
