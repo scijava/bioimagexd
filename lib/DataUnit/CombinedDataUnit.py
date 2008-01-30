@@ -359,11 +359,6 @@ class CombinedDataUnit(DataUnit):
 		# processing
 		showOrig = self.settings.get("ShowOriginal")
 
-#		if not showOrig and self.doOrig:
-#			self.doOrig = 0
-#			Logging.info("Returning saved preview", kw = "dataunit")
-#			return self.origPreview
-			
 		# If the requested output channels have been specified,
 		# then we map those through their corresponding ctf's
 		# to be merged to the output
@@ -413,7 +408,7 @@ class CombinedDataUnit(DataUnit):
 					self.module.addInput(dataunit, image)
 			Logging.info("Getting preview from module %s"%str(self.module), kw="dataunit")
 			preview = self.module.getPreview(depth)
-
+		isMultiComponent = preview.GetNumberOfScalarComponents()>1
 
 		if not self.merging and self.outputChannels:
 			if preview:
@@ -432,7 +427,7 @@ class CombinedDataUnit(DataUnit):
 					self.merge.AddLookupTable(ctf)
 				preview = self.merge.GetOutput()
 				
-			elif len(merged) == 1 and scripting.preferRGB:
+			elif len(merged) == 1 and scripting.preferRGB and not isMultiComponent:
 				Logging.info("Mapping the output to color",kw="dataunit")
 				data, ctf = merged[0]
 				if not self.maptocolor:
