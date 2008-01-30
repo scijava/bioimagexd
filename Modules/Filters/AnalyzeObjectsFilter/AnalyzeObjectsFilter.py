@@ -7,7 +7,7 @@ import itk
 import vtkbxd
 import WatershedStatisticsList
 import wx
-import  os
+import os
 import codecs
 import Logging
 import csv
@@ -164,14 +164,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save segmentation statistics as", \
 													"%s.csv" % name, "CSV File (*.csv)|*.csv")
 		if filename and self.taskPanel:
-			listOfFilters = self.taskPanel.getFilters(self.name)
+			listOfFilters = self.taskPanel.filterList.getFilters()
 			filterIndex = listOfFilters.index(self)
 			if len(listOfFilters) == 1:
-				func = "getFilter('%s')" % self.name
+				func = "getFilter()"
 			else:
-				func = "getFilter('%s', %d)" % (self.name, filterIndex)
+				func = "getFilter(%d)" %(filterIndex)
 			n = scripting.mainWindow.currentTaskWindowName
-			method="scripting.mainWindow.tasks['%s'].%s"%(n,func)
+			method="scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
 		
 			do_cmd = "%s.exportStatistics('%s')" % ( method, filename )
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
