@@ -49,7 +49,7 @@ import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
 import TrackingFilters
-import RegistrationFilters
+#import RegistrationFilters removed
 
 from lib.FilterTypes import *
 
@@ -143,7 +143,7 @@ def getFilterList():
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
 	filterlist += TrackingFilters.getFilters()
-	filterlist += RegistrationFilters.getFilters()
+	#filterlist += RegistrationFilters.getFilters() removed
 	return filterlist
 
 
