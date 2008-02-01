@@ -440,7 +440,7 @@ class MainWindow(wx.Frame):
 			index = tp.GetCurrentTip()
 			conf.setConfigItem("ShowTip", "General", showTip)
 			conf.setConfigItem("TipNumber", "General", index)
-			
+
 	def onTreeSelectionChanged(self, obj, evt, data):
 		"""
 		A method for updating the dataset based on tree selection
@@ -458,12 +458,13 @@ class MainWindow(wx.Frame):
 		for i in dataunits.keys():
 			names = [x.getName() for x in dataunits[i]]
 			filename = i.replace("'", "\\'")
-			do_cmd += "\n" + "mainWindow.fileTree.selectChannelsByName(ur'%s', %s)" % (filename, str(names))
+			do_cmd += "\n" + "mainWindow.fileTree.selectChannelsByName(r'%s', %s)" % (filename, str(names))
 		undo_cmd = ""
+
 		cmd = lib.Command.Command(lib.Command.MGMT_CMD, None, None, do_cmd, \
 									undo_cmd, desc = "Unselect all in file tree")
 		cmd.run(recordOnly = 1)
-		
+
 		tb = self.GetToolBar()
 		if data.dataSource.getResampleDimensions() != None:
 			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)
@@ -717,7 +718,7 @@ class MainWindow(wx.Frame):
 			if module.isDefaultMode():
 				self.defaultModeName = name
 			bmp = wx.Image(os.path.join(iconpath, iconName)).ConvertToBitmap()
-			vid = self.visToId[name] 
+			vid = self.visToId[name]
 			
 			sepBefore, sepAfter = module.showSeparator()
 			if sepBefore:
@@ -1066,7 +1067,7 @@ class MainWindow(wx.Frame):
 		else:
 			self.scriptEditor = ScriptEditor.ScriptEditorFrame(self)
 			self.scriptEditor.Show()
-		
+
 		
 	def onMenuHideInfo(self, evt):
 		"""
