@@ -1282,7 +1282,11 @@ class Visualizer:
 													wildCard,
 													"snapshotImage")
 			if filename:
-				do_cmd = "scripting.visualizer.saveSnapshot(ur'%s')" % filename
+				if platform.system() == "Windows":
+					filename = filename.encode('mbcs')
+				else:
+					filename = filename.encode(sys.getfilesystemencoding())
+				do_cmd = "scripting.visualizer.saveSnapshot(r'%s')" % filename
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Save a snapshot of the visualizer")
 				cmd.run()
 
