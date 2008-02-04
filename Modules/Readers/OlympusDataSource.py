@@ -60,7 +60,7 @@ class OlympusDataSource(DataSource):
 					reverse = 0, emission = 0, excitation = 0, bitdepth = 12):
 		"""
 		Constructor
-		"""	   
+		"""
 		DataSource.__init__(self)
 		self.channel = channel
 		
@@ -211,14 +211,15 @@ class OlympusDataSource(DataSource):
 		tpat = ""
 		cpat = os.path.sep + "%s_C%.3d" % (self.fileNameBase, self.channel)
 		path += cpat
-		
+
 		if self.dimensions[2] > 1:
 			zpat = "Z%.3d"
-		if self.timepoints > 0:
+		if self.timepoints > 1:
 			tpat = "T%.3d"%(timepointIndex+1)
 		pat = path + zpat + tpat + ".tif"
 		
 		self.reader.SetFilePattern(pat)
+
 		if self.reverseSlices and 0:
 			#print "offset=",self.dimensions[2]
 			self.reader.SetFileNameSliceOffset(self.dimensions[2])
