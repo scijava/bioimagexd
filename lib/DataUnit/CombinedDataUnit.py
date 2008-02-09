@@ -42,10 +42,8 @@ import os.path
 
 class CombinedDataUnit(DataUnit):
 	"""
-	Created: 03.11.2004, JM
 	Description: Base class for combined 4d data.
 	"""
-
 	def __init__(self, name = ""):
 		"""
 		Constructor
@@ -143,7 +141,7 @@ class CombinedDataUnit(DataUnit):
 		Sets the settings object of this dataunit
 		"""
 		self.settings = settings
-		self.settings.initialize(self, len(self.sourceunits), self.length)
+		self.settings.initialize(self, len(self.sourceunits), self.getNumberOfTimepoints())
 		
 
 	def setDataSource(self, dataSource):
@@ -282,9 +280,13 @@ class CombinedDataUnit(DataUnit):
 		# If one or more SourceDataUnits have already been added, check that the
 		# new SourceDataUnit has the same length as the previously added one(s):
 		
-		if (self.length != 0) and (self.length != dataUnit.length):
-			# XXX: Raise
-			print "Given dataunit had wrong length (%d != %d)" % (self.length, dataUnit.length)
+#		if (self.getNumberOfTimepoints() != 0) and (self.getNumberOfTimepoints() != dataUnit.getNumberOfTimepoints()):
+#			# XXX: Raise
+#			print "Given dataunit had wrong length (%d != %d)" % (self.getNumberOfTimepoints(), dataUnit.getNumberOfTimepoints())
+
+		# Let's just use the smallest number of timepoints as a starting point
+		if not self.getNumberOfTimepoints() or (self.getNumberOfTimepoints() > dataUnit.getNumberOfTimepoints()):
+			self.setNumberOfTimepoints(dataUnit.getNumberOfTimepoints())
 
 		if self.checkDimensions and self.currentDimensions and self.currentDimensions != dataUnit.getDimensions():
 			raise Logging.GUIError("Datasets have different dimensions", \
@@ -304,12 +306,10 @@ class CombinedDataUnit(DataUnit):
 		dataUnit.setSettings(setting)
 		# Fetch correct settings for the dataunit from the datasource
 		dataUnit.updateSettings()
-		# If we just added the first SourceDataUnit, this sets the correct length
-		# for the entire CombinedDataUnit. If not, it doesn't change anything.
-		self.length = dataUnit.length
+
 		if not no_init:
 			for unit in self.sourceunits:
-				unit.getSettings().initialize(unit, count + 1, unit.getNumberOfTimepoints())		
+				unit.getSettings().initialize(unit, count + 1, unit.getNumberOfTimepoints())
 			self.settings.initialize(self, count, self.sourceunits[0].getNumberOfTimepoints())
 		
 	def switchSourceDataUnits(self, units):
@@ -325,10 +325,7 @@ class CombinedDataUnit(DataUnit):
 		self.sourceunits = []
 		#self.byName = {}
 		for i, unit in enumerate(units):
-			#oldunit = oldsources[i]
 			self.addSourceDataUnit(unit, no_init = 1)
-			#unit.getSettings().copySettings(oldunit.getSettings())
-			#self.sourceunits.append(unit)
 		for i in self.sourceunits:
 			i.getSettings().set("ColorTransferFunction", i.getColorTransferFunction())
 		self.checkDimensions = chkDims

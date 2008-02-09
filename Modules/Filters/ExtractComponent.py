@@ -53,11 +53,6 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""            
 		return [["", ("Component1", "Component2", "Component3")]]
 		
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""    
-		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""

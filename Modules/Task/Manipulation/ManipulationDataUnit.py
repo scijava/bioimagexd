@@ -44,7 +44,24 @@ class ManipulationDataUnit(CombinedDataUnit):
 		CombinedDataUnit.__init__(self, name)
 		self.original = None
 		self.initialized = 0
-
+		self.modifiedDimensions = None
+		
+	def setModifiedDimensions(self, dims):
+		"""
+		Set the dimensions reported by this combined dataunit
+		"""
+		self.modifiedDimensions = dims
+		
+	def getDimensions(self):
+		"""
+		An method for getting the dataunit dimensions that can be overriden 
+		"""
+		if not self.modifiedDimensions:
+			return CombinedDataUnit.getDimensions(self)
+		else:
+			return self.modifiedDimensions
+		
+		
 	def setOriginal(self, datasource):
 		"""
 		Sets the original DataUnit for this ManipulationedSourceDataUnit

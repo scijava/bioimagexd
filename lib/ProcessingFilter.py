@@ -100,8 +100,6 @@ class ProcessingFilter:
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
 		
-		# self.itk = 0
-		
 	def resetFilters(self):
 		"""
 		reset the filter instances
@@ -498,9 +496,10 @@ class ProcessingFilter:
 		"""
 		return the current timepoint 
 		"""
-		timePoint = scripting.visualizer.getTimepoint()
 		if scripting.processingTimepoint != -1:
 			timePoint = scripting.processingTimepoint
+		else:
+			timePoint = scripting.visualizer.getTimepoint()
 		return timePoint
 		
 	def getInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):

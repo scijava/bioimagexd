@@ -597,12 +597,12 @@ class MainWindow(wx.Frame):
 		if text:
 			self.statusbar.SetStatusText(text)
 			self.statusbar.Update()
-		if allow_gui:
-			if self.visualizer:
-				self.visualizer.in_vtk = 0
-		else:
-			if self.visualizer:
-				self.visualizer.in_vtk = 1
+#		if allow_gui:
+#			if self.visualizer:
+#				self.visualizer.in_vtk = 0
+#		else:
+#			if self.visualizer:
+#				self.visualizer.in_vtk = 1
 				
 	def clearProgressBar(self,*args):
 		"""
@@ -1283,7 +1283,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Callback function for menu item "Preferences"
 		"""
 		self.settingswindow = SettingsWindow.SettingsWindow(self)
-		self.settingswindow.ShowModal()
+		self.settingswindow.Show()
 
 	def onMenuVisualizer(self, evt):
 		"""

@@ -31,6 +31,10 @@ import types
 import random
 import math
 import vtk
+import os
+import codecs
+import Logging
+import csv
 
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -44,6 +48,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		self.imageCache = {}
 		self.descs = {"X":"X:", "Y":"Y:", "Z":"Z:","Time":"Number of timepoints",
 		"Coloc":"Create colocalization between channels", 
 		"ColocAmountStart":"Coloc. amnt (at start)",
@@ -62,17 +67,27 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ObjectFluctuationEnd":"Max. change in object #",
 		"RandomMovement":"Move randomly",
 		"MoveTowardsPoint":"Move towards a point",
-		"Clustering":"Objects should cluster"}
+		"TargetPoints":"# of target points",
+		"Clustering":"Objects should cluster",
+		"SpeedStart":"Obj. min speed (in px)",
+		"SpeedEnd":"Obj. max speed (in px)",
+		"SizeChange":"Size change (in %)",
+		"ClusterPercentage":"% of objects cluster",
+		"ClusterDistance":"Min. distance for clustering (in px)",
+		"Cache":"Cache timepoints",
+		"CacheAmount":"# of timepoints cached",
+		"CreateAll":"Create all timepoints at once"}
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [ ["Dimensions",("X","Y","Z","Time")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
+		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
 			["Noise",("ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
-			["Objects",("NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd")],
+			["Objects",("NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange")],
 			["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
-			["Movement strategy",("RandomMovement","MoveTowardsPoint","Clustering")],
+			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
+			["Clustering",("Clustering","ClusterPercentage","ClusterDistance")],
 		]
 		
 	def setParameter(self, parameter, value):
@@ -83,12 +98,18 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.parameters.get(parameter)!=value:
 			self.modified = 1
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
-		if parameter == "Time":
-			if self.dataUnit and self.initDone:
+		if parameter in ["Time", "X","Y","Z"]:
+			if self.dataUnit:
 				self.dataUnit.setNumberOfTimepoints(value)
-				scripting.visualizer.setTimeRange(1,value)
-		
-		#if modified and self.initDone:
+				self.dataUnit.setModifiedDimensions((self.parameters["X"], self.parameters["Y"], self.parameters["Z"]))
+				lib.messenger.send(None, "update_dataset_info")
+				
+	def onRemove(self):
+		"""
+		A callback for stuff to do when this filter is being removed.
+		"""
+		self.dataUnit.setModifiedDimensions(None)
+				
 	def getLongDesc(self, parameter):
 		"""
 		Return a long description of the parameter
@@ -99,12 +120,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""	   
-		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount"]:
+		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage"]:
 			return types.FloatType
 		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd"]:
 			return types.IntType
 			
-		if parameter in ["Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering"]:
+		if parameter in ["Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll"]:
 			return types.BooleanType
 			
 		return types.IntType
@@ -114,12 +135,23 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the default value of a parameter
 		"""		
 		if parameter in ["X","Y"]:return 512
+		if parameter == "Cache": return True
+		if parameter == "CacheAmount": return 15
+		if parameter == "CreateAll": return True
 		if parameter == "Z": return 25
-		if parameter == "Time": return 5
+		if parameter == "TargetPoints": return 1
+		if parameter == "Time": return 15
+		if parameter == "Clustering": return True
 		if parameter == "ColocAmountStart": return 1
+		if parameter == "ClusterPercentage": return 20
+		if parameter == "ClusterDistance":return 30
 		if parameter == "ColocAmountEnd": return 50
+		if parameter == "MoveTowardsPoint":return True
 		if parameter == "ShotNoiseAmount": return 0.1
 		if parameter == "ShotNoiseMin": return 128
+		if parameter == "SizeChange": return 5
+		if parameter == "SpeedStart": return 2
+		if parameter == "SpeedEnd": return 10
 		if parameter == "BackgroundNoiseAmount": return 5
 		if parameter == "BackgroundNoiseMin": return 1
 		if parameter == "BackgroundNoiseMax": return 30
@@ -141,8 +173,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		self.modified = 0
 		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
-		self.majorAxis = random.randint(int(0.15*y), int(0.85*y))
+		self.majorAxis = random.randint(int(0.55*y), int(0.85*y))
 		
+		
+		for image in self.imageCache.values():
+			image.ReleaseData()
+		self.imageCache = {}
 		self.jitters = []
 		self.shifts = []
 		self.objects = []
@@ -151,6 +187,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		shiftAmnt = 0
 		for tp in range(0, self.parameters["Time"]):
 			if self.parameters["Shift"]:
+				print "Creating shift amounts for timepoint %d"%tp
 				# If shifting is requested, then in half the cases, create some jitter
 				# meaning shift of 1-5 pixels in X and Y and 0-1 pixels in Z
 				if random.random()<0.5:
@@ -183,40 +220,180 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					x,y,z = self.shifts[-1]
 					z+=random.randint(2,5)*direction
 					self.shifts[-1] = (x,y,z)
+			else:
+				self.shifts.append((0,0,0))
 				
+			print "Creating objects for timepoint %d"%tp
 			objs = self.createObjectsForTimepoint(tp)
+			if self.parameters["ObjectFluctuationEnd"]:
+				print "Adding fluctuations to object numbers"
+				objs = self.createFluctuations(objs)
 			self.objects.append(objs)
+			
+		if self.parameters["Clustering"]:
+			print "Introducing clustering"
+			self.clusterObjects(self.objects)
 	
+	def clusterObjects(self, objects):
+		"""
+		Create clustering of objects
+		"""
+		combine=[]
+		clustered={}
+		for tp,objs in enumerate(objects):
+			for i, ((x,y,z), size) in enumerate(objs):
+				for j, ((x2,y2,z2),size) in enumerate(objs):
+					if i==j:continue
+					if (tp,i) in clustered or (tp,j) in clustered: continue
+					d = math.sqrt((x2-x)**2+(y2-y)**2+(z2-z)**2)
+					if d < self.parameters["ClusterDistance"]:
+						if random.random()*100<self.parameters["ClusterPercentage"]:
+							combine.append((tp,i,j))
+							clustered[(tp,i)]=1
+							clustered[(tp,j)]=1
+		toremove=[]
+		for tp,i,j in combine:
+			ob1 = objects[tp][i]
+			ob2 = objects[tp][j]
+			toremove.append((tp,ob1,ob2))
+			(x1,y1,z1),s1 = ob1
+			(x2,y2,z2),s2 = ob2
+			s3 = int((s1+s2)*0.7)
+			x3 = (x1+x2)/2
+			y3 = (y1+y2)/2
+			z3 = (z1+z2)/2
+			objects[tp].append(((x3,y3,z3), s3))
+
+		for tp,ob1,ob2 in toremove:
+			objects[tp].remove(ob1)
+			objects[tp].remove(ob2)
+				
+	def createFluctuations(self, objects):
+		"""
+		Create fluctuations in the number of objects
+		"""
+		removeN = random.randint(self.parameters["ObjectFluctuationStart"],self.parameters["ObjectFluctuationEnd"])
+		addN = random.randint(self.parameters["ObjectFluctuationStart"],self.parameters["ObjectFluctuationEnd"])
+		
+		for i in range(0, removeN):
+			obj = random.choice(objects)
+			objects.remove(obj)
+		print "Removed",removeN,"objects"
+		for i in range(0, addN):
+			objects.append(self.createObject())
+		print "Added",addN,"objects"
+			
 	def createObjectsForTimepoint(self, tp):
 		"""
 		Create objects for given timepoint
 		"""
+		objs = []
+		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
+		coeff = z/float(x)
+		if tp == 0:
+			if self.parameters["MoveTowardsPoint"]:
+				self.towardsPoints = []
+				for c in range(0, self.parameters["TargetPoints"]):
+					print "Getting point toward which to move"
+					rx, ry, rz = self.getPointInsideCell()
+					print "it's",rx,ry,rz
+					self.towardsPoints.append((rx,ry,rz))
+					
+			self.numberOfObjects = random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])
+			for obj in range(0, self.numberOfObjects):
+				print "Creating object %d"%obj
+				(rx,ry,rz), size = self.createObject()
+				objs.append( ((rx,ry,rz), size ))
+		else:
+			for (rx,ry,rz),size in self.objects[tp-1]:
+				if self.parameters["RandomMovement"]:
+					speedx = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					speedy = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					speedz = random.choice([-1,1])*coeff*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+				elif self.parameters["MoveTowardsPoint"]:
+					nearest = None
+					smallest=2**31
+					for (x,y,z) in self.towardsPoints:
+						d = math.sqrt((x-rx)**2+(y-ry)**2+(z-rz)**2)
+						if d < smallest:
+							smallest = d
+							nearest = (x,y,z)
+					speedx = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					speedy = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					speedz = coeff*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					if rx>nearest[0]:
+						speedx *= -1
+					if ry>nearest[1]:
+						speedy *= -1
+					if ry>nearest[2]:
+						speedz *= -1
+				rx+=speedx
+				ry+=speedy
+				rz+=speedz
+				if rx<0:x=0
+				if ry<0:y=0
+				if rz<0:z=0
+				if rx>=self.parameters["X"]:rx=self.parameters["X"]-1
+				if ry>=self.parameters["Y"]:rx=self.parameters["Y"]-1
+				if rz>=self.parameters["Z"]:rx=self.parameters["Z"]-1
+				
+				if self.parameters["SizeChange"]:
+					maxchange = int(size*(self.parameters["SizeChange"]/100.0))
+					change = random.randint(0, maxchange)
+					if random.random()<0.5:change*=-1
+					size+=change
+				objs.append(((rx,ry,rz),size))
+		return objs
 		
-			
-	def createData(self):
+	def createObject(self):
+		rx, ry, rz = self.getPointInsideCell()
+		sizeStart = self.parameters["ObjSizeStart"]
+		sizeEnd = self.parameters["ObjSizeEnd"]
+		size = random.randint(sizeStart, sizeEnd)
+		return ((rx,ry,rz),size)
+		
+	def getPointInsideCell(self):
+		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
+		while 1:
+			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
+			if self.pointInsideEllipse((rx,ry,rz), self.majorAxis):
+				break
+		return rx,ry,rz
+		
+		
+	def createData(self, currentTimepoint):
 		"""
 		Create a test dataset within the parameters defined
 		"""
+		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
 		if self.modified:
+			print "Creating the time series data"
 			self.createTimeSeries()
-		currentTimePoint = self.getCurrentTimepoint()
-		print "\n\nGenerating timepoint %d"%currentTimepoint
+			if self.parameters["CreateAll"]:
+				n = min(self.parameters["CacheAmount"], self.parameters["Time"])
+				for i in range(0, n):
+					if i == currentTimepoint: 
+						print "Won't create timepoint %d, it'll be last"%i
+						continue
+					self.createData(i)
 
+		print "\n\nGenerating timepoint %d"%currentTimepoint
+		
+		if currentTimepoint in self.imageCache:
+			print "Returning cached image"
+			return self.imageCache[currentTimepoint]
 		image = vtk.vtkImageData()
 		image.SetScalarTypeToUnsignedChar()
 		x,y,z = self.parameters["X"], self.parameters["Y"], self.parameters["Z"]
 		image.SetDimensions((x,y,z))
+		image.AllocateScalars()
 		
 		print "Initializing image"
-		#for iz in range(0,z):
-		#	for iy in range(0,y):
-		#		for ix in range(0,x):
-		#			image.SetScalarComponentFromDouble(ix,iy,iz, 0,0)
-		mult = vtk.vtkImageMath()
-		mult.SetOperationToMultiplyByK()
-		mult.SetConstantK(0)
-		mult.SetInput(image)
-		image = mult.GetOutput()
+		for iz in range(0,z):
+			for iy in range(0,y):
+				for ix in range(0,x):
+					image.SetScalarComponentFromDouble(ix,iy,iz, 0,0)
+
 		print "Creating shot noise"
 		noisePercentage = self.parameters["ShotNoiseAmount"]
 		noiseAmount=(noisePercentage/100.0)*(x*y*z)
@@ -231,21 +408,24 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			image.SetScalarComponentFromDouble(rx,ry,rz, 0, random.randint(self.parameters["BackgroundNoiseMin"],self.parameters["BackgroundNoiseMax"]))
 			noiseAmount-=1
 
-		shiftx, shifty, shiftz = self.shifts[currentTimePoint]
+		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
 		print "Creating objects"
-		for i in range(0, random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])):
-			while 1:
-				rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
-				if self.pointInsideEllipse((rx,ry,rz), self.majorAxis):
-					break
-					
-			sizeStart = self.parameters["ObjSizeStart"]
-			sizeEnd = self.parameters["ObjSizeEnd"]
-
-			size = random.randint(sizeStart, sizeEnd)
+		for (rx,ry,rz), size in self.objects[currentTimepoint]:
+			rx+=shiftx
+			ry+=shifty
+			rz+=shiftz
 			self.createObjectAt(image, rx,ry,rz, size)
 			
+			
+		n = len(self.imageCache.items())
+		if n>self.parameters["CacheAmount"]:
+			items = self.imageCache.keys()
+			items.sort()
+			print "Removing ", items[0], "from cache"
+			self.imageCache[items[0]].ReleaseData()
+			del self.imageCache[items[0]]
+		self.imageCache[currentTimepoint] = image
 		return image
 		
 	def pointInsideEllipse(self, pt, majorAxis, f1 = None, f2 = None):
@@ -256,7 +436,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		@return true if given point is inside the ellipse
 		"""
 		rx, ry,rz = pt
+		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
 		dx = (y-majorAxis)/2
+		#print "Testing",rx,ry,rz,"major axis=",self.majorAxis
 		if not f1:
 			f1y = 2*dx
 			f1x = x/2
@@ -298,21 +480,54 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if ye>=maxy:ye=maxy-1
 		if ze>=maxz:ze=maxz-1
 		
-
+		count=0
 		for x in range(xs,xe):
 			for y in range(ys,ye):
 				for z in range(zs,ze):
 					d=math.sqrt((x0-x)**2+(y0-y)**2+(z0-z)**2)
 					if d <= r:
-						minval = int(255-(d/float(r)*128))
+						#minval = int(255-(d/float(r)*128))
+						minval=220
 						imageData.SetScalarComponentFromDouble(x,y,z,0,random.randint(minval,255))
-	    	
+						count+=1
+#		print "Size %d yields %d voxels"%(size, count)
+
+	def writeOutput(self, dataUnit, timepoint):
+		"""
+		Optionally write the output of this module during the processing
+		"""
+		fileroot = self.dataUnit.getName()
+		bxddir = dataUnit.getOutputDirectory()
+		fileroot = os.path.join(bxddir, fileroot)
+		filename = "%s.csv" % fileroot
+		self.writeToFile(filename, dataUnit, timepoint)
+		
+	def writeToFile(self, filename, dataUnit, timepoint):
+		"""
+		write the objects from a given timepoint to file
+		"""
+		f = codecs.open(filename, "awb", "latin1")
+		Logging.info("Saving statistics to file %s"%filename, kw="processing")
+		
+		w = csv.writer(f, dialect = "excel", delimiter = ";")
+		
+		settings = dataUnit.getSettings()
+		settings.set("StatisticsFile", filename)
+		w.writerow(["Timepoint %d" % timepoint])
+		w.writerow(["Object #", "Center of mass","Size"])
+					
+		i=0
+		for (rx,ry,rz),size in self.objects[timepoint]:
+			w.writerow([str(i + 1), "%d, %d, %d"%(rx,ry,rz),str(size)])
+			i+=1
+		f.close()
+		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
 		"""			   
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-		
-		return self.createData()
+		currentTimepoint = self.getCurrentTimepoint()
+		return self.createData(currentTimepoint)
 			

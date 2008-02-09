@@ -181,6 +181,14 @@ def get_log_dir():
 	"""
 	Tries to create and return a path to a directory for logging
 	"""
+	parser = ConfigParser.RawConfigParser()
+	parser.read([os.path.join(get_config_dir(), "BioImageXD.ini")])
+	if parser.has_section("Paths"):
+		value = parser.get("Paths","LogPath")
+		if value: 
+			print "Log directory is ",value
+			return value
+		
 	if platform.system()=="Darwin":
 		return os.path.expanduser("~/Library/Logs/BioImageXD")
 	elif platform.system() == "Windows":
@@ -214,6 +222,13 @@ def get_preview_dir():
 	"""
 	Return a directory where preview images can be stored
 	"""
+	parser = ConfigParser.RawConfigParser()
+	parser.read([os.path.join(get_config_dir(), "BioImageXD.ini")])
+	if parser.has_section("Paths"):
+		value = parser.get("Paths","PreviewPath")
+		if value: 
+			print "Preview directory is ",value
+			return value
 	if platform.system() == "Darwin":
 		dirpath = os.path.expanduser("~/Library/Caches/BioImageXD")
 		if not os.path.exists(dirpath):

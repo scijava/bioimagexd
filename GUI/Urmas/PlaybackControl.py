@@ -43,10 +43,8 @@ import wx.lib.buttons as buttons
 import platform
 
 class PlaybackControl(wx.Panel):
-#class PlaybackControl(wx.SashLayoutWindow):
 	"""
-	Created: 25.01.2006, KP
-	Description: A panel that contains a slider and stop and play/pause buttons 
+	A panel that contains a slider and stop and play/pause buttons 
 	"""
 	def __init__(self, parent, n):    
 		"""
@@ -118,7 +116,6 @@ class PlaybackControl(wx.Panel):
 		self.sizer.Fit(self)
 		
 		lib.messenger.connect(None, "set_timeslider_value", self.onSetTimeslider)
-		#lib.messenger.connect(None,"set_time_range",self.onSetTimeRange)
 		lib.messenger.connect(None, "set_frames", self.onSetFrames)
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)        
 		lib.messenger.connect(None, "set_play_mode", self.onSetPlay)
@@ -211,12 +208,6 @@ class PlaybackControl(wx.Panel):
 		Update the timeslider according to an event
 		"""
 		self.timeslider.SetValue(tp) 
-	def onSetTimeRange(self, obj, event, r1, r2):
-		"""
-		Set the range that the time slider shows
-		"""        
-		self.timeslider.SetRange(r1, r2)
-		self.timeslider.Refresh()   
 		
 	def onSetFrames(self, obj, event, r1):
 		"""

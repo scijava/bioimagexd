@@ -176,11 +176,6 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		["", ("Dimensionality", )]
 		]
 		
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""	   
-		return self.descs[parameter]
  
 	def getType(self, parameter):
 		"""
@@ -248,11 +243,6 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [["", ("Shift", "Scale", "AutoScale")]]
 		
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""	   
-		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""

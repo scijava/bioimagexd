@@ -99,6 +99,7 @@ class Visualizer:
 		self.parent = parent
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 
+		lib.messenger.connect(None, "update_dataset_info", self.onUpdateGUIFromDataset)
 		lib.messenger.connect(None, "data_changed", self.updateRendering)
 		lib.messenger.connect(None, "itf_update", self.updateRendering)
 		self.closed = 0
@@ -233,7 +234,17 @@ class Visualizer:
 		self.origBtn = None
 
 		self.createToolbar()
-
+		
+	def onUpdateGUIFromDataset(self, obj, evt, *args):
+		"""
+		An event handler for messenger event telling us to update the GUI based on
+		possibly changed dataunit information
+		@param obj The object that sent the message
+		@param evt The event name
+		"""
+		self.setUpTimeSliderFromDataunit(self.dataUnit)
+		self.setUpZSliderFromDataunit(self.dataUnit)
+		
 	def getMasks(self):
 		"""
 		Get all the masks
@@ -1040,13 +1051,29 @@ class Visualizer:
 			self.zsliderWin.SetDefaultSize((0,0))
 		else:
 			self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
+	
+	def setUpZSliderFromDataunit(self, dataunit):
+		"""
+		Set up the z slider based on a given dataunit
+		"""
+		x, y, z = dataunit.getDimensions()
+		self.zslider.SetRange(1, z)
+		Logging.info("Setting zslider value",kw="visualizer")
+		if z < self.z:
+			self.zslider.SetValue(1)
+			self.onChangeZSlice(None)
+		else:
+			self.zslider.SetValue(self.z+1)
+		if z <= 1:
+			self.toggleZSlider(0)
+			#self.zsliderWin.SetDefaultSize((0, 768))
+		elif self.currMode.showSliceSlider():
+			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 
-	def setDataUnit(self, dataunit):
+	def setUpTimeSliderFromDataunit(self, dataunit):
 		"""
-		Sets the dataunit this module uses for visualization
+		Set the time slider based on given dataunit
 		"""
-		print "VISUALIZER SETDATAUNIT"
-		self.dataUnit = dataunit
 		count = dataunit.getNumberOfTimepoints()
 
 		self.maxTimepoint = count - 1
@@ -1057,6 +1084,14 @@ class Visualizer:
 			Logging.info("Setting time range to %d" % count, kw = "visualizer")
 			self.toggleTimeSlider(1)
 			self.timeslider.SetRange(1, count)
+
+	def setDataUnit(self, dataunit):
+		"""
+		Sets the dataunit this module uses for visualization
+		"""
+		self.dataUnit = dataunit
+		self.setUpTimeSliderFromDataunit(dataunit)
+		count = dataunit.getNumberOfTimepoints()
 			
 		currT = modT = self.timeslider.GetValue()
 		currT = max(1,currT)
@@ -1072,23 +1107,11 @@ class Visualizer:
 
 		x, y, z = dataunit.getDimensions()
 
-		#currz = self.zslider.GetValue()
-		self.zslider.SetRange(1, z)
 		if self.timepoint > count:
 			Logging.info("Setting timepoint to %d"%count,kw="visualizer")
 			self.setTimepoint(count)
 
-		Logging.info("Setting zslider value",kw="visualizer")
-		if z < self.z:
-			self.zslider.SetValue(1)
-			self.onChangeZSlice(None)
-		else:
-			self.zslider.SetValue(self.z+1)
-		if z <= 1:
-			self.toggleZSlider(0)
-			#self.zsliderWin.SetDefaultSize((0, 768))
-		elif self.currMode.showSliceSlider():
-			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
+		self.setUpZSliderFromDataunit(dataunit)
 		showItems = 0
 
 		if self.processedMode:
@@ -1418,7 +1441,7 @@ class Visualizer:
 									desc = "Switch to timepoint %d" % timepoint)
 			cmd.run()
 			
-	def onSetTimeRange(self, obj, event, r1, r2):
+	def setTimeRange(self, r1, r2):
 		"""
 		Set the range that the time slider shows
 		"""
