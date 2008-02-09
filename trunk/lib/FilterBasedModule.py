@@ -384,7 +384,10 @@ class FilterBasedModule(lib.Module.Module):
 			return self.images[0] 
 		filterlist = self.settings.get("FilterList")
 		modified = filterlist.getModified()
+		if self.timepoint != self.cachedTimepoint:
+			modified = 1
 		if not self.preview or modified:
+			self.cachedTimepoint = self.timepoint
 			dims = self.images[0].GetDimensions()
 			if depth >= 0:
 				self.extent = (0, dims[0]-1, 0, dims[1]-1, depth, depth)
@@ -472,5 +475,4 @@ class FilterBasedModule(lib.Module.Module):
 
 		filterlist.setModified(0)
 		
-		print "data=",data
 		return data

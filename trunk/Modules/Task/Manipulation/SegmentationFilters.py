@@ -74,11 +74,6 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		
 		self.descs = {"OutputValue": "Masked output value"}
 			
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""	   
-		return self.descs[parameter]
 			
 	def getInputName(self, n):
 		"""

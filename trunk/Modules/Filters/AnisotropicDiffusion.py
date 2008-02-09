@@ -61,12 +61,6 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		["", ("DiffThreshold", "DiffFactor")]
 		]
 		
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""    
-		return self.descs[parameter]
-		
 	def getLongDesc(self, parameter):
 		"""
 		Return a long description of the parameter

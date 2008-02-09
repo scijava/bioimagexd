@@ -537,12 +537,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
 		]
 		
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""    
-		return self.descs[parameter]
-		
 	def getLongDesc(self, parameter):
 		"""
 		Return a long description of the parameter

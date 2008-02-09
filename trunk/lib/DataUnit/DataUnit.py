@@ -37,7 +37,6 @@ import Logging
 import os
 class DataUnit:
 	"""
-	Created: 03.11.2004, JM
 	Description: A class representing a timeseries of 3D data
 	"""
 	def __init__(self, dataUnitName = "", initToNone = 1):
@@ -69,6 +68,12 @@ class DataUnit:
 			self.getBitDepth = None
 			self.getExcitationWavelength = None
 			self.getEmissionWavelength = None
+			
+	def setNumberOfTimepoints(self, timepoints):
+		"""
+		Set the number of timepoits
+		"""
+		self.length = timepoints
 
 	def getDimensions(self):
 		"""

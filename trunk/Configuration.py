@@ -111,7 +111,7 @@ class Configuration:
 		self.configFile = cfgfile
 		try:
 			fp = codecs.open(cfgfile, "r","utf-8")
-			self.parser.readfp(fp, cfgfile)	   
+			self.parser.readfp(fp, cfgfile)
 		except IOError:
 			pass
 		# Set the initial values
@@ -161,6 +161,8 @@ class Configuration:
 
 		self.setConfigItem("DataPath", "Paths", "/home/kalpaha/BioImageXD/Data/", 0)
 		self.setConfigItem("LastPath", "Paths", "/home/kalpaha/BioImageXD/Data/", 0)
+		self.setConfigItem("LogPath", "Paths", "", 0)
+		self.setConfigItem("PreviewPath", "Paths", "", 0)
 		self.setConfigItem("RememberPath", "Paths", 1)
 
 		# Then read the settings file
@@ -250,6 +252,8 @@ class Configuration:
 		self.readConfigItem("ImageFormat", "Output")
 		self.readConfigItem("FramePath", "Paths")
 		self.readConfigItem("VideoPath", "Paths")
+		self.readConfigItem("LogPath", "Paths")
+		self.readConfigItem("PreviewPath", "Paths")
 		
 	def setCurrentDir(self, path):
 		"""

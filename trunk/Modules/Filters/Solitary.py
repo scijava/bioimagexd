@@ -54,11 +54,6 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		return [ "Thresholds:", ["", ("HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold")]]
 		
 
-	def getDesc(self, parameter):
-		"""
-		Return the description of the parameter
-		"""	   
-		return self.descs[parameter]
 		
 	def getLongDesc(self, parameter):
 		"""

@@ -33,15 +33,15 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Configuration
 import wx.lib.filebrowsebutton as filebrowse
-import os.path
+import os.path, os
 import scripting
 import wx
 import wx.lib.intctrl
 import types
+import glob
 
 class GeneralSettings(wx.Panel):
 	"""
-	Created: 09.02.2005, KP
 	Description: A window for controlling the general settings of the application
 	""" 
 	def __init__(self, parent):
@@ -158,12 +158,45 @@ class PathSettings(wx.Panel):
 		self.useLastCheckbox.SetValue(remember)
 		self.dataBoxSizer.Add(self.useLastCheckbox)
 		
+		self.cacheBox = wx.StaticBox(self, -1, "Log and cache files", size=(600,150))
+		self.cacheBoxSizer = wx.StaticBoxSizer(self.cacheBox, wx.VERTICAL)
+		self.cacheBoxSizer.SetMinSize(self.cacheBox.GetSize())
+		logdir = scripting.get_log_dir()
+		self.logbrowse = filebrowse.DirBrowseButton(self, -1, labelText = "Select log files directory", 
+			startDirectory = logdir)
+		previewdir = scripting.get_preview_dir()
+		self.previewbrowse = filebrowse.DirBrowseButton(self, -1, labelText = "Select preview files directory",
+			startDirectory = previewdir)
+		
+		self.clearCacheButton = wx.Button(self, -1, "Clear logs and previews")
+		self.clearCacheButton.Bind(wx.EVT_BUTTON, self.onClearCache)
+		
+		self.cacheBoxSizer.Add(self.logbrowse, 0, wx.EXPAND)
+		self.cacheBoxSizer.Add(self.previewbrowse, 0, wx.EXPAND)
+		self.cacheBoxSizer.Add(self.clearCacheButton)
+		
+		
 		
 		self.sizer.Add(self.dataBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)
+		self.sizer.Add(self.cacheBoxSizer, (1,0), flag = wx.EXPAND | wx.ALL)
 		self.SetAutoLayout(1)
 		self.SetSizer(self.sizer)
 		self.Layout()
 		self.sizer.Fit(self)
+		
+	def onClearCache(self, evt):
+		"""
+		Clear the logs and previews directory
+		"""
+		logdir = scripting.get_log_dir()
+		logfiles = glob.glob(os.path.join(logdir,"*.log"))
+		for file in logfiles:
+			os.unlink(file)
+		previewdir=scripting.get_preview_dir()
+		previewfiles = glob.glob(os.path.join(previewdir,"*.png"))
+		for file in previewfiles:
+			os.unlink(file)
+		
 		
 	def writeSettings(self, conf):
 		"""
@@ -173,6 +206,15 @@ class PathSettings(wx.Panel):
 		datapath = self.databrowse.GetValue()
 		rememberlast = self.useLastCheckbox.GetValue()
 		
+		logpath = self.logbrowse.GetValue()
+		if logpath and logpath != scripting.get_log_dir():
+			conf.setConfigItem("LogPath","Paths",logpath)
+			print "Setting logpath to",logpath
+		previewpath = self.previewbrowse.GetValue()
+		if previewpath and previewpath != scripting.get_preview_dir():
+			conf.setConfigItem("PreviewPath","Paths",previewpath)
+			print "Setting preview path to",previewpath
+		
 		conf.setConfigItem("DataPath", "Paths", datapath)
 		
 		conf.setConfigItem("RememberPath", "Paths", rememberlast)
@@ -180,8 +222,7 @@ class PathSettings(wx.Panel):
 
 class PerformanceSettings(wx.Panel):
 	"""
-	Created: 27.04.2006, KP
-	Description: A window for controlling the performance settings of the application
+	A window for controlling the performance settings of the application
 	""" 
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent, -1, size = (640, 480))
@@ -460,8 +501,6 @@ class MovieSettings(wx.Panel):
 	""" 
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent, -1)
-	
-
 
 class SettingsWindow(wx.Dialog):
 	"""
