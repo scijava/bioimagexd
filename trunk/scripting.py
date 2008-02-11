@@ -184,7 +184,10 @@ def get_log_dir():
 	parser = ConfigParser.RawConfigParser()
 	parser.read([os.path.join(get_config_dir(), "BioImageXD.ini")])
 	if parser.has_section("Paths"):
-		value = parser.get("Paths","LogPath")
+		try:
+			value = parser.get("Paths","LogPath")
+		except:
+			value = None
 		if value: 
 			print "Log directory is ",value
 			return value
@@ -225,7 +228,10 @@ def get_preview_dir():
 	parser = ConfigParser.RawConfigParser()
 	parser.read([os.path.join(get_config_dir(), "BioImageXD.ini")])
 	if parser.has_section("Paths"):
-		value = parser.get("Paths","PreviewPath")
+		try:
+			value = parser.get("Paths","PreviewPath")
+		except:
+			value = None
 		if value: 
 			print "Preview directory is ",value
 			return value
