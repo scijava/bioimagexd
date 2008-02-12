@@ -64,7 +64,7 @@ class LIFDataSource(DataSource):
 
 		# Use vtkLIFReader
 		self.reader = vtkbxd.vtkLIFReader()
-		self.reader.DebugOn()
+
 		# Open file if defined
 		if self.filename:
 			self.reader.SetFileName(self.convertFileName(self.filename))
