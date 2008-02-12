@@ -39,6 +39,7 @@
 #include "vtkPointData.h"
 #include "vtkByteSwap.h"
 #include "vtkUnsignedCharArray.h"
+#include "vtkUnsignedShortArray.h"
 #include <vtkstd/vector>
 
 // Vectors for one image
@@ -213,7 +214,11 @@ unsigned long long vtkLIFReader::GetFileSize()
 
 int vtkLIFReader::GetChannelCount(int image)
 {
-  if (image >= 0 && image < this->GetImageCount()) return this->Channels->at(image)->size();
+  if (image >= 0 && image < this->GetImageCount())
+	{
+	  if (this->Channels->at(image)->size() == 3 && this->Channels->at(image)->at(0)->ChannelTag > 0) return 1; // RGB image with 3 channels
+	  return this->Channels->at(image)->size();
+	}
   return 0;
 }
 
@@ -413,6 +418,38 @@ int vtkLIFReader::GetImageChannelResolution()
   return this->GetImageChannelResolution(this->CurrentImage,this->CurrentChannel);
 }
 
+
+double vtkLIFReader::GetImageChannelMin(int image, int channel)
+{
+  if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size())
+    {
+      vtkErrorMacro(<< "GetImageChannelMin: image number: " << image << ", or channel number: " << channel << " is out of bounds.");
+      return 0.0;
+    }
+  return this->Channels->at(image)->at(channel)->Min;
+}
+
+double vtkLIFReader::GetImageChannelMin()
+{
+  return this->GetImageChannelMin(this->CurrentImage,this->CurrentChannel);
+}
+
+
+double vtkLIFReader::GetImageChannelMax(int image, int channel)
+{
+  if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size())
+    {
+      vtkErrorMacro(<< "GetImageChannelMax: image number: " << image << ", or channel number: " << channel << " is out of bounds.");
+      return 0.0;
+    }
+  return this->Channels->at(image)->at(channel)->Max;
+}
+
+double vtkLIFReader::GetImageChannelMax()
+{
+  return this->GetImageChannelMax(this->CurrentImage,this->CurrentChannel);
+}
+
 const char* vtkLIFReader::GetImageChannelLUTName(int image, int channel)
 {
   if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size())
@@ -429,7 +466,7 @@ const char* vtkLIFReader::GetImageChannelLUTName()
   return this->GetImageChannelLUTName(this->CurrentImage,this->CurrentChannel);
 }
 
-unsigned int vtkLIFReader::GetTimePointOffset(int image, int timepoint)
+unsigned long long vtkLIFReader::GetTimePointOffset(int image, int timepoint)
 {
   if (timepoint < 0) return 0;
   for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
@@ -491,7 +528,7 @@ int vtkLIFReader::ReadLIFHeader()
   // Find image offsets
   this->Offsets->SetNumberOfValues(this->GetImageCount());
   vtkIdType offsetId = 0;
-  	
+
   while (this->File->tellg() < this->GetFileSize())
   {
     // Check LIF test value
@@ -692,14 +729,6 @@ void vtkLIFReader::LoadDimensionInfoToStruct(vtkXMLDataElement *Element, Dimensi
   Element->GetScalarAttribute("BitInc",Data->BitInc);
 }
 
-//int vtkLIFReader::IsValidLIFFile()
-//{
-//}
-
-//int vtkLIFReader::GetNumberOfChannels()
-//{
-//}
-
 void vtkLIFReader::InitializeAttributes()
 {
   this->File = NULL;
@@ -757,7 +786,24 @@ int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
   info->Set(vtkDataObject::SPACING(),spacing,3);
   info->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),extent,6);
   info->Set(vtkDataObject::ORIGIN(),origin,3);
-  vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_CHAR,1);
+
+  int rgb = this->Channels->at(this->CurrentImage)->at(this->CurrentChannel)->ChannelTag > 0;
+
+  if (this->GetImageChannelResolution(this->CurrentImage,this->CurrentChannel) == 8)
+	{
+	  if (!rgb)
+		{
+		vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_CHAR,1);
+		}
+	  else
+		{
+		vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_CHAR,3);
+		}
+	}
+  else
+	{
+	  vtkDataObject::SetPointDataActiveScalarInfo(info,VTK_UNSIGNED_SHORT,1);
+	}
 
   delete [] origin;
   delete [] extent;
@@ -794,10 +840,10 @@ int vtkLIFReader::RequestData(vtkInformation *request,
                               vtkInformationVector *outputVector)
 {
   int extent[6];
-  unsigned int imageOffset;
-  unsigned int channelOffset;
+  unsigned long long imageOffset;
+  unsigned long long channelOffset;
   unsigned int bufferSize;
-  unsigned char *buffer;
+  unsigned int bufferItems;
 
   if (!this->HeaderInfoRead || this->CurrentImage < 0 || this->CurrentChannel < 0)
     {
@@ -805,6 +851,8 @@ int vtkLIFReader::RequestData(vtkInformation *request,
       return 0;
     }
 
+  unsigned int resolution = this->GetImageChannelResolution(this->CurrentImage,this->CurrentChannel);
+  int rgb = this->Channels->at(this->CurrentImage)->at(this->CurrentChannel)->ChannelTag > 0;
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
   vtkImageData *imageData = this->AllocateOutputData(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   imageData->GetPointData()->GetScalars()->SetName("LIF Scalars");
@@ -812,52 +860,91 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 
   int nSlices = extent[5] > extent[4] ? extent[5]-extent[4]+1 : 1;
   unsigned int nVoxels = this->GetImageVoxelCount(this->CurrentImage);
+  unsigned int voxelsSize = nVoxels;
   unsigned int slicePixels = this->GetImageSlicePixelCount(this->CurrentImage);
-  unsigned int slicePixelsSize = slicePixels; // Currently only 8 bit data
+  unsigned int slicePixelsSize = slicePixels;
+  if (resolution != 8)
+	{
+	  slicePixelsSize *= 2;
+	  voxelsSize *= 2;
+	}
+  if (rgb)
+	{
+	  slicePixelsSize *= 3;
+	  voxelsSize *= 3;
+	}
   unsigned int sliceChannelsSize = slicePixelsSize * this->GetChannelCount(this->CurrentImage);
 
   if (nSlices > 1) // Allocate array for all slices and read all of them
     {
-      if (nVoxels == 0) nVoxels = slicePixelsSize;
-      bufferSize = nVoxels; // Currently only 8 bit data
+	  bufferItems = nVoxels;
+      bufferSize = voxelsSize;
     }
   else // Allocate array only for one slice and read only one slice
     {
-      bufferSize = slicePixelsSize; // Currently only 8 bit data
+	  bufferItems = slicePixels;
+      bufferSize = slicePixelsSize;
     }
 
-  vtkDebugMacro(<< "extent: " << extent[4] << "," << extent[5]);
+  void *buffer;
+  char *pos;
+  if (resolution == 8)
+	{
+	  buffer = new unsigned char[bufferSize];
+	  pos = static_cast<char*>(buffer);
+	}
+  else
+	{
+	  buffer = new unsigned short[bufferItems];
+	  pos = static_cast<char*>(buffer);
+	}
   vtkDebugMacro(<< "Allocated buffer of size: " << bufferSize);
-  buffer = new unsigned char[bufferSize];
-  unsigned char *pos = buffer;
+
   imageOffset = this->Offsets->GetValue(this->CurrentImage);
   imageOffset += this->GetTimePointOffset(this->CurrentImage,this->CurrentTimePoint);
   vtkDebugMacro(<< "Image Offset is: " << imageOffset);
 
   for (int i = extent[4]; i <= extent[5]; ++i)
     {
-      channelOffset = imageOffset + i * sliceChannelsSize;
+	  channelOffset = imageOffset + i * sliceChannelsSize;
       channelOffset += this->Channels->at(this->CurrentImage)->at(this->CurrentChannel)->BytesInc;
 
       this->File->seekg(channelOffset,ios::beg);
-      this->File->read((char*)pos,slicePixelsSize);
+      this->File->read(pos,slicePixelsSize);
       vtkDebugMacro(<< "Read " << slicePixelsSize << " bytes of data from " << channelOffset);
 
       pos += slicePixelsSize;
-    }
+	}
 
   vtkDebugMacro(<< "Constructing point data array");
-  vtkUnsignedCharArray *pointDataArray;
-  pointDataArray = vtkUnsignedCharArray::New();
+  if (resolution == 8)
+	{
+	  vtkUnsignedCharArray *pointDataArray;
+	  pointDataArray = vtkUnsignedCharArray::New();
+	  if (!rgb)
+		{
+		  pointDataArray->SetNumberOfComponents(1);
+		}
+	  else
+		{
+		  pointDataArray->SetNumberOfComponents(3);
+		}
+	  pointDataArray->SetNumberOfValues(bufferItems);
+	  pointDataArray->SetArray(static_cast<unsigned char*>(buffer),bufferSize,0);
+	  imageData->GetPointData()->SetScalars(pointDataArray);
+	  pointDataArray->Delete();
+	}
+  else
+	{
+	  vtkUnsignedShortArray *pointDataArray;
+	  pointDataArray = vtkUnsignedShortArray::New();
+	  pointDataArray->SetNumberOfComponents(1);
+	  pointDataArray->SetNumberOfValues(bufferItems);
+	  pointDataArray->SetArray(static_cast<unsigned short*>(buffer),bufferSize,0);
+	  imageData->GetPointData()->SetScalars(pointDataArray);
+	  pointDataArray->Delete();
+	}
 
-  pointDataArray->SetNumberOfComponents(1);
-  vtkDebugMacro(<< "Number of values=" << bufferSize);
-  pointDataArray->SetNumberOfValues(bufferSize);
-  pointDataArray->SetArray(buffer,bufferSize,0);
-  vtkDebugMacro(<< pointDataArray);
-  imageData->GetPointData()->SetScalars(pointDataArray);
-  vtkDebugMacro(<< "Deleting array...");
-  pointDataArray->Delete();
   vtkDebugMacro(<< "RequestData done");
 
   return 1;
@@ -876,35 +963,35 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
        imgDims != this->Dimensions->at(this->CurrentImage)->end(); imgDims++)
     {
       if ((*imgDims)->DimID == DimIDX)
-	{
-	  extent[1] = (*imgDims)->NumberOfElements - 1;
-	  if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
-	      strcmp((*imgDims)->Unit,""))
-	    {
+		{
+		extent[1] = (*imgDims)->NumberOfElements - 1;
+		if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
+	        strcmp((*imgDims)->Unit,""))
+		  {
 	      spacing[0] = fabs((*imgDims)->Length / extent[1]);
 	      origin[0] = (*imgDims)->Origin;
-	    }
-	}
+		  }
+		}
       else if ((*imgDims)->DimID == DimIDY)
-	{
-	  extent[3] = (*imgDims)->NumberOfElements - 1;
-	  if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
-	      strcmp((*imgDims)->Unit,""))
-	    {
+		{
+		extent[3] = (*imgDims)->NumberOfElements - 1;
+		if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
+	        strcmp((*imgDims)->Unit,""))
+		  {
 	      spacing[1] = fabs((*imgDims)->Length / extent[3]);
 	      origin[1] = (*imgDims)->Origin;
-	    }
-	}
+		  }
+		}
       else if ((*imgDims)->DimID == DimIDZ)
-	{
-	  extent[5] = (*imgDims)->NumberOfElements - 1;
-	  if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
-	      strcmp((*imgDims)->Unit,""))
-	    {
+		{
+		extent[5] = (*imgDims)->NumberOfElements - 1;
+		if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
+	        strcmp((*imgDims)->Unit,""))
+		  {
 	      spacing[2] = fabs((*imgDims)->Length / extent[5]);
 	      origin[2] = (*imgDims)->Origin;
-	    }
-	}
+		  }
+		}
     }
 
   // Normalize spacing

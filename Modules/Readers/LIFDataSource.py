@@ -64,7 +64,7 @@ class LIFDataSource(DataSource):
 
 		# Use vtkLIFReader
 		self.reader = vtkbxd.vtkLIFReader()
-
+		self.reader.DebugOn()
 		# Open file if defined
 		if self.filename:
 			self.reader.SetFileName(self.convertFileName(self.filename))
@@ -111,7 +111,7 @@ class LIFDataSource(DataSource):
 						  "Error in LIFDataSource.py in getDataSet, no image or channel number specified.")
 			return None
 		
-		if i < 0 or (i > 0 and i >= self.getDataSetCount()):
+		if i < 0 or i >= self.getDataSetCount():
 			Logging.error("Given time point is out of bounds",
 						  "Time point %d that is out of bounds requested from getDataSet"%i)
 			return None
@@ -199,7 +199,10 @@ class LIFDataSource(DataSource):
 		"""
 		if not self.spacing:
 			x, y, z = self.getVoxelSize()
-			self.spacing = [1, y / x, z / x]
+			if x != 0:
+				self.spacing = [1, y / x, z / x]
+			else:
+				self.spacing = [0,0,0]
 		return self.spacing
 
 	def getVoxelSize(self):
@@ -234,6 +237,7 @@ class LIFDataSource(DataSource):
 				g = 1
 			else:
 				r = 1
+				g = 1
 				b = 1
 			
 			ctf.AddRGBPoint(minval,0,0,0)
@@ -266,8 +270,9 @@ class LIFDataSource(DataSource):
 		Returns pair that contains range of data values
 		"""
 		if not self.scalarRange:
-			bitDepth = self.getBitDepth()
-			self.scalarRange = (0,2**bitDepth-1)
+			minScalar = self.reader.GetImageChannelMin(self.imageNum,self.channelNum)
+			maxScalar = self.reader.GetImageChannelMax(self.imageNum,self.channelNum)
+			self.scalarRange = (int(minScalar),int(maxScalar))
 		return self.scalarRange
 
 	def uniqueID(self):

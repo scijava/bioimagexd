@@ -32,7 +32,6 @@
 #include "vtkImageAlgorithm.h"
 #include "vtkBXDProcessingWin32Header.h"
 #include "vtkXMLDataElement.h"
-#include "vtkUnsignedIntArray.h"
 #include "vtkUnsignedLongLongArray.h"
 
 typedef struct ChannelData;
@@ -104,6 +103,10 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   int GetImageSlicePixelCount();
   int GetImageChannelResolution(int,int);
   int GetImageChannelResolution();
+  double GetImageChannelMin(int,int);
+  double GetImageChannelMin();
+  double GetImageChannelMax(int,int);
+  double GetImageChannelMax();
   const char* GetImageChannelLUTName(int,int);
   const char* GetImageChannelLUTName();
   const char* GetImageName(int);
@@ -114,8 +117,6 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   vtkGetVectorMacro(ImageDims,int,4);
   vtkGetVector3Macro(ImageVoxels,double);
   vtkGetStringMacro(FileName);
-  //  int IsValidLIFFile();
-  //  int GetNumberOfChannels();
 
  protected:
 
@@ -148,7 +149,7 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
                   vtkInformationVector** vtkNotUsed(inputVector),
                   vtkInformationVector*);
 
-  unsigned int GetTimePointOffset(int, int);
+  unsigned long long GetTimePointOffset(int, int);
 
 // Protected attributes
   ifstream *File;
@@ -196,7 +197,7 @@ struct DimensionData
   double Origin; // Physical position of the first element (left pixel side)
   double Length; // Physical length from the first left pixel side to the last left pixel side
   const char *Unit; // Physical unit
-  unsigned long long BytesInc; // Distance from the first channel in Bytes
+  unsigned long long BytesInc; // Distance from the one element to the next in this dimension
   int BitInc;
 };
 
