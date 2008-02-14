@@ -928,6 +928,14 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 	  else
 		{
 		  pointDataArray->SetNumberOfComponents(3);
+		  // Change rgb order to bgr
+		  unsigned char temp;
+		  for (unsigned long long i = 2; i < bufferSize; i +=3)
+			{
+			  temp = (static_cast<unsigned char*>(buffer))[i-2];
+			  (static_cast<unsigned char*>(buffer))[i-2] = (static_cast<unsigned char*>(buffer))[i];
+			  (static_cast<unsigned char*>(buffer))[i] = temp;
+			}
 		}
 	  pointDataArray->SetNumberOfValues(bufferItems);
 	  pointDataArray->SetArray(static_cast<unsigned char*>(buffer),bufferSize,0);
