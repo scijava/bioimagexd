@@ -362,8 +362,6 @@ class CombinedDataUnit(DataUnit):
 		n = len(self.sourceunits)
 		merged = []
 		if self.outputChannels:
-			merged = []
-			
 			for i, unit in enumerate(self.sourceunits):
 				if i in self.outputChannels and self.outputChannels[i]:
 					data = unit.getTimepoint(timePoint)
@@ -405,7 +403,12 @@ class CombinedDataUnit(DataUnit):
 					self.module.addInput(dataunit, image)
 			Logging.info("Getting preview from module %s"%str(self.module), kw="dataunit")
 			preview = self.module.getPreview(depth)
-		isMultiComponent = preview.GetNumberOfScalarComponents()>1
+
+		# isMultiComponent = preview.GetNumberOfScalarComponents()>1 doesn't work when preview isn't updated
+		for unit in self.sourceunits:
+			isMultiComponent = unit.getBitDepth() > unit.getSingleComponentBitDepth()
+			if isMultiComponent:
+				break
 
 		if not self.merging and self.outputChannels:
 			if preview:
