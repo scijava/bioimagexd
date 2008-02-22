@@ -49,7 +49,7 @@ import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
 import TrackingFilters
-#import RegistrationFilters removed
+import RegistrationFilters
 
 from lib.FilterTypes import *
 
@@ -143,7 +143,7 @@ def getFilterList():
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
 	filterlist += TrackingFilters.getFilters()
-	#filterlist += RegistrationFilters.getFilters() removed
+	filterlist += RegistrationFilters.getFilters()
 	return filterlist
 
 
@@ -662,18 +662,22 @@ class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-			
 		image = self.getInput(1)
-		image = self.convertVTKtoITK(image)
+		image = self.convertVTKtoITK(image,types.FloatType)
 		if not self.itkfilter:
 			self.itkfilter = itk.CannyEdgeDetectionImageFilter[image, image].New()
 
 		self.itkfilter.SetInput(image)
-				
-		if update:
-			self.itkfilter.Update()
-		data = self.itkfilter.GetOutput()
 
+		# Output data is 0.0 or 1.0, rescale this
+		rescale = itk.RescaleIntensityImageFilter.IF3IUC3.New()
+		rescale.SetOutputMinimum(0)
+		rescale.SetOutputMaximum(255)
+		rescale.SetInput(self.itkfilter.GetOutput())
+		data = rescale.GetOutput()
+		if update:
+			data.Update()
+		
 		return data			   
 
 
