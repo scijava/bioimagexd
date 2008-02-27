@@ -779,8 +779,8 @@ class LightManager:
 			lights.insert(i, Light())
 			lights[i].source.SetLightTypeToCameraLight()
 
-		if sys.platform != 'darwin':
-			ren.ClearLights()
+		#if sys.platform != 'darwin':
+		#	ren.ClearLights()
 
 		# In vtk 3.2, the first light is always a headlight, and at
 		# least as implemented in vtkRenderWidget, cannot be made

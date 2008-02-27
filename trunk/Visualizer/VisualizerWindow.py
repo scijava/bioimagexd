@@ -43,8 +43,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 	def __init__(self, parent, **kws):
 		"""
 		Initialization
-		"""    
-		kws["stereo"] = 1
+		"""
+		#kws["stereo"] = 1
 		wxVTKRenderWindowInteractor.__init__(self, parent, -1, **kws)
 		self.renderer = None
 		self.doSave = 0
