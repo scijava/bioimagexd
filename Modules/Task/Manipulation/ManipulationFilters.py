@@ -571,6 +571,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image, cast = types.FloatType)
+		f3 = itk.Image.F3
 		
 		self.itkfilter = itk.GradientAnisotropicDiffusionImageFilter[f3, f3].New()
 
@@ -697,8 +698,6 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 		self.descs = {"Minimum": "Minimum output value", "Maximum": "Maximum Output Value", \
 						"Alpha": "Alpha", "Beta": "Beta"}
-		f3 = itk.Image.F3
-		self.itkfilter = itk.SigmoidImageFilter[f3, f3].New()
 		
 	def getParameterLevel(self, parameter):
 		"""
@@ -740,6 +739,9 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image, cast = types.FloatType)
+		if not self.itkfilter:
+			f3 = itk.Image.F3
+			self.itkfilter = itk.SigmoidImageFilter[f3, f3].New()
 		self.itkfilter.SetInput(image)
 		
 		self.setImageType("F3")

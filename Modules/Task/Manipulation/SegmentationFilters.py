@@ -6,7 +6,7 @@
  Description:
 
  A module containing the segmentation filters for the processing task.
-							*' < This program is distributed in the hope that it will be useful,
+ This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -146,9 +146,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		
 		self.descs = {"Threshold": "Segmentation Threshold", "Level": "Segmentation Level"}
 		self.itkFlag = 1
-
-		f3 = itk.Image.F3
-		self.itkfilter = itk.WatershedImageFilter[f3].New()
+		self.itkfilter = None
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -188,6 +186,7 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Performing watershed segmentation"
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image, cast = types.FloatType)
+		self.itkfilter = itk.WatershedImageFilter.IF3.New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetThreshold(self.parameters["Threshold"])
 		self.itkfilter.SetLevel(self.parameters["Level"])
@@ -509,9 +508,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"Seed": "Seed voxel", "Neighborhood": "Initial neighborhood size",
 			"Multiplier": "Range relaxation", "Iterations": "Iterations"}
 		self.itkFlag = 1
-		
-		uc3 = itk.Image.UC3
-		self.itkfilter = itk.ConfidenceConnectedImageFilter[uc3, uc3].New()
+		self.itkfilter = None
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -554,7 +551,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["Seed", (("Seed", ), )],
+		return [["Seed", ("Seed", )],
 		["Segmentation", ("Neighborhood", "Multiplier", "Iterations")]]
 
 	def execute(self, inputs, update = 0, last = 0):
@@ -566,6 +563,8 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
+		uc3 = itk.Image.UC3
+		self.itkfilter = itk.ConfidenceConnectedImageFilter.IUC3IUC3.New()
 		self.itkfilter.SetInput(image)
 		
 		pixelidx = itk.Index[3]()
@@ -610,9 +609,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"Seed": "Seed voxel", "Upper": "Upper threshold", "Lower": "Lower threshold"}
 		self.itkFlag = 1
 		self.setImageType("UC3")
-		
-		uc3 = itk.Image.UC3
-		self.itkfilter = itk.ConnectedThresholdImageFilter[uc3, uc3].New()
+		self.itkfilter = None
 
 	def getDefaultValue(self, parameter):
 		"""
@@ -637,7 +634,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["Seed", (("Seed", ), )],
+		return [["Seed", ("Seed", )],
 		["Threshold", (("Lower", "Upper"), )]]
 
 	def execute(self, inputs, update = 0, last = 0):
@@ -646,10 +643,11 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		"""					   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-			
 		image = self.getInput(1)
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
+
+		self.itkfilter = itk.ConnectedThresholdImageFilter.IUC3IUC3.New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
 		self.itkfilter.SetUpper(self.parameters["Upper"])
@@ -695,9 +693,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			"RadiusY": "Y neighborhood size",
 			"RadiusZ": "Z neighborhood size"}
 		self.itkFlag = 1
-		
-		uc3 = itk.Image.UC3
-		self.itkfilter = itk.NeighborhoodConnectedImageFilter[uc3, uc3].New()
+		self.itkfilter = None
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -736,7 +732,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["Seed", (("Seed", ), )],
+		return [["Seed", ("Seed", )],
 		["Threshold", (("Lower", "Upper"), )],
 		["Neighborhood", ("RadiusX", "RadiusY", "RadiusZ")]]
 
@@ -750,6 +746,8 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		image = self.getInput(1)
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
+		
+		self.itkfilter = itk.NeighborhoodConnectedImageFilter.IUC3IUC3.New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
 		self.itkfilter.SetUpper(self.parameters["Upper"])
@@ -795,15 +793,16 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		
 		self.descs = {"Upper": "Upper threshold", "Lower": "Lower threshold"}
 		self.itkFlag = 1
-		
-		uc3 = itk.Image.UC3
-		self.itkfilter = itk.OtsuThresholdImageFilter[uc3, uc3].New()
+		self.itkfilter = None
 
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
 		"""	   
-		return 0
+		if parameter == 'Upper':
+			return 255
+		if parameter == 'Lower':
+			return 0
 		
 	def getType(self, parameter):
 		"""
@@ -815,7 +814,7 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""   
+		"""
 		return [["Threshold", (("Lower", "Upper"), )]]
 
 	def execute(self, inputs, update = 0, last = 0):
@@ -827,8 +826,9 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
+
+		self.itkfilter = itk.OtsuThresholdImageFilter.IUC3IUC3.New()
 		self.itkfilter.SetInput(image)
-		
 		self.itkfilter.SetInsideValue(0)
 		self.itkfilter.SetOutsideValue(255)
 		self.itkfilter.SetNumberOfHistogramBins(255)
