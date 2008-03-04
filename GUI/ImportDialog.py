@@ -66,7 +66,7 @@ class ImportDialog(wx.Dialog):
 
 		self.dataSource = parent.typeToSource["filelist"]()
 		
-		lib.messenger.connect(self.dataSource, "upate_dimensions", self.updateImageInfo)
+		lib.messenger.connect(self.dataSource, "update_dimensions", self.updateImageInfo)
 		self.dataUnit.setDataSource(self.dataSource)
 		self.settings = DataUnitSettings()
 		self.settings.set("Type", "NOOP")
@@ -138,7 +138,7 @@ class ImportDialog(wx.Dialog):
 	def convertFiles(self, outname):
 		"""
 		Method that reads the files that user has selected
-		"""          
+		"""
 		idxs = self.sourceListbox.GetSelections()
 		files = []
 		
@@ -172,7 +172,7 @@ class ImportDialog(wx.Dialog):
 	def writeDataUnitFile(self):
 		"""
 		Writes a .bxd file
-		""" 
+		"""
 		settings = self.dataUnit.getSettings()
 
 		Logging.info("Spacing for dataset=", self.spacing, kw = "io")
@@ -184,7 +184,7 @@ class ImportDialog(wx.Dialog):
 		Logging.info("Writing voxel size as ", x, y, z, kw = "io")
 		settings.set("VoxelSize", (x, y, z))
 
-		self.dimensions = (self.x, self.y, self.x) = self.dataSource.getDimensions()
+		self.dimensions = (self.x, self.y, self.z) = self.dataSource.getDimensions()
 		Logging.info("Writing dimensions as ", self.dimensions, kw = "io")
 
 		settings.set("Dimensions", self.dimensions)
@@ -306,8 +306,8 @@ class ImportDialog(wx.Dialog):
 		self.depthlbl = wx.StaticText(self, -1, "Depth of Stack:")
 		self.depthEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
 
-		self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfImages)
-		self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfImages)
+		self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfSlices)
+		self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfSlices)
 		
 
 		self.tpLbl = wx.StaticText(self, -1, "Number of Timepoints:")
@@ -319,10 +319,6 @@ class ImportDialog(wx.Dialog):
 
 		
 		self.voxelSizeLbl = wx.StaticText(self, -1, u"Voxel size")
-		#self.voxelSizeEdit=wx.TextCtrl(self,-1,"0, 0, 0")
-		#self.voxelSizeEdit = masked.TextCtrl(self,-1,u"",
-		#mask = u"#{3}.#{4} \u03BCm x #{3}.#{4}\u03BCm x #{3}.#{4}\u03BCm",
-		#formatcodes="F-_.")
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		self.voxelX = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
 		self.voxelY = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
@@ -384,7 +380,7 @@ enter the information below.""")
 		lib.messenger.connect(self.colorBtn, "ctf_modified", self.onUpdateCtf)
 		self.infosizer.Add(self.colorBtn, (n, 0), span = (1, 2))
 		n += 1
-		self.updateBtn = wx.Button(self, -1, "Update preview")
+		self.updateBtn = wx.Button(self, -1, "Update information")
 		
 		self.infosizer.Add(self.updateBtn, (n, 0), span = (1, 2))
 		
@@ -406,29 +402,20 @@ enter the information below.""")
 		"""
 		Update the preview based on the user input
 		"""
-		try:
-			slices = int(float(self.depthEdit.GetValue()))
-		except:
-			GUI.Dialogs.showerror(self, "Could not get the number of slices", \
-									"Malformed number of slices per timepoint")
-			return
-		print "Setting slices per timepoint to ", slices
-		self.dataSource.setSlicesPerTimepoint(slices)
-		currentZ = self.zslider.GetValue()
-		self.zslider.SetRange(1, slices)
-		
-		if currentZ < 1:
-			currentZ = 1
-		if currentZ > slices:
-			currentZ = slices
-		self.zslider.SetValue(currentZ)
+		#try:
+		#	slices = int(float(self.depthEdit.GetValue()))
+		#except:
+		#	GUI.Dialogs.showerror(self, "Could not get the number of slices", \
+		#							"Malformed number of slices per timepoint")
+		#	return
+		#self.setNumberOfSlices(slices)
 		self.updateSelection(None, updatePreview = 1)
 		
 
 	def onChangeZSlice(self, event):
 		"""
 		Set the zslice displayed in the preview
-		"""             
+		"""
 		assert self.zslider.GetValue() > 0, "Cannot set negative slide"
 		self.preview.setZSlice(self.zslider.GetValue() - 1)
 		print "Setting slice to ",self.zslider.GetValue()-1
@@ -448,10 +435,9 @@ enter the information below.""")
 		"""                       
 		try:
 			vx = float(self.voxelX.GetValue())
-			vx = self.voxelSize[0]
-			
 		except ValueError:
 			self.voxelX.SetValue("%.2f"%self.voxelSize[0])
+			vx = self.voxelSize[0]
 		try:
 			vy = float(self.voxelY.GetValue())
 		except ValueError:
@@ -462,9 +448,6 @@ enter the information below.""")
 		except:
 			self.voxelZ.SetValue("%.2f"%self.voxelSize[2])
 			vz = self.voxelSize[2]
-		#except:
-		#	GUI.Dialogs.showerror(self, "Bad voxel size", "All voxel sizes were not valid.")
-		#	return
 		Logging.info("Voxel sizes = ", vx, vy, vz, kw = "io")
 		self.voxelSize = (vx, vy, vz)
 		self.spacing = (1.0, vy / vx, vz / vx)
@@ -482,13 +465,15 @@ enter the information below.""")
 		if not r.search(filename):
 			r = re.compile("[0-9]+")
 			items = r.findall(filename)
-			n = len(items[-1])
-			s = "%%.%dd" % n
+			if items:
+				n = len(items[-1])
+				s = "%%.%dd" % n
 		else:
 			items = r.findall(filename)
-			n = len(items[-1])
-			firstLetter = items[0][0]                       
-			s = "%s%%.%dd" % (firstLetter, n - 1)       
+			if items:
+				n = len(items[-1])
+				firstLetter = items[0][0]                       
+				s = "%s%%.%dd" % (firstLetter, n - 1)       
 		if items:
 			i = filename.rfind(items[-1])
 			ret = filename[:i] + s + filename[i + n:]
@@ -527,20 +512,36 @@ enter the information below.""")
 		
 	def onUpdateNumberOfTimepoints(self, evt):
 		"""
-		set the number of timepoints, and adjust the number of slices per timepoint accordingly
+		Event handler of update number of timepoints, and adjust the number of slices per timepoint accordingly
 		"""
 		timepointStr = self.timepointEdit.GetValue().strip()
+		totalAmnt = self.imageAmount
 		if not timepointStr:
 			zAmnt = self.dataSource.getSlicesPerTimepoint()
-			n = self.imageAmount / float(zAmnt)
-			self.timepointEdit.SetValue("%d"%n)
+			n = self.totalAmount / float(zAmnt)
 		else:
 			try:
-				n = int(float(timepointStr))
-			except ValueError:
+				n = int(timepointStr)
+			except:
 				return
-		#currentTime = self.timepointEdit.GetValue()
-		currentTime = n
+		self.setNumberOfTimepoints(n)
+		if n and totalAmnt:
+			slices = float(totalAmnt) / n
+			slices = int(slices)
+			self.setNumberOfSlices(slices)
+
+	def setNumberOfTimepoints(self, n = 1):
+		"""
+		Set the number of timepoints
+		@param n Number of timepoints
+		@return None
+		"""
+		if n < 1:
+			n = 1
+
+		print "Setting number of timepoints to", n
+		self.timepointEdit.SetValue("%d"%n)
+		currentTime = self.timeslider.GetValue()
 		self.timeslider.SetRange(1, n)
 		if currentTime < 1:
 			currentTime = 1
@@ -548,17 +549,9 @@ enter the information below.""")
 			currentTime = n
 		self.timeslider.SetValue(currentTime)
 
-		totalAmnt = self.imageAmount
-		if n and totalAmnt:
-			slices = float(totalAmnt) / n
-			if self.dataSource.is3DImage():
-				x, y, slices = self.dataUnit.getDimensions()
-							
-			self.depthEdit.SetValue("%d" % slices)
-	
 	def onUpdateNumberOfImages(self, evt):
 		"""
-		update the number of images
+		Update the number of images
 		"""
 		self.setNumberOfImages(self.imageAmount)
 		
@@ -567,30 +560,49 @@ enter the information below.""")
 		Sets the number of images we're reading
 		"""
 		Logging.info("n=", n, kw = "io")
-		self.imageAmountLbl.SetLabel("%d" % n)#"
+		self.imageAmountLbl.SetLabel("%d" % n)
 		self.imageAmount = n
-		
+		self.setNumberOfSlices(n)
+		self.setNumberOfTimepoints(1)
+
+	def onUpdateNumberOfSlices(self, evt):
+		"""
+		Event handler of update number of slices, and adjust the number of timepoints accordingly
+		@param evt
+		@return None
+		"""
 		val = self.depthEdit.GetValue().strip()
+		totalAmnt = self.imageAmount
 		if not val:
-			self.depthEdit.SetValue("1")
 			val = 1
 		try:
-			if not self.dataSource.is3DImage():
-				val = int(val)
-				print "Setting number of timepoints to ", n, "/", val
-				tps = float(n) / val
-			else:
-				tps = n
-			self.timepointEdit.SetValue("%d" % tps)
-			currentTime = self.timeslider.GetValue()
-			self.timeslider.SetRange(1, tps)
-			if currentTime < 1:
-				currentTime = 1
-			if currentTime > tps:
-				currentTime = tps
+			val = int(val)
+			self.setNumberOfSlices(val)
+			timepoints = totalAmnt / float(val)
+			timepoints = int(timepoints)
+			self.setNumberOfTimepoints(timepoints)
 		except:
 			pass
-				
+
+	def setNumberOfSlices(self, n = 1):
+		"""
+		Set number of slices
+		@param n Number of slices
+		@return None
+		"""
+		if n < 1:
+			n = 1
+			
+		self.depthEdit.SetValue("%d"%n)
+		self.dataSource.setSlicesPerTimepoint(n)
+		currentZ = self.zslider.GetValue()
+		self.zslider.SetRange(1, n)
+		
+		if currentZ < 1:
+			currentZ = 1
+		if currentZ > n:
+			currentZ = n
+		self.zslider.SetValue(currentZ)
 	
 	def sortNumerically(self, item1, item2):
 		"""
@@ -705,7 +717,7 @@ enter the information below.""")
 	def setSourceFile(self, event = None):
 		"""
 		Set the file used to determine which images to import
-		"""       
+		"""
 		filename = self.browsedir.GetValue()
 
 		if not filename:
@@ -718,7 +730,6 @@ enter the information below.""")
 		conf = Configuration.getConfiguration()
 		conf.setConfigItem("ImportDirectory", "Paths", self.importDirectory)
 		conf.writeSettings()
-		
 		
 		pattern = self.getPatternFromFilename(os.path.basename(filename))
 		self.patternEdit.SetValue(pattern)
