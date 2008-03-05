@@ -173,11 +173,10 @@ class BXCDataWriter(DataWriter):
 		Parameters:   imageData  vtkImageData-instance to be written
 					  filename	filename to be used
 		"""
-
 		writer = vtk.vtkXMLImageDataWriter()
 		writer.SetFileName(filename)
 		#imageData.Update()
-		imageData.UpdateInformation()
+		#imageData.UpdateInformation()
 		x, y, z = imageData.GetDimensions()
 		self.outputDims = (x,y,z)
 		

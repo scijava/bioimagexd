@@ -194,9 +194,11 @@ class ImportDialog(wx.Dialog):
 		parser = self.writer.getParser()
 		settings.writeTo(parser)
 		i = 0
+
 		for i in range(0, self.tot):
 			print "Getting dataset",i
 			image = self.dataSource.getDataSet(i, raw = 1)
+			image.Update()
 			image.SetSpacing(self.spacing)
 			image.SetOrigin(0, 0, 0)
 			self.writer.addImageData(image)

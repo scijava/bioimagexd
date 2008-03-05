@@ -264,7 +264,6 @@ class SectionsPanel(InteractivePanel):
 		self.dataUnit = dataUnit
 		
 		self.dims = dataUnit.getDimensions()
-		
 		x, y, z = self.dims
 		x /= 2
 		y /= 2
@@ -280,7 +279,7 @@ class SectionsPanel(InteractivePanel):
 	def getPlane(self, data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
 		"""
 		Get a plane from given the volume
-		"""   
+		"""
 		xAxis, yAxis, zAxis = 0, 1, 2
 		dataWidth, dataHeight, dataDepth = data.GetDimensions()
 		if not self.voi:
@@ -295,8 +294,8 @@ class SectionsPanel(InteractivePanel):
 		self.permute.SetInputConnection(data.GetProducerPort())
 		
 		spacing = data.GetSpacing()
-		data.SetSpacing(1, 1, 1)
-		data.SetOrigin(0, 0, 0)
+		#data.SetSpacing(1, 1, 1)
+		#data.SetOrigin(0, 0, 0)
 		xscale = 1
 		yscale = 1
 		if plane == "zy":
