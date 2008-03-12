@@ -276,6 +276,7 @@ class MainWindow(wx.Frame):
 		lib.messenger.connect(None, "current_file", self.updateTitle)
 		lib.messenger.connect(None, "tree_selection_changed", self.onTreeSelectionChanged)
 		lib.messenger.connect(None, "get_voxel_at", self.updateVoxelInfo)
+		lib.messenger.connect(None, "show_measured_distance", self.onShowDistance)
 		lib.messenger.connect(None, "load_dataunit", self.onMenuOpen)
 		lib.messenger.connect(None, "view_help", self.onViewHelp)
 		lib.messenger.connect(None, "delete_dataset", self.onDeleteDataset)
@@ -593,16 +594,16 @@ class MainWindow(wx.Frame):
 			wx.CallLater(1500, self.clearProgressBar)
 		else:
 			self.progress.Show()
+			
+		renderingEnabled = scripting.renderingEnabled
+		scripting.renderingEnabled = False
 		self.progress.Update()
+		scripting.renderingEnabled = renderingEnabled
+		
 		if text:
 			self.statusbar.SetStatusText(text)
 			self.statusbar.Update()
-#		if allow_gui:
-#			if self.visualizer:
-#				self.visualizer.in_vtk = 0
-#		else:
-#			if self.visualizer:
-#				self.visualizer.in_vtk = 1
+
 				
 	def clearProgressBar(self,*args):
 		"""
@@ -612,6 +613,17 @@ class MainWindow(wx.Frame):
 		self.statusbar.Update()
 		self.progress.Show(0)
 		self.progress.Update()
+		
+	def onShowDistance(self, obj, event, distance):
+		"""
+		Show the distance measured in interactive panel
+		"""
+		dataunit = scripting.visualizer.getDataUnit()
+		xsize,ysize,zsize = dataunit.getVoxelSize()
+		print "voxel sizes=",xsize,ysize,zsize
+		distanceUm = distance*xsize*(1000000)
+		text = u"%d pixels = %.2f\u03BCm"%(distance, distanceUm)
+		self.statusbar.SetStatusText(text)
 			
 	def updateVoxelInfo(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
 		"""
@@ -1341,9 +1353,11 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		dataunit = selectedFiles[0]
 		if self.visualizer:
 			hasDataunit = bool(self.visualizer.dataUnit)
-			if not hasDataunit or (not self.visualizer.getProcessedMode() and (self.visualizer.dataUnit != dataunit)):
+			didSetDataUnit = False
+			if not hasDataunit and not self.visualizer.getProcessedMode():
 				Logging.info("Setting dataunit for visualizer", kw = "main")
 				self.visualizer.setDataUnit(dataunit)
+				didSetDataUnit = True
 			else:
 				if reload:
 					Logging.info("Closing on reload: ", self.visualizer.currMode.closeOnReload())
@@ -1354,7 +1368,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
 			self.showVisualization(self.visPanel)
-			self.visualizer.enable(1)
+			self.visualizer.enable(True)
 			if hasDataunit:
 				Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
 				self.visualizer.updateRendering()
@@ -1508,8 +1522,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			return
 		# We try to load the actual data
 		Logging.info("Loading dataset with extension %s, path=%s" % (ext, path), kw = "io")
-	
-		
 		datasource = self.extToSource[ext]()
 		try:
 			datasource = self.extToSource[ext]()
@@ -1531,6 +1543,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				Dialogs.showerror(self, "Failed to read dataset %s." % path, "Failed to read dataset")
 			return
 		
+		Logging.info("Got %d dataunits"%len(dataunits), kw="io")
 		# We might get tuples from leica
 		d = {}
 		self.visualizer.enable(0)

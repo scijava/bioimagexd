@@ -260,7 +260,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 			self.menuManager.check(MenuManager.ID_SPLINE_CLOSED, active.closed)
 		
 		method = None
-		if active and active.getClosed():
+		if active and hasattr(active, "getClosed") and active.getClosed():
 			method = self.menuManager.enable
 		elif active:
 			method = self.menuManager.disable

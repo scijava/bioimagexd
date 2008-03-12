@@ -194,6 +194,8 @@ class TaskPanel(ScrolledPanel):
 		"""
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
+			if self.dataUnit.__module__ == 'Manipulation.ManipulationDataUnit':
+				self.dataUnit.switchDatasets()
 		except Logging.GUIError, err:
 			err.show()			  
 		if self.channelBox:

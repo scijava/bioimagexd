@@ -49,7 +49,7 @@ import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
 import TrackingFilters
-#import RegistrationFilters
+import RegistrationFilters
 
 from lib.FilterTypes import *
 
@@ -143,7 +143,7 @@ def getFilterList():
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
 	filterlist += TrackingFilters.getFilters()
-	#filterlist += RegistrationFilters.getFilters()
+	filterlist += RegistrationFilters.getFilters()
 	return filterlist
 
 
@@ -263,8 +263,10 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""		
-		if parameter in ["Shift", "Scale"]:
+		if parameter == "Shift":
 			return 0
+		if parameter == "Scale":
+			return 1
 		return 1
 		
 	def execute(self, inputs, update = 0, last = 0):
@@ -273,7 +275,7 @@ class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
 		"""			   
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-		
+
 		image = self.getInput(1)
 		#print "Using ",image
 		self.vtkfilter.SetInput(image)
@@ -541,7 +543,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		Return the default value of a parameter
 		"""	   
 		if parameter == "TimeStep":
-			return 0.0630
+			return 0.0625
 		if parameter == "Conductance":
 			return 9.0
 		if parameter == "Iterations":
@@ -800,7 +802,6 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		image = self.getInput(1)
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
-			
 		uc3 = itk.Image.UC3
 		shift = itk.ShiftScaleImageFilter[uc3, uc3].New()
 		recons = itk.ReconstructionByDilationImageFilter[uc3, uc3].New()
@@ -810,7 +811,6 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		recons.SetMaskImage(image)
 		recons.SetMarkerImage(shift.GetOutput())
 		recons.SetFullyConnected(self.parameters["Connectivity"])
-		
 		subst.SetInput1(image)
 		subst.SetInput2(recons.GetOutput())
 		

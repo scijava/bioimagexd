@@ -41,8 +41,7 @@ count = {}
 
 class OGLAnnotation(ogl.Shape):
 	"""
-	Created: KP
-	Description: A base class for all OGL based annotations
+	A base class for all OGL based annotations
 	"""
 	AnnotationType = ""
 	def __init__(self, canvas = None):
@@ -171,12 +170,14 @@ class OGLAnnotation(ogl.Shape):
 			self.attrList.append("scaleFactor")
 		for attr in self.attrList:
 			self.addAttr(ret, attr)
+		ret["attrList"]=self.attrList
 		return {self.AnnotationType: ret}
 
 	def restoreFrom(self, annotation):
 		"""
 		copy attributes of given annotation
 		"""
+		self.attrList = annotation.__dict__["attrList"]
 		for i in self.attrList:
 			self.__dict__[i] = annotation.__dict__[i]
 

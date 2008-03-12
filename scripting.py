@@ -39,11 +39,11 @@ import platform
 import getpass
 import Logging
 import ConfigParser
+import codecs
 
 class MyConfigParser(ConfigParser.RawConfigParser):
 	"""
-	Created: KP
-	Description: a config parser that doesn't ignore the case of the options and sections
+	a config parser that doesn't ignore the case of the options and sections
 	"""
 	def optionxform(self, optionstr):
 		"""
@@ -55,6 +55,7 @@ settingsCache = {}
 record = 0
 conf = None
 
+renderingEnabled = True
 
 TFLag = 1
 combinedDataUnit = None
@@ -182,14 +183,15 @@ def get_log_dir():
 	Tries to create and return a path to a directory for logging
 	"""
 	parser = ConfigParser.RawConfigParser()
-	parser.read([os.path.join(get_config_dir(), "BioImageXD.ini")])
+	fp = codecs.open(os.path.join(get_config_dir(), "BioImageXD.ini"),"r","utf-8")
+	parser.readfp(fp)
 	if parser.has_section("Paths"):
 		try:
 			value = parser.get("Paths","LogPath")
 		except:
 			value = None
-		if value: 
-			print "Log directory is ",value
+		if value:
+			print u"Log directory is ",type(value),value
 			return value
 		
 	if platform.system()=="Darwin":
@@ -295,7 +297,6 @@ def get_config_dir():
 	if not os.path.exists(confdir):
 		os.mkdir(confdir)
 	return confdir
-#		 return get_main_dir() 
 
 def get_help_dir():
 	"""

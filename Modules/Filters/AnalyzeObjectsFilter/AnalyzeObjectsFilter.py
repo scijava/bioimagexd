@@ -296,6 +296,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setResultVariable("NonZeroVoxels", nonZeroVoxels)
 		
 		if self.reportGUI:
+			self.reportGUI.DeleteAllItems()
 			self.reportGUI.setVolumes(values)
 			self.reportGUI.setCentersOfMass(centersofmass)
 			self.reportGUI.setAverageIntensities(self.avgIntList)

@@ -76,11 +76,11 @@ class Tee:
 	def files(self):
 		return self._files
 
-	def write(self, string):
+	def write(self, msg):
 		for eachfile in self._files:
 			if eachfile in self._to_encode:
-				string = codecs.encode(string, "ascii", "xmlcharrefreplace")
-			eachfile.write(string)
+				msg = codecs.encode(msg, "ascii", "xmlcharrefreplace")
+			eachfile.write(msg)
 
 	def writelines(self, lines):
 		for eachline in lines:
@@ -121,7 +121,6 @@ def enableFull():
 
 class GUIError(Exception):
 	"""
-	Created: 13.12.2004, KP
 	Description: Displays an error message.
 	"""
 	def __init__(self, title, msg):

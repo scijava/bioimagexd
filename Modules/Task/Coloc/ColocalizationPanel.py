@@ -391,7 +391,7 @@ class ColocalizationPanel(TaskPanel):
 		Use vtkAutoThresholdColocalization to determine thresholds
 					 for colocalization and calculate statistics
 		"""
-		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 1)		 
+		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 1)
 		self.eventDesc = "Calculating thresholds"
 		
 		self.doPreviewCallback(None)

@@ -35,7 +35,7 @@ import Logging
 import os.path
 import vtk
 import vtkbxd
-
+import traceback
 def getExtensions(): 
 	return []
 
@@ -137,9 +137,11 @@ class FileListDataSource(DataSource):
 			
 		for file in filenames:
 			if file not in self.imageDims:
+				print "Trying to open",type(file)
 				try:
 					i = Image.open(file)
 				except IOError, ex:
+					traceback.print_exc()
 					raise Logging.GUIError("Cannot open image file", "Cannot open image file %s" % file)
 				fSize = i.size
 				self.imageDims[file] = i.size
@@ -178,7 +180,7 @@ class FileListDataSource(DataSource):
 	def getReadersFromFilenames(self):
 		"""
 		create the reader list from a given set of file names and parameters
-		"""		   
+		"""
 
 		for i in self.readers:
 			del i

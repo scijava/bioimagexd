@@ -154,6 +154,7 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("Disabling scrollbars", kw="preview")
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
+		self.drawableRect = self.GetClientRect()
 		
 	def calculateBuffer(self):
 		"""
@@ -223,7 +224,7 @@ class PreviewFrame(InteractivePanel):
 		
 		InteractivePanel.OnSize(self, event)
 		self.sizeChanged = 1
-		if self.enabled:
+		if self.enabled and scripting.renderingEnabled:
 			self.calculateBuffer()
 			self.updatePreview(renew = 0)
 		event.Skip()
@@ -282,7 +283,8 @@ class PreviewFrame(InteractivePanel):
 		x -= x0
 		y -= y0
 		z = self.z
-
+		if z==-1: z=0
+	
 		dims = [x, y, z]
 		rx, ry, rz = dims
 
@@ -296,34 +298,31 @@ class PreviewFrame(InteractivePanel):
 		Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
 		ncomps = self.rawImage.GetNumberOfScalarComponents()
 		Logging.info("Number of scalar components in image = %d"%ncomps, kw="preview")
-#		print "RAW IMAGES=",self.rawImages
-#		print self.rawImages[0]
-#		print self.rawImages[1]
+
 		if ncomps == 1:
 			rv, gv, bv = -1, -1, -1
 			alpha = -1
 			if len(self.rawImages) < 2:
-				scalar = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 0)
+				scalar = self.rawImage.GetScalarComponentAsDouble(x, y, z, 0)
 			else:
 				scalar = []
 				for i, img in enumerate(self.rawImages):
-#					img.SetExtent(img.GetWholeExtent())
 					if 1 or self.dataUnit.getOutputChannel(i):
-						scalar.append(img.GetScalarComponentAsDouble(x, y, self.z, 0))
+						scalar.append(img.GetScalarComponentAsDouble(x, y, z, 0))
 				scalar = tuple(scalar)
 
 		else:
-			rv = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 0)
-			gv = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 1)
-			bv = self.rawImage.GetScalarComponentAsDouble(x, y, self.z, 2)
+			rv = self.rawImage.GetScalarComponentAsDouble(x, y, z, 0)
+			gv = self.rawImage.GetScalarComponentAsDouble(x, y, z, 1)
+			bv = self.rawImage.GetScalarComponentAsDouble(x, y, z, 2)
 			scalar = 0xdeadbeef
 			
-		r = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 0)
-		g = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 1)
-		b = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 2)
+		r = self.currentImage.GetScalarComponentAsDouble(x, y, z, 0)
+		g = self.currentImage.GetScalarComponentAsDouble(x, y, z, 1)
+		b = self.currentImage.GetScalarComponentAsDouble(x, y, z, 2)
 		alpha = -1
 		if ncomps > 3:
-			alpha = self.currentImage.GetScalarComponentAsDouble(x, y, self.z, 3)
+			alpha = self.currentImage.GetScalarComponentAsDouble(x, y, z, 3)
 
 		lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.currentCt)
 			
@@ -338,12 +337,12 @@ class PreviewFrame(InteractivePanel):
 	def setTimepoint(self, timePoint):
 		"""
 		The previewed timepoint is set to the given timepoint
-		Parameters:
-				timePoint	The timepoint to show
+		@param timePoint	The timepoint to show
 		"""
 		if self.timePoint != timePoint:
 			self.timePoint = timePoint
-			self.updatePreview(1)
+			if scripting.renderingEnabled:
+				self.updatePreview(1)
 
 	def setDataUnit(self, dataUnit, selectedItem = -1):
 		"""
@@ -352,10 +351,7 @@ class PreviewFrame(InteractivePanel):
 					 as ImageData
 		"""
 		Logging.info("Setting dataunit of PreviewFrame to %s"%str(dataUnit), kw="preview")
-		# We can't use the scripting.visualizer.zslider since we might not be operating under visualizer 
-		#		print "Setting self.z to slider value=",scripting.visualizer.getZSliderValue()-1
-		#		self.z = scripting.visualizer.getZSliderValue()-1
-		self.z = 0
+
 		if not dataUnit:
 			self.dataUnit = None
 			self.z = 0
@@ -707,6 +703,7 @@ class PreviewFrame(InteractivePanel):
 
 		self.setOffset(xoff, yoff)
 		dc.DrawBitmap(bmp, xoff + x0, yoff + y0, True)
+		self.drawableRect = (xoff+x0,xoff+x0+bmp.GetWidth(),yoff+y0, yoff+y0+bmp.GetHeight())
 
 		self.bmp = self.buffer
 		
@@ -716,6 +713,13 @@ class PreviewFrame(InteractivePanel):
 		
 		dc.EndDrawing()
 		self.repaintHelpers()
+		
+	def getDrawableRectangles(self):
+		"""
+		Return the rectangles can be drawn on as four-tuples
+		"""	   
+		return [self.drawableRect]
+
 
 	def makeBackgroundBuffer(self, dc):
 		"""

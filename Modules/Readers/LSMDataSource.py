@@ -35,6 +35,7 @@ import scripting
 import vtk
 import vtkbxd
 import struct
+import time
 
 def getExtensions(): 
 	return ["lsm"]
@@ -92,14 +93,13 @@ class LsmDataSource(DataSource):
 				
 			self.reader.SetFileName(self.convertFileName(self.filename))
 			self.reader.SetUpdateChannel(channelNum)
-			#print "Update information..."
 			self.reader.UpdateInformation()
-			#print "done"
 			self.originalScalarRange = None
 			self.getBitDepth()
 			self.originalDimensions = self.reader.GetDimensions()[0:3]
-
 			self.updateProgress(None, None)
+			#for tp in range(0,self.reader.GetDimensions()[3]):
+			#	self.getTimeStamp(tp)
 			
 	def updateProgress(self, obj, evt):
 		"""
@@ -131,9 +131,13 @@ class LsmDataSource(DataSource):
 			return timepoint
 		if not self.timestamps:
 			self.timestamps = self.reader.GetTimeStampInformation()
-		if timepoint > self.timestamps.GetSize():
+		if timepoint >= self.timestamps.GetSize():
+			timeInterval = self.reader.GetTimeInterval()
+			if timeInterval != 0:
+				return timepoint*timeInterval
 			return 0
 		v = self.timestamps.GetValue(timepoint)
+		print v
 		v0 = self.timestamps.GetValue(0)
 		return (v - v0)
 
@@ -152,13 +156,7 @@ class LsmDataSource(DataSource):
 		Return the bit depth of data
 		"""
 		if not self.bitdepth:
-			#self.reader.DebugOn()
-			#self.reader.Update()
 			d = self.reader.GetOutput().GetScalarType()
-			#self.reader.ExecuteInformation()
-						
-			#self.reader.DebugOff()
-			#print "\n\n\n**** Datatype=",d
 			if d == 3:
 				self.bitdepth = 8
 				if not self.originalScalarRange:
@@ -177,6 +175,14 @@ class LsmDataSource(DataSource):
 			#data=self.getDataSet(0,raw=1)
 			#self.scalarRange=data.GetScalarRange()
 			self.scalarRange = (0, 2 ** self.bitdepth - 1)
+		if self.explicitScale and self.intensityScale != -1:
+			x0, x1  = self.scalarRange
+			x0 += self.getIntensityShift()
+			x0 *= self.getIntensityScale()
+			x1 += self.getIntensityShift()
+			x1 *= self.getIntensityScale()
+			print "Returning scaled",x0,x1,self.scalarRange
+			return (x0,x1)
 		return self.scalarRange
 
 	def internalGetDimensions(self):

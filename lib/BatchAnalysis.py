@@ -354,6 +354,9 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		parser.add_section("BatchAnalysis")
 		parser.add_section("SelectedVariables")
 
+		parser.set("BatchAnalysis","ChannelGrouping",str(self.channelGrouping))
+		parser.set("BatchAnalysis","ChannelProcessing",str(self.channelGrouping))
+		parser.set("BatchAnalysis","ProcedureListGrouping",str(self.procListGrouping))
 		nameList = self.procedureLists.keys()
 		parser.set("BatchAnalysis", "ProcedureLists", str(nameList))
 		for procListName in nameList:
@@ -378,6 +381,15 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		parser.read([filename])
 		self.filename = filename
 		procedureLists = parser.get("BatchAnalysis", "ProcedureLists")
+		
+		chGrouping = parser.get("BatchAnalysis","ChannelGrouping")
+		chProcessing = parser.get("BatchAnalysis","ChannelProcessing")
+		procListGrouping = parser.get("BatchAnalysis","ProcedureListGrouping")
+		
+		self.channelGrouping = eval(chGrouping)
+		self.channelProcessing = eval(chProcessing)
+		self.procListGrouping = eval(procListGrouping)
+		
 		if procedureLists:
 			procedureLists = eval(procedureLists)
 		for procListName in procedureLists:

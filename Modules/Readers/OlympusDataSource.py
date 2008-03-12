@@ -27,8 +27,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import lib.messenger
-
 import codecs
 import ConfigParser
 from lib.DataSource.DataSource import DataSource
@@ -81,13 +79,11 @@ class OlympusDataSource(DataSource):
 				dataName = dataName[1:]
 			if dataName[-1] == '"':
 				dataName = dataName[:-1]
-			print "DataName='%s'"%dataName
 			directoryName, self.lutFileName = self.getLUTPath(self.channel)
 			newLut = os.path.join(directoryName, self.lutFileName)
 			newLut = os.path.join(os.path.dirname(self.filename), newLut)
 			if not os.path.exists(newLut):
 				self.path = "%s.files"%self.filename
-				print "path = ",self.path
 				print self.lutFileName
 			else:
 				self.path = os.path.join(os.path.dirname(filename), "%s.files"%dataName)
@@ -242,8 +238,7 @@ class OlympusDataSource(DataSource):
 		Read the LUT for this dataset
 		"""
 		lutFile = os.path.join(self.path, self.lutFileName)
-		print "self.path=",self.path
-		print "Lut file=",lutFile
+
 		file = codecs.open(lutFile, "r", "utf-16")
 		while 1:
 			line = file.readline()
@@ -278,9 +273,7 @@ class OlympusDataSource(DataSource):
 		else:
 			minval, maxval = self.scalarRange
 		coeff = 65536.0 / (maxval + 1)
-		#coeff=int(coeff)
-		#print "coeff=",coeff
-#		 print "Largest value=",len(vals)/coeff
+
 		red0, green0, blue0 = -1, -1, -1
 		for i in range(0, maxval + 1):
 			red, green, blue = vals[int(i * coeff)]
@@ -480,7 +473,7 @@ class OlympusDataSource(DataSource):
 	
 	def getBitDepth(self):
 		"""
-		return the bit depth of the imagesr eturned by this datasource
+		return the bit depth of the images returned by this datasource
 		"""
 		return self.bitdepth
 	

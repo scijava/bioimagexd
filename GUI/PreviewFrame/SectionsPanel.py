@@ -41,8 +41,7 @@ import vtk
 
 class SectionsPanel(InteractivePanel):
 	"""
-	Created: 23.05.2005, KP
-	Description: A widget that previews the xy,xz and yz planes of a dataset
+	A widget that previews the xy,xz and yz planes of a dataset
 	"""
 	def __init__(self, parent, visualizer, size = (512, 512), **kws):
 		"""
@@ -55,6 +54,8 @@ class SectionsPanel(InteractivePanel):
 		
 		self.voi = None
 		self.permute = None
+		self.oldBufferDims = None
+		self.oldBufferMaxXY = None
 		
 		self.bmp = None
 		self.bgcolor = (127, 127, 127)
@@ -66,12 +67,13 @@ class SectionsPanel(InteractivePanel):
 		self.buffer = wx.EmptyBitmap(x, y)
 		InteractivePanel.__init__(self, parent, size = size, **kws)
 		self.size = size
-		self.sizeChanged = 0
+		self.sizeChanged = False
 		self.rows = 0
 		self.cols = 0
 		self.scrollsize = 32
 		self.scrollTo = None
 		self.dataUnit = None
+		self.dataUnitChanged = False
 		
 		self.drawableRects = []
 		self.zspacing = 1
@@ -109,10 +111,10 @@ class SectionsPanel(InteractivePanel):
 		Set the factor by which the image is zoomed
 		"""
 		self.zoomFactor = factor
-		if self.dataUnit:
-			self.setTimepoint(self.timepoint)
+#		if self.dataUnit:
+#			self.setTimepoint(self.timepoint)
 		self.updateAnnotations()
-		self.sizeChanged = 1
+		self.sizeChanged = True
 
 		self.xmargin = int(self.xmargin_default * self.zoomFactor)
 		self.ymargin = int(self.ymargin_default * self.zoomFactor)
@@ -126,8 +128,8 @@ class SectionsPanel(InteractivePanel):
 
 		self.calculateBuffer()
 			
-		self.updatePreview()
-		self.Refresh()
+#		self.updatePreview()
+#		self.Refresh()
 		
 	def onSetZSlice(self, obj, event, arg):
 		"""
@@ -247,10 +249,13 @@ class SectionsPanel(InteractivePanel):
 		Size event handler
 		"""
 		InteractivePanel.OnSize(self, event)
-		self.size = event.GetSize()
-		Logging.info("Sections panel size changed to ", self.size, kw = "preview")
-		self.sizeChanged = 1
-		
+		if self.size != event.GetSize():
+			self.size = event.GetSize()
+			Logging.info("Sections panel size changed to ", self.size, kw = "preview")
+			self.sizeChanged = True
+			self.calculateBuffer()
+			self.paintPreview()
+			
 	def setBackground(self, r, g, b):
 		"""
 		Set the background color
@@ -264,6 +269,7 @@ class SectionsPanel(InteractivePanel):
 		self.dataUnit = dataUnit
 		
 		self.dims = dataUnit.getDimensions()
+		
 		x, y, z = self.dims
 		x /= 2
 		y /= 2
@@ -275,11 +281,12 @@ class SectionsPanel(InteractivePanel):
 
 		self.voxelSize = dataUnit.getVoxelSize()
 		InteractivePanel.setDataUnit(self, dataUnit)
+		self.dataUnitChanged = True
 		
 	def getPlane(self, data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
 		"""
 		Get a plane from given the volume
-		"""
+		"""   
 		xAxis, yAxis, zAxis = 0, 1, 2
 		dataWidth, dataHeight, dataDepth = data.GetDimensions()
 		if not self.voi:
@@ -347,19 +354,25 @@ class SectionsPanel(InteractivePanel):
 		"""
 		Set the timepoint
 		"""
+		recalculate = False
+		if tp != self.timepoint or self.dataUnitChanged:
+			recalculate = True
 		self.timepoint = tp
-		if self.dataUnit.isProcessed():
-			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
-			self.ctf = self.dataUnit.getColorTransferFunction()
-		else:
-			image = self.dataUnit.getTimepoint(tp)
-			image.SetUpdateExtent(image.GetWholeExtent())
-			self.ctf = self.dataUnit.getColorTransferFunction()
-
-		
-		self.imagedata = lib.ImageOperations.imageDataTo3Component(image, self.ctf)
-		self.imagedata.Update()
-		self.zspacing = image.GetSpacing()[2]
+		if not scripting.renderingEnabled:
+			return
+		if recalculate or not self.imagedata:
+			if self.dataUnit.isProcessed():
+				image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
+				self.ctf = self.dataUnit.getColorTransferFunction()
+			else:
+				image = self.dataUnit.getTimepoint(tp)
+				image.SetUpdateExtent(image.GetWholeExtent())
+				self.ctf = self.dataUnit.getColorTransferFunction()
+			self.cachedImage = image
+			self.imagedata = lib.ImageOperations.imageDataTo3Component(image, self.ctf)
+			self.imagedata.Update()
+			self.zspacing = image.GetSpacing()[2]
+			self.dataUnitChanged = False
 		
 		if self.fitLater:
 			self.fitLater = 0
@@ -411,11 +424,19 @@ class SectionsPanel(InteractivePanel):
 		if not self.imagedata:
 			return
 		x, y, z = self.imagedata.GetDimensions()
-		x, y, z = [i * self.zoomFactor for i in (x, y, z)]
-		Logging.info("scaled size =", x, y, z, kw = "visualizer")
+		x, y, z = self.dataUnit.getDimensions()
 		
-		x += z * self.zoomZ + 2 * self.xmargin
-		y += z * self.zoomZ + 2 * self.ymargin
+		if not self.sizeChanged and (x, y, z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxClientSizeX, self.maxClientSizeY):
+			return
+		
+		self.oldBufferDims = (x, y, z)
+		self.oldBufferMaxXY = (self.maxClientSizeX, self.maxClientSizeY)
+
+		x, y, z = [int(i * self.zoomFactor) for i in (x, y, z)]
+		Logging.info("scaled size =", x, y, z, kw = "visualizer")
+	
+		x += z * self.zoomZ * self.zspacing + 2 * self.xmargin
+		y += z * self.zoomZ * self.zspacing+ 2 * self.ymargin
 		x = int(max(x, self.maxClientSizeX))
 		y = int(max(y, self.maxClientSizeY))
 		self.paintSize = (x, y)
@@ -429,8 +450,8 @@ class SectionsPanel(InteractivePanel):
 		Enable/Disable updates
 		"""
 		self.enabled = flag
-		if flag:
-			self.updatePreview()
+#		if flag:
+#			self.updatePreview()
 
 	def updatePreview(self):
 		"""
@@ -442,18 +463,12 @@ class SectionsPanel(InteractivePanel):
 		if not self.slices:
 			self.setTimepoint(self.timepoint, update = 0)
 		self.paintPreview()
-		self.Refresh()	
+		self.Refresh()
 
 	def OnPaint(self, event):
 		"""
 		Does the actual blitting of the bitmap
 		"""
-		# if the size of the painting area has changed, then re-generate the buffer and repaint
-		if self.sizeChanged:
-			self.sizeChanged = 0
-			Logging.info("Size changed, calculating buffer", kw = "preview")
-			self.calculateBuffer()
-			self.updatePreview()
 		InteractivePanel.OnPaint(self, event)
 	
 	def paintPreview(self):

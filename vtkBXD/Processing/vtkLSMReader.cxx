@@ -573,11 +573,14 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
 
   if(colNum != this->GetNumberOfChannels())
     {
-    vtkWarningMacro(<<"Number of channel colors is not same as number of channels!");
+    vtkDebugMacro(<<"Number of channel colors is not same as number of channels!");
+    vtkDebugMacro(<<"numColors="<<colNum<<", numChls="<<this->GetNumberOfChannels()<<", numNames="<<nameNum);
     }
   if(nameNum != this->GetNumberOfChannels())
     {
-    vtkWarningMacro(<<"Number of channel names is not same as number of channels!");
+    
+    vtkDebugMacro(<<"Number of channel names is not same as number of channels!");
+    vtkDebugMacro(<<"numColors="<<colNum<<", numChls="<<this->GetNumberOfChannels()<<", numNames="<<nameNum);
     }
 
   // Read offset to color info
@@ -594,7 +597,7 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
 
     
   // Read the colors
-  for(int j=0;j<colNum;j++)
+  for(int j = 0; j < this->GetNumberOfChannels(); j++)
     {
     this->ReadFile(f,&colorOffset,4,colorBuff,1);
     
@@ -610,13 +613,13 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
 
   nameLength = nameSkip = 0;
   tempBuff = nameBuff;
-  for(int i=0;i<nameNum;i++)
+  for(int i = 0; i < this->GetNumberOfChannels(); i++)
     {
     nameSkip = this->FindChannelNameStart(tempBuff,sizeOfNames-nameSkip);
     nameLength = this->ReadChannelName(tempBuff+nameSkip,sizeOfNames-nameSkip,name);
     
     tempBuff += nameSkip + nameLength;
-    //vtkDebugMacro(<<"Setting channel "<<i<<"name");
+    vtkDebugMacro(<<"Setting channel "<<i<<"name");
     this->SetChannelName(name,i);
     }
   
@@ -630,11 +633,13 @@ int vtkLSMReader::ReadTimeStampInformation(ifstream *f,unsigned long offset)
 {
   int numOffStamps = 0;
   if( offset == 0 ) // position is 0 for non-timeseries files!
-    {
+  {
+    vtkDebugMacro(<<"No timestamp information available");
     return 0;
-    }
+  }
   offset += 4;
   numOffStamps = this->ReadInt(f,&offset);
+  vtkDebugMacro(<<"There are "<<numOffStamps<<" stamps available");
   if(numOffStamps != this->GetNumberOfTimePoints())
     {
 //    vtkWarningMacro(<<"Number of time stamps does not correspond to the number off time points!");
@@ -729,8 +734,8 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   this->ReadChannelColorsAndNames(f,this->ChannelInfoOffset);
 
   // Skip time interval in seconds (8 bytes)
-  pos += 1*8;
-  
+  //pos += 1*8;
+  this->TimeInterval = this->ReadDouble(f, &pos);
   
   // If each channel has different datatype (meaning DataType == 0), then
   // read the offset to more information and read the info
@@ -795,7 +800,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
   switch(tag)
   {
     case TIF_NEWSUBFILETYPE: 
-      vtkDebugMacro(<<"New subfile type="<<value);
+//      vtkDebugMacro(<<"New subfile type="<<value);
       this->NewSubFileType = value;     
       break;
     
@@ -855,11 +860,11 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
         {
           unsigned int* offsets = (unsigned int*)actualValue;
           unsigned int stripOffset=offsets[i];
-          vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
+//          vtkDebugMacro(<<"Strip offset to "<<i<<"="<<stripOffset);   
           this->StripOffset->SetValue(i,stripOffset);
         }
     } else {
-        vtkDebugMacro(<<"Strip offset to only channel="<<value);
+      //  vtkDebugMacro(<<"Strip offset to only channel="<<value);
         this->StripOffset->SetValue(0,value);
     }
       break;
@@ -869,7 +874,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
       vtkByteSwap::Swap4LE((unsigned int*)actualValue);
 #endif
       this->SamplesPerPixel = this->CharPointerToUnsignedInt(actualValue);
-            vtkDebugMacro(<<"Samples per pixel="<<SamplesPerPixel<<"\n");
+       //     vtkDebugMacro(<<"Samples per pixel="<<SamplesPerPixel<<"\n");
       break;
     
     case TIF_STRIPBYTECOUNTS:
@@ -885,7 +890,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
           unsigned int bytecount = this->CharPointerToUnsignedInt(actualValue + (this->TIFF_BYTES(TIFF_LONG)*i));
           
             this->StripByteCount->SetValue(i,bytecount);
-            vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i] <<"("<<bytecount<<")");
+        //    vtkDebugMacro(<<"Strip byte count of " << i <<"="<<counts[i] <<"("<<bytecount<<")");
         }
     } else {
          //vtkDebugMacro(<<"Bytecount of only strip="<<value);
@@ -1009,7 +1014,7 @@ unsigned long vtkLSMReader::SeekFile(int image)
   {
     offset = this->OffsetToLastAccessedImage;
     imageCount = image - this->NumberOfLastAccessedImage;
-    vtkDebugMacro(<<"offset of last image: "<<offset<<"imageCount="<<imageCount<<"\n");
+//    vtkDebugMacro(<<"offset of last image: "<<offset<<"imageCount="<<imageCount<<"\n");
   }
   else
   {
@@ -1018,7 +1023,7 @@ unsigned long vtkLSMReader::SeekFile(int image)
   }
 
   offset = this->ReadImageDirectory(this->GetFile(),offset);
-  vtkDebugMacro(<<"Offset: "<<offset<<", imageCount: "<<imageCount<<"\n");
+//  vtkDebugMacro(<<"Offset: "<<offset<<", imageCount: "<<imageCount<<"\n");
   do
   {
     // we count only image directories and not thumbnail images
@@ -1097,14 +1102,6 @@ void vtkLSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
     int decoded = lzw_decode(s, outbufp, size);
     outbufp = outbuf;
     for(int line = 0; line < lines; line++) {
-    //      int decoded = lzw_decode(s, outbufp, width*bytes);
- //       int decoded = width*bytes;
- //       for(int j=0;j<width*bytes;j++)outbufp[j]=buffer[line*width*bytes+j];
-        
-//        if(decoded != width*bytes) {
-//            vtkErrorMacro(<<"Error: decoded "<<decoded<<", asked for "<<width*bytes<<"\n");
-//        }
-        
         if(this->Predictor == 2) {
             if(bytes == 1) 
                 this->DecodeHorizontalDifferencing(outbufp,width*bytes);

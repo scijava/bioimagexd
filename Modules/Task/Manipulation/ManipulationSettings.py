@@ -41,7 +41,6 @@ import ManipulationFilters
 
 class ManipulationSettings(FilterBasedTaskSettings):
 	"""
-	Created: 27.03.2005, KP
 	Description: Stores settings related the process task
 	"""
 	def __init__(self, n = -1):

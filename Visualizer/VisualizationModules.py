@@ -38,8 +38,7 @@ import scripting
 class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 	name = "VisualizationModule"
 	"""
-	Created: 28.04.2005, KP
-	Description: A class representing a visualization module
+	A class representing a visualization module
 	"""
 	def __init__(self, parent, visualizer, **kws):
 		"""
@@ -127,7 +126,8 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		Sets the dataunit this module uses for visualization
 		"""
 		self.dataUnit = dataunit
-		VisualizationModule.showTimepoint(self, self.visualizer.getTimepoint(), update = 0)
+		if scripting.renderingEnabled:
+			VisualizationModule.showTimepoint(self, self.visualizer.getTimepoint(), update = 0)
 
 	def getDataUnit(self):
 		"""
@@ -147,6 +147,8 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		self.timepoint = value
 		if not self.dataUnit:
+			return
+		if not scripting.renderingEnabled:
 			return
 		if self.visualizer.getProcessedMode():
 			Logging.info("Will render processed data instead", kw = "rendering")

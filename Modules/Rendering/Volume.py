@@ -73,8 +73,7 @@ def getQuickKeyCombo():
 
 class VolumeModule(VisualizationModule):
 	"""
-	Created: 28.04.2005, KP
-	Description: A volume Rendering module
+	A volume Rendering module
 	"""	   
 	def __init__(self, parent, visualizer, **kws):
 		"""
@@ -140,7 +139,7 @@ class VolumeModule(VisualizationModule):
 		self.eventDesc = "Rendering volume"
 		self.qualityRange = 0, 10
 			   
-		self.parent.getRenderer().AddVolume(self.volume)
+		self.volumeAdded = False
 		self.setShading(0)
 
 		self.vtkObjects = ["otf", "otf2"]
@@ -258,6 +257,7 @@ class VolumeModule(VisualizationModule):
 		
 		self.setInputChannel(1, 0)
 		self.parameters["Palette"] = self.colorTransferFunction
+
 		
 	def updateQuality(self):
 		"""
@@ -423,7 +423,10 @@ class VolumeModule(VisualizationModule):
 		Logging.info("Rendering using, ", self.mapper.__class__, kw = "rendering")
 		
 		self.mapper.SetInput(input)
-
+		if not self.volumeAdded:
+			self.parent.getRenderer().AddVolume(self.volume)
+			self.volumeAdded = True
+			
 		VisualizationModule.updateRendering(self, input)
 		self.parent.Render()
 		if self.parameters["Method"] == TEXTURE_MAPPING_3D:

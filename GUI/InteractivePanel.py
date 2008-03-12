@@ -33,6 +33,7 @@ import scripting
 import lib.ImageOperations
 import lib.messenger
 import Logging
+import math
 import wx.lib.ogl as ogl
 import platform
 import wx
@@ -45,7 +46,6 @@ MANAGE_ANNOTATION = 2
 ADD_ANNOTATION = 3
 ADD_ROI = 4
 SET_THRESHOLD = 5
-DELETE_ANNOTATION = 6
 
 INTERPOLATION_VARY=-1
 INTERPOLATION_NONE=0
@@ -102,7 +102,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.actionstart = (0, 0)
 		self.actionend = (0, 0)
 		self.prevPolyEnd = None
-		
+		self.measurementPoints = []
 		x, y = size
 		self.buffer = wx.EmptyBitmap(x, y)
 		ogl.ShapeCanvas.__init__(self, parent, -1, size = size)
@@ -129,7 +129,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		item = wx.MenuItem(self.menu, self.ID_VARY, "Interpolation depends on size", kind = wx.ITEM_RADIO)
 		self.menu.AppendItem(item)
 		self.menu.Check(self.ID_VARY, 1)
-		item = wx.MenuItem(self.menu, self.ID_NONE, "No interpolation", kind = wx.ITEM_RADIO)
+		item = wx.MenuItem(self.menu, self.ID_NONE, "Nearest neighbor interpolation", kind = wx.ITEM_RADIO)
 		self.menu.AppendItem(item)
 		item = wx.MenuItem(self.menu, self.ID_LINEAR, "Linear interpolation", kind = wx.ITEM_RADIO)
 		self.menu.AppendItem(item)
@@ -176,15 +176,21 @@ class InteractivePanel(ogl.ShapeCanvas):
 		An event handler of keyboard key release
 		"""
 		keyCode = event.GetKeyCode()
-		print "KEY CODE=",keyCode
-		if keyCode == wx.WXK_DELETE or keyCode == wx.WXK_NUMPAD_DELETE:
-			shapeList = self.diagram.GetShapeList()
-			for shape in shapeList:
-				if shape.Selected():
-					self.RemoveShape(shape)
-					shape.Delete()
-					self.paintPreview()
-					self.Refresh()
+		if keyCode in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE, wx.WXK_BACK]:
+			self.deleteAnnotation()
+		elif keyCode in [wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER]:
+			if len(self.measurementPoints)>1:
+				totalDistance=0
+				for i, pt in enumerate(self.measurementPoints[1:]):
+					x0,y0 = self.measurementPoints[i]
+					x1,y1 = pt
+					d = math.sqrt((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0))
+					d /= self.zoomFactor
+					totalDistance += d
+				lib.messenger.send(None, "show_measured_distance", totalDistance)
+			self.measurementPoints = []
+			self.paintPreview()
+			self.Refresh()
 
 		
 	def onUpdateDataDimensions(self, *args):
@@ -246,7 +252,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 		avgint = labelStats.GetMean(255)   
 		ds = self.dataUnit.getDataSource()
-		shift, scale = ds.getIntensityScale()
+		shift = ds.getIntensityShift()
+		scale = ds.getIntensityScale()
 		if shift:
 			shift -= int(round(avgint))
 		else:
@@ -447,6 +454,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		react to a mouse wheel rotation, where three consecutive rotations
 					 in the same direction will trigger a change in zoom level
 		"""
+		if not event.GetWheelRotation():
+			return
 		direction = event.GetWheelRotation() / abs(event.GetWheelRotation())
 		self.wheelCounter += direction
 		if abs(self.wheelCounter) == 3:
@@ -492,7 +501,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 		else:
 			event.Skip()
 		return 1
-
+		
+	def markMeasurementPoint(self, pt):
+		"""
+		Mark a measurement point
+		"""
+		self.measurementPoints.append(pt)
+		self.paintPreview()
+		self.Refresh()
+		
 	def onLeftDown(self, event):
 		"""
 		Sets the starting position of rubber band for zooming
@@ -501,11 +518,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 		event.Skip()
 		pos = event.GetPosition()
 		x, y = pos
+
 		foundDrawable = 0
 		for x0, x1, y0, y1 in self.getDrawableRectangles():
 			if x >= x0 and x <= x1 and y >= y0 and y <= y1:
 				foundDrawable = 1 
 				break
+		if event.AltDown() and foundDrawable:
+			self.markMeasurementPoint((x,y))
 		if not foundDrawable:
 			Logging.info("Attempt to draw in non-drawable area: %d,%d" % (x, y), kw = "iactivepanel")
 			# we zero the action so nothing further will be done by onMouseMotion
@@ -680,14 +700,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 				return 1
 		elif self.action == SET_THRESHOLD:
 			self.setThreshold()
-		elif self.action == DELETE_ANNOTATION:
-			x, y = self.actionstart
-			obj, attach = self.FindShape(x, y)
-			if obj:
-				self.RemoveShape(obj)
-				obj.Delete()
-				self.paintPreview()
-				self.Refresh()
 				
 		
 		self.action = 0
@@ -824,8 +836,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Delete annotations on the scene
 		"""
-		self.action = DELETE_ANNOTATION
-		
+		shapeList = self.diagram.GetShapeList()
+		for shape in shapeList:
+			if shape.Selected():
+				self.RemoveShape(shape)
+				shape.Delete()
+				self.paintPreview()
+				self.Refresh()
+			
 	def addAnnotation(self, annClass, **kws):
 		"""
 		Add an annotation to the scene
@@ -894,16 +912,16 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Sets the data unit that is displayed
 		"""	   
 		self.dataUnit = dataUnit
-		self.voxelSize = dataUnit.getVoxelSize()
-		x, y, z = self.dataUnit.getDimensions()
-		self.buffer = wx.EmptyBitmap(x, y)
-		self.dataDimX, self.dataDimY, self.dataDimZ = x,y,z
-		
-		wx.CallAfter(self.readAnnotationsFromCache)
+		if dataUnit:
+			self.voxelSize = dataUnit.getVoxelSize()
+			x, y, z = self.dataUnit.getDimensions()
+			self.buffer = wx.EmptyBitmap(x, y)
+			self.dataDimX, self.dataDimY, self.dataDimZ = x,y,z
+			wx.CallAfter(self.readAnnotationsFromCache)
 		
 	def readAnnotationsFromCache(self):
 		"""
-		a method that iwll read cached annotations and show them after the panel has bee initialized
+		a method that will read cached annotations and show them after the panel has bee initialized
 		"""
 		if not self.annotationsEnabled:
 			return
@@ -963,6 +981,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Paints the image to a DC
 		"""
+		if self.measurementPoints:
+			dc.SetPen(wx.Pen(wx.Colour(255,0,0), 1))
+			dc.SetBrush(wx.TRANSPARENT_BRUSH)
+			for i, (x,y) in enumerate(self.measurementPoints):
+				dc.DrawCircle(x,y,4)
+				if i>0:
+					x0,y0 = self.measurementPoints[i-1]
+					dc.DrawLine(x0,y0,x,y)
+			
 		if self.rubberbandAllowed and (self.action == ZOOM_TO_BAND or self.action == ADD_ANNOTATION):
 			xr,yr,wr,hr = self.GetClientRect()
 			if self.actionstart and self.actionend:
@@ -1026,3 +1053,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 		memdc.Blit(0, 0, w, h, dc, 0, 0)
 		memdc.SelectObject(wx.NullBitmap)
 
+	def saveSnapshot(self, filename):
+		"""
+		Save a snapshot of the scene
+		"""
+		ext = filename.split(".")[-1].lower()
+		if ext == "jpg":
+			ext = "jpeg"
+		if ext == "tif":
+			ext = "tiff"
+		mime = "image/%s" % ext
+		img = self.buffer.ConvertToImage()
+		img.SaveMimeFile(filename, mime)

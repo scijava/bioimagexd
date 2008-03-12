@@ -49,8 +49,7 @@ import PreviewFrame
 
 class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 	"""
-	Created: 12.09.2007, KP
-	Description: A visualization mode used to show a MIP of the viewed data
+	A visualization mode used to show a MIP of the viewed data
 	"""
 	count = 0
 	def __init__(self, parent, **kws):
@@ -75,12 +74,12 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 		Sets the preview to display the selected z slice
 		"""
 		self.z = -1
+		
 	def setZSlice(self, z):
 		"""
 		Sets the optical slice to preview
 		"""
 		self.z = -1
-		
 
 	def processOutputData(self, data):
 		"""

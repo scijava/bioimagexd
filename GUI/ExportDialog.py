@@ -42,8 +42,7 @@ import Configuration
 
 class ExportDialog(wx.Dialog):
 	"""
-	Created: 20.03.2005, KP
-	Description: A dialog for export dataset to various formats
+	A dialog for export dataset to various formats
 	"""
 	def __init__(self, parent, dataUnit, imageMode = 1):
 		"""
@@ -132,13 +131,11 @@ class ExportDialog(wx.Dialog):
 			data = self.dataUnit.getTimepoint(t)
 			data.SetUpdateExtent(data.GetWholeExtent())
 			data.Update()
-			print data
 			writer.SetInput(data)
 			writer.SetFileDimensionality(2)
 			self.dlg.Update(t * self.z, "Writing image %d / %d" % (t * self.z, self.imageAmnt))
 
 			Logging.info("Writer = ", writer, kw = "io")
-			writer.DebugOn()
 			writer.Update()
 			print writer
 			writer.Write()

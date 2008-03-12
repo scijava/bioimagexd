@@ -699,7 +699,8 @@ class Visualizer:
 		self.zoomFactor = self.currMode.getZoomFactor()
 		scripting.zoomFactor = self.zoomFactor
 
-		self.currMode.Render()
+		self.currMode.updateRendering()
+
 
 	def zoomIn(self, evt, factor = -1):
 		"""
@@ -721,7 +722,7 @@ class Visualizer:
 		self.zoomToFitFlag = 1
 		self.currMode.zoomToFit()
 		self.zoomCombo.SetStringSelection("Zoom to fit")
-		self.currMode.Render()
+		self.currMode.updateRendering()
 
 	def onSashDrag(self, event = None):
 		"""
@@ -977,12 +978,14 @@ class Visualizer:
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 
 		self.currentWindow.enable(0)
+		scripting.renderingEnabled = False
 		if self.dataUnit and modeinst.dataUnit != self.dataUnit:
 			Logging.info("Re - setting dataunit", kw = "visualizer")
 			modeinst.setDataUnit(self.dataUnit)
 
 		modeinst.setTimepoint(self.timepoint)
 		self.currentWindow.Show()
+		scripting.renderingEnabled = self.enabled
 		if hasattr(self.currentWindow, "enable"):
 			self.currentWindow.enable(self.enabled)
 		lib.messenger.send(None, "visualizer_mode_loading", modeinst)
@@ -1005,6 +1008,7 @@ class Visualizer:
 			self.oldEnabled = flag
 			return
 		self.enabled = flag
+		scripting.renderingEnabled = flag
 		if self.currentWindow:
 			Logging.info("Setting enabled status of current window to %s" % (bool(flag)), kw = "visualizer")
 			self.currentWindow.enable(flag)
@@ -1149,7 +1153,7 @@ class Visualizer:
 		else:
 			self.currMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
-		self.currMode.Render()
+		self.currMode.updateRendering()
 		
 	def setZoomFactor(self, factor):
 		"""
@@ -1162,6 +1166,8 @@ class Visualizer:
 				factor = 10
 			self.zoomFactor = factor
 			self.currMode.setZoomFactor(factor)
+			self.currMode.updateRendering()
+
 			scripting.zoomFactor = factor
 			self.zoomCombo.SetValue("%.2f%%"%(factor*100))
 			
@@ -1395,6 +1401,8 @@ class Visualizer:
 		"""
 		if self.blockTpUpdate:
 			return
+			
+		
 		Logging.info("setTimepoint(%d)" % timepoint, kw = "visualizer")
 		# The timeslider has values that start from 1 whereas the internal time point values 
 		# start from 0

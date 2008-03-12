@@ -44,31 +44,29 @@ conf = None
 
 class FlexConfigParser(ConfigParser.ConfigParser):
 	"""
-	Created: 29.08.2007, KP
-	Description: a config parser that doesn't ignore the case of the options and sections, but converts unicode characters to their xml reprsentation
+	A config parser that doesn't ignore the case of the options and sections, but converts unicode characters to their xml reprsentation
 	"""
-	def set(self, section, option, value):
+	def setfoo(self, section, option, value):
 		"""
 		tranform the value
 		"""
 		if type(value) == types.UnicodeType:
-			ConfigParser.ConfigParser.set(self, section, option, codecs.encode(value, "ascii", "xmlcharrefreplace"))
+			ConfigParser.ConfigParser.set(self, section, option, value.encode('utf-8'))#codecs.encode(value, "ascii", "utf-8"))
 		else:
 			ConfigParser.ConfigParser.set(self, section, option, value)
-			
+
 	def write(self, fp):
 		"""Write an .ini-format representation of the configuration state."""
 		if self._defaults:
-			fp.write("[%s]\n" % DEFAULTSECT)
+			fp.write(u"[%s]\n" % DEFAULTSECT)
 			for (key, value) in self._defaults.items():
-				fp.write("%s = %s\n" % (key, unicode(value).replace('\n', '\n\t')))
+				fp.write( (u"%s = %s\n" % (key, value)))
 			fp.write("\n")
 		for section in self._sections:
-			fp.write("[%s]\n" % section)
+			fp.write(u"[%s]\n" % section)
 			for (key, value) in self._sections[section].items():
 				if key != "__name__":
-					fp.write("%s = %s\n" %
-							 (key, unicode(value).replace('\n', '\n\t')))
+					fp.write( (u"%s = %s\n"%(key, value)))
 			fp.write("\n")
 			
 	def optionxform(self, optionstr):
@@ -96,8 +94,7 @@ def getNumberTupleFromString(inString):
 
 class Configuration:
 	"""
-	Created: 23.02.2005, KP
-	Description: A module that handles the configuration file 
+	A module that handles the configuration file
 	"""
 	def __init__(self, configFile = None):
 		global conf
@@ -268,7 +265,7 @@ class Configuration:
 		if type(path) == types.StringType:
 			path = [path]
 		return os.path.normpath(os.path.join(self.installPath, reduce(os.path.join, path)))
-	@staticmethod	
+	@staticmethod
 	def removeWithName(names):
 		"""
 		remove modules with the given names from the system path

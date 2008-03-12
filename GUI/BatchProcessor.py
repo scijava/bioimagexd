@@ -58,6 +58,7 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 		gridlib.PyGridTableBase.__init__(self)
 		self.analysis = analysis
 		self.variables = []
+		self.values = {}
 		
 	def updateGridValues(self):
 		"""
@@ -107,10 +108,12 @@ class BatchAnalysisTable(gridlib.PyGridTableBase):
 		if row==0:
 			if col<len(self.variables):
 				return self.variables[col]
+		if (row,col) in self.values: return self.values[(row,col)]
 		return ""
 
 	def SetValue(self, row, col, value):
-		pass
+		if value == None:value=""
+		self.values[(row,col)] = value
 
 
 class PickVariablesDialog(wx.Dialog):
