@@ -141,6 +141,7 @@ public:
   vtkGetMacro(SamplesPerPixel,unsigned int);
   vtkGetMacro(ScanType,unsigned short);
   vtkGetMacro(DataType,int);
+  vtkGetMacro(TimeInterval, double);
   vtkGetObjectMacro(TimeStampInformation,vtkDoubleArray);
   vtkGetObjectMacro(ChannelColors,vtkIntArray);
   unsigned int GetUpdateChannel();
@@ -239,6 +240,8 @@ int RequestData(
   vtkIntArray *ChannelColors;
   char **ChannelNames;
   vtkDoubleArray *TimeStampInformation;
+  
+  double TimeInterval;
 
   unsigned char CharPointerToUnsignedChar(char *);
   int CharPointerToInt(char *);
@@ -254,7 +257,7 @@ int RequestData(
   double ReadDouble(ifstream *,unsigned long *);
   int ReadFile(ifstream *,unsigned long *,int,char *,bool swap=0);
   int ReadData(ifstream *,unsigned long *,int,char *);
-
+ 
 
 private:
   vtkLSMReader(const vtkLSMReader&);  // Not implemented.

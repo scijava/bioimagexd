@@ -422,7 +422,7 @@ def getImageFormatMenu(parent, label = "Image Format: "):
 	sizer = wx.BoxSizer(wx.HORIZONTAL)
 	lbl = wx.StaticText(parent, -1, label)
 	sizer.Add(lbl)
-	formats = ["PNG", "BMP", "JPEG", "TIFF"]
+	formats = ["PNG", "JPEG", "TIFF"]
 	menu = wx.Choice(parent, -1, choices = formats)
 	sizer.Add(menu)
 	sizer.menu = menu

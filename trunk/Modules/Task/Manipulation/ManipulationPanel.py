@@ -55,7 +55,6 @@ import wx
 
 class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 	"""
-	Created: 03.11.2004, KP
 	Description: A window for restoring a single dataunit
 	"""
 	def __init__(self, parent, tb):
@@ -103,16 +102,8 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 					 used to control the colocalization settings
 		"""
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createOptionsFrame(self)
-		#self.panel=wx.Panel(self.settingsNotebook,-1)
-		#self.panel = wx.Panel(self, -1)
-		#self.panelsizer = wx.GridBagSizer()
-		
 		self.filterEditor = GUI.FilterEditor.FilterEditor(self, ManipulationFilters, taskPanel = self)
 		lib.messenger.connect(self.filterEditor, "updateFilterList", self.updateFilterData)
-		#self.panelsizer.Add(self.filterEditor, (0, 0))
-
-		#self.panel.SetSizer(self.panelsizer)
-		#self.panel.SetAutoLayout(1)
 		
 		self.settingsSizer.Add(self.filterEditor, (1, 0), flag = wx.EXPAND | wx.ALL)
 		
@@ -155,14 +146,12 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)
 		ctf.AddRGBPoint(255, 1, 1, 1)
-		#imagedata=lib.ImageOperations.getMIP(self.dataUnit.getSourceDataUnits()[0].getTimepoint(0),ctf)
 		imagedata = self.itemMips[0]
 		
 		
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)
 		ctf.AddRGBPoint(255, 1, 1, 1)
-		#imagedata=lib.ImageOperations.getMIP(coloc.GetOutput(),ctf)
 		maptocolor = vtk.vtkImageMapToColors()
 		maptocolor.SetInput(imagedata)
 		maptocolor.SetLookupTable(ctf)
@@ -171,10 +160,8 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		imagedata = maptocolor.GetOutput()
 		
 		bmp = lib.ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
-#        bmp=bmp.Rescale(30,30).ConvertToBitmap()
 		bmp = self.getChannelItemBitmap(bmp, (255, 255, 255))
 		toolid = wx.NewId()
-		#n=n+1
 		name = "Manipulation"
 		self.toolMgr.addChannelItem(name, bmp, toolid, lambda e, x = n, s = self:s.setPreviewedData(e, x))        
 		
@@ -186,6 +173,9 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""
 		Set the combined dataunit to be processed. Also initialize the output channels to be off by default.
 		"""
+		sources = dataUnit.getSourceDataUnits()
+		for s in sources:
+			s.getSettings().set("FilterList", self.filterList)
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self, dataUnit)
 		self.filterEditor.setDataUnit(dataUnit)
 		n = 0
@@ -194,7 +184,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 			n = i
 		self.dataUnit.setOutputChannel(n + 1, 1)
 		self.updateFilterData()
-		self.restoreFromCache()        
+		self.restoreFromCache()
 		self.updateSettings()
 		
 	def updateFilterData(self, *args):
@@ -202,5 +192,5 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		A method used to set the right values in dataset
 								from filter GUI widgets
 		"""
-		filterList =self.filterEditor.getFilterList()
+		filterList = self.filterEditor.getFilterList()
 		self.settings.set("FilterList", filterList)

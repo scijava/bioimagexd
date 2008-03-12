@@ -268,7 +268,7 @@ class VideoEncoder:
 		else:
 			framename = self.getFrameName()
 			pattern = self.getFormat()
-		
+
 		# FFMPEG uses %3d instead of %.3d for files numbered 000 - 999
 		pattern = pattern.replace("%.", "%")
 		pattern = pattern.split(os.path.sep)[-1]
@@ -287,7 +287,7 @@ class VideoEncoder:
 			(x, y), fps, br, target = self.presets[self.preset]
 		
 		cmdLine = []
-		ffmpegs = {"linux": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "bin/ffmpeg.osx"}
+		ffmpegs = {"linux": "bin/ffmpeg", "linux2": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "bin/ffmpeg.osx"}
 		ffmpeg = "ffmpeg"
 		for i in ffmpegs.keys():
 			if i == sys.platform:

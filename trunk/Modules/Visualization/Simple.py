@@ -123,7 +123,7 @@ class SimpleMode(VisualizationMode):
 		"""
 		Initialization
 		"""
-		VisualizationMode.__init__(self, parent, visualizer)		
+		VisualizationMode.__init__(self, parent, visualizer)	
 		self.parent = parent
 		self.visualizer = visualizer
 		self.iactivePanel = None

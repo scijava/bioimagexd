@@ -34,8 +34,7 @@ import lib.DataUnit.DataUnitSetting
 
 class VisualizationMode:
 	"""
-	Created: 21.07.2005, KP
-	Description: A class representing a visualization mode
+	A class representing a visualization mode
 	"""
 	def __init__(self, parent, visualizer, **kws):
 		"""
@@ -183,14 +182,8 @@ class VisualizationMode:
 		"""
 		Unset the mode of visualization
 		"""
-		self.iactivePanel.Show(0)		 
+		self.iactivePanel.Show(0)
 		
-	def Render(self):
-		"""
-		Update the rendering
-		"""		 
-		self.iactivePanel.Refresh()
-				
 	def relayout(self):
 		"""
 		Method called when the size of the window changes

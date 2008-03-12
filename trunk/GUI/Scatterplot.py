@@ -46,8 +46,7 @@ import scripting
 
 class Scatterplot(InteractivePanel.InteractivePanel):
 	"""
-	Created: 25.03.2005, KP
-	Description: A panel showing the scattergram
+	A panel showing the scattergram
 	"""
 	def __init__(self, parent, size = (256, 256), **kws):
 		"""
@@ -537,7 +536,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			x = 255
 			y = 255 - (255 * slope + intercept)
 			
-			dc.DrawLine(self.xoffset + hzlw, 255, self.xoffset + hzlw + x, y)
+			dc.DrawLine(self.xoffset + hzlw, 255-intercept, self.xoffset + hzlw + x, y)
 		
 		ymax = 255
 		# These are the threshold lines

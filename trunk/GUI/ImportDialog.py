@@ -642,9 +642,11 @@ enter the information below.""")
 			if not r.match(filename):
 				print "FILENAME",filename,"DOES NOT MATCH PATTERN",pattern
 				return FILES_FOLLOWING_PATTERN
-		
-		if not self.dataSource.checkImageDimensions(filenames):
-			return FILES_FOLLOWING_PATTERN
+		try:
+			if not self.dataSource.checkImageDimensions(filenames):
+				return FILES_FOLLOWING_PATTERN
+		except Logging.GUIError, ex:
+			ex.show()
 		return ALL_FILES_IN_DIRECTORY
 	
 	def loadAllFilesBasedOnFile(self, filename):
@@ -706,10 +708,9 @@ enter the information below.""")
 					filename = pattern % (i, j)
 				except:
 					return
-				for file in files:
+				for file in fileList:
 					if file.find(filename) != -1:
 						matches.append(file)
-						n += 1
 						foundone = 1
 						everfound = 1
 			if everfound and not foundone:

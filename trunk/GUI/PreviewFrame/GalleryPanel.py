@@ -70,11 +70,10 @@ class GalleryPanel(InteractivePanel):
 		self.buffer = wx.EmptyBitmap(x, y)
 		self.oldBufferDims = None
 		self.oldBufferMaxXY = None
-		#wx.ScrolledWindow.__init__(self,parent,-1,size=size,**kws)
 		InteractivePanel.__init__(self, parent, size = size, **kws)
 		
 		self.size = size
-		self.sizeChanged = 0
+		self.sizeChanged = False
 		self.rows = 0
 		self.cols = 0
 		self.scrollsize = 32
@@ -126,14 +125,12 @@ class GalleryPanel(InteractivePanel):
 		x, y = self.originalSliceSize
 		x *= factor
 		y *= factor
-		self.sizeChanged = 1
+		self.sizeChanged = True
 		self.calculateBuffer()
 
 		self.sliceSize = (x, y)
 		self.slices = []
 		
-		self.updatePreview()
-		self.Refresh()
 		
 	def setBackground(self, r, g, b):
 		"""
@@ -147,11 +144,10 @@ class GalleryPanel(InteractivePanel):
 		"""
 		InteractivePanel.OnSize(self, event)
 		self.paintSize = self.GetClientSize()
-		#self.gallerySize=event.GetSize()
-		#Logging.info("Gallery size changed to ",self.gallerySize,kw="preview")
-		self.sizeChanged = 1
-		self.calculateBuffer()
-		self.updatePreview()
+		self.sizeChanged = True
+		if scripting.renderingEnabled:
+			self.calculateBuffer()
+			self.updatePreview()
 
 	def setDataUnit(self, dataunit):
 		"""
@@ -180,6 +176,8 @@ class GalleryPanel(InteractivePanel):
 		if self.timepoint == timepoint and self.slices:
 			return
 		self.timepoint = timepoint
+		if not scripting.renderingEnabled:
+			return
 		# if we're showing one slice of each timepointh
 		# instead of each slice of one timepoint, call the
 		# appropriate function
@@ -359,8 +357,8 @@ class GalleryPanel(InteractivePanel):
 		Enable/Disable updates
 		"""
 		self.enabled = flag
-		if flag:
-			self.updatePreview()
+#		if flag:
+#			self.updatePreview()
 
 	def updatePreview(self):
 		"""
@@ -377,8 +375,6 @@ class GalleryPanel(InteractivePanel):
 		self.paintPreview()
 		self.updateScrolling()
 		self.Refresh()
-		#wx.GetApp().Yield(1)
-		
 		
 	def updateScrolling(self, event = None):
 		"""
@@ -398,11 +394,6 @@ class GalleryPanel(InteractivePanel):
 		"""
 		Does the actual blitting of the bitmap
 		"""
-#		if self.sizeChanged:
-#			#Logging.info("size changed, calculating buffer",kw="preview")
-#			self.calculateBuffer()
-#			self.updatePreview()
-#			self.sizeChanged = 0
 
 		InteractivePanel.OnPaint(self, event)
 #		dc=wx.BufferedPaintDC(self,self.buffer)#,self.buffer)
@@ -455,17 +446,4 @@ class GalleryPanel(InteractivePanel):
 
 		self.makeBackgroundBuffer(dc)
 		dc.EndDrawing()
-		
-	def saveSnapshot(self, filename):
-		"""
-		Save a snapshot of the scene
-		"""
-		ext = filename.split(".")[-1].lower()
-		if ext == "jpg":
-			ext = "jpeg"
-		if ext == "tif":
-			ext = "tiff"
-		mime = "image/%s" % ext
-		img = self.buffer.ConvertToImage()
-		img.SaveMimeFile(filename, mime)
-		
+	

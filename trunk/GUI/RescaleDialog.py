@@ -88,7 +88,6 @@ color depth. Use the histograms below to the select how the intensities in your 
 		self.result = 1
 		for i, dataUnit in enumerate(self.dataUnits):
 			ds = dataUnit.getDataSource()
-			#ds.setResampleDimensions(self.resampleDims[i])
 			ds.setIntensityScale(-1, -1)
 		self.EndModal(wx.ID_OK)
 		
@@ -96,11 +95,6 @@ color depth. Use the histograms below to the select how the intensities in your 
 		"""
 		Cancel the procedure
 		"""
-		#for i, dataUnit in enumerate(self.dataUnits):
-			#ds = dataUnit.getDataSource()
-			#ds.setIntensityScale(0, 0)
-			#ds.setResampleDimensions(self.resampleDims[i])
-			
 		self.result = 0
 		self.EndModal(wx.ID_CANCEL)   
 		
@@ -110,10 +104,10 @@ color depth. Use the histograms below to the select how the intensities in your 
 		"""
 		for i, dataUnit in enumerate(self.dataUnits):
 			ds = dataUnit.getDataSource()
+			print "Setting intensity scale",self.shift,self.scale
 			ds.setIntensityScale(self.shift, self.scale)
 			ds.resetColorTransferFunction()
 			dataUnit.resetColorTransferFunction()
-			#ds.setResampleDimensions(self.resampleDims[i])
 			
 		self.result = 1
 		#self.Close()    
@@ -139,9 +133,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 			minval, maxval = ds.getOriginalScalarRange()
 			#print "Original scalar range = ",minval,maxval
 			self.resampleDims.append(ds.getResampleDimensions())
-#            if x>512 or y>512:
-#                ds.setResampleDimensions((512,512,z))
-				
+
 			scale = maxval / 255.0
 			print "Scale for histograms = ",scale
 			#"Using scale",scale
@@ -192,7 +184,6 @@ color depth. Use the histograms below to the select how the intensities in your 
 		box = wx.StaticBox(self, -1, "Preview selected mapping")
 		previewBox = wx.StaticBoxSizer(box, wx.HORIZONTAL)
 		self.preview = PreviewFrame(self, previewsize = (256, 256), scrollbars = False)
-#		self.preview.setPreviewType("")
 				
 		previewBox.Add(self.preview)
 		
@@ -215,5 +206,4 @@ color depth. Use the histograms below to the select how the intensities in your 
 		Set the zslice displayed
 		"""             
 		self.preview.setZSlice(self.zslider.GetValue() - 1)
-		#print "Setting preview to ",self.zslider.GetValue()-1
 		self.preview.updatePreview(0)

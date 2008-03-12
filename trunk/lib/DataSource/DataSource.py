@@ -38,8 +38,7 @@ import sys
 
 class DataWriter:
 	"""
-	Created: 26.03.2005
-	Description: A base class for different kinds of DataWriters
+	 base class for different kinds of DataWriters
 	"""
 	def __init__(self):
 		"""
@@ -272,9 +271,20 @@ class DataSource:
 		
 	def getIntensityScale(self):
 		"""
-		return the shift and scale applied to the data as tuple
+		@return the scaling applied to the intensity vaues in the data
 		"""
-		return self.intensityShift, self.intensityScale
+		if self.intensityScale:
+			return self.intensityScale
+		else:
+			minval, maxval = self.originalScalarRange
+			scale = 255.0 / maxval
+			return scale
+
+	def getIntensityShift(self):
+		"""
+		@return the shift applied to the intensity values in the data
+		"""
+		return self.intensityShift
 		
 	def setIntensityScale(self, shift, scale):
 		"""
@@ -452,7 +462,6 @@ class DataSource:
 		Return the bit depth of data
 		"""
 		if not self.bitdepth:
-			
 			data = self.getDataSet(0, raw = 1)
 			data.UpdateInformation()
 			self.scalarRange = data.GetScalarRange()

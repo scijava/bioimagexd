@@ -48,9 +48,9 @@ import os.path
 import types
 import vtk
 import wx
+import GUI.Dialogs
 
 from lib.FilterTypes import *
-#---------------------------------------------------------------------------
 
 class TrackTable(gridlib.PyGridTableBase):
 	"""
@@ -211,7 +211,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		"""
 		Set the value of a cell
 		"""                  
-		print "SetValue", row, col, value, override
+#		print "SetValue", row, col, value, override
 		if self.canEnable:
 			if col == 0:
 				print "Row", row, "has value=", value
@@ -223,7 +223,7 @@ class TrackTable(gridlib.PyGridTableBase):
 		
 		if col != self.enabledCol and not override:
 			return
-		print "Setting value at", row, col, "to", value
+#		print "Setting value at", row, col, "to", value
 		self.gridValues[(row, col)] = tuple(map(int, value))
 
 
@@ -349,10 +349,7 @@ class TrackTableGrid(gridlib.Grid):
 		"""
 		return the selected seed points
 		"""
-		#rows=[]
 		cols = []
-		#for i in range(0,self.table.GetNumberRows()):
-		#    rows.append(self.table.getPointsAtRow(i))
 		for i in range(0, self.table.GetNumberCols()):
 			pts = self.table.getPointsAtColumn(i)
 			while None in pts:
@@ -384,7 +381,6 @@ class TrackTableGrid(gridlib.Grid):
 			self.ForceRefresh()
 
 			return
-		#print "Selected",event.GetRow(),event.GetCol()
 		self.selectedRow = event.GetRow()
 		self.selectedCol = event.GetCol()
 
@@ -424,10 +420,12 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.watershedStats = analyzeObjectsMod.getUserInterfaceModule()
 		
 		self.descs = {
-			"MaxVelocity": "Max. change in distance (% of max.movement)",
-			"MaxSizeChange": "Max. size change (% of size)",
+			"MaxVelocity": "Max. speed (in micrometers)",
+			"MinVelocity": "Min. speed (in micrometers)",
+			"VelocityDeviation":"Deviation from max/min (in %)",
+			"MaxSizeChange": "Max. size change (% of old size)",
 			"MaxDirectionChange": "Direction (angle of the allowed sector in degrees)",
-			"MaxIntensityChange": "Max. change of average intensity (% of max. diff.)",
+			"MaxIntensityChange": "Max. change of average intensity (% of old intensity)",
 			"MinLength": "Min. length of track (# of timepoints)",
 			"MinSize": "Min. size of tracked objects",
 			"TrackFile": "Object statistics file:",
@@ -456,7 +454,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		An event handler for highlighting selected objects
 		"""
-		print "\n\nonSetSelectedObjects(", obj, event, objects, ")"
 		if not self.ctf:
 			self.ctf = self.dataUnit.getColorTransferFunction()
 		if not objects:
@@ -511,8 +508,9 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"]]])            
 				lib.messenger.send(None, "update_helpers", 1)
 		elif parameter == "ROI":
-			roi = self.parameters["ROI"]
+			index, roi = self.parameters["ROI"]
 			if roi and self.parameters["UseROI"]:
+				print "roi=",roi,index
 				selections = self.getObjectsForROI(roi)
 				# The last boolean is a flag indicating that this selection
 				# comes from a ROI
@@ -527,7 +525,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""            
 		return [
 		["Change between consecutive objects",
-		("MaxVelocity", "VelocityWeight",
+		("MaxVelocity", "MinVelocity","VelocityWeight","VelocityDeviation",
 		"MaxSizeChange", "SizeWeight",
 		"MaxIntensityChange", "IntensityWeight",
 		"MaxDirectionChange", "DirectionWeight")],
@@ -550,7 +548,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""    
 		if parameter == "UseSize":
 			return types.BooleanType
-		elif parameter in ["MaxVelocity", "MaxSizeChange", "MinLength", "MinSize"]:
+		elif parameter in ["MaxVelocity", "MinVelocity","MaxSizeChange", "MinLength", "MinSize","VelocityDeviation"]:
 			return GUIBuilder.SPINCTRL
 		elif parameter in ["SizeWeight", "DirectionWeight", "IntensityWeight", "MaxDirectionChange", \
 							"MaxIntensityChange", "MaxSizeChange", "VelocityWeight"]:
@@ -567,7 +565,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the range of given parameter
 		"""             
-		if parameter in ["MaxVelocity", "MinSize"]:
+		if parameter in ["MaxVelocity", "MinSize","MinVelocity","VelocityDeviation"]:
 			return (0, 999)
 		if parameter == "MaxSizeChange":
 			return (0, 100)
@@ -592,11 +590,15 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "MinSize":
 			return 6
 		if parameter == "MaxVelocity":
+			return 18
+		if parameter == "MinVelocity":
 			return 5
 		if parameter == "MaxSizeChange":
 			return 35
 		if parameter == "MinLength":
 			return 3
+		if parameter == "VelocityDeviation": 
+			return 30
 		if parameter in ["IntensityWeight", "SizeWeight", "DirectionWeight", "VelocityWeight"]:
 			return 25
 		if parameter == "MaxDirectionChange":
@@ -613,8 +615,8 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ROI":
 			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
-				return n[0]
-			return 0            
+				return (0, n[0])
+			return 0,None
 		if parameter == "TrackFile":
 			if self.particleFile:
 				return self.particleFile
@@ -638,15 +640,11 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""              
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
-				
 		if not self.trackGrid:
 			self.trackGrid = TrackTableGrid(self.gui, self.dataUnit, self)
 			self.reportGUI = self.watershedStats.WatershedObjectList(self.gui, -1, (350, 100))
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.trackGrid, 1)
-			
-			
-			#sizer.Add(self.trackGrid,1)
 						
 			box = wx.BoxSizer(wx.HORIZONTAL)
 			
@@ -677,7 +675,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			sizer.Show(self.reportGUI, 0)
 			
 			self.guisizer = sizer
-			self.useSelectedBtn = wx.Button(self.gui, -1, "Use select as seeds")
+			self.useSelectedBtn = wx.Button(self.gui, -1, "Use selected as seeds")
 			self.useSelectedBtn.Bind(wx.EVT_BUTTON, self.onUseSelectedSeeds)
 			sizer.Add(self.useSelectedBtn)
 			
@@ -725,7 +723,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		use the selected seed list
 		"""
 		if self.parameters["UseROI"]:
-			roi = self.parameters["ROI"]
+			index, roi = self.parameters["ROI"]
 			selections = []
 			if roi:
 				selections = self.getObjectsForROI(roi)
@@ -814,8 +812,11 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.tracker = Particle.ParticleTracker()
 			#self.tracker = lib.Particle.ParticleTracker()
 		self.tracker.setFilterObjectSize(self.parameters["MinSize"])
-
-		self.tracker.readFromFile(self.particleFile, statsTimepoint = self.selectedTimepoint)      
+		if not os.path.exists(self.particleFile):
+			GUI.Dialogs.showerror(None, "Could not read the selected particle file %s"%self.particleFile, "Cannot read particle file")
+			return
+		else:
+			self.tracker.readFromFile(self.particleFile, statsTimepoint = self.selectedTimepoint)      
 		rdr = self.objectsReader = self.tracker.getReader()
 		
 		self.reportGUI.setVolumes(rdr.getVolumes())
@@ -851,12 +852,11 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Do the actual tracking
 		"""
-		#print "Using ",image
-		#self.vtkfilter.SetInput(image)
-
-				
 		self.tracker.setMinimumTrackLength(self.parameters["MinLength"])
-		self.tracker.setDistanceChange(self.parameters["MaxVelocity"] / 100.0)
+		self.tracker.setMaxSpeed(self.parameters["MaxVelocity"])
+		self.tracker.setMinSpeed(self.parameters["MinVelocity"])
+		self.tracker.setSpeedDeviation(self.parameters["VelocityDeviation"]/ 100.0)
+
 		self.tracker.setSizeChange(self.parameters["MaxSizeChange"] / 100.0)
 		self.tracker.setIntensityChange(self.parameters["MaxIntensityChange"] / 100.0)
 		self.tracker.setAngleChange(self.parameters["MaxDirectionChange"])

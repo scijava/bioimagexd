@@ -110,4 +110,9 @@ class ManipulationDataUnit(CombinedDataUnit):
 		"""
 		return ManipulationSettings.ManipulationSettings
 
+	def switchDatasets(self):
+		"""
+		Initialize Manipulation dataunit again when dataset is switched
+		"""
+		self.initialized = 0
 		

@@ -135,6 +135,7 @@ class GUIBuilder(wx.Panel):
 			gy += 1
 		keepOnSameRow = 0
 		cx = 0
+
 		# Loop through all the parameters we need to create GUI elements for
 		for param in parameters:
 			# If the parameter is just a header, then create a label to show it
@@ -276,7 +277,6 @@ class GUIBuilder(wx.Panel):
 		setotf = lambda obj, event, arg, panel = colorPanel, i = item, s = self: s.onSetOtf(panel, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s_otf" % item, setotf)
 		
-		self.outputXML('<ColorTransferEditor id="%s" level="%s" label="%s" wantAlpha=%s/'%(itemName, level,bool(wantAlpha)));
 		return 0
 			
 	def createThresholdSelection(self, n, items, currentFilter):
@@ -374,7 +374,7 @@ class GUIBuilder(wx.Panel):
 		background.SetAutoLayout(1)
 		background.Layout()
 		self.items[itemName] = background
-		
+
 		#obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, colorTransferFunction)
 		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
 							r, g, b, alpha, currentCt, its = items, \
@@ -561,7 +561,7 @@ class GUIBuilder(wx.Panel):
 		self.indent+=1
 		for item in choices:
 			self.outputXML('<RadioChoice name="%s"/>'%item)
-		self.outputXMl('</RadioChoice>')
+		self.outputXML('</RadioChoice>')
 		self.indent-=1
 
 		return 0
@@ -689,7 +689,7 @@ class GUIBuilder(wx.Panel):
 		"""			  
 		value = event.GetSelection()
 		regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
-		filter.setParameter(item, (value, regionsOfInterest[value]))		  
+		filter.setParameter(item, (value, regionsOfInterest[value]))
 				
 		
 	def onSetFileName(self, filter, item, event):
@@ -917,12 +917,12 @@ class GUIBuilder(wx.Panel):
 					colorTransferFunction, item, currFilter, listbox):
 		"""
 		Add a value to the pixel listbox
-		"""				
+		"""
 		if listbox.selectPixel:
-			seeds = currFilter.getParameter(item[0])
+			seeds = currFilter.getParameter('Seed') # item[0])
 			seeds.append((rx, ry, rz))
-			currFilter.setParameter(item[0], seeds)
-			listbox.Append("(%d, %d, %d)" % (rx, ry, rz))			   
+			currFilter.setParameter('Seed',seeds) # item[0], seeds)
+			listbox.Append("(%d, %d, %d)" % (rx, ry, rz))
 			listbox.selectPixel = 0
 
 			

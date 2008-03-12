@@ -112,24 +112,26 @@ def usage():
 	"""
 	Prints command line usage of program
 	"""
-	print "Usage: BioImageXD [-h|--help] | [-x script.bxs|--execute=script.bxs] [-i file|--input=file]\
-[-d directory|--directory=directory]"
+	print "Usage: BioImageXD [options]"
 	print ""
+	print "General options:"
 	print "-x | --execute\tExecute the given script file"
-	print "-b | --batch\tExecute the software in batch mode"
 	print "-i | --input\tLoad the given file as default input"
 	print "-d | --directory\tLoad all files from given directory"
 	print "-t | --tofile\tLog all messages to a log file"
 	print "-l | --logfile\tLog all messages to given file"
 	print "-p | --profile\tProfile the execution of the program"
 	print "-P | --interpret\tInterpret the results of the profiling"
+	print "-b | --batch\tExecute the software in batch mode"
 	print ""
-	print "Options available in batch mode"
+	print "Options available only in batch mode:"
 	print "-f <filter> | --load-filter\tLoad a filter to the procedure stack"
+	print "-n <name>   | --name=name\tSet the name of the output dataset"
 	print "-s <var>=<val>,<var2>=<val2> | --set-variable\tSet a variable to a value"
 	print "-o <file>   | --output=<file>\tOutput the resulting dataset to the given file"
 	print "-T 0,1,3-5  | --timepoints=<timepoints>\tSelect the timepoints to process"
 	print "-c 0,1	   | --channels=0,1\tSelect the channels to use from the input file"
+	print "-B 		   | --bba=<file>\tExecute the selected batch analysis file"
 	sys.exit(2)
 
 if __name__ == '__main__':
@@ -140,8 +142,8 @@ if __name__ == '__main__':
 		#build()
 	else:
 		try:
-			parameterList = ["name=","channels=","help", "batch","execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile","load-filter","set-variable","output=","timepoints="]
-			opts, args = getopt.getopt(sys.argv[1:], 'n:c:hbx:i:d:tpPlf:s:o:T:', parameterList)
+			parameterList = ["name=","channels=","help", "batch","execute=", "input=", "directory=", "tofile", "profile", "interpret", "logfile","load-filter","set-variable","output=","timepoints=","bba="]
+			opts, args = getopt.getopt(sys.argv[1:], 'n:c:hbx:i:d:tpPlf:s:o:T:B:', parameterList)
 		except getopt.GetoptError:
 			usage()
 
@@ -157,7 +159,7 @@ if __name__ == '__main__':
 		selectedChannels = {}
 		timepoints = []
 		outputName = ""
-		
+		batchAnalysis = ""
 
 		for opt, arg in opts:
 			if opt in ["-h", "--help"]:
@@ -169,7 +171,9 @@ if __name__ == '__main__':
 			elif opt in ["-x", "--execute"]:
 				scriptFile = arg
 			elif opt in ["-d", "--directory"]:
-				dataFiles = glob.glob(os.path.join(arg, "*"))
+				dataFiles = glob.glob(3(arg, "*"))
+			elif opt in ["-B","--bba"]:
+				batchAnalysis = arg
 			elif opt in ["-i", "--input"]:
 				dataFiles.append(arg)
 				currentInputFileName=arg
@@ -218,11 +222,10 @@ if __name__ == '__main__':
 		captureOutput = StringIO.StringIO()
 		scripting.logFile = captureOutput
 		
-
 		if toFile or scripting.main_is_frozen():
 			import time
 			if not logfile:
-				logfile = time.strftime("output_%d.%m.%y@%H%M.log")
+				logfile = time.strftime("bioimagexd_%d.%m.%y@%H%M.log")
 
 				logdir = scripting.get_log_dir()
 				if not os.path.exists(logdir):
@@ -239,6 +242,7 @@ if __name__ == '__main__':
 			else:
 				scripting.uncleanLog = None
 
+			
 			conf.setConfigItem("LastLogFile", "General", logfile)
 			import atexit
 			atexit.register(logFiles.flush)
@@ -281,4 +285,4 @@ if __name__ == '__main__':
 			params = {}
 			if outputName:params["name"] = outputName
 			app.run(dataFiles, scriptFile, outputFile = outputFile, timepoints = timepoints,
-				selectedChannels = selectedChannels, **params)
+				selectedChannels = selectedChannels, batchAnalysis = batchAnalysis, **params)

@@ -1,4 +1,6 @@
 import lib.FilterBasedModule
+import lib.BatchAnalysis
+
 import Modules.DynamicLoader
 import os
 import scripting
@@ -90,14 +92,33 @@ class BXDBatchApplication:
 			if not selectedUnits: selectedUnits = newDataunits
 			dataunits += selectedUnits
 		return dataunits
+		
+	def executeBatchAnalysis(self, analysisFile, sourceDataUnits, outputFile, timepoints):
+		"""
+		Execute a BioImageXD Batch Analysis (BBA) file
+		"""
+		self.analysis = lib.BatchAnalysis.BatchAnalysis()
+		self.analysis.setInputDataUnits(sourceDataUnits)
+		self.analysis.readFromFile(analysisFile)
+		dirname = os.path.dirname(filename)
+		namePart, ext = os.path.splitext(outputFile)
+		if ext.lower()==".bxd":
+			outputFile = namePart+".csv"
+		self.analysis.execute(outputFile, dirname, timepoints)
+		
 	
-	def run(self, files, scriptfile, name = "", outputFile = "output.bxd", timepoints = [], selectedChannels = {}):
+	def run(self, files, scriptfile, name = "", outputFile = "output.bxd", timepoints = [], batchAnalysis = "",selectedChannels = {}):
 		"""
 		Run the procedure list
 		"""
 		dataunits = self.loadFiles(files, selectedChannels)
+		if not timepoints:
+			timepoints = range(0, max([x.getNumberOfTimepoints() for x in dataunits]))
+		if batchAnalysis:
+			return self.executeBatchAnalysis(batchAnalysis, dataunits, outputFile, timepoints)
 		for dataunit in dataunits:
 			self.dataUnit.addSourceDataUnit(dataunit)
+			
 		filterList = lib.FilterBasedModule.FilterList()
 		filterList.setDataUnit(self.dataUnit)
 		filterList.populate(self.filterList)
@@ -116,8 +137,6 @@ class BXDBatchApplication:
 			name = os.path.basename(name)
 		self.dataUnit.getSettings().set("Name",name)
 		print "Output file name",outputFile
-		if not timepoints:
-			timepoints = range(0, max([x.getNumberOfTimepoints() for x in dataunits]))
 		filename = self.dataUnit.doProcessing(outputFile, timepoints = timepoints)
 		print "Created",filename
 	

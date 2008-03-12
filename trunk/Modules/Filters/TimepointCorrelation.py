@@ -108,23 +108,27 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		# We need to prepare a copy of the data since when we get the next
 		# timepoint, the data we got earlier will reference the new data
 		tp = vtk.vtkImageData()
+		data1.SetUpdateExtent(data1.GetWholeExtent())
+		data1.Update()
 		tp.DeepCopy(data1)
-		data2 = units[0].getTimepoint(tp2)
 		data1 = tp
+		data2 = units[0].getTimepoint(tp2)
+		data2.SetUpdateExtent(data2.GetWholeExtent())
+		data2.Update()
 		
 		self.vtkfilter.AddInput(data1)
 		self.vtkfilter.AddInput(data2)
 
-		correlation = self.vtkfilter.GetPearsonWholeImage()
 		# Set the thresholds so they won't be calculated
 		self.vtkfilter.SetLowerThresholdCh1(0)
 		self.vtkfilter.SetLowerThresholdCh2(0)
 		self.vtkfilter.SetUpperThresholdCh1(255)
 		self.vtkfilter.SetUpperThresholdCh2(255)
+		self.vtkfilter.Update()
+		correlation = self.vtkfilter.GetPearsonWholeImage()
 		self.setResultVariable("Timepoint1",tp1)
 		self.setResultVariable("Timepoint2",tp2)
 		self.setResultVariable("Correlation",correlation)
 		
-		self.vtkfilter.Update()
 		self.corrLbl2.SetLabel("%.5f" % correlation)
 		return self.getInput(1)

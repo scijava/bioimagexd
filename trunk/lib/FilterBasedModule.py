@@ -42,7 +42,6 @@ import optimize
 
 class FilterList:
 	"""
-	Created: 13.11.2007, KP
 	Description: a model of a filter list that is manipulated by the filter list editor
 	"""
 	def __init__(self, filtersModule = None):
@@ -100,6 +99,7 @@ class FilterList:
 		"""
 		self.dataUnit = dataUnit
 		self.modified = 1
+		print "filters = ",self.filters
 		for f in self.filters:
 			if not initializeFilters:
 				f.setInitialization(0)
@@ -413,7 +413,6 @@ class FilterBasedModule(lib.Module.Module):
 		else:
 			del self.cached
 			self.cached = None
-		filterlist = self.settings.get("FilterList")
 		
 		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
 

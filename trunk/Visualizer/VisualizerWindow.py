@@ -33,12 +33,13 @@ __date__ = "$Date: 2005 / 01 / 13 13: 42: 03 $"
 import time
 import lib.messenger
 import vtk
+import scripting
+
 from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
 
 class VisualizerWindow(wxVTKRenderWindowInteractor):
 	"""
-	Created: 3.5.2005, KP
-	Description: A window for showing 3D visualizations
+	A window for showing 3D visualizations
 	"""
 	def __init__(self, parent, **kws):
 		"""
@@ -77,7 +78,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		"""
 		If this windows is enabled, call the super class Render()
 		"""
-		if self.enabled:
+		if self.enabled and scripting.renderingEnabled:
 			wxVTKRenderWindowInteractor.Render(self)
 
 	def initializeVTK(self):

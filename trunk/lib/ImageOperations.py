@@ -207,12 +207,11 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 		reslice.SetOutputExtent(int(xExtent0 * xfactor), int(xExtent1 * xfactor), 
 			int(yExtent0 * yfactor), int(yExtent1 * yfactor), zExtent0, zExtent1)	
 	reslice.SetResliceTransform(transform)
-	
+	if interpolation == 0:
+		reslice.SetInterpolationModeToNearestNeighbor()
 	if interpolation == 1:
-#		Logging.info("USING LINEAR INTERPOLATION")
 		reslice.SetInterpolationModeToLinear()
 	else:
-#		Logging.info("USING CUBIC INTERPOLATION")
 		reslice.SetInterpolationModeToCubic()
 	# XXX: modified, try to get errors out
 	
@@ -819,6 +818,7 @@ def getMaskFromROIs(rois, mx, my, mz):
 	"""
 	insideMap = {}
 	for shape in rois:
+		print "Getting from shape",shape
 		insideMap.update(shape.getCoveredPoints())
 	insMap = {}
 	coveredPointAmount = len(insideMap.keys())

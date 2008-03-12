@@ -48,7 +48,6 @@ import ConfigParser
 
 class DataUnitSettings:
 	"""
-	Created: 26.03.2005, KP
 	Description: This is a class that holds all settings of a dataunit
 	"""	   
 	# Global settings, shared by all instances
@@ -59,8 +58,7 @@ class DataUnitSettings:
 	def __init__(self, dataSetNumber = -1, **keyWords):
 		"""
 		Constructor
-		Parameters:
-			n	Number of the dataset this is associated to
+		@param n	Number of the dataset this is associated to
 				Reflects in that set() and get() of counted variables
 				will set only the nth variable
 		"""
@@ -307,6 +305,8 @@ class DataUnitSettings:
 		if name not in self.registered:
 			raise "No key %s registered" % name
 		if self.isPrivate[name]:
+			if name == "FilterList":
+				print "\n\n\n",repr(self),"Setting filterlist to",value
 			self.private[name] = value
 		else:
 			self.settings[name] = value
@@ -404,7 +404,7 @@ class DataUnitSettings:
 		"""
 		Returns the string representation of this class
 		"""
-		return "%s ( %s )" % (str(self.__class__), str(self.settings))
+		return "%s %s ( %s )" % (repr(self), str(self.__class__), str(self.settings))
 
 	def initialize(self, dataunit, channels, timepoints):
 		"""
@@ -413,7 +413,7 @@ class DataUnitSettings:
 		"""
 		self.channels = channels
 		self.timepoints = timepoints
-		self.dataunit = dataunit			
+		self.dataunit = dataunit
 		
 	def __getstate__(self):
 		ret = {}

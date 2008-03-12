@@ -136,7 +136,7 @@ class Colocalization(Module):
 				self.settings.set("Ch1ThresholdMax", self.colocAutoThreshold.GetCh1ThresholdMax())
 				self.settings.set("Ch2ThresholdMax", self.colocAutoThreshold.GetCh2ThresholdMax())
 				self.settings.set("Slope", self.colocAutoThreshold.GetSlope())
-				self.settings.set("Intercept", self.colocAutoThreshold.GetIntercept())			  
+				self.settings.set("Intercept", self.colocAutoThreshold.GetIntercept())
 			Logging.info("Done!", kw = "processing")
 			
 			t1 = settings.get("Ch1ThresholdMax")

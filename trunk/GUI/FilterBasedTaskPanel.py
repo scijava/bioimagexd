@@ -38,14 +38,12 @@ import lib.FilterBasedModule
 
 class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 	"""
-	Created: 14.08.2006, KP
-	Description: A window for restoring a single dataunit
+	A window for restoring a single dataunit
 	"""
 	def __init__(self, parent, tb, wantNotebook = 1):
 		"""
 		Initialization
-		Parameters:
-				root    Is the parent widget of this window
+		@param parent    Is the parent widget of this window
 		"""
 		self.filterEditor = None
 		TaskPanel.TaskPanel.__init__(self, parent, tb, wantNotebook = wantNotebook)
@@ -64,9 +62,7 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		"""
 		A method used to set the GUI widgets to their proper values
 		"""
-		if self.dataUnit:
-			get = self.settings.get
-			set = self.settings.set
+		print "\n\nGETTING FILTER LIST FORM SETTINGS"
 		self.filterList = self.settings.get("FilterList")
 		
 		if self.filterList:
@@ -87,7 +83,7 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		A method used to set the right values in dataset
 					 from filter GUI widgets
 		"""
-		self.settings.set("FilterList", self.filterList)
+		self.dataUnit.getSettings().set("FilterList", self.filterList)
 		
 	def doProcessingCallback(self, *args):
 		"""

@@ -33,7 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Configuration
 import wx.lib.filebrowsebutton as filebrowse
-import os.path, os
+import os.path, os,sys
 import scripting
 import wx
 import wx.lib.intctrl
@@ -164,10 +164,11 @@ class PathSettings(wx.Panel):
 		logdir = scripting.get_log_dir()
 		self.logbrowse = filebrowse.DirBrowseButton(self, -1, labelText = "Select log files directory", 
 			startDirectory = logdir)
+		self.logbrowse.SetValue(logdir)
 		previewdir = scripting.get_preview_dir()
 		self.previewbrowse = filebrowse.DirBrowseButton(self, -1, labelText = "Select preview files directory",
 			startDirectory = previewdir)
-		
+		self.previewbrowse.SetValue(previewdir)
 		self.clearCacheButton = wx.Button(self, -1, "Clear logs and previews")
 		self.clearCacheButton.Bind(wx.EVT_BUTTON, self.onClearCache)
 		
@@ -205,11 +206,11 @@ class PathSettings(wx.Panel):
 		"""
 		datapath = self.databrowse.GetValue()
 		rememberlast = self.useLastCheckbox.GetValue()
-		
-		logpath = self.logbrowse.GetValue()
+
+		logpath = unicode(self.logbrowse.GetValue())
 		if logpath and logpath != scripting.get_log_dir():
 			conf.setConfigItem("LogPath","Paths",logpath)
-			print "Setting logpath to",logpath
+			print u"Setting logpath to",logpath
 		previewpath = self.previewbrowse.GetValue()
 		if previewpath and previewpath != scripting.get_preview_dir():
 			conf.setConfigItem("PreviewPath","Paths",previewpath)

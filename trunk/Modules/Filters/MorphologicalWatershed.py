@@ -29,11 +29,11 @@ import scripting
 import itk
 import types
 import time
+import Logging
 
 class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 05.07.2006, KP
-	Description: A filter for doing morphological watershed segmentation
+	A filter for performing the ITK morphological watershed segmentation
 	"""
 	name = "Morphological watershed segmentation"
 	category = lib.FilterTypes.WATERSHED
@@ -59,7 +59,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["Leve", "Threshold", "Level"]:
+		if parameter in ["Threshold", "Level"]:
 			return scripting.COLOR_INTERMEDIATE
 		
 		return scripting.COLOR_BEGINNER
@@ -70,7 +70,6 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter == "Level":
 			return 5
-		
 		return 0
 		
 	def getType(self, parameter):
@@ -121,6 +120,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		t = time.time()
 		self.eventDesc = "Performing morphological watershed segmentation"
 		self.itkfilter.SetInput(image)
+		Logging.info("Using watershed level %d"%self.parameters["Level"])
 		self.itkfilter.SetLevel(self.parameters["Level"])
 				
 		self.setImageType("UL3")

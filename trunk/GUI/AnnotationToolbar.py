@@ -80,8 +80,8 @@ class AnnotationToolbar(wx.Window):
 		"""
 		Method to create a toolbar for the annotations
 		"""		   
+		icondir = scripting.get_icon_dir()
 		def createBtn(bid, gifname, tooltip, btnclass = buttons.GenBitmapToggleButton):
-			icondir = scripting.get_icon_dir()	
 			bmp = wx.Image(os.path.join(icondir, gifname), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 			
 			btn = btnclass(self, bid, bmp)
@@ -110,8 +110,12 @@ class AnnotationToolbar(wx.Window):
 		self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		self.sizer.Add(self.textBtn, (2, 0))
 
-		self.deleteAnnotationBtn = createBtn(MenuManager.ID_DEL_ANNOTATION, "delete_annotation.gif", \
-												"Delete an annotation")
+		icon = wx.Image(os.path.join(icondir, "delete_annotation.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		
+		self.deleteAnnotationBtn = buttons.GenBitmapButton(self, MenuManager.ID_DEL_ANNOTATION, icon)
+		self.deleteAnnotationBtn.SetBestSize((32,32))
+		self.deleteAnnotationBtn.SetToolTipString("Delete an annotation")
+		
 		self.sizer.Add(self.deleteAnnotationBtn, (4, 1))   
 
 		self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
@@ -230,11 +234,7 @@ class AnnotationToolbar(wx.Window):
 		"""
 		flag = evt.GetIsDown()
 		scripting.resamplingDisabled = not flag
-		#self.visualizer.updateRendering() 
-		#self.visualizer.setupMode()
-		#if self.visualizer.zoomToFitFlag:
-		#	print "Zooming to fit"
-		#	self.visualizer.zoomToFit(None)
+
 		lib.messenger.send(None,"data_dimensions_changed")
 		
 	def clearChannelItems(self):
