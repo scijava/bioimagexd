@@ -34,8 +34,7 @@ import wx
 
 class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 31.07.2006, KP
-	Description: A filter for calculating the correlation between two timepoints
+	A filter for calculating the correlation between two timepoints
 	"""		
 	name = "Timepoint correlation"
 	category = lib.FilterTypes.MEASUREMENT

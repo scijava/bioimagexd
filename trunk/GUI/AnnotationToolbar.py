@@ -45,8 +45,7 @@ import	wx
 
 class AnnotationToolbar(wx.Window):
 	"""
-	Created: 06.11.2006, KP
-	Description: A class representing the vertical annotation toolbar of the visualizer
+	A class representing the vertical annotation toolbar of the visualizer
 	"""
 	def __init__(self, parent, visualizer):
 		wx.Window.__init__(self, parent, -1)
@@ -59,7 +58,7 @@ class AnnotationToolbar(wx.Window):
 		self.SetSizer(self.sizer)
 		self.eventRecorder = vtk.vtkInteractorEventRecorder()
 		self.SetAutoLayout(1)
-		lib.messenger.connect(None, "visualizer_mode_loading", self.onLoadMode)
+		#lib.messenger.connect(None, "visualizer_mode_loading", self.onLoadMode)
 		
 		self.numberOfChannels = 0
 		lib.messenger.connect(None, "update_annotations", self.updateAnnotations)
@@ -104,7 +103,6 @@ class AnnotationToolbar(wx.Window):
 		
 		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "scale.gif", "Draw a scale bar on the image")
 		self.sizer.Add(self.scaleBtn, (1, 1))
-
 
 
 		self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
@@ -277,7 +275,7 @@ class AnnotationToolbar(wx.Window):
 		"""
 		Draw a scale to the visualization
 		"""
-		if not self.visualizer.currMode:
+		if not self.visualizer.getCurrentMode():
 			return
 		annclass = None
 		eid = event.GetId()
@@ -296,15 +294,15 @@ class AnnotationToolbar(wx.Window):
 		else:
 			Logging.info("BOGUS ANNOTATION SELECTED!", kw = "visualizer")
 						
-		self.visualizer.currMode.annotate(annclass, multiple = multiple)
+		self.visualizer.getCurrentMode().annotate(annclass, multiple = multiple)
 		
 		
 	def deleteAnnotation(self, event):
 		"""
-		DElete annotations on the image
+		Delete annotations on the image
 		"""
-		if self.visualizer.currMode:
-			self.visualizer.currMode.deleteAnnotation()
+		if self.visualizer.getCurrentMode():
+			self.visualizer.getCurrentMode().deleteAnnotation()
 
 	def updateAnnotations(self, *args):
 		"""

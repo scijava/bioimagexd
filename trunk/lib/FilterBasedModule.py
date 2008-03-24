@@ -453,7 +453,8 @@ class FilterBasedModule(lib.Module.Module):
 					Logging.info("Executing VTK side before switching to ITK", kw="pipeline")
 					data = optimize.optimize(image = data, releaseData = 1)
 					data.Update()
-				
+				elif currfilter.itkFlag and not nextfilter.itkFlag:
+					data = currfilter.convertITKtoVTK(data)
 			
 			lastfilter = currfilter
 			

@@ -38,11 +38,11 @@ import math
 import optimize
 import scripting
 import wx
+import vtk
 
 class GalleryPanel(InteractivePanel):
 	"""
-	Created: 23.05.2005, KP
-	Description: A panel that can be used to preview volume data several slice at a time
+	A panel that can be used to preview volume data several slice at a time
 	"""
 	def __init__(self, parent, visualizer, size = (512, 512), **kws):
 		"""
@@ -57,7 +57,6 @@ class GalleryPanel(InteractivePanel):
 		self.slices = []
 		self.zoomx = 1
 		self.zoomy = 1
-		self.zoomToFitFlag = 0
 		if kws.has_key("slicesize"):
 			self.sliceSize = kws["slicesize"]
 		else:
@@ -79,7 +78,6 @@ class GalleryPanel(InteractivePanel):
 		self.scrollsize = 32
 		self.scrollTo = None
 		self.drawableRects = []
-		self.dataUnit = None
 		self.slice = 0
 		
 		self.interpolation = 0
@@ -90,6 +88,22 @@ class GalleryPanel(InteractivePanel):
 		self.paintPreview()
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
 		self.Bind(wx.EVT_SIZE, self.onSize)
+		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
+		
+	def deregister(self):
+		"""
+		Delete all known references because this view mode is to be removed
+		"""
+		lib.messenger.disconnect(None, "zslice_changed", self.setPreviewedSlice)
+		InteractivePanel.deregister(self)
+
+		
+	def setPreviewedSlice(self, obj, evt, slice):
+		"""
+		If the panel is showing a slice in each timepoint, set the shown slice
+		"""
+		if self.showTimepoints:
+			self.setShowTimepoints(True, slice)
 		
 	def setShowTimepoints(self, showtps, slice):
 		"""
@@ -98,7 +112,7 @@ class GalleryPanel(InteractivePanel):
 		self.slice = slice
 		self.showTimepoints = showtps
 		print "Showing slice ", slice
-		self.setSlice(slice)
+		self.getTimepointSlicesAt(slice)
 		self.updatePreview()
 		self.Refresh()
 		
@@ -112,7 +126,7 @@ class GalleryPanel(InteractivePanel):
 		"""
 		Zoom the dataset to fit the available screen space
 		"""
-		self.zoomToFitFlag = 1
+		self.zoomToFitFlag = True
 		self.calculateBuffer()
 		
 	def setZoomFactor(self, factor):
@@ -120,7 +134,7 @@ class GalleryPanel(InteractivePanel):
 		Set the factor by which the image is zoomed
 		"""
 		self.zoomFactor = factor
-		self.zoomToFitFlag = 0
+		self.zoomToFitFlag = False
 		self.updateAnnotations()
 		x, y = self.originalSliceSize
 		x *= factor
@@ -128,7 +142,7 @@ class GalleryPanel(InteractivePanel):
 		self.sizeChanged = True
 		self.calculateBuffer()
 
-		self.sliceSize = (x, y)
+		self.sliceSize = (int(x), int(y))
 		self.slices = []
 		
 		
@@ -182,7 +196,8 @@ class GalleryPanel(InteractivePanel):
 		# instead of each slice of one timepoint, call the
 		# appropriate function
 		if self.showTimepoints:
-			return self.setSlice(self.slice)
+			return self.getTimepointSlicesAt(self.slice)
+
 		if self.visualizer.getProcessedMode():
 			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
 			ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
@@ -201,23 +216,12 @@ class GalleryPanel(InteractivePanel):
 		self.slices = []
 		
 		for i in range(z):
-			#print "Using as update ext",(0,x-1,0,y-1,i,i)
 			image = optimize.optimize(image = self.imagedata, updateExtent = (0, x - 1, 0, y - 1, i, i))
-			
-			#self.imagedata.Update()
 			image = lib.ImageOperations.getSlice(image, i)
-		
 			
 			slice = lib.ImageOperations.imageDataTo3Component(image, ctf)
 			slice.Update()
-			w, h = self.sliceSize
-			factor = lib.ImageOperations.getZoomFactor(x, y, w, h)
-			
-			if self.interpolation:
-				slice = self.zoomImageWithInterpolation(slice, factor, self.interpolation, 0)
-			else:
-				slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
-				slice.Rescale(w, h)
+
 			
 			lib.messenger.send(None, "update_progress", i / float(z), "Loading slice %d / %d for Gallery view" % (i + 1, z + 1))
 			self.slices.append(slice)
@@ -228,6 +232,25 @@ class GalleryPanel(InteractivePanel):
 			self.updatePreview()
 			self.Refresh()
 			
+	def getScaledSlice(self, slice):
+		"""
+		@param slice The number of the slice to return
+		"""
+		w, h = self.sliceSize
+		try:
+			slice = self.slices[slice]
+		except:
+			return
+		x, y, z = slice.GetDimensions()
+		factor = lib.ImageOperations.getZoomFactor(x, y, w, h)
+		
+		if self.interpolation:
+			slice = self.zoomImageWithInterpolation(slice, factor, self.interpolation, 0)
+		else:
+			slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
+			slice.Rescale(w, h)
+		return slice
+		
 	def forceUpdate(self):
 		"""
 		force update of the preview
@@ -236,10 +259,9 @@ class GalleryPanel(InteractivePanel):
 		self.slices = []
 		self.timepoint = -1
 		self.setTimepoint(tp)
-#		self.updatePreview()
-#		self.Refresh()
+
 		
-	def setSlice(self, slice):
+	def getTimepointSlicesAt(self, slice):
 		"""
 		Sets the slice to show
 		"""
@@ -247,11 +269,11 @@ class GalleryPanel(InteractivePanel):
 		# if we're showing each slice of one timepoint
 		# instead of one slice of each timepoint, call the
 		# appropriate function
-		if not self.showTimepoints:
-			self.slices = []
-			return self.setTimepoint(self.timepoint)
-		count = self.dataUnit.getNumberOfTimepoints()
 		self.slices = []
+		if not self.showTimepoints:
+			return self.setTimepoint(self.timepoint)
+		
+		count = self.dataUnit.getNumberOfTimepoints()
 		for tp in range(0, count):
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(self.slice, 1, tp)
@@ -263,14 +285,14 @@ class GalleryPanel(InteractivePanel):
 				image = optimize.optimize(image, updateExtent = (0, x - 1, 0, y - 1, self.slice, self.slice))
 				image = lib.ImageOperations.getSlice(image, self.slice)
 				image.Update()
-#				print "Got slice =", image
 				ctf = self.dataUnit.getColorTransferFunction()
-#			print "tp =", tp
 			self.imagedata = lib.ImageOperations.imageDataTo3Component(image, ctf)
 			self.imagedata.Update()
-#			print "Got ", self.imagedata
-			slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, self.slice)
-			self.slices.append(slice)
+			tp = vtk.vtkImageData()
+			tp.DeepCopy(self.imagedata)
+	#			print "Got ", self.imagedata
+			#slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, self.slice)
+			self.slices.append(tp)
 			
 		self.calculateBuffer()
 		self.updatePreview()
@@ -281,7 +303,7 @@ class GalleryPanel(InteractivePanel):
 		"""
 		if not self.imagedata:
 			return
-		
+
 		x, y, z = self.dataUnit.getDimensions()
 		
 		if not self.sizeChanged and (x, y, z) == self.oldBufferDims and self.oldBufferMaxXY == (self.maxClientSizeX, self.maxClientSizeY):
@@ -290,6 +312,7 @@ class GalleryPanel(InteractivePanel):
 		yfromx = y / float(x)
 		maxX = self.maxClientSizeX
 		maxY = self.maxClientSizeY
+
 		n = z
 		if len(self.slices) > z:
 			Logging.info("Using number of slices (%d) instead of z dim (%d)" % (len(self.slices), z), kw = "preview")
@@ -313,7 +336,7 @@ class GalleryPanel(InteractivePanel):
 
 				if not nx:continue
 				ny = math.ceil(n / float(nx))
-				if ny * i * yfromx < maxY and (nx * ny) > n:
+				if ny * (i + 6) * yfromx < maxY and (nx * ny) > n:
 					w = i
 					h = i * yfromx
 					self.sliceSize = (w, h)
@@ -333,17 +356,16 @@ class GalleryPanel(InteractivePanel):
 		self.cols = xreq
 		if self.reqSize != (x, y):
 			self.reqSize = (x, y)
+
 		x2, y2 = self.paintSize
-		flag = 0
 		if x > x2:
 			x2 = x
 		if y > y2:
 			y2 = y
-		
+
 		self.buffer = wx.EmptyBitmap(x2, y2)
 		self.setScrollbars(x2, y2)
 		
-
 
 	def resetScroll(self):
 		"""
@@ -365,7 +387,7 @@ class GalleryPanel(InteractivePanel):
 		Updates the viewed image
 		"""
 		if not self.enabled:
-			Logging.info("Won't draw gallery cause not enabled", kw = "preview")
+			Logging.info("\n\nWon't draw gallery cause not enabled", kw = "preview")
 			return
 		if not self.dataUnit:
 			return			
@@ -422,10 +444,15 @@ class GalleryPanel(InteractivePanel):
 	
 		xs += 9
 		ys += 9
-		for slice in self.slices:
+		for i,slice in enumerate(self.slices):
 			w, h = self.sliceSize
 #			slice.Rescale(w, h)
+			slice = self.getScaledSlice(i)
 			bmp = slice.ConvertToBitmap()
+			if bmp.GetWidth()>w:
+				print "\n\nTOO WIDE, slice size=",(w,h), "current=",bmp.GetWidth(),bmp.GetHeight()
+			if bmp.GetHeight()>h:
+				print "\n\nTOOHIGH,  slice size=",(w,h), "current=",bmp.GetWidth(),bmp.GetHeight()
 
 			x = xs + col * (3 + self.sliceSize[0])
 			y = xs + row * (3 + self.sliceSize[1])

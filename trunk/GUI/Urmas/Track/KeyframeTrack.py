@@ -45,9 +45,8 @@ from SplineTrack import SplineTrack
 
 class KeyframeTrack(SplineTrack):
 	"""
-	Created: 17.08.2005, KP
-	Description: A class representing a Keyframe track in the timeline
-	"""       
+	A class representing a Keyframe track in the timeline
+	"""
 	def __init__(self, name, parent, **kws):
 		self.nameColor = (255, 51, 153)
 		self.fg = (0, 0, 0)
@@ -129,7 +128,7 @@ class KeyframeTrack(SplineTrack):
 		"""
 		Remove an item from this track
 		"""
-		#self.removeItem(position)
+		self.removeItem(position)
 		#self.showKeyframe()
 		self.Layout()
 		#self.sizer.Fit(self)     

@@ -492,7 +492,8 @@ class ColocalizationPanel(TaskPanel):
 		for i in sources:
 			data = i.getTimepoint(self.timePoint)
 			coloctest.AddInput(data)
-		coloctest.AddObserver("ProgressEvent", self.updateProgress)
+		coloctest.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(coloctest, "ProgressEvent", self.updateProgress)
 		
 		coloctest.Update()
 		print "It took ", time.time() - t, "seconds to calculate p-value"

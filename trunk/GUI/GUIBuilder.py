@@ -72,8 +72,6 @@ class GUIBuilder(wx.Panel):
 		Initialization
 		""" 
 		wx.Panel.__init__(self, parent, -1)
-		self.xmlFp = None
-		self.indent = 0
 		self.filter = myfilter
 		self.sizer = wx.GridBagSizer()
 		# store the histograms so that the filters can access them if they need
@@ -86,13 +84,6 @@ class GUIBuilder(wx.Panel):
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		
-	def outputXML(self, string):
-		"""
-		output XML if the file pointer exists
-		"""
-		if self.xmlFp:
-			ind="    "*self.indent
-			self.xmlFp.write("%s%s\n"%(ind,string))
 			
 	def getSizerPosition(self):
 		"""
@@ -113,10 +104,6 @@ class GUIBuilder(wx.Panel):
 		Build the GUI for a given filter
 		""" 
 		self.currentFilter = currentFilter
-		if not os.path.exists("XMLDescs"):
-			os.mkdir("XMLDescs")
-		if os.path.exists("XMLDescs"):
-			self.xmlFp = open(os.path.join("XMLDescs",self.currentFilter.getName()+".xml"),"w")
 		parameters = currentFilter.getParameters()
 		gy = 0
 		staticBox = wx.StaticBox(self, -1, currentFilter.getName())
@@ -142,8 +129,6 @@ class GUIBuilder(wx.Panel):
 			if type(param) == types.StringType:
 				label = wx.StaticText(self, -1, param)
 				sizer.Add(label, (gy, 0))
-				if self.xmlFp:
-					self.outputXML('<Label label="%s" />'%param.replace('"','\\"'))
 			# If it's a list with header name and items
 			elif type(param) == types.ListType:
 				self.staticBoxName, items = param
@@ -151,9 +136,6 @@ class GUIBuilder(wx.Panel):
 				self.currentRow = -1
 				positionOnSameRow = 0
 				skipNextNItems = 0
-				if self.xmlFp:
-					self.outputXML('<StaticBox label="%s">'%self.staticBoxName.replace('"','\\"'))
-					self.indent+=1
 				# Loop through all the items on this section
 				for n, item in enumerate(items):
 					if item == NOBR:
@@ -175,7 +157,6 @@ class GUIBuilder(wx.Panel):
 						# The GUI for the parameter is created using the regular createGUIElement method
 						if not keepOnSameRow:
 							self.currentRow += 1
-							self.outputXML('<br>')
 							cx = 0
 						else:
 							keepOnSameRow = 0
@@ -235,8 +216,6 @@ class GUIBuilder(wx.Panel):
 					staticBox = wx.StaticBox(self, -1, self.staticBoxName)
 					staticBoxSizer = wx.StaticBoxSizer(staticBox, wx.VERTICAL)
 					staticBox.Lower()
-					self.indent-=1
-					self.outputXML('</StaticBox>')
 					sizer.Add(staticBoxSizer, (gy, 0), flag = wx.EXPAND)
 					staticBoxSizer.Add(self.itemSizer)
 				else:
@@ -245,8 +224,6 @@ class GUIBuilder(wx.Panel):
 
 			# The next item goes to the next row
 			gy += 1
-		self.xmlFp.close()
-		self.xmlFp = None
 		
 	def createColorTransferFunctionEditor(self, n, items, currentFilter):
 		"""
@@ -333,7 +310,6 @@ class GUIBuilder(wx.Panel):
 		background.Layout()
 		self.items[itemName] = background
 		
-		self.outputXML('<ThresholdSelection id="%s">'%itemName)
 		return 0
 		
 
@@ -385,7 +361,6 @@ class GUIBuilder(wx.Panel):
 		onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
 				s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelsFunc)
-		self.outputXML('<MultiPixelSeedSelection id="%s/>'%itemName)
 		return 0
 
 	def createPixelSelection(self, n, items, currentFilter):
@@ -422,7 +397,6 @@ class GUIBuilder(wx.Panel):
 		onSetPixelFunc = lambda obj, event, arg, label = label, i = itemName, \
 					s = self: s.onSetPixelFromFilter(label, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % itemName, onSetPixelFunc)
-		self.outputXML('<PixelSeedSelection id="%s/>'%itemName)
 		return 0
 
 	def createROISelection(self, n, items, currentFilter):
@@ -466,7 +440,6 @@ class GUIBuilder(wx.Panel):
 		# was (y, 0)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
 		self.items[itemName] = box
-		self.outputXML('<ROISelection id="%s"/>'%itemName)
 
 		return 1
 
@@ -509,8 +482,6 @@ class GUIBuilder(wx.Panel):
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
 		self.items[itemName] = box
-		self.outputXML('<Choice id="%s" label="%s">/'%(itemName, text.replace('"','\\"')))
-		#self.indent+=1
 		#for item in choices:
 
 		return 1
@@ -557,12 +528,6 @@ class GUIBuilder(wx.Panel):
 		spec="rows"
 		if majordim == wx.RA_SPECIFY_COLS:
 			spec = "columns"
-		self.outputXML('<RadioChoice id="%s" specify="%s" majorDimension="%s">'%(itemName,spec,items[n+1][1]))
-		self.indent+=1
-		for item in choices:
-			self.outputXML('<RadioChoice name="%s"/>'%item)
-		self.outputXML('</RadioChoice>')
-		self.indent-=1
 
 		return 0
 		
@@ -616,7 +581,6 @@ class GUIBuilder(wx.Panel):
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
 		self.items[itemName] = box
-		self.outputXML('<SliceSelection id="%s" label="%s"/>'%(itemName,text))
 
 		return 1
 		
@@ -648,7 +612,6 @@ class GUIBuilder(wx.Panel):
 		box.Add(browse, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
 		self.items[itemName] = box
-		self.outputXML('<FileSelection id="%s label="%s" fileMask="%s" dialogTitle="%s"/>'%(itemName,text,items[n][2],items[n][1]))
 
 		return 1
 							
@@ -797,13 +760,10 @@ class GUIBuilder(wx.Panel):
 			input = self.createNumberInput(background, currentFilter, item, itemType, defaultValue, desc)
 			inputtype="Integer"
 			if itemType==types.FloatType:inputtype="Float"
-			self.outputXML('<%sInput id="%s" label="%s"/>'%(inputtype,item,desc))
 		elif itemType == types.BooleanType:
 			input = self.createBooleanInput(background, currentFilter, item, itemType, defaultValue, desc)
-			self.outputXML('<BooleanInput id="%s" label="%s/>'%(item,desc))
 		elif itemType == SPINCTRL:
 			input  = self.createSpinInput(background, currentFilter, item, itemType, defaultValue, desc)
-			self.outputXML('<SpinControl id="%s" label="%s"/>'%(item,desc))
 		else:
 			raise "Unrecognized input type: %s" % (str(itemType))
 	   

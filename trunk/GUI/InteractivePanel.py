@@ -54,8 +54,7 @@ INTERPOLATION_CUBIC=2
 
 class InteractivePanel(ogl.ShapeCanvas):
 	"""
-	Created: 03.07.2005, KP
-	Description: A panel that can be used to select regions of interest, draw
+	A panel that can be used to select regions of interest, draw
 				 annotations on etc.
 	"""
 	def __init__(self, parent, **kws):
@@ -88,6 +87,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.maxClientSizeY = 512
 		self.painterHelpers = []
 		size = kws.get("size", (512, 512))
+		self.zoomToFitFlag = False
 		
 		self.dataUnit = None
 		self.listeners = {}
@@ -169,7 +169,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
 		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
 
-
+	def deregister(self):
+		"""
+		Delete all known references because this view mode is to be removed
+		"""
+		try:
+			lib.messenger.disconnect(None, "update_helpers", self.onUpdateHelpers)
+			lib.messenger.disconnect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
+		except:
+			pass
 
 	def onKeyUp(self,event):
 		"""
@@ -649,6 +657,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			settings = self.dataUnit.getSettings()
 			if self.annotationsEnabled:
 				self.saveAnnotations()
+				print "\n\n*** Saving annotations"
 				scripting.storeSettingsToCache(self.dataUnit.getFileName() + "_" + self.dataUnit.getName() + "_annotations", [settings])
 				self.dataUnit.getSettings().set("Annotations", [])
 					   

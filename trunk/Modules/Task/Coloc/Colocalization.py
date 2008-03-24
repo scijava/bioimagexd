@@ -60,11 +60,13 @@ class Colocalization(Module):
 		"""
 		Module.reset(self)
 		self.colocFilter = vtkbxd.vtkImageColocalizationFilter()
-		self.colocFilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.colocFilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.colocFilter, "ProgressEvent", self.updateProgress)
 
 		self.colocAutoThreshold = vtkbxd.vtkImageAutoThresholdColocalization()
 		self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
-		self.colocAutoThreshold.AddObserver("ProgressEvent", self.updateProgress)
+		self.colocAutoThreshold.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.colocAutoThreshold, "ProgressEvent", self.updateProgress)
 		self.thresholds = []
 		self.settingsLst = []
 		self.preview = None

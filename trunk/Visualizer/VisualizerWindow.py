@@ -90,13 +90,16 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 		self.irenStyle = vtk.vtkInteractorStyleTrackballCamera()
 		self.iren.SetInteractorStyle(self.irenStyle)
 		
-		self.iren.AddObserver("KeyPressEvent", self.onKeypress)
+		self.iren.AddObserver('KeyPressEvent', lib.messenger.send)
+		lib.messenger.connect(self.iren, "KeyPressEvent", self.onKeypress)
 		
 		self.getRenderer()
 		self.renderer.SetBackground(0, 0, 0)
 		self.iren.SetSize(self.GetRenderWindow().GetSize())
-		self.renderer.AddObserver("StartEvent", self.onRenderBegin)
-		self.renderer.AddObserver("EndEvent", self.onRenderEnd)
+		self.renderer.AddObserver('StartEvent', lib.messenger.send)
+		self.renderer.AddObserver('EndEvent', lib.messenger.send)
+		lib.messenger.connect(self.renderer, "StartEvent", self.onRenderBegin)
+		lib.messenger.connect(self.renderer, "EndEvent", self.onRenderEnd)
 	
 	def onKeypress(self, obj, evt):
 		"""

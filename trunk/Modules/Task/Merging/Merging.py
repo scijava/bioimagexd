@@ -38,11 +38,12 @@ import Logging
 from lib.Module import Module
 import time
 import vtkbxd
+import vtk
+import lib.ImageOperations
 
 class Merging(Module):
 	"""
-	Created: 24.11.2004, JV
-	Description: Merges two or more datasets to one
+	Merges two or more datasets to one
 	"""
 	def __init__(self, **kws):
 		"""
@@ -148,7 +149,8 @@ class Merging(Module):
 		self.shift = 0
 		self.scale = 1
 		self.merge = vtkbxd.vtkImageColorMerge()
-		self.merge.AddObserver("ProgressEvent", self.updateProgress)        
+		self.merge.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.merge, 'ProgressEvent', self.updateProgress)
 		
 		if self.doAlpha:
 			self.merge.BuildAlphaOn()
@@ -165,28 +167,17 @@ class Merging(Module):
 		else:
 			self.merge.BuildAlphaOff()
 		
-		#print "\n\n\nUsing itfs=",self.intensityTransferFunctions
-		#for i,itf in enumerate(self.intensityTransferFunctions):
-		##print "range max of itf %d=%d"%(i,itf.GetRangeMax())
 
-		for i, image in enumerate(self.images):
-			#print "Adding",image
+		images = lib.ImageOperations.castImagesToLargestDataType(self.images)
+		for i, image in enumerate(images):
 			self.merge.AddInput(image)
 			self.merge.AddLookupTable(self.ctfs[i])
-			
 			self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
 		
 		#data = self.getLimitedOutput(self.merge)
 		
 		data = self.merge.GetOutput()
 		
-		
-#        self.merge.Update()        
-#        data=self.merge.GetOutput()
-		#Logging.info("Result with dims and type",data.GetDimensions(),data.GetScalarTypeAsString(),\
-		#			"components:",data.GetNumberOfScalarComponents(),"scalar range",data.GetScalarRange())
-		
-
 		t3 = time.time()
 		Logging.info("Merging took %.4f seconds" % (t3 - t1), kw = "processing")
 		lib.messenger.send(None, "update_progress", 100, "Done.")

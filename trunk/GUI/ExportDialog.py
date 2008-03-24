@@ -90,13 +90,15 @@ class ExportDialog(wx.Dialog):
 	def writeImages(self):
 		"""
 		Writes out the images
-		"""            
+		"""
 		dirname = self.browsedir.GetValue()
 		pattern = self.patternEdit.GetValue()
 		n = pattern.count("%d")        
 		ext = self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()
 		writer = "vtk.vtk%sWriter()" % (ext.upper())
 		writer = eval(writer)
+		if ext.upper()=="TIFF":
+			writer.SetCompressionToNoCompression()
 		prefix = dirname + os.path.sep
 		n = pattern.count("%")
 		Logging.info("Number of images =", n, kw = "io")

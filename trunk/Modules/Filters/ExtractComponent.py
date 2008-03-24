@@ -43,7 +43,8 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageExtractComponents()
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		
 		self.descs = {"Component1": "Component #1", "Component2": "Component #2", "Component3": "Component #3"}
 	

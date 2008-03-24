@@ -48,13 +48,10 @@ DRAG_OFFSET = 20
 
 class KeyframePoint(TrackItem.TrackItem):
 	"""
-	Class: KeyframePoint
-	Created: 18.03.2005, KP
-	Description: A class representing an item in a keyframe track.
-	"""       
+	A class representing an item in a keyframe track.
+	"""
 	def __init__(self, parent, text, size, **kws):
 		"""
-		Method: __init__
 		Initialize the keyframe item
 		""" 
 		self.point = (0, 0, 0)
@@ -68,7 +65,6 @@ class KeyframePoint(TrackItem.TrackItem):
 				
 	def getItemNumber(self):
 		"""
-		Method: getItemNumber()
 		Return the item number of this item
 		"""       
 		return self.itemnum
@@ -76,14 +72,12 @@ class KeyframePoint(TrackItem.TrackItem):
 	def getPoint(self): return self.point
 	def setPoint(self, pt):
 		"""
-		Method: setPoint(self)
 		Return the point this spline point represents
 		"""      
 		self.point = pt
 		
 	def drawItem(self, hilight = -1):
 		"""
-		Method: drawItem()
 		A method that draws this track item
 		"""
 		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
@@ -123,9 +117,8 @@ class KeyframePoint(TrackItem.TrackItem):
 	
 	def getThumbnail(self):
 		"""
-		Method: getThumbnail
 		Get the thumbnail image
-		"""     
+		"""
 		self.image = self.parent.splineEditor.getAsImage()        
 		vx, vy, vz = self.image.GetDimensions()
 		img = lib.ImageOperations.vtkImageDataToWxImage(self.image)
@@ -140,7 +133,6 @@ class KeyframePoint(TrackItem.TrackItem):
 			
 	def updateThumbnail(self):
 		"""
-		Method: updateThumbnail()
 		A method that first sets the camera of the renderwindow
 					 and then generates the thumbnail
 		"""
@@ -150,7 +142,6 @@ class KeyframePoint(TrackItem.TrackItem):
 		
 	def drawThumbnail(self):
 		"""
-		Method: drawThumbnail()
 		A method that draws a thumbnail on an item. If no thumbnail exists,
 					 this will create one
 		"""   
@@ -166,18 +157,16 @@ class KeyframePoint(TrackItem.TrackItem):
 	
 	def updateItem(self):
 		"""
-		Method: updateItem()
-		A method called when the item has been resized
-		"""     
+s		A method called when the item has been resized
+		"""
 		TrackItem.TrackItem.updateItem(self)  
 #        pos=self.parent.getSplinePoint(self.itemnum)
 #        self.point = pos
 		
 	def __set_pure_state__(self, state):
 		"""
-		Method: __set_pure_state__()
 		Update the item
-		"""       
+		"""
 		TrackItem.TrackItem.__set_pure_state__(self, state)
 		self.point = state.point
 		self.cam = vtk.vtkCamera()
@@ -187,9 +176,8 @@ class KeyframePoint(TrackItem.TrackItem):
 		
 	def __getstate__(self):
 		"""
-		Method: __getstate__
 		Return the dict that is to be pickled to disk
-		"""     
+		"""
 		odict = TrackItem.TrackItem.__getstate__(self)
 		for key in ["point"]:
 			odict[key] = self.__dict__[key]
@@ -198,9 +186,8 @@ class KeyframePoint(TrackItem.TrackItem):
 		
 	def __str__(self):
 		"""
-		Method: __str__
 		Return string representation of self
-		"""  
+		"""
 		start, end = self.position
 		desc = "SP%d(%d,%d,%d)" % (self.itemnum, self.point[0], self.point[1], self.point[2])
 		return "[%s %ds:%ds]" % (desc, start, end)      
@@ -214,8 +201,7 @@ class KeyframeEndPoint(KeyframePoint):
 	"""       
 	def __init__(self, parent, text, size, **kws):
 		"""
-		Method: __init__
-		Initialize the item
+3		Initialize the item
 		"""
 		text = "End Point"
 		self.init_done = 0
@@ -235,14 +221,12 @@ class KeyframeEndPoint(KeyframePoint):
 		KeyframePoint.setWidth(self, w)
 	def setColor(self, col, headercolor):
 		"""
-		Method: setColor(color, headercolor)
 		Set the color and header color for this item
 		"""       
 		self.color = col
 		self.drawItem()        
 	def setText(self, s):
 		"""
-		Method: setText
 		Set the text number of this item
 		"""       
 		pass        

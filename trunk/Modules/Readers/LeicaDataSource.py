@@ -1,5 +1,4 @@
-# -*- coding: iso-8859-1 -*-
-"""
+﻿"""
  Unit: LeicaDataSource
  Project: BioImageXD
  Created: 12.04.2005, KP
@@ -46,6 +45,8 @@ import vtk
 import vtkbxd
 import scripting
 
+import lib.messenger
+
 def getExtensions(): 
 	return ["txt","lei"]
 
@@ -71,6 +72,17 @@ class LeicaDataSource(DataSource):
 		self.experiment = experiment
 		if experiment:
 			self.originalDimensions = self.reader.GetDimensions(self.experiment)
+			duration = self.reader.GetDuration(self.experiment)
+			numT = self.reader.GetNumberOfTimepoints(self.experiment)
+			print "Number of Timepoints = ",numT
+			print "Duration=",duration
+			step = duration/float(numT)
+			stamps = []
+			for t in range(0, numT):
+				stamps.append(step*t)
+			self.setTimeStamps(stamps)
+			self.setAbsoluteTimeStamps(stamps)
+			
 		self.channel = channel
 		self.dimensions = None
 		self.voxelsize = None
@@ -78,29 +90,8 @@ class LeicaDataSource(DataSource):
 		self.color = None
 		self.ctf = None
 		self.setPath(filename)
-		self.datasetCount = 1
+		self.datasetCount = None
 		
-	def updateProgress(self, obj, evt):
-		"""
-		Sends progress update event
-		"""
-		if not obj:
-			progress = 1.0
-		else:
-			progress = obj.GetProgress()
-		if self.experiment:
-			msg = "Reading channel %s of %s" % (self.experiment, self.shortname)
-			if self.timepoint >= 0 and self.getDataSetCount()>1:
-				msg += " (timepoint %d / %d)" % (self.timepoint + 1, self.getDataSetCount())
-		else:
-			msg = "Reading %s..." % self.shortname
-		notinvtk = 0
-		
-		if progress >= 1.0:
-			notinvtk = 1
-		scripting.inIO = (progress < 1.0)
-		if scripting.mainWindow:
-			scripting.mainWindow.updateProgressBar(obj, evt, progress,msg, notinvtk)
 			
 	def getDataSetCount(self):
 		"""
@@ -122,6 +113,7 @@ class LeicaDataSource(DataSource):
 		Returns the DataSet at the specified index
 		Parameters:   i       The index
 		"""
+		self.setCurrentTimepoint(i)
 		self.timepoint = i
 		data = self.reader.GetTimepoint(self.experiment, self.channel, i)
 		return self.getResampledData(data, i)
@@ -262,6 +254,8 @@ class LeicaExperiment:
 		self.SnapshotDict = {}
 		self.nonExistent = []
 		self.path = ""
+		self.timepoints = {}
+		self.readers = {}
 
 		self.RE_ScanMode = re.compile(r'ScanMode.*', re.I)
 		self.RE_X = re.compile(r'Format-Width.+\d+', re.I)
@@ -280,12 +274,13 @@ class LeicaExperiment:
 		self.RE_Bit_Depth = re.compile(r'Resolution in Bit.+\d+', re.I)
 		self.RE_PixelSize = re.compile(r'Pixel Size in Byte.+\d+', re.I)
 		self.RE_NonWhitespace = re.compile(r'\w+', re.I)
-
+		self.RE_PhysLength = re.compile(r'Physical Length.*', re.I)
+		self.RE_PhysOrig = re.compile(r'Physical\sOrigin.*', re.I)
 #		self.RE_TimeStamp = re.compile(r'Stamp_(\d+).*(\d+):
 
 
 		self.setFileName(ExpPathTxt)
-		self.TP_CH_VolDataList = []
+		self.TP_CH_VolDataList = {}
 	
 	def getLutColor(self, experiment):
 		"""
@@ -325,12 +320,17 @@ class LeicaExperiment:
 		Return the number of channels an experiment contains
 		"""    
 		return self.SeriesDict[experiment]["NumChan"]
+		
+	def GetDuration(self, experiment):
+		"""
+		Return the duration of the experiment
+		"""
+		return self.SeriesDict[experiment]["Seconds"]
 
 	def GetNumberOfTimepoints(self, experiment):
 		"""
 		Return the number of channels an experiment contains
 		"""        
-		#print self.SeriesDict.keys()
 		return self.SeriesDict[experiment]["Num_T"]
 		
 	def GetDimensions(self, experiment):
@@ -346,11 +346,7 @@ class LeicaExperiment:
 		"""
 		Return the data for a given timepoint
 		"""    
-		if len(self.TP_CH_VolDataList) == 0:
-			self.ReadLeicaVolData(experiment)
-
-		channels = self.TP_CH_VolDataList[0]
-		rdr = channels[channel]
+		rdr = self.getChannelReader(experiment, channel, 0)
 		rdr.ComputeInternalFileName(0)
 		fn = rdr.GetInternalFileName()
 		if not Image:
@@ -369,13 +365,11 @@ class LeicaExperiment:
 		"""
 		Return the data for a given timepoint
 		"""    
-		if len(self.TP_CH_VolDataList) == 0:
-			self.ReadLeicaVolData(experiment)
-
-		channels = self.TP_CH_VolDataList[timepoint]
-		rdr = channels[channel]
-		#rdr.Update()
-		return rdr.GetOutput()
+		if (experiment,channel) not in self.timepoints or self.timepoints[(experiment, channel)] != timepoint:
+			self.timepoints[(experiment,channel)] = timepoint
+			self.readers[(experiment,channel)] = self.getChannelReader(experiment, channel, timepoint) 
+			
+		return self.readers[(experiment, channel)].GetOutput()
 		
 	def GetVoxelSize(self, experiment):
 		"""
@@ -470,7 +464,15 @@ class LeicaExperiment:
 		WordsNumT = T_Line.split()
 		#WordsNumT.reverse()
 		NumT = int(WordsNumT[-1].strip())
-		return NumT
+		
+		PhysLengthMatch = self.RE_PhysLength.search(T_String)
+		PhysLengthLine = PhysLengthMatch.group(0)
+		PhysLengthLine = PhysLengthLine.replace(chr(0), " ")
+		WordsPhysLength = PhysLengthLine.split()
+		Seconds = float(WordsPhysLength[-2].strip())
+
+		
+		return NumT, Seconds
 		
 	def GetWidth(self, Series_Data):
 		"""
@@ -643,9 +645,10 @@ class LeicaExperiment:
 				
 				#Check for Time dimension--if so, get time data
 				if self.RE_T.search(Series_Data):
-					t = self.GetTimeDimension(Series_Data)
+					t, seconds = self.GetTimeDimension(Series_Data)
 					
 					Series_Info['Num_T'] = t
+					Series_Info['Seconds'] = seconds
 					SeriesDataSplit = self.RE_T.split(Series_Data)
 					Series_Data = SeriesDataSplit[1]
 				else:
@@ -751,7 +754,8 @@ class LeicaExperiment:
 		ZSpace = Series_Info['Voxel_Depth_Z']
 		TIFFReader = vtkbxd.vtkExtTIFFReader()
 		if self.progressCallback:
-			TIFFReader.AddObserver("ProgressEvent", self.progressCallback)
+			TIFFReader.AddObserver("ProgressEvent", lib.messenger.send)
+			lib.messenger.connect(TIFFReader, 'ProgressEvent', self.progressCallback)
 		if Series_Info['Pixel_Size'] != 3:
 			TIFFReader.RawModeOn()
 		
@@ -786,7 +790,8 @@ class LeicaExperiment:
 		
 		RAWReader = vtk.vtkImageReader2()
 		if self.progressCallback:
-			RAWReader.AddObserver("ProgressEvent", self.progressCallback)
+			RAWReader.AddObserver("ProgressEvent", lib.messenger.send)
+			lib.messenger.connect(RAWReader, 'ProgressEvent', self.progressCallback)
 		arr = vtk.vtkStringArray()
 		for i in Channel:
 			arr.InsertNextValue(os.path.join(self.path, i))
@@ -803,23 +808,20 @@ class LeicaExperiment:
 		RAWReader.Update()
 		return RAWReader
 
-	def ReadLeicaVolData(self, Series_Name):
-		global TP_CH_VolDataList
+	def getChannelReader(self, Series_Name, channel = 0, timepoint = 0):
 		Series_Info = self.SeriesDict[Series_Name]
 		FileList = Series_Info['TiffList']
 
 		rawMode = Series_Info['RawMode']
 		#print "Reading leica volume",Series_Name
 		self.TP_CH_VolDataList = [] #contains the vol data for each timepoint, each channel
-		for TimePoint in FileList:
-			ChnlVolDataLst = [] #contains the volumetric datasets for each channel w/in each timepoint
-			for Channel in TimePoint:
-				if not rawMode:
-					imageReader = self.getTIFFReader(Series_Info, Channel)
-				else:
-					imageReader = self.getRAWReader(Series_Info, Channel)
-				ChnlVolDataLst.append(imageReader)#now we have a list with the imported volume data for each channel
-#                self.vtkFilters.append(TIFFReader)
-			self.TP_CH_VolDataList.append(ChnlVolDataLst)   
-			
-
+		#for TimePoint in FileList:
+		
+		ChnlVolDataLst = [] #contains the volumetric datasets for each channel w/in each timepoint
+#		for Channel in FileList[timepoint]:
+		Channel = FileList[timepoint][channel]
+		if not rawMode:
+			imageReader = self.getTIFFReader(Series_Info, Channel)
+		else:
+			imageReader = self.getRAWReader(Series_Info, Channel)
+		return imageReader

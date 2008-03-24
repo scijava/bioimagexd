@@ -34,8 +34,7 @@ import scripting
 
 class Module:
 	"""
-	Created: 03.11.2004, KP
-	Description: A Base class for all data processing modules
+	A Base class for all data processing modules
 	"""
 	def __init__(self, **kws):
 		"""

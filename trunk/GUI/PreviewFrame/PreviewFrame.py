@@ -55,15 +55,12 @@ class PreviewFrame(InteractivePanel):
 		"""
 		Initialize the panel
 		"""
-		self.zoomToFitFlag = False
-		xframe = sys._getframe(1)
 		self.graySize = (0, 0)
 		self.bgcolor = (127, 127, 127)
 		self.maxClientSizeX, self.maxClientSizeY = 512, 512
 		self.dataWidth, self.dataHeight = 512 , 512
 		self.lastEventSize = None
 		self.paintSize = (512, 512)
-		self.creator = xframe.f_code.co_filename + ": " + str(xframe.f_lineno)
 		self.parent = parent
 		self.blackImage = None
 		self.finalImage = None
@@ -85,7 +82,6 @@ class PreviewFrame(InteractivePanel):
 		
 		self.show["SCROLL"] = kws.get("scrollbars", 0)
 		
-		self.dataUnit = None
 		self.rgbMode = 0
 		self.currentImage = None
 		self.currentCt = None
@@ -104,16 +100,8 @@ class PreviewFrame(InteractivePanel):
 		self.mapToColors.SetOutputFormatToRGB()
 		
 		self.enabled = 1
-
-		self.tmodules = Modules.DynamicLoader.getTaskModules()
-		self.tmodules[""] = self.tmodules["Process"]
-		self.modules = {}
-		for key in self.tmodules:
-			self.modules[key] = self.tmodules[key][0]
 			
 		self.renewNext = 0
-		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
-		lib.messenger.connect(None, "renew_preview", self.setRenewFlag)
 		
 		self.fitLater = 0
 		self.imagedata = None
@@ -140,6 +128,7 @@ class PreviewFrame(InteractivePanel):
 		
 		InteractivePanel.__init__(self, parent, size = size, bgColor = self.bgcolor, **kws)
 		
+		self.annotationsEnabled = True
 		self.calculateBuffer()
 		self.paintSize = self.GetClientSize()
 		self.paintPreview()
@@ -155,6 +144,20 @@ class PreviewFrame(InteractivePanel):
 			self.SetScrollbars(0, 0, 0, 0)
 		self.updateAnnotations()
 		self.drawableRect = self.GetClientRect()
+		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
+		lib.messenger.connect(None, "renew_preview", self.setRenewFlag)
+		
+	def deregister(self):
+		"""
+		Delete all known references because this view mode is to be removed
+		"""
+		print "Deregistering previewframe"
+		try:
+			lib.messenger.disconnect(None, "zslice_changed", self.setPreviewedSlice)
+			lib.messenger.disconnect(None, "renew_preview", self.setRenewFlag)
+		except:
+			pass
+		InteractivePanel.deregister(self)
 		
 	def calculateBuffer(self):
 		"""
@@ -164,8 +167,6 @@ class PreviewFrame(InteractivePanel):
 		Logging.info("Calculating buffer from client size %d,%d"%(cx, cy), kw="preview")
 
 		# if the client size is larger than the original client size, use that
-		#newX = max(self.maxClientSizeX, cx)
-		#newY = max(self.maxClientSizeY, cy)
 		newX = cx
 		newY = cy
 		if self.fixedSize:
@@ -186,8 +187,7 @@ class PreviewFrame(InteractivePanel):
 				newX = cx
 			if newY < cy:
 				newY = cy
-#			newX = max(newX, x2)
-#			newY = max(newY, y2)
+
 
 			self.paintSize = (newX, newY)
 			
@@ -379,7 +379,6 @@ class PreviewFrame(InteractivePanel):
 		if selectedItem != -1:
 			self.setSelectedItem(selectedItem, update = 0)
 
-		
 		if self.enabled:
 			self.Layout()
 			self.parent.Layout()
@@ -390,9 +389,10 @@ class PreviewFrame(InteractivePanel):
 	def updatePreview(self, renew = 1):
 		"""
 		Update the preview
-		Parameters:
-		renew    Whether the method should recalculate the images
+		@param renew    A boolean flag indicating whether the method should recalculate the images
 		"""
+		if not self.enabled:
+			print "\n\n\nPREVIEWFRAME NOT ENABLED, WON'T RENDER"
 		if scripting.inIO:
 			return
 		if self.renewNext:

@@ -27,13 +27,13 @@ from lib import ProcessingFilter
 import vtk
 import types
 import GUI.GUIBuilder as GUIBuilder
+import lib.messenger
 
 import lib.FilterTypes
 
 class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: An edge preserving smoothing filter
+	An edge preserving smoothing filter
 	"""     
 	name = "Anisotropic diffusion 3D"
 	category = lib.FilterTypes.FILTERING
@@ -45,8 +45,9 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageAnisotropicDiffusion3D()
 		self.eventDesc = "Performing edge preserving smoothing (anisotropic diffusion)"
-		
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		self.descs = {"Faces": "Faces", "Corners": "Corners", "Edges": "Edges",
 			"CentralDiff": "Central difference", "Gradient": "Gradient to neighbor",
 				"DiffThreshold": "Diffusion threshold:", "DiffFactor": "Diffusion factor:"}

@@ -49,7 +49,8 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.defaultUpper = 255
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageThreshold()
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 
 		self.origCtf = None
 		

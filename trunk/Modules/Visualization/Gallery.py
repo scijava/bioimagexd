@@ -120,8 +120,7 @@ def showZoomToolbar():
 	
 class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 	"""
-	Created: 21.07.2005, KP
-	Description: A panel that can be used to configure gallery view
+	A configuration panel for the gallery view
 	"""
 	def __init__(self, parent, visualizer, mode, **kws):
 		"""
@@ -131,8 +130,7 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		self.visualizer = visualizer
 		self.mode = mode
 	
-		#self.box=wx.StaticBox(self,-1,"Show gallery")
-		#self.sizer=wx.StaticBoxSizer(self.box,wx.VERTICAL)
+
 		self.sizer = wx.GridBagSizer()
 		self.radiobox = wx.RadioBox(self, -1, "View in gallery", \
 									choices = ["Slices", "Timepoints"], \
@@ -142,14 +140,9 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		if visualizer.dataUnit:
 			x, y, z = visualizer.dataUnit.getDimensions()
 
-#		self.zslider = wx.Slider(self, value = 0, minValue = 0, maxValue = z - 1,
-#		style = wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS)
-#		self.zslider.Bind(wx.EVT_SCROLL,self.onChangeTimepoint)
-
 		self.okbutton = wx.Button(self, -1, "Update")
 		self.okbutton.Bind(wx.EVT_BUTTON, self.onSetViewMode)
 		self.sizer.Add(self.radiobox, (0, 0))
-#		self.sizer.Add(self.zslider, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 		self.sizer.Add(self.okbutton, (2, 0))
 		
 		self.SetSizer(self.sizer)
@@ -168,12 +161,10 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		Configure whether to show timepoints or slices
 		"""
 		pos = self.radiobox.GetSelection()
-#		print "Showing timepoints: %s,zslider=%d" % (not not pos, self.zslider.GetValue())
 		if pos == 0:
 			val = self.visualizer.zslider.GetValue()
 		else:
 			val = self.visualizer.getTimepoint()
-		print "setShowTimepoints(",pos,val,")"
 		self.mode.galleryPanel.setShowTimepoints(pos, val)
 
 class GalleryMode(VisualizationMode):
@@ -194,9 +185,7 @@ class GalleryMode(VisualizationMode):
 			Logging.info("Visualizer is disabled, won't update gallery", kw = "visualizer")
 			return
 		Logging.info("Updating gallery", kw = "visualizer")
-		#self.galleryPanel.setTimepoint(self.timepoint)
-		#self.galleryPanel.updatePreview()
-		#self.galleryPanel.Refresh()
+
 		self.galleryPanel.forceUpdate()
 
 	def showSliceSlider(self):
@@ -254,7 +243,5 @@ class GalleryMode(VisualizationMode):
 		"""
 		self.container.Show(0)
 		self.configPanel.Show(0)
-		
-
-		
-		
+		VisualizationMode.deactivate(self, newmode)
+		self.configPanel.Destroy()

@@ -94,6 +94,7 @@ class DataSource:
 		self.resampledTimepoint = -1
 		self.intensityScale = 0
 		self.intensityShift = 0
+		self.currentTimepoint = 0
 		self.scalarRange = None
 		self.explicitScale = 0
 		self.originalScalarRange = (0, 255)
@@ -101,6 +102,8 @@ class DataSource:
 		self.originalDimensions = None
 		self.resampleFactors = None
 		self.resampledVoxelSize = None
+		self.timestamps = []
+		self.absoluteTimestamps = []
 		
 		self.resampling = False
 
@@ -122,6 +125,18 @@ class DataSource:
 			
 	def getParser(self):
 		return None
+		
+	def getCurrentTimepoint(self):
+		"""
+		@return the timepoint that this datasource is reading
+		"""
+		return self.currentTimepoint
+		
+	def setCurrentTimepoint(self, timepoint):
+		"""
+		Set the timepoint that this datasource is reading
+		"""
+		self.currentTimepoint = timepoint
 		
 	def setResampling(self, status):
 		"""
@@ -377,10 +392,36 @@ class DataSource:
 			
 		return data
 
+	def setTimeStamps(self, timestamps):
+		"""
+		Set the timestamps
+		"""
+		self.timestamps = timestamps
+		
+	def setAbsoluteTimeStamps(self, timestamps):
+		"""
+		Set the absolute timestamps
+		"""
+		self.absoluteTimestamps = timestamps
+		
 	def getTimeStamp(self, timepoint):
 		"""
-		return the timestamp for given timepoint
+		@return the timestamp for given timepoint
 		"""
+		if len(self.timestamps) >= timepoint:
+			return self.timestamps[timepoint]
+		return timepoint
+		
+	def getAbsoluteTimeStamp(self, timepoint):
+		"""
+		Returns a timestamp that is not relative to the beginning of the time series, but
+		some absolute time moment before that. This can be used for example, to put several
+		different dataunits into a single timeline, provided that their measurement of the
+		absolute timestamp begin from the same moment. This could be, for example, the moment
+		the microscope was turned on.
+		"""
+		if len(self.absoluteTimestamps) >= timepoint:
+			return self.absoluteTimestamps[timepoint]
 		return timepoint
 
 	def getEmissionWavelength(self):
@@ -411,6 +452,12 @@ class DataSource:
 		"""
 		raise "Abstract method getDataSetCount() in DataSource called"
 
+	def getShortName(self):
+		"""
+		@return the base filename
+		"""
+		return os.path.basename(self.getFileName())
+		
 	def getFileName(self):
 		"""
 		Return the file name
@@ -500,3 +547,25 @@ class DataSource:
 		return a string identifying the dataset
 		"""
 		return self.getFileName()
+		
+	def updateProgress(self, obj, evt):
+		"""
+		Sends progress update event
+		"""
+		if not obj:
+			progress = 1.0
+		else:
+			progress = obj.GetProgress()
+		notinvtk = 0
+		currentTimepoint = self.getCurrentTimepoint()
+		timestamp = self.getTimeStamp(currentTimepoint)
+		msg = "Reading channel %s of %s"%(self.getName(), self.getShortName())
+		
+		if currentTimepoint >=0 and self.getDataSetCount()>1:
+			msg += " (timepoint %d / %d" % (currentTimepoint+1, self.getDataSetCount())
+			msg+=", %.1fs)"%timestamp
+		if progress >= 1.0:
+			notinvtk = 1
+		scripting.inIO = (progress < 1.0)
+		if scripting.mainWindow:
+			scripting.mainWindow.updateProgressBar(obj, evt, progress,msg, notinvtk)

@@ -1,5 +1,13 @@
+#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
+ Unit: ShiftScale
+ Project: BioImageXD
+ Created: 10.12.2007, LP
+ Description:
+
+ A module for shifting and scaling the intensities
+ 
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -18,72 +26,66 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
-__version__ = "$Revision: 1.42 $"
-__date__ = "$Date: 2005/01/13 14:52:39 $"
+__author__ = "BioImageXD Project <http://www.bioimagexd.net/>"
+__version__ = "$Revision$"
+__date__ = "$Date$"
 
 import lib.ProcessingFilter
-import vtkbxd
-import GUI.GUIBuilder
-import lib.FilterTypes
 import scripting
 import types
+import GUI.GUIBuilder
+import lib.FilterTypes
+import vtk
 
-class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
+class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A filter for removing solitary noise pixels
+	A filter for shifting the values of dataset by constant and scaling by a constant
 	"""		
-	name = "Solitary filter"
-	category = lib.FilterTypes.FILTERING
+	name = "Shift and Scale"
+	category = lib.FilterTypes.MATH
 	
 	def __init__(self):
 		"""
 		Initialization
 		"""		   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		self.vtkfilter = vtkbxd.vtkImageSolitaryFilter()
+		self.vtkfilter = vtk.vtkImageShiftScale()
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
-		self.descs = {"HorizontalThreshold": "X:", "VerticalThreshold": "Y:", \
-						"ProcessingThreshold": "Processing threshold:"}
+		self.eventDesc = "Applying a shift and scale to image intensity"
+		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to range 0-255"}
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [ "Thresholds:", ["", ("HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold")]]
+		return [["", ("Shift", "Scale", "AutoScale")]]
 		
-
 		
 	def getLongDesc(self, parameter):
 		"""
 		Return a long description of the parameter
 		""" 
-		Xhelp = "Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed."
-		Yhelp = "Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed."
-		Thresholdhelp = "Threshold that a pixel needs to be over to get processed by solitary filter."
-		
-		if parameter == "HorizontalThreshold":
-			return Xhelp
-		elif parameter == "VerticalThreshold":
-			return Yhelp
-		elif parameter == "ProcessingThreshold":
-			return Thresholdhelp
 		return ""
 		
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
 		"""	   
-		if parameter in ["HorizontalThreshold", "VerticalThreshold", "ProcessingThreshold"]:
-			return types.IntType
+		if parameter in ["Shift", "Scale"]:
+			return types.FloatType
+		elif parameter == "AutoScale":
+			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
 		"""		
-		return 0
+		if parameter == "Shift":
+			return 0
+		if parameter == "Scale":
+			return 1
+		return 1
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -91,14 +93,27 @@ class SolitaryFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-		
+
 		image = self.getInput(1)
+		print "Using ",image
 		self.vtkfilter.SetInput(image)
-		
-		self.vtkfilter.SetFilteringThreshold(self.parameters["ProcessingThreshold"])
-		self.vtkfilter.SetHorizontalThreshold(self.parameters["HorizontalThreshold"])
-		self.vtkfilter.SetVerticalThreshold(self.parameters["VerticalThreshold"])
+		if self.parameters["AutoScale"]:
+			x, y = image.GetScalarRange()
+			print "image type=", image.GetScalarTypeAsString()
+			print "Range of data=", x, y
+			self.vtkfilter.SetOutputScalarTypeToUnsignedChar()
+			if not y:
+				lib.messenger.send(None, "show_error", "Bad scalar range", "Data has scalar range of %d -%d" % (x, y))
+				return vtk.vtkImageData()
+			scale = 255.0 / y
+			print "Scale=", scale
+			self.vtkfilter.SetShift(0)
+			self.vtkfilter.SetScale(scale)
+		else:
+			self.vtkfilter.SetShift(self.parameters["Shift"])
+			self.vtkfilter.SetScale(self.parameters["Scale"])
 		
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()	   
+		return self.vtkfilter.GetOutput()	 
+		
