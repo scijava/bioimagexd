@@ -44,8 +44,7 @@ import GUI.GUIBuilder
 
 class ProcessingFilter:
 	"""
-	Created: 13.04.2006, KP
-	Description: A base class for manipulation filters
+	A base class for manipulation filters
 	"""
 	category = "No category"
 	name = "Generic Filter"
@@ -314,6 +313,7 @@ class ProcessingFilter:
 		# convert
 		if not force and self.nextFilter and self.nextFilter.getITK():
 			return image
+
 		self.itkToVtk.SetInput(image)
 		self.itkToVtk.Update()
 
@@ -501,6 +501,12 @@ class ProcessingFilter:
 		else:
 			timePoint = scripting.visualizer.getTimepoint()
 		return timePoint
+		
+	def getNumberOfInputSourceUnits(self):
+		"""
+		Return the number of input source units
+		"""
+		return len(self.sourceUnits)
 		
 	def getInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):
 		"""

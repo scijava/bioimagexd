@@ -125,15 +125,16 @@ class SectionsMode(VisualizationMode):
 		Initialization
 		"""
 		VisualizationMode.__init__(self, parent, visualizer)
-		self.sectionsPanel = None
+		self.iactivePanel = None
 		
 	def updateRendering(self):
 		"""
 		Update the rendering
 		"""      
-		self.sectionsPanel.setTimepoint(self.timepoint)
-		self.sectionsPanel.updatePreview()
-		self.sectionsPanel.Refresh()
+		if self.iactivePanel:
+			self.iactivePanel.setTimepoint(self.timepoint)
+			self.iactivePanel.updatePreview()
+			self.iactivePanel.Refresh()
 		
 	def showSliceSlider(self):
 		"""
@@ -148,15 +149,20 @@ class SectionsMode(VisualizationMode):
 					 to show the sidebar
 		"""
 		return False
-  
+	
+	def setDataUnit(self, dataUnit):
+		"""
+		Set the dataunit to be visualized
+		"""
+		self.iactivePanel.setDataUnit(dataUnit, 0)
+		
 	def activate(self, sidebarwin):
 		"""
 		Set the mode of visualization
 		"""
 		scripting.wantWholeDataset = 1
 
-		if not self.sectionsPanel:
+		if not self.iactivePanel:
 			x, y = self.visualizer.visWin.GetSize()
-			self.sectionsPanel = SectionsPanel(self.parent, self.visualizer, size = (x, y))
-			self.iactivePanel = self.sectionsPanel
-		return self.sectionsPanel
+			self.iactivePanel = SectionsPanel(self.parent, self.visualizer, size = (x, y))
+		return self.iactivePanel

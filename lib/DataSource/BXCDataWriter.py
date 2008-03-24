@@ -35,7 +35,7 @@ from DataSource import DataWriter
 import vtk
 import os.path
 import scripting
-
+import lib.messenger
 import Logging
 
 class MyConfigParser(RawConfigParser):
@@ -189,7 +189,8 @@ class BXCDataWriter(DataWriter):
 				callback(obj.GetProgress())
 			if scripting.mainWindow:
 				scripting.mainWindow.updateProgressBar(obj, evt, obj.GetProgress(),"Writing %s"%os.path.basename(filename), 0)
-		writer.AddObserver("ProgressEvent", f)
+		writer.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(writer, "ProgressEvent", f)
 		Logging.info("Performing the write",kw="pipeline")
 		try:
 			ret = writer.Write()

@@ -32,8 +32,7 @@ import scripting
 
 class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 04.08.2006, KP
-	Description: A filter for cutting the data to a smaller size
+	A filter for cutting the data to a smaller size
 	"""     
 	name = "Extract a subset"
 	category = lib.FilterTypes.FILTERING
@@ -46,7 +45,8 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.reportGUI = None
 		self.measurements = []
 		self.vtkfilter = vtk.vtkExtractVOI()
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		
 		self.descs = {"UseROI": "Use Region of Interest to define resulting region", \
 						"ROI": "Region of Interest Used in Cutting", \
@@ -136,7 +136,6 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		scripting.wantWholeDataset=1
 		print "VOI=", minx, maxx, miny, maxy, minz, maxz
 		imagedata = self.getInput(1)
-		#imagedata.SetUpdateExtent(minx,maxx,miny,maxy,minz,maxz)
 		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
 		imagedata.Update()
 		self.vtkfilter.SetInput(imagedata)

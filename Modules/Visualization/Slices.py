@@ -147,14 +147,14 @@ class SlicesMode(VisualizationMode):
 		"""
 		Update the rendering
 		"""
-		self.iactivePanel.updatePreview(0)
+		self.iactivePanel.updatePreview(renew = False)
 		
 	def updateRendering(self):
 		"""
 		Update the rendering
 		"""
 		Logging.info("Updating rendering", kw = "preview")
-		self.iactivePanel.updatePreview(1)
+		self.iactivePanel.updatePreview(renew = True)
 		
 	def setBackground(self, red, green, blue):
 		"""
@@ -175,9 +175,6 @@ class SlicesMode(VisualizationMode):
 		"""
 		Set the dataunit to be visualized
 		"""
-#		if dataUnit == self.dataUnit:
-#			Logging.info("Same dataunit, not changing", kw = "visualizer")
-#			return
 		self.iactivePanel.setDataUnit(dataUnit, 0)
 		
 	def setTimepoint(self, timePoint):

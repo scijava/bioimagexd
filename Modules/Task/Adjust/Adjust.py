@@ -32,14 +32,14 @@ __version__ = "$Revision: 1.13 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Logging
+import lib.messenger
 from lib.Module import Module
 import time
 import vtkbxd
 
 class Adjust(Module):
 	"""
-	Created: 25.11.2004, KP
-	Description: Processes a single dataunit in specified ways
+	Process a dataunit using an intensity transfer funtion
 	"""
 
 	def __init__(self, **kws):
@@ -115,7 +115,8 @@ class Adjust(Module):
 		mapdata = self.images[n]
 		mapIntensities = vtkbxd.vtkImageMapToIntensities()
 		#mapIntensities.GetOutput().ReleaseDataFlagOn()
-		mapIntensities.AddObserver("ProgressEvent", self.updateProgress)
+		mapIntensities.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(mapIntensities, "ProgressEvent", self.updateProgress)
 		mapIntensities.SetIntensityTransferFunction(self.intensityTransferFunctions[n])
 		mapIntensities.SetInput(mapdata)
 		

@@ -214,8 +214,8 @@ class Visualizer:
 		self.sliderbox = None
 
 		self.createSliders()
-		self.currMode = None
-		self.currModeModule = None
+		self.currentMode = None
+		self.currentModeModule = None
 		self.currentWindow = None
 		self.galleryPanel = None
 		self.preview = None
@@ -624,22 +624,22 @@ class Visualizer:
 					 " + Z": (0, 0, 1, 0, 1, 0), " - Z": (0, 0, -1, 0, 1, 0),
 					 "Isometric": (1, 1, 1, 0, 0, 1)}
 
-		if hasattr(self.currMode, "wxrenwin"):
-			self.currMode.wxrenwin.setView(viewmapping[item])
-			self.currMode.wxrenwin.Render()
+		if hasattr(self.currentMode, "wxrenwin"):
+			self.currentMode.wxrenwin.setView(viewmapping[item])
+			self.currentMode.wxrenwin.Render()
 
 	def zoomObject(self, evt):
 		"""
 		Lets the user select the part of the object that is zoomed
 		"""
 		self.zoomToFitFlag = 0
-		self.currMode.zoomObject()
+		self.currentMode.zoomObject()
 
 	def zoomOut(self, evt):
 		"""
 		Makes the zoom factor smaller
 		"""
-		zoomFactor = self.currMode.getZoomFactor()
+		zoomFactor = self.currentMode.getZoomFactor()
 		numberOfZoomLevels = len(self.zoomLevels)
 		for i in range(numberOfZoomLevels - 1, 0, -1):
 			if self.zoomLevels[i] > 0 and self.zoomLevels[i] < zoomFactor:
@@ -672,8 +672,8 @@ class Visualizer:
 		"""
 		pos = self.getPositionForFactor(factor)
 		self.zoomCombo.SetSelection(pos)
-		self.currMode.setZoomFactor(self.zoomLevels[pos])
-		self.zoomFactor = self.currMode.getZoomFactor()
+		self.currentMode.setZoomFactor(self.zoomLevels[pos])
+		self.zoomFactor = self.currentMode.getZoomFactor()
 		scripting.zoomFactor = self.zoomFactor
 
 	def zoomComboDirection(self, dir):
@@ -692,21 +692,21 @@ class Visualizer:
 
 		if factor == -1:
 			self.zoomToFitFlag = 1
-			self.currMode.zoomToFit()
+			self.currentMode.zoomToFit()
 		else:
 			self.zoomToFitFlag = 0
-			self.currMode.setZoomFactor(factor)
-		self.zoomFactor = self.currMode.getZoomFactor()
+			self.currentMode.setZoomFactor(factor)
+		self.zoomFactor = self.currentMode.getZoomFactor()
 		scripting.zoomFactor = self.zoomFactor
 
-		self.currMode.updateRendering()
+		self.currentMode.updateRendering()
 
 
 	def zoomIn(self, evt, factor = -1):
 		"""
 		Makes the zoom factor larger
 		"""
-		zoomFactor = self.currMode.getZoomFactor()
+		zoomFactor = self.currentMode.getZoomFactor()
 		numberOfZoomLevels = len(self.zoomLevels)
 		for i in range(0, numberOfZoomLevels):
 			if self.zoomLevels[i] > zoomFactor:
@@ -720,9 +720,9 @@ class Visualizer:
 		Sets the zoom factor to fit the image into the preview window
 		"""
 		self.zoomToFitFlag = 1
-		self.currMode.zoomToFit()
+		self.currentMode.zoomToFit()
 		self.zoomCombo.SetStringSelection("Zoom to fit")
-		self.currMode.updateRendering()
+		self.currentMode.updateRendering()
 
 	def onSashDrag(self, event = None):
 		"""
@@ -762,8 +762,8 @@ class Visualizer:
 
 		if self.currentWindow:
 			self.currentWindow.SetSize(visSize)
-			self.currMode.relayout()
-			if self.currMode.layoutTwice() and event:
+			self.currentMode.relayout()
+			if self.currentMode.layoutTwice() and event:
 				wx.CallAfter(self.OnSize)
 
 		self.oldClientSize = newsize
@@ -843,7 +843,7 @@ class Visualizer:
 		"""
 		Return the current visualization mode
 		"""
-		return self.currMode
+		return self.currentMode
 
 	def getCurrentModeName(self):
 		"""
@@ -855,19 +855,18 @@ class Visualizer:
 		"""
 		Close the visualizer
 		"""
-		if self.currMode:
-#			self.currentWindow.enable(0)
-#			self.currMode.setDataUnit(None)
-#			self.currentWindow.enable(1)
-#			self.Render()
+		if self.currentMode:
+			if hasattr(self.currentWindow, "deregister"):
+				self.currentWindow.deregister()
 			self.currentWindow.Show(0)
-			self.currMode.deactivate()
+			self.currentMode.deactivate()
 			del self.currentWindow
-		self.currMode = None
+			del self.currentMode
+		self.currentMode = None
 		self.currentWindow = None
 		self.mode = None
 
-		self.currModeModule = None
+		self.currentModeModule = None
 		self.dataUnit = None
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		self.zslider.SetRange(1,1)
@@ -880,37 +879,40 @@ class Visualizer:
 		del self.dataUnit
 		self.dataUnit = None
 
-	def setVisualizationMode(self, mode, reload = 0):
+	def setVisualizationMode(self, mode, shouldReload = 0):
 		"""
 		Set the mode of visualization
 		"""
 		if self.mode == mode:
 			Logging.info("Mode %s already selected" % mode, kw = "visualizer")
-			if self.dataUnit and self.currMode.dataUnit != self.dataUnit:
+			if self.dataUnit and self.currentMode.dataUnit != self.dataUnit:
 				Logging.info("Re - setting dataunit", kw = "visualizer")
-				self.currMode.setDataUnit(self.dataUnit)
+				self.currentMode.setDataUnit(self.dataUnit)
 				return
 		self.mode = mode
 
-		if self.currMode:
-			self.zoomFactor = self.currMode.getZoomFactor()
+		if self.currentMode:
+			#if hasattr(self.currentWindow, "deregister"):
+			#	#self.currentWindow.deregister()
+			#else:
+			#	print self.currentWindow,"doesn't have deregister"
+			self.zoomFactor = self.currentMode.getZoomFactor()
 			scripting.zoomFactor = self.zoomFactor
 			self.currentWindow.Show(0)
 
-			self.currMode.deactivate(self.mode)
 			if hasattr(self.currentWindow, "enable"):
 				self.currentWindow.enable(0)
+			self.currentMode.deactivate(self.mode)
+			del self.currentWindow
+			del self.currentMode
+			self.currentMode = None
+			self.currentWindow = None
+		else:
+			if self.currentWindow:print "\n\nCurrent window still lives=",self.currentWindow
 
 		modeclass, settingclass, module = self.modes[mode]
-		modeinst = self.instances[mode]
-		if reload:
-			del self.instances[mode]
-			modeinst = None
-
-		if not modeinst:
-			modeinst = modeclass(self.visWin, self)
-			self.instances[mode] = modeinst
-			self.currMode = modeinst
+		
+		self.currentMode = modeclass(self.visWin, self)
 
 		if not module.showZoomToolbar():
 			self.toolWin.SetDefaultSize((500, 0))
@@ -923,8 +925,7 @@ class Visualizer:
 		# dataunit might have been changed so set it every time a
 		# mode is loaded
 
-		self.currMode = modeinst
-		self.currModeModule = module
+		self.currentModeModule = module
 
 		# Most visualization methods don't want alpha channel
 		# The ones that do, can change the flag from activate()
@@ -932,35 +933,33 @@ class Visualizer:
 		scripting.preferRGB = 1
 		scripting.wantWholedataset = 1
 
-		self.currentWindow = modeinst.activate(self.sidebarWin)
+		self.currentWindow = self.currentMode.activate(self.sidebarWin)
 
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 
-		if not modeinst.showSliceSlider():
-			print "Won't show zslider in ",modeinst
+		if not self.currentMode.showSliceSlider():
 			if self.zsliderWin.GetSize()[0]:
 				self.toggleZSlider(0)
 				#self.zsliderWin.SetDefaultSize((0, 1024))
 		else:
-			print "showing zslider"
 			if self.zsliderWin.GetSize() != self.zsliderWin.origSize:
 				self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 
-		if modeinst.showViewAngleCombo():
+		if self.currentMode.showViewAngleCombo():
 			self.viewCombo.Enable(1)
 		else:
 			self.viewCombo.Enable(0)
 		if self.zoomToFitFlag:
-			self.currMode.zoomToFit()
+			self.currentMode.zoomToFit()
 		else:
-			self.currMode.setZoomFactor(self.zoomFactor)
+			self.currentMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
 
-		if not self.zoomToFitFlag and hasattr(self.currMode, "getZoomFactor"):
-			self.setComboBoxToFactor(self.currMode.getZoomFactor())
+		if not self.zoomToFitFlag and hasattr(self.currentMode, "getZoomFactor"):
+			self.setComboBoxToFactor(self.currentMode.getZoomFactor())
 
-		if not modeinst.showSideBar():
+		if not self.currentMode.showSideBar():
 			if self.sidebarWin.GetSize()[0]:
 				self.sidebarWin.SetDefaultSize((0, 1024))
 		else:
@@ -979,16 +978,16 @@ class Visualizer:
 
 		self.currentWindow.enable(0)
 		scripting.renderingEnabled = False
-		if self.dataUnit and modeinst.dataUnit != self.dataUnit:
+		if self.dataUnit and self.currentMode.dataUnit != self.dataUnit:
 			Logging.info("Re - setting dataunit", kw = "visualizer")
-			modeinst.setDataUnit(self.dataUnit)
+			self.currentMode.setDataUnit(self.dataUnit)
 
-		modeinst.setTimepoint(self.timepoint)
+		self.currentMode.setTimepoint(self.timepoint)
 		self.currentWindow.Show()
 		scripting.renderingEnabled = self.enabled
 		if hasattr(self.currentWindow, "enable"):
 			self.currentWindow.enable(self.enabled)
-		lib.messenger.send(None, "visualizer_mode_loading", modeinst)
+		lib.messenger.send(None, "visualizer_mode_loading", self.currentMode)
 
 	def showItemToolbar(self, flag):
 		"""
@@ -1024,7 +1023,7 @@ class Visualizer:
 		"""
 		Set the background color
 		"""
-		self.currMode.setBackground(r, g, b)
+		self.currentMode.setBackground(r, g, b)
 
 	def onClose(self, event):
 		"""
@@ -1071,7 +1070,7 @@ class Visualizer:
 		if z <= 1:
 			self.toggleZSlider(0)
 			#self.zsliderWin.SetDefaultSize((0, 768))
-		elif self.currMode.showSliceSlider():
+		elif self.currentMode.showSliceSlider():
 			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 
 	def setUpTimeSliderFromDataunit(self, dataunit):
@@ -1127,7 +1126,7 @@ class Visualizer:
 			scripting.combinedDataUnit = None
 		self.showItemToolbar(showItems)
 
-		if self.enabled and self.currMode:
+		if self.enabled and self.currentMode:
 			Logging.info("Setting up current mode", kw="visualizer")
 			self.setupMode()
 		else:
@@ -1144,29 +1143,29 @@ class Visualizer:
 		Setup the current mode
 		"""
 		Logging.info("Setting dataunit to current mode", kw = "visualizer")
-		self.currMode.setDataUnit(self.dataUnit)
+		self.currentMode.setDataUnit(self.dataUnit)
 		lib.messenger.send(None, "zslice_changed", self.z)
-		self.currMode.setTimepoint(self.timepoint)
+		self.currentMode.setTimepoint(self.timepoint)
 		if self.zoomToFitFlag:
 			Logging.info("Will zoom to fit", kw="visualizer")
-			self.currMode.zoomToFit()
+			self.currentMode.zoomToFit()
 		else:
-			self.currMode.setZoomFactor(self.zoomFactor)
+			self.currentMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
-		self.currMode.updateRendering()
+		self.currentMode.updateRendering()
 		
 	def setZoomFactor(self, factor):
 		"""
 		set the zoom factor to given factor
 		"""
-		if self.currMode:
+		if self.currentMode:
 			if factor < 0.05:
 				factor = 0.05
 			if factor > 10:
 				factor = 10
 			self.zoomFactor = factor
-			self.currMode.setZoomFactor(factor)
-			self.currMode.updateRendering()
+			self.currentMode.setZoomFactor(factor)
+			self.currentMode.updateRendering()
 
 			scripting.zoomFactor = factor
 			self.zoomCombo.SetValue("%.2f%%"%(factor*100))
@@ -1211,8 +1210,8 @@ class Visualizer:
 		# then we will delay a bit with this
 		# If the delay is negative, then rendering will be immediate
 		if delay >= 0:
-			imm = self.currModeModule.getImmediateRendering()
-		delay = self.currModeModule.getRenderingDelay()
+			imm = self.currentModeModule.getImmediateRendering()
+		delay = self.currentModeModule.getRenderingDelay()
 		Logging.info("Immediate rendering = ", imm, "delay = ", delay, kw = "visualizer")
 		if not imm:
 			t = time.time()
@@ -1229,7 +1228,7 @@ class Visualizer:
 				return
 		Logging.info("Updating rendering", kw = "visualizer")
 		self.renderingTime = time.time()
-		self.currMode.updateRendering()
+		self.currentMode.updateRendering()
 		self.delayed = 0
 
 	def Render(self, evt = None):
@@ -1237,7 +1236,7 @@ class Visualizer:
 		Render the scene
 		"""
 		if self.enabled:
-			self.currMode.Render()
+			self.currentMode.Render()
 
 
 	def onZPageDown(self, evt):
@@ -1288,9 +1287,9 @@ class Visualizer:
 		"""
 		Save a snapshot of current visualization
 		"""
-		if self.currMode and self.dataUnit:
+		if self.currentMode and self.dataUnit:
 			wildCardDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
-			"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
+			"tiff": "TIFF Image (*.tiff)"}
 
 			defaultExt = self.conf.getConfigItem("ImageFormat", "Output")
 			if defaultExt == "jpg":
@@ -1324,7 +1323,7 @@ class Visualizer:
 		Description save a snapshot with the given name
 		"""
 		if filename:
-			self.currMode.saveSnapshot(filename)
+			self.currentMode.saveSnapshot(filename)
 
 	def restoreWindowSizes(self):
 		"""
@@ -1413,7 +1412,7 @@ class Visualizer:
 		self.timepoint = timepoint
 		if hasattr(self.currentWindow, "setTimepoint"):
 			self.currentWindow.setTimepoint(self.timepoint)
-		self.currMode.setTimepoint(self.timepoint)
+		self.currentMode.setTimepoint(self.timepoint)
 
 	def onUpdateTimepoint(self, evt = None):
 		"""

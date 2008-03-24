@@ -1026,7 +1026,7 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 	else:
 		#startx, starty = 0, 0
 		#endx, endy = volume.GetDimensions()[0:2]
-		startx, endx, starty, endy, a,b = volume.GetExtent()
+		startx, endx, starty, endy, a,b = map(int, volume.GetExtent())
 	voi.SetVOI(startx, endx - 1, starty, endy - 1, zslice, zslice)
 	voi.Update()
 	data = voi.GetOutput()
@@ -1073,3 +1073,33 @@ def imageDataTo3Component(image, ctf):
 	else:
 		imagedata = image
 	return imagedata
+
+def castImagesToLargestDataType(images):
+	"""
+	This function casts a list of images using the vtkImageCast so that they all have the 
+	same type that is large enough to hold all of the images
+	@param images A list of vtkImageData objects
+	"""
+	returnValues = []
+	largestType = -1
+	largestMax = 0
+	types = []
+	differ=0
+	for index, i in enumerate(images):
+		types.append(i.GetScalarType())
+		if types[index] != types[index-1]:
+			differ = 1
+		if i.GetScalarTypeMax()>largestMax:
+			largestType = i.GetScalarType()
+			largestMax = i.GetScalarTypeMax()
+				
+	if not differ: return images
+
+	for i, image in enumerate(images):
+		cast = vtk.vtkImageCast()
+		cast.SetOutputScalarType(largestType)
+		cast.SetInput(image)
+		image = cast.GetOutput()
+		returnValues.append(image)
+	
+	return returnValues

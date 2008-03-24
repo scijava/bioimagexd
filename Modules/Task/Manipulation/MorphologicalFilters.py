@@ -32,6 +32,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import lib.ProcessingFilter
 import types
+import lib.messenger
 import scripting
 import vtk
 
@@ -41,8 +42,7 @@ FILTERING = "Filtering"
 
 class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A base class for manipulation filters
+	A base class for morphological operations
 	"""     
 	name = "Morphological filter"
 	category = MORPHOLOGICAL
@@ -128,46 +128,44 @@ class ErodeFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageContinuousErode3D()
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		
 class VarianceFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: Variance filter
+	Variance filter
 	"""     
 	name = "Variance 3D"
 	category = MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
-		Method: __init__()
 		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageVariance3D()        
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		
 class DilateFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A dilation filter
+	A 3D dilation filter
 	"""      
 	name = "Dilate 3D"
 	category = MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
-		Method: __init__()
 		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageContinuousDilate3D()  
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
   
 class RangeFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A filter that sets the value of the neighborhood to be the max-min of that nbh
+	A filter that sets the value of the neighborhood to be the max-min of that nbh
 	"""     
 	name = "Range 3D"
 	category = MORPHOLOGICAL
@@ -178,12 +176,12 @@ class RangeFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageRange3D()     
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		
 class SobelFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A sobel filter in 3D
+	A sobel filter in 3D
 	"""     
 	name = "Sobel 3D"
 	category = FEATUREDETECTION
@@ -194,7 +192,8 @@ class SobelFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageSobel3D()          
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		
 	def getParameters(self):
 		"""
@@ -216,8 +215,7 @@ class SobelFilter(MorphologicalFilter):
 		
 class HybridMedianFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A 2D median filter that preserves edges and corners
+    A 2D median filter that preserves edges and corners
 	"""     
 	name = "Hybrid median 2D"
 	category = FILTERING
@@ -229,7 +227,8 @@ class HybridMedianFilter(MorphologicalFilter):
 		"""        
 		MorphologicalFilter.__init__(self)
 		self.vtkfilter = vtk.vtkImageHybridMedian2D()        
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		self.eventDesc = "Performing hybrid median filtering"
 		
 	def getParameters(self):
@@ -253,8 +252,7 @@ class HybridMedianFilter(MorphologicalFilter):
 		
 class MedianFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A median filter
+	A median filter
 	"""     
 	name = "Median 3D"
 	category = FILTERING
@@ -262,9 +260,9 @@ class MedianFilter(MorphologicalFilter):
 	
 	def __init__(self):
 		"""
-		Method: __init__()
 		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)
-		self.vtkfilter = vtk.vtkImageMedian3D()        
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter = vtk.vtkImageMedian3D()     
+		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)

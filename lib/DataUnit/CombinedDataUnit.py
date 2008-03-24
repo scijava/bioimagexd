@@ -32,6 +32,7 @@ from lib.DataUnit.DataUnit import DataUnit
 from lib.DataSource.BXDDataWriter import BXDDataWriter
 from lib.DataSource.BXCDataWriter import BXCDataWriter
 import lib.DataSource.DataSource
+import lib.ImageOperations
 import optimize
 import vtk
 import vtkbxd
@@ -320,6 +321,11 @@ class CombinedDataUnit(DataUnit):
 			raise Logging.GUIError("Wrong number of dataunits", \
 									"Cannot switch the processed datasets: \
 									you've selected a wrong number of source dataunits.")
+									
+		# Some tasks want only dataunits with the same dimensions, so there's a flag
+		# indicating whether they should be checked
+		# we store the flag temporarily, since the dimensions should NEVER be checked
+		# when we're switching the source data units
 		chkDims = self.checkDimensions
 		self.checkDimensions = 0
 		self.sourceunits = []
@@ -421,9 +427,11 @@ class CombinedDataUnit(DataUnit):
 				else:
 					self.merge.RemoveAllInputs()
 					self.merge.RemoveLookupTables()
-				for data, ctf in merged:
-					print "adding input to merge"
-					self.merge.AddInput(data)
+				images = [x[0] for x in merged]
+				images = lib.ImageOperations.castImagesToLargestDataType(images)
+				for i, (data, ctf) in enumerate(merged):
+					image = images[i]
+					self.merge.AddInput(image)
 					self.merge.AddLookupTable(ctf)
 				preview = self.merge.GetOutput()
 				

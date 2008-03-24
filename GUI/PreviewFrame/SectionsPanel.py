@@ -31,7 +31,7 @@ __version__ = "$Revision: 1.9 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import scripting
-from GUI.InteractivePanel import InteractivePanel as InteractivePanel
+import GUI.InteractivePanel
 import lib.ImageOperations
 import lib.messenger
 import Logging
@@ -39,7 +39,7 @@ import math
 import wx
 import vtk
 
-class SectionsPanel(InteractivePanel):
+class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 	"""
 	A widget that previews the xy,xz and yz planes of a dataset
 	"""
@@ -65,14 +65,13 @@ class SectionsPanel(InteractivePanel):
 		x, y = size
 		self.paintSize = size
 		self.buffer = wx.EmptyBitmap(x, y)
-		InteractivePanel.__init__(self, parent, size = size, **kws)
+		GUI.InteractivePanel.InteractivePanel.__init__(self, parent, size = size, **kws)
 		self.size = size
 		self.sizeChanged = False
 		self.rows = 0
 		self.cols = 0
 		self.scrollsize = 32
 		self.scrollTo = None
-		self.dataUnit = None
 		self.dataUnitChanged = False
 		
 		self.drawableRects = []
@@ -99,6 +98,16 @@ class SectionsPanel(InteractivePanel):
 		self.Bind(wx.EVT_MOTION, self.onLeftDown)
 		
 		lib.messenger.connect(None, "zslice_changed", self.onSetZSlice)
+
+	def deregister(self):
+		"""
+		Delete all known references because this view mode is to be removed
+		"""
+		try:
+			lib.messenger.disconnect(None, "zslice_changed", self.onSetZSlice)
+		except:
+			pass
+		GUI.InteractivePanel.InteractivePanel.deregister(self)
 		
 	def getDrawableRectangles(self):
 		"""
@@ -111,8 +120,6 @@ class SectionsPanel(InteractivePanel):
 		Set the factor by which the image is zoomed
 		"""
 		self.zoomFactor = factor
-#		if self.dataUnit:
-#			self.setTimepoint(self.timepoint)
 		self.updateAnnotations()
 		self.sizeChanged = True
 
@@ -127,9 +134,6 @@ class SectionsPanel(InteractivePanel):
 		self.ymargin += y0
 
 		self.calculateBuffer()
-			
-#		self.updatePreview()
-#		self.Refresh()
 		
 	def onSetZSlice(self, obj, event, arg):
 		"""
@@ -248,7 +252,7 @@ class SectionsPanel(InteractivePanel):
 		"""
 		Size event handler
 		"""
-		InteractivePanel.OnSize(self, event)
+		GUI.InteractivePanel.InteractivePanel.OnSize(self, event)
 		if self.size != event.GetSize():
 			self.size = event.GetSize()
 			Logging.info("Sections panel size changed to ", self.size, kw = "preview")
@@ -280,7 +284,7 @@ class SectionsPanel(InteractivePanel):
 		self.drawPos = (x, y, z)
 
 		self.voxelSize = dataUnit.getVoxelSize()
-		InteractivePanel.setDataUnit(self, dataUnit)
+		GUI.InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)
 		self.dataUnitChanged = True
 		
 	def getPlane(self, data, plane, xCoordinate, yCoordinate, zCoordinate, applyZScaling = 0):
@@ -328,13 +332,10 @@ class SectionsPanel(InteractivePanel):
 			self.permute.SetFilteredAxes(xAxis, zAxis, yAxis)
 			self.permute.Update()
 			data = self.permute.GetOutput()
-			#data.SetUpdateExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
-			#data.SetWholeExtent(0, dataWidth - 1, 0, dataDepth - 1, 0, 0)
 	
 			self.voi.SetInput(data)
 			self.voi.SetVOI(0, dataWidth - 1, 0, dataDepth - 1, yCoordinate, yCoordinate)
 
-	
 			xdim = dataWidth
 			ydim = dataDepth
 			if applyZScaling: 
@@ -355,8 +356,10 @@ class SectionsPanel(InteractivePanel):
 		Set the timepoint
 		"""
 		recalculate = False
-		if tp != self.timepoint or self.dataUnitChanged:
-			recalculate = True
+		# This doesn't work when adjust is open so now just recalculate every tim
+		recalculate = True
+		#if tp != self.timepoint or self.dataUnitChanged:
+			#recalculate = True
 		self.timepoint = tp
 		if not scripting.renderingEnabled:
 			return
@@ -395,7 +398,7 @@ class SectionsPanel(InteractivePanel):
 			
 		self.slices.append(imgslice)
 		
-		Logging.info("zspacing = %f\n"%self.zspacing, kw="preview")
+		Logging.info("\n\nzspacing = %f\n"%self.zspacing, kw="preview")
 		imgslice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
 		w, h = imgslice.GetDimensions()[0:2]
 		interpolation = self.interpolation
@@ -458,7 +461,7 @@ class SectionsPanel(InteractivePanel):
 		Updates the viewed image
 		"""
 		if not self.enabled:
-			Logging.info("Won't draw sections cause not enabled", kw="preview")
+			Logging.info("\n\n\nWon't draw sections cause not enabled", kw="preview")
 			return
 		if not self.slices:
 			self.setTimepoint(self.timepoint, update = 0)
@@ -469,7 +472,7 @@ class SectionsPanel(InteractivePanel):
 		"""
 		Does the actual blitting of the bitmap
 		"""
-		InteractivePanel.OnPaint(self, event)
+		GUI.InteractivePanel.InteractivePanel.OnPaint(self, event)
 	
 	def paintPreview(self):
 		"""
@@ -527,7 +530,7 @@ class SectionsPanel(InteractivePanel):
 		self.bmp = self.buffer
 		self.makeBackgroundBuffer(dc)
 
-		InteractivePanel.paintPreview(self, dc)
+		GUI.InteractivePanel.InteractivePanel.paintPreview(self, dc)
 
 		dc.EndDrawing()
 		
@@ -547,4 +550,4 @@ class SectionsPanel(InteractivePanel):
 		f2 = self.maxClientSizeY / y
 		f = min(f, f2)
 		self.setZoomFactor(f)
-		
+	

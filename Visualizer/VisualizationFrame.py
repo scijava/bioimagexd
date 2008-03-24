@@ -41,14 +41,9 @@ import wx.lib.scrolledpanel as scrolled
 import lib.messenger
 from lib.persistence import state_pickler
 
-#import VisualizationModules
-#import ModuleConfiguration
-#import VisualizerWindow
-	
 class RendererConfiguration(wx.MiniFrame):
 	"""
-	Created: 16.05.2005, KP
-	Description: A frame for configuring the renderer
+	A frame for configuring the renderer
 	"""	   
 	def __init__(self, parent, visualizer):
 		"""
@@ -61,7 +56,6 @@ class RendererConfiguration(wx.MiniFrame):
 		self.sizer = wx.GridBagSizer()
 		self.parent = parent
 		self.visualizer = visualizer
-		self.mode = self.visualizer.currMode
 		
 		self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.okButton = wx.Button(self.panel, -1, "Ok")
@@ -140,7 +134,7 @@ class RendererConfiguration(wx.MiniFrame):
 		if self.color:
 			red, green, blue = self.color
 			self.visualizer.setBackground(red, green, blue)
-		self.mode.setStereoMode(self.stereoMode)
+		scripting.visualizer.getCurrentMode().setStereoMode(self.stereoMode)
 		try:
 			x, y = map(int, self.sizeEdit.GetValue().split("x"))
 			self.visualizer.setRenderWindowSize((x, y))
@@ -182,8 +176,7 @@ class RendererConfiguration(wx.MiniFrame):
 
 class ConfigurationPanel(scrolled.ScrolledPanel):
 	"""
-	Created: 28.04.2005, KP
-	Description: A panel that can be used to configure the rendering
+	A panel that can be used to configure the rendering
 	"""
 	def __init__(self, parent, visualizer, mode, **kws):
 		"""

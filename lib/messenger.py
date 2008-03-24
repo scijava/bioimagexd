@@ -248,7 +248,7 @@ class Messenger:
 					else: # normal function
 						meth(source, event, *args, **kw_args)
 				for itemToBeRemoved in remove:
-					del slots[itemToBeRemoved]					
+					del slots[itemToBeRemoved]
 
 	def is_registered(self, obj):		 
 		"""Returns if the given object has registered itself with the

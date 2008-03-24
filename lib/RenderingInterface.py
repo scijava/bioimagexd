@@ -132,7 +132,7 @@ class RenderingInterface:
 		return self.visualizer.getCurrentMode().GetRenderer()
 		
 	def render(self):
-		self.visualizer.currMode.Render()
+		self.visualizer.getCurrentMode().Render()
 	
 	def setVisualizer(self, visualizer):
 		"""

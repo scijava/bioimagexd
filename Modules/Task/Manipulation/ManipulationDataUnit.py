@@ -33,8 +33,7 @@ import vtk
 
 class ManipulationDataUnit(CombinedDataUnit):
 	"""
-	Created: 24.11.2004, JM, JV
-	Description: A class representing a dataunit manipulated with the process task
+	A class representing a dataunit manipulated with the process task
 	"""
 
 	def __init__(self, name = ""):
@@ -44,6 +43,7 @@ class ManipulationDataUnit(CombinedDataUnit):
 		CombinedDataUnit.__init__(self, name)
 		self.original = None
 		self.initialized = 0
+		self.checkDimensions = False
 		self.modifiedDimensions = None
 		
 	def setModifiedDimensions(self, dims):
@@ -99,7 +99,6 @@ class ManipulationDataUnit(CombinedDataUnit):
 		self.setOriginal(dataUnit)    
 		CombinedDataUnit.addSourceDataUnit(self, dataUnit, **args)
 		self.name = "Manipulated %s" % dataUnit.getName()
-		#print dataUnit.getColorTransferFunction()
 		self.updateSettings()
 		#print self.settings.get("ColorTransferFunction")
   

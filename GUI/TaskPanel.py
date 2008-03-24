@@ -73,7 +73,6 @@ class TaskPanel(ScrolledPanel):
 		self.preview = None
 		self.onByDefault = 1
 		self.cacheKey = None
-
 	
 		self.mainsizer = wx.GridBagSizer()
 		if not hasattr(self, "createItemSelection"):
@@ -196,8 +195,11 @@ class TaskPanel(ScrolledPanel):
 			self.dataUnit.switchSourceDataUnits(args)
 			if self.dataUnit.__module__ == 'Manipulation.ManipulationDataUnit':
 				self.dataUnit.switchDatasets()
+			if self.dataUnit.__module__ == 'Adjust.AdjustDataUnit':
+				self.settings.set("ColorTransferFunction",self.dataUnit.getColorTransferFunction())
+				self.updateSettings()
 		except Logging.GUIError, err:
-			err.show()			  
+			err.show()
 		if self.channelBox:
 			self.channelBox.clear()
 			self.channelBox.setDataUnit(self.dataUnit, toolImage = (TOOL_W, TOOL_H))

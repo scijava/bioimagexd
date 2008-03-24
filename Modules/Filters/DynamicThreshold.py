@@ -31,19 +31,17 @@ __version__ = "$Revision$"
 __date__ = "$Date$"
 
 import lib.ProcessingFilter
-#import itkBXD
 import scripting
 import types
-import GUIBuilder
+import GUI.GUIBuilder
 import itk
-
+import lib.FilterTypes
 MEAN = 0
 MEDIAN = 1
 
 class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 10.12.2007, LP
-	Description: A dynamic threshold filter. Uses
+	A dynamic threshold filter. Uses
 	itkBXD.DynamicThresholdImageFilter.
 	"""
 	name = "Dynamic threshold"
@@ -65,6 +63,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
+	
 
 	def updateProgress(self):
 		lib.ProcessingFilter.ProcessingFilter.updateProgress(self,self.filter,"ProgressEvent")
@@ -80,7 +79,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the types of parameters for GUI.
 		"""
 		if param == "StatisticsType":
-			return GUIBuilder.CHOICE
+			return GUI.GUIBuilder.CHOICE
 		return types.IntType
 
 	def getDefaultValue(self, param):

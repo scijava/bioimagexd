@@ -117,7 +117,6 @@ class MainWindow(wx.Frame):
 		self.commandHistory = None
 		
 		self.paths = {}
-		self.currentVisualizationWindow = None
 		self.currentTaskWindow = None
 		self.currentTaskWindowName = ""
 		self.currentTaskWindowType = None
@@ -260,7 +259,7 @@ class MainWindow(wx.Frame):
 		self.splash.SetMessage("Loading default visualization mode...")
 		self.loadVisualizer(self.defaultModeName, init = 1)
 		
-		self.onMenuShowTree(None, 1)
+		self.onMenuShowTree(show = True)
 		try:
 			self.splash.Show(False)
 			del self.splash
@@ -410,8 +409,6 @@ class MainWindow(wx.Frame):
 		if close:
 			mode = self.visualizer.mode
 			self.visualizer.closeVisualizer()
-			del self.currentVisualizationWindow
-			self.currentVisualizationWindow = None
 			self.visualizer.closeVisualizer()
 			self.infoWidget.clearInfo()
 			self.loadVisualizer(mode)
@@ -422,7 +419,7 @@ class MainWindow(wx.Frame):
 		"""
 		selectedFiles = self.tree.getSelectedDataUnits()
 		lib.messenger.send(None, "switch_datasets", selectedFiles)
-		
+		lib.messenger.send(None,"data_dimensions_changed")
 	def showTip(self):
 		"""
 		Show a tip to the user
@@ -542,20 +539,9 @@ class MainWindow(wx.Frame):
 		"""
 		Changes the window to show in the split window
 		"""
-		if window == self.currentVisualizationWindow:
+		if window == self.visualizer.getCurrentWindow():
 			return
-		if self.currentVisualizationWindow:
-			if self.currentVisualizationWindow != self.visWin:
-				Logging.info("Hiding ", self.currentVisualizationWindow, kw = "main")
-				self.currentVisualizationWindow.Show(0)
-			Logging.info("Showing", window, kw = "main")
-			window.Show()
-			window.SetSize((self.currentVisualizationWindow.GetSize()))
-			self.currentVisualizationWindow = window
-		else:
-			Logging.info("Showing", window, kw = "main")
-			self.currentVisualizationWindow = window
-			window.Show()
+		window.Show()
 			
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		self.visWin.Refresh()
@@ -1153,7 +1139,7 @@ class MainWindow(wx.Frame):
 		if eid == MenuManager.ID_VIEW_CONFIG:
 			obj = "config"
 		elif eid == MenuManager.ID_VIEW_TREE:
-			self.onMenuShowTree(None, flag)
+			self.onMenuShowTree(show = flag)
 			return
 		elif eid == MenuManager.ID_VIEW_MASKSEL:
 			if self.visualizer:
@@ -1335,7 +1321,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		modeclass, settingclass, module = self.visualizationModes[mode]
 		needUpdate = 0
 		if not module.showFileTree():
-			self.onMenuShowTree(None, 0)
+			self.onMenuShowTree(show = False)
 			needUpdate = 1
 		if not module.showInfoWindow():
 			self.infoWin.SetDefaultSize((0, 0))
@@ -1358,13 +1344,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				Logging.info("Setting dataunit for visualizer", kw = "main")
 				self.visualizer.setDataUnit(dataunit)
 				didSetDataUnit = True
-			else:
-				if reload:
-					Logging.info("Closing on reload: ", self.visualizer.currMode.closeOnReload())
-					if self.visualizer.currMode.closeOnReload():
-						# close the mode
-						self.loadVisualizer(self.defaultModeName)
-						return
+				
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
 			self.showVisualization(self.visPanel)
@@ -1453,7 +1433,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Callback function for menu item "Open VTK File"
 		"""
 		if not evt2:
-			self.onMenuShowTree(None, 1)
+			self.onMenuShowTree(show = True)
 			asklist = []
 			wc = self.datasetWildcards + "|Encoding project (*.bxr)|*.bxr"
 
@@ -1615,7 +1595,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Close the current task window
 		"""   
 		self.onCloseTaskPanel(None)
-		self.onMenuShowTree(None, 1)
+		self.onMenuShowTree(show = True)
 
 			
 	def loadTask(self, taskname):
@@ -1645,7 +1625,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			return
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.1, "Loading task %s..." % action)
-		self.onMenuShowTree(None, 0)
+		self.onMenuShowTree(show = False)
 		# Hide the infowin and toggle the menu item accordingly
 		self.infoWin.SetDefaultSize((0, 0))
 		self.menuManager.check(MenuManager.ID_VIEW_INFO, 0)
@@ -1731,7 +1711,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		lib.messenger.send(None, "update_progress", 1.0, "Loading task %s... done" % action)
 					
 		
-	def onMenuShowTree(self, event, show = -1):
+	def onMenuShowTree(self, event = None, show = -1):
 		"""
 		A method that shows the file management tree
 		"""
@@ -1752,7 +1732,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		self.visualizer.OnSize(None)
-		#self.visWin.Refresh()
 
 	def loadVisualizer(self, mode, processed = 0, dataunit = None, **kws):
 		"""
@@ -1770,8 +1749,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
-		reload = kws.get("reload", 0)
-		self.visualizer.setVisualizationMode(mode, reload = reload)
+		shouldReload = kws.get("reload", 0)
+		self.visualizer.setVisualizationMode(mode, shouldReload = shouldReload)
 
 		if not "init" in kws and dataunit:
 			self.visualizer.setDataUnit(dataunit)

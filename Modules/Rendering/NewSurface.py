@@ -235,7 +235,8 @@ class SurfaceModule(VisualizationModule):
 		if not self.init:
 			self.init = 1
 			self.mapper.ColorByArrayComponent(0, 0)
-		self.mapper.AddObserver("ProgressEvent", self.updateProgress)
+		self.mapper.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.mapper, 'ProgressEvent', self.updateProgress)
 		dataUnit = self.getInputDataUnit(1)
 		if not dataUnit:
 			dataUnit = self.dataUnit

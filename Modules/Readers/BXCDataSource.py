@@ -124,6 +124,7 @@ class BXCDataSource(DataSource):
 		Returns the DataSet at the specified index
 		Parameters:   i		  The index
 		"""
+		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
 		if raw:
 			return data
@@ -149,20 +150,6 @@ class BXCDataSource(DataSource):
 					 dataunit contains
 		"""
 		return eval(self.settings.get("Dimensions"))
-
-	def updateProgress(self, obj, evt):
-		"""
-		Method: updateProgress
-		Sends progress update event
-		"""		   
-		if not obj:
-			progress = 1.0
-		else:
-			progress = obj.GetProgress()
-		notinvtk = 0
-		if progress == 1.0:
-			notinvtk = 1
-		lib.messenger.send(None, "update_progress", progress, "Reading %s..."%self.shortname, notinvtk)
 		
 	def getSpacing(self):
 		"""
@@ -198,7 +185,8 @@ class BXCDataSource(DataSource):
 		if not self.reader or self.filename != filename:
 			self.filename = filename
 			self.reader = vtk.vtkXMLImageDataReader()
-			self.reader.AddObserver("ProgressEvent", self.updateProgress)
+			self.reader.AddObserver("ProgressEvent", lib.messenger.send)
+			lib.messenger.connect(self.reader, 'ProgressEvent', self.updateProgress)
 			filepath = os.path.join(self.path, filename)
 			if not self.reader.CanReadFile(filepath):
 				Logging.error("Cannot read file",

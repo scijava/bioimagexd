@@ -49,7 +49,7 @@ import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
 import TrackingFilters
-#import RegistrationFilters
+import RegistrationFilters
 
 from lib.FilterTypes import *
 
@@ -127,10 +127,10 @@ def getFilters():
 	"""
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
-	return [GaussianSmoothFilter, ShiftScaleFilter, 
+	return [GaussianSmoothFilter, 
 			ROIIntensityFilter, GradientFilter, GradientMagnitudeFilter,
 			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
-			ITKCannyEdgeFilter, ITKSigmoidFilter, ITKLocalMaximumFilter]
+			ITKSigmoidFilter, ITKLocalMaximumFilter]
 
 # fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
 def getFilterList():
@@ -143,7 +143,7 @@ def getFilterList():
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
 	filterlist += TrackingFilters.getFilters()
-	# filterlist += RegistrationFilters.getFilters()
+	filterlist += RegistrationFilters.getFilters()
 	return filterlist
 
 
@@ -151,8 +151,7 @@ def getFilterList():
 
 class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 15.11.2006, KP
-	Description: A gaussian smoothing filter
+	A gaussian smoothing filter
 	"""		
 	name = "Gaussian smooth"
 	category = FILTERING
@@ -164,7 +163,8 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageGaussianSmooth()
 		self.eventDesc = "Performing gaussian smoothing"
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.descs = {"RadiusX": "Radius factor X:", "RadiusY": "Radius factor Y:", "RadiusZ": "Radius factor Z:",
 			"Dimensionality": "Dimensionality"}
 	
@@ -219,86 +219,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		return self.vtkfilter.GetOutput()			   
 
 		
-class ShiftScaleFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 13.04.2006, KP
-	Description: A filter for shifting the values of dataset by constant and scaling by a constant
-	"""		
-	name = "Shift and Scale"
-	category = MATH
-	
-	def __init__(self):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		self.vtkfilter = vtk.vtkImageShiftScale()
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
-		self.eventDesc = "Applying a shift and scale to image intensity"
-		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to range 0-255"}
-	
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return [["", ("Shift", "Scale", "AutoScale")]]
-		
-		
-	def getLongDesc(self, parameter):
-		"""
-		Return a long description of the parameter
-		""" 
-		return ""
-		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		if parameter in ["Shift", "Scale"]:
-			return types.FloatType
-		elif parameter == "AutoScale":
-			return types.BooleanType
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""		
-		if parameter == "Shift":
-			return 0
-		if parameter == "Scale":
-			return 1
-		return 1
-		
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""			   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
 
-		image = self.getInput(1)
-		#print "Using ",image
-		self.vtkfilter.SetInput(image)
-		if self.parameters["AutoScale"]:
-			x, y = image.GetScalarRange()
-			print "image type=", image.GetScalarTypeAsString()
-			print "Range of data=", x, y
-			self.vtkfilter.SetOutputScalarTypeToUnsignedChar()
-			if not y:
-				lib.messenger.send(None, "show_error", "Bad scalar range", "Data has scalar range of %d -%d" % (x, y))
-				return vtk.vtkImageData()
-			scale = 255.0 / y
-			print "Scale=", scale
-			self.vtkfilter.SetShift(0)
-			self.vtkfilter.SetScale(scale)
-		else:
-			self.vtkfilter.SetShift(self.parameters["Shift"])
-			self.vtkfilter.SetScale(self.parameters["Scale"])
-		
-		if update:
-			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()	 
-		
 		
 class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -451,7 +372,8 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradient()
 		self.vtkfilter.SetDimensionality(3)
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 	
 	def getParameters(self):
 		"""
@@ -489,7 +411,8 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageGradientMagnitude()
 		self.vtkfilter.SetDimensionality(3)
-		self.vtkfilter.AddObserver("ProgressEvent", self.updateProgress)
+		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Performing edge detection (gradient magnitude)"
 	
 	def getParameters(self):
@@ -630,58 +553,7 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		return data			   
 
 
-class ITKCannyEdgeFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 13.04.2006, KP
-	Description: A class that uses the ITK canny edge detection filter
-	"""		
-	name = "Canny edge detection"
-	category = FEATUREDETECTION
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.itkFlag = 1
-		self.itkfilter = None
-		self.eventDesc = "Performing edge detection (canny edge)"
-		
-	def getParameterLevel(self, parameter):
-		"""
-		Return the level of the given parameter
-		"""
-		return scripting.COLOR_EXPERIENCED
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return []		 
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""					   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image,types.FloatType)
-		if not self.itkfilter:
-			self.itkfilter = itk.CannyEdgeDetectionImageFilter[image, image].New()
-
-		self.itkfilter.SetInput(image)
-
-		# Output data is 0.0 or 1.0, rescale this
-		rescale = itk.RescaleIntensityImageFilter.IF3IUC3.New()
-		rescale.SetOutputMinimum(0)
-		rescale.SetOutputMaximum(255)
-		rescale.SetInput(self.itkfilter.GetOutput())
-		data = rescale.GetOutput()
-		if update:
-			data.Update()
-		
-		return data			   
+   
 
 
 class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
@@ -747,10 +619,9 @@ class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
 		self.itkfilter.SetInput(image)
 		
 		self.setImageType("F3")
-		
-		if update:
-			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
+		if update:
+			data.Update()
 
 		return data			   
 

@@ -40,7 +40,6 @@ class VisualizationMode:
 		"""
 		Initialization
 		"""    
-
 		self.parent = parent
 		self.dataUnit = None
 		self.enabled = 1
@@ -175,15 +174,20 @@ class VisualizationMode:
 	def saveSnapshot(self, filename):
 		"""
 		Save a snapshot of the scene
-		"""		 
+		@param filename  The name of the image file to be written
+		"""
 		self.iactivePanel.saveSnapshot(filename)
 		
 	def deactivate(self, newmode = None):
 		"""
-		Unset the mode of visualization
+		De-activate the visualization mode, hiding it's contents
 		"""
 		self.iactivePanel.Show(0)
-		
+		if hasattr(self.iactivePanel, "onDeactivate"):
+			self.iactivePanel.onDeactivate() 
+		self.iactivePanel.Destroy()
+		del self.iactivePanel
+		self.iactivePanel = None
 	def relayout(self):
 		"""
 		Method called when the size of the window changes

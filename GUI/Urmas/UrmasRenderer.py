@@ -47,6 +47,8 @@ import vtk
 import math
 import wx
 
+PAUSE_PREVIEW=1
+PAUSE_RENDERING=2
 def distance(p1, p2):
 	xd = p1[0] - p2[0]
 	yd = p1[1] - p2[1]
@@ -132,10 +134,13 @@ class UrmasRenderer:
 	def onPausePlayback(self, obj, evt, *args):
 		"""
 		A callback to pause rendering if it's currently underway
-		"""  
+		"""
 		if self.rendering:
-			self.pauseFlag = 1
-		
+			flag = PAUSE_RENDERING
+			if self.currentIsPreview:
+				flag = PAUSE_PREVIEW
+			self.pauseFlag = flag
+
 	def isPaused(self):
 		"""
 		A query function that tells whether the rendering is paused
@@ -190,11 +195,11 @@ class UrmasRenderer:
 			self.renderingInterface.setRenderWindowSize(kws["size"])
 		if kws.has_key("renderpath"):renderpath = kws["renderpath"]
 		if not preview:
+			Logging.info("Rendering output path=%s"%renderpath)
 			self.renderingInterface.setOutputPath(renderpath)
 			self.renderingInterface.setCurrentTimepoint(0)
-			
-			self.renwin = self.renderingInterface.getRenderWindow() 
-#            print "self.renwin=",self.renwin
+
+			self.renwin = self.renderingInterface.getRenderWindow()
 			self.ren = self.renderingInterface.getRenderer()
 			if self.renderingInterface.isVisualizationModuleLoaded() == False:
 				GUI.Dialogs.showwarning(self.control.window, "A visualization module needs to be loaded for rendering", "No visualization modules loaded")
@@ -203,9 +208,6 @@ class UrmasRenderer:
 			if not self.ren:
 				GUI.Dialogs.showwarning(self.control.window, "No renderer in main render window!! This should not be possible!", "Oops!")
 				return
-#            self.dlg = wx.ProgressDialog("Rendering","Rendering at %.2fs / %.2fs (frame %d / %d)"%(0,0,0,0),maximum = frames, parent = self.control.window)
-#            self.dlg.Show()
-
 		self.splineEditor = control.getSplineEditor()
 		self.initializeCameraInterpolator()
 		if preview:
@@ -215,17 +217,12 @@ class UrmasRenderer:
 			self.ren = self.renderingInterface.getRenderer()
 			cam = self.ren.GetActiveCamera()
 		self.cam = cam
-		#cam.SetViewUp(self.splineEditor.get_camera().GetViewUp())
-		
-		
-#        cam.ComputeViewPlaneNormal()
-#        cam.OrthogonalizeViewUp()
 
 		self.doRenderFrames(preview)
 		
 	def doRenderFrames(self, preview):
 		"""
-		Class: doRenderFrames()
+
 		Method that only does the rendering.
 					 This is separate from render() to make it
 					 easier to pause/resume rendering
@@ -235,24 +232,31 @@ class UrmasRenderer:
 		if self.currentIsPreview:
 			lib.messenger.send(None, "set_preview_mode", 1)
 		if self.pausedRendering:
-			if self.currentIsPreview:
-				lib.messenger.send(None, "set_preview_mode", 1)
-			print "\n\n --- RESTORING PAUSED POS ", self.pauseFrame
-			start = self.pauseFrame
+			Logging.info("Rendering has been paused, mode=%d"%self.pausedRendering)
+			if self.currentIsPreview and self.pausedRendering == PAUSE_PREVIEW:
+				Logging.info("Continuing preview from paused position",self.pauseFrame)
+				start = self.pauseFrame
+			elif self.pausedRendering == PAUSE_RENDERING:
+				Logging.info("Continuing rendering from paused position",self.pauseFrame)
+				start = self.pauseFrame
 			self.pausedRendering = 0
 		self.rendering = 1
 		for n in range(start, self.frames + 1):
-			print "Now rendering frame ", n, "spf=", self.spf
+			Logging.info("Rendering frame %d, spf=%f"%(n, self.spf))
 			if self.stopFlag:
 				print "\n\n*** ABORT RENDERING"
 				self.stopFlag = 0
-				
 				status = "Rendering aborted at frame %d / %d." % (n, self.frames)
 				break
 			if self.pauseFlag:
 				status = "Rendering paused at frame %d / %d." % (n, self.frames)
+				Logging.info(status)
 				self.pauseFrame = n
-				self.pausedRendering = 1
+				flag = PAUSE_RENDERING
+				if self.currentIsPreview:
+					flag = PAUSE_PREVIEW
+				self.pausedRendering = flag
+				self.pauseFlag = 0
 				return
 			lib.messenger.send(None, "set_timeslider_value", (n + 1))
 			self.renderFrame(n, (n + 1) * self.spf, self.spf, preview = preview)
@@ -261,7 +265,7 @@ class UrmasRenderer:
 		self.rendering = 0
 		self.pausedRendering = 0
 		self.pauseFrame = 0
-		
+
 		if self.currentIsPreview:
 			print "\n\nPreview mode ends because we're at end"
 			lib.messenger.send(None, "set_preview_mode", 0)
@@ -307,11 +311,7 @@ class UrmasRenderer:
 		self.initializeCameraInterpolator()
 		if not self.splineEditor:
 			self.splineEditor = self.control.getSplineEditor()
-		
-		## if the view mode is "camera path", do not render
-		#if not self.splineEditor.viewMode:
-		#    return
-		
+
 		if self.renderingInterface.visualizer.mode == "3d":
 			self.renwin = self.renderingInterface.getRenderWindow() 
 			self.ren = self.renderingInterface.getRenderer()
@@ -323,7 +323,7 @@ class UrmasRenderer:
 			do_use_cam = 0
 		duration = self.control.getDuration()
 		frames = self.control.getFrames()
-		self.spf = duration / float(frames)        
+		self.spf = duration / float(frames)
 		frame = timepos / self.spf
 		if self.pausedRendering:
 			print "\n\n\n**** SETTING PAUSE FRAME TO ", frame, "spf=", self.spf
@@ -333,9 +333,8 @@ class UrmasRenderer:
 		 
 	def getTimepointAt(self, time):
 		"""
-		Returns the timepoint used at given time
-		Parameters:
-		time    The current time in the timeline
+		@return the timepoint used at given time
+		@param time    The current time in the timeline
 		"""            
 		tracks = self.control.timeline.getTimepointTracks()
 		timepoint = 0
@@ -348,7 +347,7 @@ class UrmasRenderer:
 		
 	def getKeyframes(self):
 		"""
-		Return the keyframes if there is a keyframe track
+		@return the keyframe tracks, if there are any
 		"""
 		tracks = self.control.timeline.getKeyframeTracks()
 		return tracks
@@ -389,11 +388,10 @@ class UrmasRenderer:
 	def renderFrame(self, frame, timepos, spf, preview = 0, use_cam = 0):
 		"""
 		This renders a given frame
-		Parameters:
-		frame   The frame we're rendering
-		time    The current time in the timeline
-		spf     Seconds per one frame
-		"""            
+		@param frame   The frame we're rendering
+		@param time    The current time in the timeline
+		@param spf     Seconds per one frame
+		"""
 		interpolated = 0
 		pos = None
 		if not self.firstpoint:

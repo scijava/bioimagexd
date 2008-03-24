@@ -29,6 +29,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from lib.DataSource.DataSource import DataSource
 from lib.DataUnit.DataUnit import DataUnit
+import lib.messenger
 import Logging
 import os.path
 import scripting
@@ -68,7 +69,6 @@ class LsmDataSource(DataSource):
 		self.dataUnitSettings = {}
 		# TODO: what is this?
 		self.count = 0
-		self.timestamps = None
 
 		self.dimensions = None
 		self.spacing = None
@@ -77,7 +77,8 @@ class LsmDataSource(DataSource):
 		# vtkLSMReader is used to do the actual reading:
 		self.reader = vtkbxd.vtkLSMReader()
 		#self.reader.DebugOn()
-		self.reader.AddObserver("ProgressEvent", self.updateProgress)
+		self.reader.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(self.reader, 'ProgressEvent', self.updateProgress)
 		# If a filename was specified, the file is loaded
 		if self.filename:
 			self.path = os.path.dirname(filename)
@@ -97,50 +98,35 @@ class LsmDataSource(DataSource):
 			self.originalScalarRange = None
 			self.getBitDepth()
 			self.originalDimensions = self.reader.GetDimensions()[0:3]
-			self.updateProgress(None, None)
-			#for tp in range(0,self.reader.GetDimensions()[3]):
-			#	self.getTimeStamp(tp)
+			self.readTimeStamps()
 			
-	def updateProgress(self, obj, evt):
-		"""
-		Sends progress update event
-		"""
-		if not obj:
-			progress = 1.0
-		else:
-			progress = obj.GetProgress()
-		if self.channelNum >= 0:
-			msg = "Reading channel %d of %s" % (self.channelNum + 1, self.shortname)
-			if self.timepoint >= 0 and self.getDataSetCount()>1:
-				msg += " (timepoint %d / %d)" % (self.timepoint + 1, self.dimensions[3])
-		else:
-			msg = "Reading %s..." % self.shortname
-		notinvtk = 0
-		
-		if progress >= 1.0:
-			notinvtk = 1
-		scripting.inIO = (progress < 1.0)
-		if scripting.mainWindow:
-			scripting.mainWindow.updateProgressBar(obj, evt, progress,msg, notinvtk)
 
-	def getTimeStamp(self, timepoint):
+
+	def readTimeStamps(self):
 		"""
 		return the timestamp for given timepoint
 		"""
 		if not self.reader:
-			return timepoint
-		if not self.timestamps:
-			self.timestamps = self.reader.GetTimeStampInformation()
-		if timepoint >= self.timestamps.GetSize():
+			return
+		timestamps = self.reader.GetTimeStampInformation()
+		stamps = []
+		absStamps = []
+		if not timestamps.GetSize():
 			timeInterval = self.reader.GetTimeInterval()
 			if timeInterval != 0:
-				return timepoint*timeInterval
-			return 0
-		v = self.timestamps.GetValue(timepoint)
-		print v
-		v0 = self.timestamps.GetValue(0)
-		return (v - v0)
-
+				for i in range(0, self.getDataSetCount()):
+					stamps.append(i*timeInterval)
+					absStamps.append(i*timeInterval)
+			else:
+				return
+		else:
+			v0 = timestamps.GetValue(0)
+			for timepoint in range(0, self.getDataSetCount()):
+				v = timestamps.GetValue(timepoint)
+				stamps.append(v-v0)
+				absStamps.append(v)
+		self.setTimeStamps(stamps)
+		self.setAbsoluteTimeStamps(absStamps)
 
 	def getDataSetCount(self):
 		"""
@@ -214,6 +200,7 @@ class LsmDataSource(DataSource):
 		"""
 		# No timepoint can be returned, if this LsmDataSource instance does not
 		# know what channel it is supposed to handle within the lsm-file.
+		self.setCurrentTimepoint(i)
 		if self.channelNum == -1:
 			Logging.error("No channel number specified",
 			"LSM Data Source got a request for dataset from timepoint "

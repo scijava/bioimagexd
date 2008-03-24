@@ -282,7 +282,8 @@ class DataUnit:
 		self.dataSource = dataSource
 		self.dataUnitName = dataSource.getName()
 		self.length = dataSource.getDataSetCount()
-		
+		self.getTimeStamp = dataSource.getTimeStamp
+		self.getAbsoluteTimeStamp = dataSource.getAbsoluteTimeStamp
 		self.getDimensions = dataSource.getDimensions
 		self.getSpacing = dataSource.getSpacing
 		self.getVoxelSize = dataSource.getVoxelSize

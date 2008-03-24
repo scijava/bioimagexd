@@ -191,6 +191,7 @@ class SimpleMode(VisualizationMode):
 		"""
 		self.iactivePanel.Show(0)
 		self.iactivePanel.onDeactivate()
+		self.iactivePanel.Destroy()
 		del self.iactivePanel
 		self.iactivePanel = None
 		
