@@ -360,8 +360,12 @@ class OlympusDataSource(DataSource):
 			
 			diff *= coeff
 			if data == '"T"':
-				timepoints = n
-				timeStep = diff/n
+				if n == 0:
+					timepoints = 1
+					timeStep = 0.0
+				else:
+					timepoints = n
+					timeStep = diff/n
 			elif data == '"C"':
 				channels = n
 			elif data == '"X"':
