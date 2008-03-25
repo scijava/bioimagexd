@@ -1,4 +1,4 @@
-﻿"""
+"""
  Unit: LeicaDataSource
  Project: BioImageXD
  Created: 12.04.2005, KP
@@ -325,7 +325,7 @@ class LeicaExperiment:
 		"""
 		Return the duration of the experiment
 		"""
-		return self.SeriesDict[experiment]["Seconds"]
+		return self.SeriesDict[experiment].get("Seconds",0)
 
 	def GetNumberOfTimepoints(self, experiment):
 		"""
