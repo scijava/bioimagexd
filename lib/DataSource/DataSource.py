@@ -408,7 +408,7 @@ class DataSource:
 		"""
 		@return the timestamp for given timepoint
 		"""
-		if len(self.timestamps) >= timepoint:
+		if len(self.timestamps) > timepoint:
 			return self.timestamps[timepoint]
 		return timepoint
 		
