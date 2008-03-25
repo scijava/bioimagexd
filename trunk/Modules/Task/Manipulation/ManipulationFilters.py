@@ -49,7 +49,10 @@ import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
 import TrackingFilters
-import RegistrationFilters
+try:
+	import RegistrationFilters
+except:
+	pass
 
 from lib.FilterTypes import *
 
@@ -143,7 +146,10 @@ def getFilterList():
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
 	filterlist += TrackingFilters.getFilters()
-	filterlist += RegistrationFilters.getFilters()
+	try:
+		filterlist += RegistrationFilters.getFilters()
+	except:
+		pass
 	return filterlist
 
 
