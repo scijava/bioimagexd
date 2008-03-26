@@ -262,9 +262,10 @@ class Configuration:
 		"""
 		Returns a valid path based on the parameter  
 		""" 
-		if type(path) == types.StringType:
+		if type(path) in [types.StringType, types.UnicodeType]:
 			path = [path]
 		return os.path.normpath(os.path.join(self.installPath, reduce(os.path.join, path)))
+
 	@staticmethod
 	def removeWithName(names):
 		"""

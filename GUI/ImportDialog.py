@@ -155,7 +155,6 @@ class ImportDialog(wx.Dialog):
 			return
 		bxdwriter = BXDDataWriter(outname)
 		self.resultDataset = bxdwriter.getFilename()
-		print "Result dataset=", self.resultDataset
 
 		bxcfilename = bxdwriter.getBXCFileName(outname)
 		self.writer = BXCDataWriter(bxcfilename)
@@ -378,10 +377,20 @@ enter the information below.""")
 		self.infosizer.Add(self.depthEdit, (n, 1), flag = wx.EXPAND | wx.ALL)
 		n += 1
 		
+		
 		self.colorBtn = GUI.ColorTransferEditor.CTFButton(self)
 		lib.messenger.connect(self.colorBtn, "ctf_modified", self.onUpdateCtf)
 		self.infosizer.Add(self.colorBtn, (n, 0), span = (1, 2))
 		n += 1
+		
+		self.flipBox = wx.CheckBox(self,-1,"Flip image vertically")
+		self.flipBox.Bind(wx.EVT_CHECKBOX, self.onVerticalFlipImage)
+		self.infosizer.Add(self.flipBox, (n, 0))
+		self.flipHorizBox = wx.CheckBox(self,-1,"Flip image horizontally")
+		self.flipHorizBox.Bind(wx.EVT_CHECKBOX, self.onHorizontalFlipImage)
+		self.infosizer.Add(self.flipHorizBox, (n, 1))
+		
+		n+=1
 		self.updateBtn = wx.Button(self, -1, "Update information")
 		
 		self.infosizer.Add(self.updateBtn, (n, 0), span = (1, 2))
@@ -400,6 +409,20 @@ enter the information below.""")
 		if self.inputFile:
 			self.browsedir.SetValue(self.inputFile)
 			
+	def onVerticalFlipImage(self, evt):
+		"""
+		An event handler called when user toggles the image flipping check box
+		"""
+		self.dataSource.setVerticalFlip(evt.IsChecked())
+		self.preview.updatePreview()
+
+	def onHorizontalFlipImage(self, evt):
+		"""
+		An event handler called when user toggles the image flipping check box
+		"""
+		self.dataSource.setHorizontalFlip(evt.IsChecked())
+		self.preview.updatePreview()
+		
 	def onUpdatePreview(self, event = None):
 		"""
 		Update the preview based on the user input

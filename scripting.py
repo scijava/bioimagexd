@@ -171,23 +171,24 @@ def get_windows_appdir():
 	return the base directory where application settings, logs etc. should be stored on windows
 	"""
 	if "AppData" in os.environ:
-		appbase = os.environ["AppData"]
+		appbase = os.environ["AppData"].decode(sys.getfilesystemencoding())
 		if not os.path.exists(appbase) and "UserProfile" in os.environ:
-			appbase = os.environ["UserProfile"]
+			appbase = os.environ["UserProfile"].decode(sys.getfilesystemencoding())
 		return appbase
 	
-	return os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")		
+	return os.path.join("C:\\", "Documents and Settings", getpass.getuser(), "Application Data")
 	
 def get_log_dir():
 	"""
 	Tries to create and return a path to a directory for logging
 	"""
 	parser = ConfigParser.RawConfigParser()
-	fp = codecs.open(os.path.join(get_config_dir(), "BioImageXD.ini"),"r","utf-8")
+	configFile = os.path.join(get_config_dir(), u"BioImageXD.ini")
+	fp = codecs.open(configFile,"r","utf-8")
 	parser.readfp(fp)
 	if parser.has_section("Paths"):
 		try:
-			value = parser.get("Paths","LogPath")
+			value = unicode(parser.get("Paths","LogPath"))
 		except:
 			value = None
 		if value:
@@ -228,13 +229,14 @@ def get_preview_dir():
 	Return a directory where preview images can be stored
 	"""
 	parser = ConfigParser.RawConfigParser()
-	parser.read([os.path.join(get_config_dir(), "BioImageXD.ini")])
+	fp = codecs.open(os.path.join(get_config_dir(), "BioImageXD.ini"),"r","utf-8")
+	parser.readfp(fp)
 	if parser.has_section("Paths"):
 		try:
-			value = parser.get("Paths","PreviewPath")
+			value = unicode(parser.get("Paths","PreviewPath"))
 		except:
 			value = None
-		if value: 
+		if value:
 			print "Preview directory is ",value
 			return value
 	if platform.system() == "Darwin":

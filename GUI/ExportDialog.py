@@ -139,13 +139,26 @@ class ExportDialog(wx.Dialog):
 
 			Logging.info("Writer = ", writer, kw = "io")
 			writer.Update()
-			print writer
 			writer.Write()
+			overwrite = None
 			if n == 1:
 				for z in range(self.z):
 					img = prefix + "_" + pattern % z + ".%s" % ext
 					num = t * self.z + z
 					newname = prefix + pattern % num + ".%s" % ext
+					fileExists = os.path.exists(newname)
+					if fileExists and overwrite == None:
+						dlg = wx.MessageDialog(self, 
+						"A file called '%s' already exists. Overwrite?"%os.path.basename(newname),
+						"Overwrite existing file",
+						wx.YES_NO|wx.YES_DEFAULT)
+						if dlg.ShowModal()==wx.ID_YES:
+							overwrite=1
+							os.remove(newname)
+						else:
+							break
+					elif fileExists and overwrite==1:
+						os.remove(newname)
 					os.rename(img, newname)
 		self.dlg.Destroy()
 			

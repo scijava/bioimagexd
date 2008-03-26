@@ -64,6 +64,8 @@ class FileListDataSource(DataSource):
 		self.dimensions = None
 		self.voxelsize = (1, 1, 1)
 		self.spacing = (1, 1, 1)
+		self.flipVertically = False
+		self.flipHorizontally = False
 		self.color = None
 		self.shift = None
 		self.isRGB = 0
@@ -119,8 +121,18 @@ class FileListDataSource(DataSource):
 									"Some of the selected files have differing dimensions, \
 									and cannot be imported into the same dataset.")		 
 		self.getReadersFromFilenames()
-				
 		
+	def setVerticalFlip(self, flag):
+		"""
+		Set a flag indicating whether the image should be flipped vertically
+		"""
+		self.flipVertically = flag
+		
+	def setHorizontalFlip(self, flag):
+		"""
+		Set a flag indicating whether the image should be flipped horizontally
+		"""
+		self.flipHorizontally = flag
 		
 	def checkImageDimensions(self, filenames):
 		"""
@@ -175,6 +187,7 @@ class FileListDataSource(DataSource):
 		if mpr == "ExtTIFF" and not isRGB:
 			rdr.RawModeOn()
 		
+		rdr.SetFileLowerLeft(self.flipVertically)
 		return rdr
 
 	def getReadersFromFilenames(self):
@@ -293,8 +306,8 @@ class FileListDataSource(DataSource):
 		
 	def getDataSet(self, i, raw = 0):
 		"""
-		Returns the DataSet at the specified index
-		Parameters:   i		  The index
+		@return Timepoint i
+		@param i The timepoint to return
 		"""
 		data = self.getTimepoint(i)
 		if self.isRGB and self.numberOfComponents == 4:
@@ -302,6 +315,18 @@ class FileListDataSource(DataSource):
 			extract.SetComponents(0, 1, 2)
 			extract.SetInput(data)
 			data = extract.GetOutput()
+			
+			
+		if self.flipVertically:
+			flip = vtk.vtkImageFlip()
+			flip.SetFilteredAxis(1)
+			flip.SetInput(data)
+			data = flip.GetOutput()
+		if self.flipHorizontally:
+			flip = vtk.vtkImageFlip()
+			flip.SetFilteredAxis(0)
+			flip.SetInput(data)
+			data = flip.GetOutput()
 		return data
 		
 	def getDataBitDepth(self, data):

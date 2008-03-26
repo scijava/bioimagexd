@@ -619,13 +619,13 @@ class Visualizer:
 		Set view mode
 		"""
 		item = evt.GetString()
-		viewmapping = {" + X": (1, 0, 0, 0, 0, 1), " - X": (-1, 0, 0, 0, 0, 1),
-					 " + Y": (0, 1, 0, 1, 0, 0), " - Y": (0, -1, 0, 1, 0, 0),
-					 " + Z": (0, 0, 1, 0, 1, 0), " - Z": (0, 0, -1, 0, 1, 0),
+		viewmapping = {"+X": (1, 0, 0, 0, 0, 1), "-X": (-1, 0, 0, 0, 0, 1),
+					 "+Y": (0, 1, 0, 1, 0, 0), "-Y": (0, -1, 0, 1, 0, 0),
+					 "+Z": (0, 0, 1, 0, 1, 0), "-Z": (0, 0, -1, 0, 1, 0),
 					 "Isometric": (1, 1, 1, 0, 0, 1)}
 
 		if hasattr(self.currentMode, "wxrenwin"):
-			self.currentMode.wxrenwin.setView(viewmapping[item])
+			self.currentMode.wxrenwin.setView(viewmapping[str(item)])
 			self.currentMode.wxrenwin.Render()
 
 	def zoomObject(self, evt):

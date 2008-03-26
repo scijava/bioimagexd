@@ -730,11 +730,11 @@ class GUIBuilder(wx.Panel):
 			
 		self.currentBackgroundSizer = backgroundSizer
 		self.currentBackground = background
-		
+
 		if	desc and itemType not in [types.BooleanType]:
 			label = wx.StaticText(background, -1, desc)
-			updatef = lambda obj, event, arg, label = label, i = item, s = self: s.SetLabel(label, arg)
-										
+			updatef = lambda obj, event, arg, label = label, i = item, s = self: label.SetLabel(arg)
+
 			lib.messenger.connect(currentFilter, "update_%s_label" % item, updatef)
 			backgroundSizer.Add(label)
 		else:

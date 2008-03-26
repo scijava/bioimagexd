@@ -140,6 +140,7 @@ class VolumeModule(VisualizationModule):
 		self.qualityRange = 0, 10
 			   
 		self.volumeAdded = False
+		self.mapperUpdated = False
 		self.setShading(0)
 
 		self.vtkObjects = ["otf", "otf2"]
@@ -391,8 +392,7 @@ class VolumeModule(VisualizationModule):
 		else:
 			self.renderer.GetActiveCamera().ParallelProjectionOff()		
 			
-		self.volume.SetMapper(self.mapper)	  
-
+		self.mapperUpdated = True
 
 	def updateRendering(self, input = None):
 		"""
@@ -423,6 +423,9 @@ class VolumeModule(VisualizationModule):
 		Logging.info("Rendering using, ", self.mapper.__class__, kw = "rendering")
 		
 		self.mapper.SetInput(input)
+		if self.mapperUpdated:
+			self.volume.SetMapper(self.mapper)
+			self.mapperUpdated = False
 		if not self.volumeAdded:
 			self.parent.getRenderer().AddVolume(self.volume)
 			self.volumeAdded = True
