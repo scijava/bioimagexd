@@ -419,7 +419,7 @@ class MainWindow(wx.Frame):
 		"""
 		selectedFiles = self.tree.getSelectedDataUnits()
 		lib.messenger.send(None, "switch_datasets", selectedFiles)
-		lib.messenger.send(None,"data_dimensions_changed")
+		
 	def showTip(self):
 		"""
 		Show a tip to the user

@@ -43,7 +43,7 @@
 #include <vtkstd/vector>
 #include <iostream>
 
-typedef unsigned long OFFSET_TYPE;
+typedef unsigned  long OFFSET_TYPE;
 
 // Vectors for one image
 typedef vtkstd::vector<ChannelData*> ImageChannelsTypeBase;

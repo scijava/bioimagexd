@@ -193,6 +193,7 @@ class TaskPanel(ScrolledPanel):
 		"""
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
+			lib.messenger.send(None,"data_dimensions_changed")
 			if self.dataUnit.__module__ == 'Manipulation.ManipulationDataUnit':
 				self.dataUnit.switchDatasets()
 			if self.dataUnit.__module__ == 'Adjust.AdjustDataUnit':
