@@ -111,6 +111,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   const char* GetImageChannelLUTName();
   const char* GetImageName(int);
   const char* GetCurrentImageName();
+  double GetTimeInterval(int);
+  double GetTimeInterval();
 
   vtkGetMacro(CurrentImage,int);
   vtkGetMacro(CurrentChannel,int);
