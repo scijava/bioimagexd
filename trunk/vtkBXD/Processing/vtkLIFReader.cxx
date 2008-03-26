@@ -41,6 +41,9 @@
 #include "vtkUnsignedCharArray.h"
 #include "vtkUnsignedShortArray.h"
 #include <vtkstd/vector>
+#include <iostream>
+
+typedef unsigned long OFFSET_TYPE;
 
 // Vectors for one image
 typedef vtkstd::vector<ChannelData*> ImageChannelsTypeBase;
@@ -489,6 +492,23 @@ const char* vtkLIFReader::GetCurrentImageName()
   return this->GetImageName(this->CurrentImage);
 }
 
+double vtkLIFReader::GetTimeInterval(int image)
+{
+  if (image < 0 || image >= this->GetImageCount()) return -1.0;
+  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
+	   dimIter != this->Dimensions->at(image)->end(); dimIter++)
+	{
+	  if ((*dimIter)->DimID == DimIDT) return (*dimIter)->Length;
+	}
+
+  return -1.0;
+}
+
+double vtkLIFReader::GetTimeInterval()
+{
+  return this->GetTimeInterval(this->CurrentImage);
+}
+
 int vtkLIFReader::ReadLIFHeader()
 {
   if (!this->File) {
@@ -567,7 +587,7 @@ int vtkLIFReader::ReadLIFHeader()
     while (this->ReadChar(this->File) != TestCode) {}
     unsigned int memDescrSize = this->ReadUnsignedInt(this->File) * 2;
     // Skip over memory description
-    this->File->seekg(memDescrSize,ios::cur);
+    this->File->seekg(static_cast<OFFSET_TYPE>(memDescrSize),ios::cur);
   
     // Add image offset if memory size is > 0
     if (memorySize > 0)
@@ -575,7 +595,7 @@ int vtkLIFReader::ReadLIFHeader()
       this->Offsets->InsertValue(offsetId,this->File->tellg());
       this->ImageSizes->InsertValue(offsetId,memorySize);
       offsetId++;
-      this->File->seekg(memorySize,ios::cur);
+      this->File->seekg(static_cast<OFFSET_TYPE>(memorySize),ios::cur);
     }
   }
   
@@ -909,7 +929,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 	  channelOffset = imageOffset + i * sliceChannelsSize;
       channelOffset += this->Channels->at(this->CurrentImage)->at(this->CurrentChannel)->BytesInc;
 
-      this->File->seekg(channelOffset,ios::beg);
+      this->File->seekg(static_cast<OFFSET_TYPE>(channelOffset),ios::beg);
       this->File->read(pos,slicePixelsSize);
       vtkDebugMacro(<< "Read " << slicePixelsSize << " bytes of data from " << channelOffset);
 

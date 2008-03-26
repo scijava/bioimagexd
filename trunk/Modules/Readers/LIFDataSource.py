@@ -33,6 +33,7 @@ import Logging
 import scripting
 import vtkbxd
 import vtk
+import lib.messenger
 
 def getExtensions(): return ["lif"]
 def getFileType(): return "Leica Image File Format (*.lif)"
@@ -64,6 +65,8 @@ class LIFDataSource(DataSource):
 
 		# Use vtkLIFReader
 		self.reader = vtkbxd.vtkLIFReader()
+		self.reader.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.reader, 'ProgressEvent', self.updateProgress)
 
 		# Open file if defined
 		if self.filename:
@@ -75,6 +78,7 @@ class LIFDataSource(DataSource):
 					self.reader.SetCurrentImage(self.imageNum)
 					self.reader.SetCurrentChannel(self.channelNum)
 					self.imageName = self.reader.GetImageName(self.imageNum)
+					self.createTimeStamps()
 				else:
 					Logging.error("Failed to read the header of the LIF file correctly",
 								  "Error in LIFDataSource.py in __init__, failed to read the header of the LIF file: %s" %(self.filename))
@@ -100,11 +104,9 @@ class LIFDataSource(DataSource):
 
 	def getDataSet(self, i, raw = 0):
 		"""
-		Created 24.07.2007, LP
 		Returns the defined timepoint of current image and channel
-		Parameters: i	 The timepoint of data to return
-					raw	 A flag indicating that the data is not to be processed
-						 in any way
+		@param i The timepoint of data to return
+		@param raw A flag indicating that the data is not to be processed in any way
 		"""
 		if self.imageNum < 0 or self.channelNum < 0:
 			Logging.error("No image or channel number specified",
@@ -116,10 +118,10 @@ class LIFDataSource(DataSource):
 						  "Time point %d that is out of bounds requested from getDataSet"%i)
 			return None
 
+		self.setCurrentTimepoint(i)
 		self.reader.SetCurrentImageAndChannel(self.imageNum, self.channelNum)
 		self.reader.SetCurrentTimePoint(i)
 		data = self.reader.GetOutput()
-
 		if raw:
 			return data
 
@@ -140,9 +142,8 @@ class LIFDataSource(DataSource):
 
 	def internalGetDimensions(self):
 		"""
-		Created 20.07.2007, LP
-		Returns the (x,y,z) dimensions of the dataset this
-					 dataunit contains
+		Returns the (x,y,z) dimensions of the dataset this dataunit contains
+		@return 3-tuple of dimensions of the dataset	
 		"""
 		dimensions = self.reader.GetImageDims()
 		# Make sure that every dimension is at least 1. This prevents
@@ -167,7 +168,7 @@ class LIFDataSource(DataSource):
 		Loads images from LIF-file and generates own DataSource
 					 for each image in file. Returns list of tuples which
 					 includes image name and DataUnit.
-		Parameters:	 filename: path to file where images should be loaded
+		@parameter filename Path to file where images should be loaded
 		"""
 		self.filename = filename
 		dataUnits = []
@@ -208,6 +209,7 @@ class LIFDataSource(DataSource):
 	def getVoxelSize(self):
 		"""
 		Returns size of voxel as 3-tuple
+		@return Size of voxel as 3-tuple
 		"""
 		if not self.voxelSize:
 			self.voxelSize = self.reader.GetImageVoxels()
@@ -215,7 +217,8 @@ class LIFDataSource(DataSource):
 
 	def getColorTransferFunction(self):
 		"""
-		Description:
+		Creates color transfer function for channel
+		@return Color transfer function of channel
 		"""
 		if not self.ctf:
 			ctf = vtk.vtkColorTransferFunction()
@@ -275,6 +278,20 @@ class LIFDataSource(DataSource):
 			self.scalarRange = (int(minScalar),int(maxScalar))
 		return self.scalarRange
 
+	def createTimeStamps(self):
+		"""
+		Creates time stamps for setTimeStamps method
+		"""
+		dimensions = self.reader.GetImageDims()
+		if dimensions[3] > 0:
+			interval = self.reader.GetTimeInterval(self.imageNum)
+			timePoint = 0.0
+			timestamps = []
+			for i in range(dimensions[3]):
+				timestamps.append(timePoint)
+				timePoint += interval
+			self.setTimeStamps(timestamps)
+
 	def uniqueID(self):
 		"""
 		Returns a string identifying the dataset
@@ -286,4 +303,3 @@ class LIFDataSource(DataSource):
 		Returns the basic info of this instance as a string
 		"""
 		return "LIF DataSource (%s, image %d, channel %d)"%(self.filename,self.imageNum,self.channelNum)
-
