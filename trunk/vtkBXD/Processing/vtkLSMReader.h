@@ -40,6 +40,31 @@
 #define TIF_COLORMAP 320
 #define TIF_CZ_LSMINFO 34412
 
+#define SUBBLOCK_END        0x0FFFFFFFF
+#define SUBBLOCK_RECORDING  0x010000000
+#define SUBBLOCK_LASERS     0x030000000
+#define SUBBLOCK_LASER      0x050000000
+#define SUBBLOCK_TRACKS     0x020000000
+#define SUBBLOCK_TRACK      0x040000000
+#define SUBBLOCK_DETECTION_CHANNELS      0x060000000
+#define SUBBLOCK_DETECTION_CHANNEL       0x070000000
+#define SUBBLOCK_ILLUMINATION_CHANNELS   0x080000000
+#define SUBBLOCK_ILLUMINATION_CHANNEL    0x090000000
+#define SUBBLOCK_BEAM_SPLITTERS          0x0A0000000
+#define SUBBLOCK_BEAM_SPLITTER           0x0B0000000
+#define SUBBLOCK_DATA_CHANNELS           0x0C0000000
+#define SUBBLOCK_DATA_CHANNEL            0x0D0000000
+#define SUBBLOCK_TIMERS                  0x011000000
+#define SUBBLOCK_TIMER                   0x012000000
+#define SUBBLOCK_MARKERS                 0x013000000
+#define SUBBLOCK_MARKER                  0x014000000
+
+
+#define LASER_ENTRY_NAME                         0x050000001
+#define LASER_ENTRY_ACQUIRE                      0x050000002
+#define LASER_ENTRY_POWER                        0x050000003
+
+#define DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST     0x070000003
 // .NAME vtkLSMReader - read LSM files
 // .SECTION Description
 // vtkLSMReader is a source object that reads LSM files.
@@ -65,6 +90,7 @@
 #include "vtkDoubleArray.h"
 #include "vtkUnsignedShortArray.h"
 #include "vtkUnsignedCharArray.h"
+#include "vtkStringArray.h"
 
 #define TIFF_BYTE 1
 #define TIFF_ASCII 2
@@ -167,6 +193,7 @@ protected:
   int ReadTimeStampInformation(ifstream *,unsigned long);
   int ReadLSMSpecificInfo(ifstream *,unsigned long);
   int AnalyzeTag(ifstream *,unsigned long);
+  int ReadScanInformation(ifstream*, unsigned long);
   int NeedToReadHeaderInformation();
   void NeedToReadHeaderInformationOn();
   void NeedToReadHeaderInformationOff();
@@ -231,6 +258,8 @@ int RequestData(
   vtkUnsignedIntArray *ReadSizes;
   vtkDoubleArray* DetectorOffsetFirstImage;
   vtkDoubleArray* DetectorOffsetLastImage;
+  
+  vtkStringArray* LaserNames;
   
   
   double DataSpacing[3];
