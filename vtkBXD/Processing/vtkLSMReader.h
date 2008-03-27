@@ -229,6 +229,8 @@ int RequestData(
   
   vtkUnsignedIntArray *ImageOffsets;
   vtkUnsignedIntArray *ReadSizes;
+  vtkDoubleArray* DetectorOffsetFirstImage;
+  vtkDoubleArray* DetectorOffsetLastImage;
   
   
   double DataSpacing[3];

@@ -71,10 +71,10 @@ class Histogram(wx.Panel):
 			del kws["lowerThreshold"]
 		if "upperThreshold" in kws:
 			del kws["upperThreshold"]
-		kws["size"] = (256, 200)
+		kws["size"] = (270, 200)
 		wx.Panel.__init__(self, parent, -1, **kws)
 		self.parent = parent
-		self.size = (256, 200)
+		self.size = (270, 200)
 		self.timePoint = 0
 		self.buffer = wx.EmptyBitmap(256, 200)
 		self.backGround = None
@@ -372,7 +372,7 @@ class Histogram(wx.Panel):
 			width = self.histogram.GetWidth()
 			height = self.histogram.GetHeight()
 			#self.buffer = wx.EmptyBitmap(width, height)
-			self.buffer = wx.EmptyBitmap(256, 200)
+			self.buffer = wx.EmptyBitmap(270, 200)
 			if self.size != (width, height):
 				Logging.info("Setting size to", width, height, kw = "imageop")
 				self.SetSize((width, height))
