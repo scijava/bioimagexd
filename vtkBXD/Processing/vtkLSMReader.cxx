@@ -214,6 +214,7 @@ vtkLSMReader::~vtkLSMReader()
   this->BitsPerSample->Delete();
   this->StripOffset->Delete();
   this->StripByteCount->Delete();
+  this->LaserNames->Delete();
   if(this->ChannelDataTypes) {
       this->ChannelDataTypes->Delete();
   }
@@ -286,7 +287,9 @@ void vtkLSMReader::Clean()
   this->File = NULL;
   this->VoxelSizes[0] = this->VoxelSizes[1] = this->VoxelSizes[2] = 0.0;
   this->Identifier = 0;
-    
+   
+   
+  this->LaserNames = vtkStringArray::New();
   this->DataSpacing[0] = this->DataSpacing[1] = this->DataSpacing[2] =  1.0f;
   this->Dimensions[0] = this->Dimensions[1] = this->Dimensions[2] = this->Dimensions[3] = this->Dimensions[4] = 0;
   this->NewSubFileType = 0;
@@ -744,10 +747,11 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
     this->ReadChannelDataTypes(f, this->ChannelDataTypesOffset);
   }
 
-  // Skip scan information (device settings)
+  // Read scan information
+  unsigned long scanInformationOffset = this->ReadUnsignedInt(f, &pos);
+  this->ReadScanInformation(f, scanInformationOffset);
   // SKip Zeiss Vision KS-3D speific data
-  pos +=2*4;
-
+  pos +=  4;
   // Read timestamp information
   offset = this->ReadUnsignedInt(f,&pos);
   this->ReadTimeStampInformation(f,offset);
@@ -755,7 +759,68 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   
   return 1;
 }
-
+int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
+{
+    unsigned int entry, type, size;
+    while( 1 ) {
+        entry = this->ReadUnsignedInt(f, &pos);
+        type =  this->ReadUnsignedInt(f, &pos);
+        size =  this->ReadUnsignedInt(f, &pos);
+        switch(entry) {
+            case DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST:
+                double gain = this->ReadDouble(f, &pos);
+                printf("Gain = %f\n", gain);
+                continue;
+                break;
+                
+            case LASER_ENTRY_NAME:
+                char* name = new char[size+1];
+                this->ReadData(f, &pos, size, name);
+                printf("Name of laser: %s, type = %d\n", name, type);
+                this->LaserNames->InsertNextValue(name);
+                continue;
+                break;
+            case SUBBLOCK_RECORDING:
+                break;
+            case SUBBLOCK_LASERS:
+                break;
+            case SUBBLOCK_LASER:
+                break;
+            case SUBBLOCK_TRACKS:
+                printf("SUbblock tracks, type = %d\n", type);
+                break;
+            case SUBBLOCK_TRACK:
+                printf("Subblock track\n");
+                break;
+            case SUBBLOCK_DETECTION_CHANNELS:
+                break;
+            case SUBBLOCK_DETECTION_CHANNEL:
+                break;
+            case SUBBLOCK_ILLUMINATION_CHANNELS:
+                break;
+            case SUBBLOCK_ILLUMINATION_CHANNEL:
+                break;
+            case SUBBLOCK_BEAM_SPLITTERS:
+                break;
+            case SUBBLOCK_BEAM_SPLITTER:
+                break;
+            case SUBBLOCK_DATA_CHANNELS:
+                break;
+            case SUBBLOCK_DATA_CHANNEL:
+                break;
+            case SUBBLOCK_TIMERS:
+                break;
+            case SUBBLOCK_TIMER:
+                break;
+            case SUBBLOCK_MARKERS:
+                break;
+            case SUBBLOCK_MARKER:
+                break;
+        }
+        // By default, skip the entry
+        pos += size;
+    }
+}
 int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
 {
   unsigned short type,length,tag;
