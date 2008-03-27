@@ -759,37 +759,40 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	dc.BeginDrawing()
 	
 	blackpen = wx.Pen((0, 0, 0), 1)
-	graypen = wx.Pen((100, 100, 100), 1)
+	graypen = wx.Pen((80, 80, 80), 1)
 	whitepen = wx.Pen((255, 255, 255), 1)
 	
 	if platform.system()!="Darwin":
 		dc.SetBackground(wx.Brush(bg))
 		dc.Clear()
 	dc.SetBrush(wx.Brush(wx.Colour(200, 200, 200)))
-	dc.DrawRectangle(0, 0, w, 151)
+	dc.DrawRectangle(0, 0, 256+xoffset+1, 151)
 	
 	if not logarithmic:
 		points = range(1, 150, 150 / 8)
 	else:
 		points = [4, 8, 16, 28, 44, 64, 88, 116, 148]
 		points = [p + 2 for p in points]
-		points.reverse()
+		#points.reverse()
 		
 	for i in points:
-		y = i
+		y = 151-i
 		dc.SetPen(blackpen)
 		dc.DrawLine(0, y, 5, y)
 		dc.SetPen(whitepen)
 		dc.DrawLine(0, y - 1, 5, y - 1)
 	
 	d = (len(values) - 1) / 255.0
-	for i in range(0, 255):
+	dc.SetPen(blackpen)
+	dc.DrawLine(xoffset-1, 0, xoffset-1, 151)
+	for i in range(0, 256):
 		c = values[int(i * d)]
-		c2 = values[int((i * d) + d)]
-		dc.SetPen(graypen)
-		dc.DrawLine(xoffset + i, x1, xoffset + i, x1 - c)
-		dc.SetPen(blackpen)
-		dc.DrawLine(xoffset + i, x1 - c, xoffset + i + 1, x1 - c2)
+		if c:
+			#c2 = values[int((i * d) + d)]
+			dc.SetPen(graypen)
+			dc.DrawLine(xoffset + i, x1, xoffset + i, x1 - c)
+			#dc.SetPen(blackpen)
+			#dc.DrawLine(xoffset + i, x1 - c, xoffset + i, x1 - c-2)
 			
 	if colorTransferFunction:
 		for i in range(0, 256):
