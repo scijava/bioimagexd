@@ -328,42 +328,61 @@ class GUIBuilder(wx.Panel):
 		if level:
 			background.SetBackgroundColour(level)
 		
-		scatterPlot = GUI.Scatterplot.Scatterplot(self.colocalizationPanel, drawLegend = 1)
+		scatterPlot = GUI.Scatterplot.Scatterplot(background, drawLegend = 1)
 		dataUnit = self.filter.getDataUnit()
 		
 		scatterPlot.setDataUnit(dataUnit)
 		
-		flo = lambda obj, event, arg, histogram = histogram, i = item[0], s = self: \
-					s.onSetHistogramValues(histogram, i, arg, valuetype = "Lower")
-		lib.messenger.connect(currentFilter, "set_%s" % item[0], flo)
-		fhi = lambda obj, event, arg, histogram = histogram, i = item[1], s = self: \
-					s.onSetHistogramValues(histogram, i, arg, valuetype = "Upper")
-		lib.messenger.connect(currentFilter, "set_%s" % item[1], fhi)
+		flo1 = lambda obj, event, arg, scatterPlot = scatterPlot, i = item[0], s = self: \
+					s.onSetScatterplotValues(scatterPlot, i, arg, valuetype = "Lower", ch="Ch1")
+		lib.messenger.connect(currentFilter, "set_%s" % item[0], flo1)
+		fhi1 = lambda obj, event, arg, scatterPlot = scatterPlot, i = item[1], s = self: \
+					s.onSetScatterplotValues(scatterPlot, i, arg, valuetype = "Upper", ch="Ch1")
+		lib.messenger.connect(currentFilter, "set_%s" % item[1], fhi1)
 		
-		setDataunitFunc = lambda obj, event, dataunit, h = histogram: h.setDataUnit(dataunit)
+		flo2 = lambda obj, event, arg, scatterPlot = scatterPlot, i = item[2], s = self: \
+					s.onSetScatterplotValues(scatterPlot, i, arg, valuetype = "Lower", ch="Ch2")
+		lib.messenger.connect(currentFilter, "set_%s" % item[2], flo2)
+		fhi2 = lambda obj, event, arg, scatterPlot = scatterPlot, i = item[3], s = self: \
+					s.onSetScatterplotValues(scatterPlot, i, arg, valuetype = "Upper", ch="Ch2")
+		lib.messenger.connect(currentFilter, "set_%s" % item[3], fhi2)
+		
+		setDataunitFunc = lambda obj, event, dataunit, h = scatterPlot: h.setDataUnit(dataunit)
 		
 		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[0],setDataunitFunc)
 		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[1],setDataunitFunc)
 		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[2],setDataunitFunc)
 		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[3],setDataunitFunc)
 		
-		histogram.setDataUnit(dataUnit, noupdate = 1)
+		setSlopeIntercept = lambda obj, event, slope, intercept, scatterPlot = scatterPlot: scatterPlot.setSlopeAndIntercept(slope, intercept)
+		lib.messenger.connect(currentFilter, "set_slope_intercept", setSlopeIntercept)
 		
 		self.itemSizer.Add(background, (0, 0), flag=wx.EXPAND)
 		
 		bgsizer = wx.GridBagSizer()
-		bgsizer.Add(histogram, (0,0), span=(1,2))
+		bgsizer.Add(scatterPlot, (0,0), span=(1,2))
 				
-		lowerLbl = wx.StaticText(background, -1,"Lower threshold:")
-		upperLbl = wx.StaticText(background,-1,"Upper threshold:")
-		
-		lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
-		upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
+		ch1lowerLbl = wx.StaticText(background, -1,"Ch1 lower:")
+		ch1upperLbl = wx.StaticText(background,-1,"Ch1 upper:")
+		ch1lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
+		ch1upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
+		ch2lowerLbl = wx.StaticText(background, -1,"Ch2 lower:")
+		ch2upperLbl = wx.StaticText(background,-1,"Ch2 upper:")
+		ch2lower = self.createNumberInput(background, currentFilter, item[2], types.IntType, 0, "", self.updateThresholdHistogram)
+		ch2upper = self.createNumberInput(background, currentFilter, item[3], types.IntType, 255, "", self.updateThresholdHistogram)
 
-		bgsizer.Add(lowerLbl,(1,0))
-		bgsizer.Add(lower,(1,1))
-		bgsizer.Add(upperLbl,(2,0))
-		bgsizer.Add(upper,(2,1))
+		inputs = [ch1lower, ch1upper, ch2lower, ch2upper]
+		setScatterplotFunc = lambda obj, event, th1, th2, f = currentFilter, inputs = inputs, item = item: self.setScatterplotThresholds(obj, event, th1, th2, f, item, inputs)
+		lib.messenger.connect(scatterPlot, "scatterplot_thresholds", setScatterplotFunc)
+
+		bgsizer.Add(ch1lowerLbl,(1,0))
+		bgsizer.Add(ch1lower,(1,1))
+		bgsizer.Add(ch1upperLbl,(2,0))
+		bgsizer.Add(ch1upper,(2,1))
+		bgsizer.Add(ch2lowerLbl,(3,0))
+		bgsizer.Add(ch2lower,(3,1))
+		bgsizer.Add(ch2upperLbl,(4,0))
+		bgsizer.Add(ch2upper,(4,1))
 		background.SetSizer(bgsizer)
 		background.SetAutoLayout(1)
 		background.Layout()
@@ -371,12 +390,27 @@ class GUIBuilder(wx.Panel):
 		
 		return 0
 
+	def setScatterplotThresholds(self, scatterplot, event, ch1thresholds, ch2thresholds, currentFilter, item, inputs):
+		"""
+		Set the filter thresholds from scatterplot
+		"""
+		lower1, upper1 = ch1thresholds
+		lower2, upper2 = ch2thresholds
+		print "\n\n******* Setting thresholds", lower1,upper1,lower2,upper2
+		inputs[0].SetValue("%d"%lower1)
+		inputs[1].SetValue("%d"%upper1)
+		inputs[2].SetValue("%d"%lower2)
+		inputs[3].SetValue("%d"%upper2)
+		currentFilter.set("LowerThresholdCh1",lower1)
+		currentFilter.set("UpperThresholdCh1",upper1)
+		currentFilter.set("LowerThresholdCh2",lower2)
+		currentFilter.set("UpperThresholdCh2",upper2)
+
 	def updateThresholdHistogram(self, event, input, parameter, itemType, currentFilter):
 		"""
-		
+		Update the threshold histogram
 		"""
 		currentFilter.sendUpdateGUI([parameter])
-
 		
 	def createMultiPixelSelection(self, n, items, currentFilter):
 		"""
@@ -974,6 +1008,10 @@ class GUIBuilder(wx.Panel):
 		Set the lower and upper threshold for histogram
 		"""
 		eval("histogram.set%sThreshold(value)" % valuetype)
+		
+	def onSetScatterplotValues(self, scatterplot, item, value, valuetype = "Lower", ch="Ch1"):
+		eval("scatterplot.set%s%sThreshold(value)"%(ch,valuetype))
+		scatterplot.updatePreview()
 
 	def onSetCtf(self, colorPanel, item, value):
 		"""

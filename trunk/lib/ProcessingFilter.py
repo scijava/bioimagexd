@@ -50,14 +50,14 @@ class ProcessingFilter:
 	name = "Generic Filter"
 	level = scripting.COLOR_EXPERIENCED
 
-	def __init__(self, numberOfInputs = (1, 1), changeCallback = None):
+	def __init__(self, numberOfInputs = (1, 1), changeCallback = None, requireWholeDataset = False):
 		"""
 		Initialization
 		"""
 		self.taskPanel = None
 		self.dataUnit = None
 		self.processInputText = "Input from procedure list"
-
+		self.requireWholeDataset = requireWholeDataset
 		self.initialization = True
 		self.numberOfInputs = numberOfInputs
 		self.descs = {}
@@ -586,7 +586,22 @@ class ProcessingFilter:
 		Return the list of parameters needed for configuring this GUI
 		"""	 
 		return []
-	
+		
+	def getPrecedingResultVariable(self, variable):
+		"""
+		@return the given result variable from any filter before this one
+		@param variable The result variable to retrieve
+		"""
+		currentFilter = self.prevFilter
+		while currentFilter:
+			# Only retrieve variables from enabled filters
+			if currentFilter.getEnabled():
+				value = currentFilter.getResultVariable(variable)
+				if value:
+					return value
+			currentFilter = currentFilter.prevFilter
+		return None
+			
 	def getPlainParameters(self):
 		"""
 		Return whether this filter is enabled or not
@@ -600,6 +615,8 @@ class ProcessingFilter:
 			elif type(item) == types.ListType:
 				title, items = item
 				if type(items[0]) == types.TupleType:
+					if len(items)>1 and type(items[1]) != types.TupleType:
+						returnList.extend(items[1:])
 					items = items[0]
 				returnList.extend(items)
 		return returnList

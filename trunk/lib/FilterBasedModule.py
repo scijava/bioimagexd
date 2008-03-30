@@ -37,6 +37,7 @@ import ConfigParser
 import Modules.DynamicLoader
 import traceback
 import vtk
+import scripting
 
 import optimize
 
@@ -427,8 +428,11 @@ class FilterBasedModule(lib.Module.Module):
 		highestFilterIndex = len(enabledFilters)-1
 		
 		lastfilter = None
+		wantWhole = False
 		x = 1.0/(1+len(enabledFilters))
 		for i, currfilter in enumerate(enabledFilters):
+			if currfilter.requireWholeDataset:
+				wantWhole = True
 			self.currentExecutingFilter = currfilter
 			self.shift = x*(i+1)
 			self.scale = x
@@ -467,7 +471,9 @@ class FilterBasedModule(lib.Module.Module):
 				return None
 
 		self.currentExecutingFilter = None
-	
+		
+		if wantWhole:
+			scripting.wantWholeDataset = wantWhole
 		Logging.info("Pipeline done",kw="pipeline")
 		data = data[0]
 		if data.__class__ != vtk.vtkImageData:

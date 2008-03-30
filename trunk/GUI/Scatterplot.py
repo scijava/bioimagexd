@@ -147,11 +147,21 @@ class Scatterplot(wx.Panel):
 		@return the slope of the correlation line
 		"""
 		return self.slope
+		
+	def setSlopeAndIntercept(self, slope, intercept):
+		"""
+		Set the slope and intercept
+		"""
+		self.setSlope(slope)
+		self.setIntercept(intercept)
+		self.updatePreview()
+		
 	def setSlope(self, slope):
 		"""
 		Set the slope coefficient
 		"""
 		self.slope = slope
+
 	def getIntercept(self):
 		"""
 		@return the intercept of the correlation line
@@ -292,6 +302,34 @@ class Scatterplot(wx.Panel):
 		@return the thresholds this scatterplot is set to
 		"""
 		return (self.lower1, self.upper1), (self.lower2, self.upper2)
+		
+	def setCh1LowerThreshold(self, threshold):
+		"""
+		Set the lower threshold of ch1
+		"""
+		self.lower1 = threshold
+		self.paintPreview()
+		
+	def setCh1UpperThreshold(self, threshold):
+		"""
+		Set the upper threshold of ch1
+		"""
+		self.upper1 = threshold
+		self.paintPreview()
+		
+	def setCh2LowerThreshold(self, threshold):
+		"""
+		Set the lower threshold of ch1
+		"""
+		self.lower2 = threshold
+		self.paintPreview()
+		
+	def setCh2UpperThreshold(self, threshold):
+		"""
+		Set the upper threshold of ch1
+		"""
+		self.upper2 = threshold
+		self.paintPreview()
 		
 	def setThresholds(self, ch1lower, ch1upper, ch2lower, ch2upper):
 		"""
@@ -511,7 +549,7 @@ class Scatterplot(wx.Panel):
 			(lower1, upper1), (lower2, upper2) = self.userDrawnThresholds
 		slope, intercept = self.getSlope(), self.getIntercept()
 
-		Logging.info("Painting scatterplot with thresholds (%d - %d) and (%d - %d)"%(lower1, upper1, lower2, upper2))
+#		Logging.info("Painting scatterplot with thresholds (%d - %d) and (%d - %d)"%(lower1, upper1, lower2, upper2))
 		self.paintScatterplot(lower1, upper1, lower2, upper2, slope, intercept)
 		
 	def paintScatterplot(self, lower1, upper1, lower2, upper2, slope, intercept):
@@ -566,7 +604,6 @@ class Scatterplot(wx.Panel):
 		dc.SetPen(wx.Pen(wx.Colour(255, 255, 255), 1))
 		
 		if slope and intercept:
-			Logging.info("slope=", slope, "intercept=", intercept, kw = "dataunit")
 			x = 255
 			y = 255 - (255 * slope + intercept)
 			dc.DrawLine(self.xoffset + horizontalLegendWidth, 255-intercept, self.xoffset + horizontalLegendWidth + x, y)
