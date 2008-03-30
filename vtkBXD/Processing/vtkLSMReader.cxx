@@ -763,6 +763,9 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
 {
     unsigned int entry, type, size;
     unsigned int subblocksOpen = 0;
+    char* name;
+    double gain;
+    int mode;
     while( 1 ) {
         entry = this->ReadUnsignedInt(f, &pos);
         type =  this->ReadUnsignedInt(f, &pos);
@@ -773,18 +776,15 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
         
         switch(entry) {
             case DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST:
-                double gain = this->ReadDouble(f, &pos);
-                printf("Gain = %f, type = %d\n", gain, type);
+                gain = this->ReadDouble(f, &pos);
                 continue;
                 break;
             case DETCHANNEL_ENTRY_INTEGRATION_MODE:
-                int mode; 
                 mode = this->ReadInt(f, &pos);
-                printf("Integration mode = %d ,type = %d\n", mode, type);
                 continue;
                 break;
             case LASER_ENTRY_NAME:
-                char* name = new char[size+1];
+                name = new char[size+1];
                 this->ReadData(f, &pos, size, name);
                 printf("Name of laser: %s, type = %d\n", name, type);
                 this->LaserNames->InsertNextValue(name);
@@ -797,10 +797,8 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
             case SUBBLOCK_LASER:
                 break;
             case SUBBLOCK_TRACKS:
-                printf("Subblock tracks, type = %d\n", type);
                 break;
             case SUBBLOCK_TRACK:
-                printf("Subblock track\n");
                 break;
             case SUBBLOCK_DETECTION_CHANNELS:
                 break;

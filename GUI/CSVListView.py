@@ -37,8 +37,7 @@ import wx
 
 class CSVListView(wx.ListCtrl):
 	"""
-	Created: 30.6.2007, KP
-	Description: A list control that takes a list of lists and shows that
+	A list control that takes a list of lists and shows that
 	"""
 	def __init__(self, parent, size = (350, 200)):
 		wx.ListCtrl.__init__(
