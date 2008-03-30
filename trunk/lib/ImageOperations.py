@@ -899,8 +899,7 @@ def equalize(imagedata, ctf):
 		ctf2.AddRGBPoint(i, *val)
 	return ctf2
 	
-def scatterPlot(imagedata1, imagedata2, z, countVoxels, wholeVolume = 1, logarithmic = 1, 
-	dataunits = [], timepoint = 0):
+def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = True, logarithmic = True):
 	"""
 	Create scatterplot
 	"""		  

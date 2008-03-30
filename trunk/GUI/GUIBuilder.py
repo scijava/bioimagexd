@@ -42,6 +42,7 @@ import traceback
 import lib.Command
 import os
 import XMLGUIBuilder
+import GUI.Scatterplot
 RADIO_CHOICE = "RADIO_CHOICE"
 THRESHOLD = "THRESHOLD"
 CTF = "CTF"
@@ -54,8 +55,9 @@ SPINCTRL = "SPINCTRL"
 NOBR = "NOBR"
 BR = "BR"
 ROISELECTION = "ROISELECTION"
+COLOC_THRESHOLD = "COLOCTHRESHOLD"
 
-SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION]
+SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION, COLOC_THRESHOLD]
 
 def getGUIBuilderForFilter(obj):
 	if hasattr(obj, "getXMLDescription"):
@@ -197,6 +199,8 @@ class GUIBuilder(wx.Panel):
 							self.currentRow += self.createMultiPixelSelection(n, items, currentFilter)
 						elif itemType == THRESHOLD:
 							self.currentRow += self.createThresholdSelection(n, items, currentFilter)
+						elif itemType == COLOC_THRESHOLD:
+							self.currentRow += self.createColocalizationThresholdSelection(n, items, currentFilter)
 						elif itemType == CTF:
 							self.currentRow += self.createColorTransferFunctionEditor(n, items, currentFilter)
 						else:
@@ -312,6 +316,60 @@ class GUIBuilder(wx.Panel):
 		
 		return 0
 		
+	def createColocalizationThresholdSelection(self, n, items, currentFilter):
+		"""
+		create a scatterplot GUI element that can be used to select a lower and upper threshold
+		for two channels for colocalization
+		"""
+		item = items[n]
+		itemName = item[0]
+		background = wx.Window(self, -1)
+		level = currentFilter.getParameterLevel(itemName)
+		if level:
+			background.SetBackgroundColour(level)
+		
+		scatterPlot = GUI.Scatterplot.Scatterplot(self.colocalizationPanel, drawLegend = 1)
+		dataUnit = self.filter.getDataUnit()
+		
+		scatterPlot.setDataUnit(dataUnit)
+		
+		flo = lambda obj, event, arg, histogram = histogram, i = item[0], s = self: \
+					s.onSetHistogramValues(histogram, i, arg, valuetype = "Lower")
+		lib.messenger.connect(currentFilter, "set_%s" % item[0], flo)
+		fhi = lambda obj, event, arg, histogram = histogram, i = item[1], s = self: \
+					s.onSetHistogramValues(histogram, i, arg, valuetype = "Upper")
+		lib.messenger.connect(currentFilter, "set_%s" % item[1], fhi)
+		
+		setDataunitFunc = lambda obj, event, dataunit, h = histogram: h.setDataUnit(dataunit)
+		
+		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[0],setDataunitFunc)
+		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[1],setDataunitFunc)
+		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[2],setDataunitFunc)
+		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[3],setDataunitFunc)
+		
+		histogram.setDataUnit(dataUnit, noupdate = 1)
+		
+		self.itemSizer.Add(background, (0, 0), flag=wx.EXPAND)
+		
+		bgsizer = wx.GridBagSizer()
+		bgsizer.Add(histogram, (0,0), span=(1,2))
+				
+		lowerLbl = wx.StaticText(background, -1,"Lower threshold:")
+		upperLbl = wx.StaticText(background,-1,"Upper threshold:")
+		
+		lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
+		upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
+
+		bgsizer.Add(lowerLbl,(1,0))
+		bgsizer.Add(lower,(1,1))
+		bgsizer.Add(upperLbl,(2,0))
+		bgsizer.Add(upper,(2,1))
+		background.SetSizer(bgsizer)
+		background.SetAutoLayout(1)
+		background.Layout()
+		self.items[itemName] = background
+		
+		return 0
 
 	def updateThresholdHistogram(self, event, input, parameter, itemType, currentFilter):
 		"""

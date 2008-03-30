@@ -14,8 +14,6 @@ import csv
 
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 15.05.2006, KP
-	Description: 
 	"""		
 	name = "Analyze objects"
 	category = lib.FilterTypes.MEASUREMENT
