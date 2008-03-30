@@ -67,15 +67,9 @@ class MyListCtrl(wx.ListCtrl, listmix.TextEditMixin):
 		
 class ColocalizationPanel(TaskPanel):
 	"""
-	A window for controlling the settings of the
-				 colocalization module
+	The GUI for colocalization task
 	"""
 	def __init__(self, parent, tb):
-		"""
-		Initialization
-		Parameters:
-				root	Is the parent widget of this window
-		"""
 		self.scatterPlot = None
 		self.createItemSelection = 1
 		self.timePoint = 0		  
@@ -560,6 +554,7 @@ class ColocalizationPanel(TaskPanel):
 		sbox = wx.StaticBox(self.colocalizationPanel, -1, "2D histogram")
 		box = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 		self.scatterPlot = Scatterplot(self.colocalizationPanel, drawLegend = 1)
+		lib.messenger.connect(self.scatterPlot, "scatterplot_thresholds", self.onUpdateScatterplotThresholds)
 		box.Add(self.scatterPlot)
 		self.colocalizationSizer.Add(box, (n, 0))
 		n += 1
@@ -667,7 +662,22 @@ class ColocalizationPanel(TaskPanel):
 		
 #		 self.settingsNotebook.AddPage(self.colocalizationPanel,"Colocalization")
 	
-	
+	def onUpdateScatterplotThresholds(self, scatterplot, event, ch1thresholds, ch2thresholds):
+		"""
+		Updates the colocalization thresholds based on user's scatterplot drawing
+		"""
+		ch1lower, ch1upper = ch1thresholds
+		ch2lower, ch2upper = ch2thresholds
+		sources = self.dataUnit.getSourceDataUnits()
+		print "Setting thresholds to",ch1lower, ch1upper, ch2lower, ch2upper
+		sources[0].getSettings().set("ColocalizationLowerThreshold", ch1lower)
+		sources[0].getSettings().set("ColocalizationUpperThreshold", ch1upper)
+		sources[1].getSettings().set("ColocalizationLowerThreshold", ch2lower)
+		sources[1].getSettings().set("ColocalizationUpperThreshold", ch2upper)
+		lib.messenger.send(None, "threshold_changed", (ch1lower, ch1upper), (ch2lower, ch2upper))
+		lib.messenger.send(None, "data_changed", True)
+		
+		
 	def onUpdatePSF(self, event):
 		"""
 		Update the PSF based on the given NA and lambda
@@ -860,7 +870,7 @@ class ColocalizationPanel(TaskPanel):
 			newlthreshold = int(self.lowerthreshold.GetValue())
 			newuthreshold = int(self.upperthreshold.GetValue())
 			self.settings.set("ColocalizationLowerThreshold", newlthreshold)
-			self.settings.set("ColocalizationUpperThreshold", newuthreshold)			
+			self.settings.set("ColocalizationUpperThreshold", newuthreshold)
 			if (oldlthreshold != newlthreshold) or (olduthreshold != newuthreshold):
 				lib.messenger.send(None, "threshold_changed")
 				self.doPreviewCallback()
@@ -885,6 +895,15 @@ class ColocalizationPanel(TaskPanel):
 			th = self.settings.get("ColocalizationUpperThreshold")
 			if th != None:
 				self.upperthreshold.SetValue(th)
+		
+		# If the scatterplot exists, update it's thresholds 
+		if self.scatterPlot:
+			sources = self.dataUnit.getSourceDataUnits()
+			ch1 = sources[0].getSettings()
+			ch2 = sources[1].getSettings()
+			ch1lower, ch1upper = ch1.get("ColocalizationLowerThreshold"), ch1.get("ColocalizationUpperThreshold")
+			ch2lower, ch2upper = ch2.get("ColocalizationLowerThreshold"), ch2.get("ColocalizationUpperThreshold")
+			self.scatterPlot.setThresholds(ch1lower, ch1upper, ch2lower, ch2upper)
 		
 		if self.dataUnit and self.settings:
 			ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
@@ -924,12 +943,13 @@ class ColocalizationPanel(TaskPanel):
 		self.updateBitDepth()
 		TaskPanel.doPreviewCallback(self, event)
 		if self.scatterPlot:
-			#self.scatterPlot.setZSlice(self.preview.z)
+			self.scatterPlot.setSlope(self.dataUnit.getSettings().get("Slope"))
+			self.scatterPlot.setIntercept(self.dataUnit.getSettings().get("Intercept"))
 			self.scatterPlot.setZSlice(0)
 			self.scatterPlot.setTimepoint(self.timePoint)
 			self.scatterPlot.updatePreview()
 		ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
-		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)			   
+		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)
 		self.updateListCtrl()
 		
 	def setCombinedDataUnit(self, dataUnit):

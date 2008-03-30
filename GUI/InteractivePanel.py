@@ -350,7 +350,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Add a painter helper that will be used to paint on the DC after everything else
 		"""
-		self.painterHelpers.append(painter)		 
+		self.painterHelpers.append(painter)
 	  
 	def onUpdateHelpers(self, obj, evt, update):
 		"""

@@ -44,52 +44,51 @@ import wx
 import csv
 import scripting
 
-class Scatterplot(InteractivePanel.InteractivePanel):
+#class Scatterplot(InteractivePanel.InteractivePanel):
+class Scatterplot(wx.Panel):
 	"""
 	A panel showing the scattergram
 	"""
-	def __init__(self, parent, size = (256, 256), **kws):
+	def __init__(self, parent, **kws):
 		"""
 		Initialization
 		"""
 		self.parent = parent
-		self.size = size
 		self.slice = None
 		# Empty space is the space between the legends and the scatterplot
 		self.emptySpace = 4
-		self.z = 0
 		self.timepoint = 0
 		self.scatterHeight = 255
 		self.scatterBitmap = None
 		self.drawLegend = kws.get("drawLegend")
 		# Legend width is the width / height of the scalar colorbar
 		self.legendWidth = 24
+		self.slope, self.intercept = None, None
 		self.horizontalLegend = None
 		self.verticalLegend = None
 		self.scatterLegend = None
-		if self.drawLegend:
-			w, h = self.size
-			h += self.legendWidth + self.emptySpace
-			w += self.legendWidth * 2 + self.emptySpace * 4 + 10
-			self.size = (w, h)
-			size = (w, h)
-		self.xoffset = 0
+		
+		self.plotCache = {}
+		self.size = (256,256)
 		if self.drawLegend:
 			self.xoffset = self.legendWidth + self.emptySpace
+			w, h = self.size
+			h += self.legendWidth + self.emptySpace
+			w += self.legendWidth * 2 + self.emptySpace * 4 + 10+self.xoffset
+			self.size = (w, h)
+			size = (w, h)
+			
+		self.xoffset = 0
+
 			
 		self.scatterCTF = None
 		self.mode = (1, 2)
 		
 		self.userDrawnThresholds=None
 			
-		self.lower1 = 127
-		self.upper1 = 255
-		self.lower2 = 127
-		self.upper2 = 255
+		self.lower1, self.upper1, self.lower2, self.upper2 = 127,255,127,255
 		
 		self.middlestart = [0, 0]
-		self.zoomx = 1
-		self.zoomy = 1
 		self.action = 5
 		self.countVoxels = 1
 		self.renew = 1
@@ -98,10 +97,10 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.scatter = None
 		self.scatterplot = None
 		self.scalarMax = 255
-		
-		InteractivePanel.InteractivePanel.__init__(self, parent, size = size, **kws)
+		self.dataUnit = None
+		#InteractivePanel.InteractivePanel.__init__(self, parent, size = size, **kws)
+		wx.Panel.__init__(self, parent, size = size)
 
-		self.action = 5
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
 
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
@@ -112,7 +111,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.ID_SAVE_WITH_LEGEND = wx.NewId()
 		self.ID_SAVE_CSV = wx.NewId()
 		self.menu = wx.Menu()
-		self.SetScrollbars(0, 0, 0, 0)
 		lib.messenger.connect(None, "threshold_changed", self.updatePreview)
 		
 
@@ -136,13 +134,36 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			self.Bind(wx.EVT_MENU, self.onSaveCSV, id = self.ID_SAVE_CSV)
 		
 		self.Bind(wx.EVT_LEFT_DOWN, self.markActionStart)
-		self.Bind(wx.EVT_MOTION, self.updateActionEnd)
+		self.Bind(wx.EVT_MOTION, self.updateUserDrawnThresholds)
 		self.Bind(wx.EVT_LEFT_UP, self.setThreshold)
 		self.actionstart = None
 		self.actionend = None
-		self.buffer = wx.EmptyBitmap(256, 256)
+		self.buffer = wx.EmptyBitmap(*self.size)
 		
 		lib.messenger.connect(None, "timepoint_changed", self.onUpdateScatterplot)
+	
+	def getSlope(self):
+		"""
+		@return the slope of the correlation line
+		"""
+		return self.slope
+	def setSlope(self, slope):
+		"""
+		Set the slope coefficient
+		"""
+		self.slope = slope
+	def getIntercept(self):
+		"""
+		@return the intercept of the correlation line
+		"""
+		return self.intercept
+		
+	def setIntercept(self, intercept):
+		"""
+		Set the slope coefficient
+		"""
+		self.intercept = intercept
+	
 	
 	def onSaveCSV(self, event):
 		"""
@@ -163,7 +184,6 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			return
 		wcDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
 		"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
-		#wc="PNG file|*.png|JPEG file|*.jpeg|TIFF file|*.tiff|BMP file|*.bmp"
 	
 		conf = Configuration.getConfiguration()
 		defaultExt = conf.getConfigItem("ImageFormat", "Output")
@@ -204,22 +224,12 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		self.setTimepoint(args[0])
 		self.updatePreview()
 		
-	def setScrollbars(self, xdim, ydim):
-		"""
-		Configures scroll bar behavior depending on the
-					 size of the dataset, which is given as parameters.
-		"""
-		self.SetSize(self.size)
-		self.SetVirtualSize(self.size)
-		self.buffer = wx.EmptyBitmap(*self.size)
-		
 	def onRightClick(self, event):
 		"""
 		Method that is called when the right mouse button is
 					 pressed down on this item
 		""" 
 		self.PopupMenu(self.menu, event.GetPosition())
-		#menu.Destroy()
 		
 	def onSetLogarithmic(self, evt):
 		"""
@@ -242,16 +252,11 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		x -= self.xoffset
 		x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)
 		
-		if x > 255:
-			x = 255
-		if y > 255:
-			y = 255
-		if x < 0:
-			x = 0
-		if y < 0:
-			y = 0
+		x = min(x, 255)
+		y = min(y, 255)
+		x = max(x, 0)
+		y = max(y, 0)
 		
-		print "action marked at start=",(x,y)
 		self.actionstart = (x, y)
 
 		l1diff = abs(x - self.lower1)
@@ -282,84 +287,90 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			
 		self.mode = (xmode, ymode)
 		
-	def updateActionEnd(self, event):
+	def getThresholds(self):
+		"""
+		@return the thresholds this scatterplot is set to
+		"""
+		return (self.lower1, self.upper1), (self.lower2, self.upper2)
+		
+	def setThresholds(self, ch1lower, ch1upper, ch2lower, ch2upper):
+		"""
+		Set the thresholds this scatteplot is set to
+		"""
+		Logging.info("\nScatterplot thresholds set to (%d-%d) (%d-%d)"%(ch1lower,ch1upper,ch2lower,ch2upper))
+		self.lower1, self.upper1, self.lower2, self.upper2 = ch1lower, ch1upper, ch2lower, ch2upper
+		self.paintPreview()
+		
+	def updateUserDrawnThresholds(self, event):
 		"""
 		Draws the rubber band to current mouse pos
 		"""
-		if event.LeftIsDown():
-			x, y = event.GetPosition()
+		if not event.LeftIsDown():
+			return
 			
-			y = self.scatterHeight - y
-			x -= self.xoffset
-			x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)
-			x = min(x, 255)
-			y = min(y, 255)
-			x = max(x, 0)
-			y = max(y, 0)
-
-			self.actionend = (x, y)
-			x1, y1 = self.actionstart
-			x2, y2 = self.actionend
-			
-			if x2 < x1:
-				x1, x2 = x2, x1
-			if y2 < y1:
-				y1, y2 = y2, y1
-				
-			c = self.scalarMax / 255.0
-			x1 = int(c*x1)
-			x2 = int(c*x2)
-			y1 = int(c*y1)
-			y2 = int(c*y2)
+		x, y = event.GetPosition()
 		
-			reds = self.sources[0].getSettings()
-			greens = self.sources[1].getSettings()
-			
-			gl, gu = greens.get("ColocalizationLowerThreshold"), greens.get("ColocalizationUpperThreshold")
-			rl, ru = reds.get("ColocalizationLowerThreshold"), reds.get("ColocalizationUpperThreshold")
-			
-			if self.mode[0] == 1:
-				greens.set("ColocalizationLowerThreshold", x1)
-				gl = x1
-				if gl > gu:
-					gu, gl = gl, gu
-				self.lower1 = gl
-			if self.mode[0] == 3:
-				greens.set("ColocalizationUpperThreshold", x2)
-				gu = x2
-				if gl > gu:
-					gu, gl = gl, gu
-				self.upper1 = x2
-			if self.mode[1] == 2:
-				reds.set("ColocalizationLowerThreshold", y1)
-				rl = y1
-				if rl > ru:
-					ru, rl = rl, ru
-				self.lower2 = y1
-			elif self.mode[1] == 4:
-				reds.set("ColocalizationUpperThreshold", y2)
-				ru = y2
-				if rl > ru:
-					ru, rl = rl, ru
-				self.upper2 = y2
-			print "actionstart based on thresholds=",(gu,ru)
-			#self.actionstart = (gu, ru)
-			#self.actionend = (gl, rl)
-			self.userDrawnThresholds = (gu, ru), (gl, rl)
+		y = self.scatterHeight - y
+		x -= self.xoffset
+		x -= (self.verticalLegend.GetWidth() + 2 * self.emptySpace)
+		x = min(x, 255)
+		y = min(y, 255)
+		x = max(x, 0)
+		y = max(y, 0)
 
-			self.updatePreview()
+		self.actionend = (x, y)
+		x1, y1 = self.actionstart
+		x2, y2 = self.actionend
+		
+		if x2 < x1:
+			x1, x2 = x2, x1
+		if y2 < y1:
+			y1, y2 = y2, y1
+			
+		c = self.scalarMax / 255.0
+		x1 = int(c*x1)
+		x2 = int(c*x2)
+		y1 = int(c*y1)
+		y2 = int(c*y2)
+	
+		(greenLower, greenUpper), (redLower, redUpper) = self.getThresholds()
+		
+		if self.mode[0] == 1:
+			greenLower = x1
+			if greenLower > greenUpper:
+				greenUpper, greenLower = greenLower, greenUpper
+			self.lower1 = greenLower
+		if self.mode[0] == 3:
+			greenUpper = x2
+			if greenLower > greenUpper:
+				greenUpper, greenLower = greenLower, greenUpper
+			self.upper1 = x2
+			
+		if self.mode[1] == 2:
+			redLower = y1
+			if redLower > redUpper:
+				redUpper, redLower = redLower, redUpper
+			self.lower2 = y1
+		elif self.mode[1] == 4:
+			redUpper = y2
+			if redLower > redUpper:
+				redUpper, redLower = redLower, redUpper
+			self.upper2 = y2
+
+		self.userDrawnThresholds = (greenLower, greenUpper), (redLower, redUpper)
+
+		self.updatePreview()
 			
 		
 	def setDataUnit(self, dataUnit):
 		"""
 		Sets the data unit that is displayed
 		"""
-		InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)
 		self.sources = dataUnit.getSourceDataUnits()
+		self.dataUnit = dataUnit
 		self.scalarMax = max([sourceUnit.getScalarRange()[1] for sourceUnit in self.sources])
 		
-		self.settings = self.sources[0].getSettings()
-		self.buffer = wx.EmptyBitmap(256, 256)
+		self.buffer = wx.EmptyBitmap(*self.size)
 		self.updatePreview()
 		
 	def setVoxelCount(self, event):
@@ -367,7 +378,7 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		Method to set on / off the voxel counting mode of scattergram
 		"""
 		self.countVoxels = event.Checked()
-		self.renew = 1
+		self.renew = True
 		self.updatePreview()
 		
 			
@@ -377,28 +388,25 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 					 the whole volume
 		"""
 		self.wholeVolume = event.Checked()
-		self.renew = 1
+		self.renew = True
 		self.updatePreview()
 		
 	def setThreshold(self, event = None):
 		"""
 		Sets the thresholds based on user's selection
 		"""
-		# First get the coordinates of the user drawn box
-		(x1, y1),(x2,y2) = self.userDrawnThresholds
+		if not self.userDrawnThresholds:
+			return
+		(greenLower, greenUpper), (redLower, redUpper) = self.userDrawnThresholds
+		Logging.info("Getting from user drawn thresholds %d,%d, %d,%d"%(greenLower, greenUpper, redLower, redUpper))
+		self.lower1, self.upper1 = min(greenLower, greenUpper), max(greenLower, greenUpper)
+		self.lower2, self.upper2 = min(redLower, redUpper), max(redLower, redUpper)
 		
-		gl, gu = x1, x2
-		rl, ru = y1, y2
-		
-		lib.messenger.send(None, "threshold_changed", (gl, gu), (rl, ru))
-		
-		lib.messenger.send(None, "data_changed", 1)
+		lib.messenger.send(self, "scatterplot_thresholds", (greenLower, greenUpper), (redLower, redUpper))
 
-		self.renew = 1
 		self.updatePreview()
 
-		self.actionstart = None
-		self.actionend = None
+		self.actionstart, self.actionend = None, None
 		self.userDrawnThresholds = None
 		self.mode = (0, 0)
 		
@@ -406,6 +414,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 		"""
 		Sets the timepoint to be shown
 		"""
+		if tp != self.timepoint:
+			self.renew = True
 		self.timepoint = tp
 		
 	def setZSlice(self, z):
@@ -442,23 +452,40 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			w.writerow(line)
 		f.close()
 		
+	def generateScatterplot(self, imagedata1, imagedata2):
+		"""
+		Create the scatterplot from the given imagedata objects
+		"""
+		cvx = self.countVoxels	# Flag indicating whether we should count voxels, or just show the intensities
+		log = self.logarithmic	# Flag indicating whether we should draw a logarithmic scatterplot
+		wv = self.wholeVolume	# Flag indicating whether we should use the whole volume
+		scatter, ctf, scatterImage = lib.ImageOperations.scatterPlot( imagedata1, imagedata2, z = -1,
+			countVoxels = cvx,  logarithmic = log, wholeVolume = wv)
+#		scatter.Mirror(0)
+		self.scatterHeight = scatter.GetHeight()
+		return scatter, ctf, scatterImage
+		
+	def getScatterplotForTimepoint(self, timepoint):
+		"""
+		Gets the scatterplot for the given timepoint
+		"""
+		if (self.timepoint, self.wholeVolume, self.logarithmic) not in self.plotCache:
+			# Red on the vertical and green on the horizontal axis
+			t1 = self.sources[1].getTimepoint(timepoint)
+			t2 = self.sources[0].getTimepoint(timepoint)
+			self.scatter, self.scatterCTF, self.scatterImage = self.generateScatterplot(t1, t2)
+			self.scatter = self.scatter.Mirror(horizontally = False)
+			self.plotCache[(self.timepoint, self.wholeVolume, self.logarithmic)] = self.scatter, self.scatterCTF, self.scatterImage
+		else:
+			self.scatter, self.scatterCTF, self.scatterImage = self.plotCache[(self.timepoint, self.wholeVolume, self.logarithmic)]
+		
 	def updatePreview(self, *args):
 		"""
 		A method that draws the scattergram
 		"""
-		width, height = self.size
+		self.buffer = wx.EmptyBitmap(*self.size)
 		if self.renew and self.dataUnit:
-			self.buffer = wx.EmptyBitmap(width, height)
-
-			# Red on the vertical and green on the horizontal axis
-			t1 = self.sources[1].getTimepoint(self.timepoint)
-			t2 = self.sources[0].getTimepoint(self.timepoint)
-			self.scatter, ctf, self.scatterImage = lib.ImageOperations.scatterPlot(t2, t1, -1, self.countVoxels,
-			self.wholeVolume, dataunits = self.sources, logarithmic = self.logarithmic, timepoint = self.timepoint)
-			self.scatter = self.scatter.Mirror(0)
-			self.scatterHeight = self.scatter.GetHeight()
-			self.scatterCTF = ctf
-			
+			self.getScatterplotForTimepoint(self.timepoint)
 			self.renew = 0
 		self.paintPreview()
 		self.Refresh()
@@ -472,6 +499,28 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 	def paintPreview(self):
 		"""
 		Paints the scattergram
+		"""
+		if not self.dataUnit:
+			return
+			
+		# Get the official thresholds
+		(lower1, upper1), (lower2, upper2) = self.getThresholds()
+		
+		# But if the user is drawing something, then we paint those instead
+		if self.userDrawnThresholds:
+			(lower1, upper1), (lower2, upper2) = self.userDrawnThresholds
+		slope, intercept = self.getSlope(), self.getIntercept()
+
+		Logging.info("Painting scatterplot with thresholds (%d - %d) and (%d - %d)"%(lower1, upper1, lower2, upper2))
+		self.paintScatterplot(lower1, upper1, lower2, upper2, slope, intercept)
+		
+	def paintScatterplot(self, lower1, upper1, lower2, upper2, slope, intercept):
+		"""
+		Paint the scatterplot showing the given thresholds and correlation
+		@param lower1 The lower threshold for Ch1
+		@param upper1 The upper threshold for Ch1
+		@param lower2 The lower threshold for Ch2
+		@param upper2 The upper threshold for Ch2
 		"""
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
@@ -488,23 +537,8 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			dc = None
 			return
 
-		lower1 = int(self.sources[0].getSettings().get("ColocalizationLowerThreshold"))
-		lower2 = int(self.sources[1].getSettings().get("ColocalizationLowerThreshold"))
-		upper1 = int(self.sources[0].getSettings().get("ColocalizationUpperThreshold"))
-		upper2 = int(self.sources[1].getSettings().get("ColocalizationUpperThreshold"))
-		
 
 		c = 255.0 / self.scalarMax
-		if self.userDrawnThresholds:
-
-			(x1,y1),(x2,y2) = self.userDrawnThresholds
-			print "User drawn threhsolds = ",self.userDrawnThresholds
-			if x2 < x1:
-				x1, x2 = x2, x1
-			if y2 < y1:
-				y1, y2 = y2, y1
-			lower1, upper1 = x1, x2
-			lower2, upper2 = y1, y2
 
 		bmp = self.scatter.ConvertToBitmap()
 		
@@ -520,50 +554,47 @@ class Scatterplot(InteractivePanel.InteractivePanel):
 			self.horizontalLegend = horizontalLegend
 		else:
 			horizontalLegend = self.horizontalLegend
-		hzlw = verticalLegend.GetWidth() + 2 * self.emptySpace
+			
+		horizontalLegendWidth = verticalLegend.GetWidth() + 2 * self.emptySpace
 	
 		dc.DrawBitmap(verticalLegend, 0, 0)
-		dc.DrawBitmap(horizontalLegend, self.xoffset + hzlw, bmp.GetHeight() + self.emptySpace)
-		dc.DrawBitmap(bmp, self.xoffset + hzlw, 0, True)
+		dc.DrawBitmap(horizontalLegend, self.xoffset + horizontalLegendWidth, bmp.GetHeight() + self.emptySpace)
+		dc.DrawBitmap(bmp, self.xoffset + horizontalLegendWidth, 0, True)
 		
 		self.bmp = self.buffer
 
-		slope = self.settings.get("Slope")
-		intercept = self.settings.get("Intercept")
 		dc.SetPen(wx.Pen(wx.Colour(255, 255, 255), 1))
+		
 		if slope and intercept:
 			Logging.info("slope=", slope, "intercept=", intercept, kw = "dataunit")
 			x = 255
 			y = 255 - (255 * slope + intercept)
-			
-			dc.DrawLine(self.xoffset + hzlw, 255-intercept, self.xoffset + hzlw + x, y)
+			dc.DrawLine(self.xoffset + horizontalLegendWidth, 255-intercept, self.xoffset + horizontalLegendWidth + x, y)
 		
 		ymax = 255
 		# These are the threshold lines
-		dc.DrawLine(self.xoffset + hzlw + lower1 * c, 0, self.xoffset + hzlw + lower1 * c, 255)
-		dc.DrawLine(self.xoffset + hzlw, ymax - lower2 * c, self.xoffset + 255 + hzlw, ymax - lower2 * c)
-		dc.DrawLine(self.xoffset + hzlw + upper1 * c, 0, self.xoffset + hzlw + upper1 * c, 255)
-		dc.DrawLine(self.xoffset + hzlw, ymax - upper2 * c, self.xoffset + hzlw + 255, ymax - upper2 * c)
+		dc.DrawLine(self.xoffset + horizontalLegendWidth + lower1 * c, 0, self.xoffset + horizontalLegendWidth + lower1 * c, 255)
+		dc.DrawLine(self.xoffset + horizontalLegendWidth, ymax - lower2 * c, self.xoffset + 255 + horizontalLegendWidth, ymax - lower2 * c)
+		dc.DrawLine(self.xoffset + horizontalLegendWidth + upper1 * c, 0, self.xoffset + horizontalLegendWidth + upper1 * c, 255)
+		dc.DrawLine(self.xoffset + horizontalLegendWidth, ymax - upper2 * c, self.xoffset + horizontalLegendWidth + 255, ymax - upper2 * c)
 		
 		borders = lib.ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
 		borders = borders.ConvertToBitmap()
 		
 		overlay = lib.ImageOperations.getOverlay(int((upper1 - lower1) * c), int((upper2 - lower2) * c), (0, 0, 255), 64)
 		overlay = overlay.ConvertToBitmap()
-		dc.DrawBitmap(overlay, self.xoffset + hzlw + lower1 * c, ymax - upper2 * c, 1)
-		dc.DrawBitmap(borders, self.xoffset + hzlw + lower1 * c, ymax - upper2 * c, 1)
+		dc.DrawBitmap(overlay, self.xoffset + horizontalLegendWidth + lower1 * c, ymax - upper2 * c, 1)
+		dc.DrawBitmap(borders, self.xoffset + horizontalLegendWidth + lower1 * c, ymax - upper2 * c, 1)
 		
 		if not self.scatterLegend:
-			scatterLegend = lib.ImageOperations.paintCTFValues(self.scatterCTF, width = self.legendWidth, height = 256, paintScale = 1)
-			self.scatterLegend = scatterLegend
-		else:
-			scatterLegend = self.scatterLegend
-		dc.DrawBitmap(scatterLegend, self.xoffset + hzlw + 255 + 2 * self.emptySpace, 0)
+			self.scatterLegend = lib.ImageOperations.paintCTFValues(self.scatterCTF, width = self.legendWidth, height = 256, paintScale = 1)
+
+		dc.DrawBitmap(self.scatterLegend, self.xoffset + horizontalLegendWidth + 255 + 2 * self.emptySpace, 0)
 		
 		dc.SetTextForeground(wx.Colour(255, 255, 255))
 		dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		dc.DrawText("%d" % lower2, 3, ymax - lower2 * c)
-		dc.DrawText("%d" % lower1, self.xoffset + hzlw + lower1 * c, 265)
+		dc.DrawText("%d" % lower1, self.xoffset + horizontalLegendWidth + lower1 * c, 265)
 		self.lower1 = lower1 * c
 		self.lower2 = lower2 * c
 		self.upper1 = upper1 * c

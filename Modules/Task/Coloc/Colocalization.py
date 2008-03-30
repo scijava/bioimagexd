@@ -39,8 +39,7 @@ import Logging
 
 class Colocalization(Module):
 	"""
-	Created: 03.11.2004, KP
-	Description: Creates a colocalization map
+	Creates a colocalization map
 	"""
 	def __init__(self, **kws):
 		"""
