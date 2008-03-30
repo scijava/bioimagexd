@@ -121,9 +121,15 @@ class ProcessingFilter:
 		
 	def getResultVariables(self):
 		"""
-		return the result variables of this filter
+		@return the result variables of this filter
 		"""
 		return self.resultVariables.keys()
+		
+	def getResultVariableDict(self):
+		"""
+		@return the result varible dictionar
+		"""
+		return self.resultVar
 		
 	def setResultVariable(self, variable, value):
 		"""
