@@ -37,7 +37,6 @@ from GUI.ColorTransferEditor import CTFButton
 from lib import ImageOperations
 import lib.Command
 import lib.messenger
-import wx.lib.mixins.listctrl as listmix
 import Logging 
 import GUI.Dialogs
 import GUI.PreviewFrame
@@ -63,9 +62,6 @@ class ColocalizationPanel(TaskPanel):
 		self.scatterPlot = None
 		self.createItemSelection = 1
 		self.timePoint = 0		  
-		self.beginner = wx.Colour(180, 255, 180)
-		self.intermediate = wx.Colour(255, 255, 180)
-		self.expert = wx.Colour(0, 180, 255)
 		TaskPanel.__init__(self, parent, tb, wantNotebook = 0)
 
 		self.operationName = "Colocalization"
@@ -196,7 +192,7 @@ class ColocalizationPanel(TaskPanel):
 			val = eval("coloctest.Get%s()" % i)
 			set(i, val)
 		lib.messenger.send(None, "update_progress", 100, "Done.")
-		self.updateListCtrl()
+		self.listctrl.updateListCtrl(self.getVariables())
 		
 		
 	def updateProgress(self, obj, evt, *args):
@@ -325,9 +321,7 @@ class ColocalizationPanel(TaskPanel):
 		self.statsButton.Bind(wx.EVT_BUTTON, self.onExportStatistics)
 		box.Add(self.statsButton)
 
-		self.populateListCtrl()
-		
-		self.updateListCtrl()
+		self.listctrl.updateListCtrl(self.getVariables())
 		self.colocalizationSizer.Add(box, (n, 0))
 		n += 1
 		sbox = wx.StaticBox(self.colocalizationPanel, -1, "Colocalization color")
@@ -497,7 +491,7 @@ class ColocalizationPanel(TaskPanel):
 		if self.scatterPlot:
 			self.scatterPlot.setZSlice(zslice)
 			self.scatterPlot.updatePreview()
-			self.updateListCtrl()
+			self.listctrl.updateListCtrl(self.getVariables())
 
 	def updateTimepoint(self, obj, event, timePoint):
 		"""
@@ -600,7 +594,31 @@ class ColocalizationPanel(TaskPanel):
 			self.scatterPlot.updatePreview()
 		ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
 		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)
-		self.updateListCtrl()
+		self.listctrl.updateListCtrl(self.getVariables())
+
+	def getVariables(self):
+		"""
+		Return the colocalization variables in a dictionary
+		"""
+		variables = {}
+		if not self.dataUnit: return {}
+		sources = self.dataUnit.getSourceDataUnits()
+		variables["LowerThresholdCh1"]  = sources[0].getSettings().get("ColocalizationLowerThreshold")
+		variables["LowerThresholdCh2"]  = sources[1].getSettings().get("ColocalizationLowerThreshold")
+		variables["UpperThresholdCh1"]  = sources[0].getSettings().get("ColocalizationUpperThreshold")
+		variables["UpperThresholdCh2"]  = sources[1].getSettings().get("ColocalizationUpperThreshold")
+		for var in ["Ch1ThresholdMax", "Ch2ThresholdMax", "PearsonImageAbove",
+						  "PearsonImageBelow", "PearsonWholeImage", "M1", "M2",
+						  "K1", "K2", "DiffStainIntCh1", "DiffStainIntCh2",
+						  "DiffStainVoxelsCh1", "DiffStainVoxelsCh2",
+						  "ThresholdM1", "ThresholdM2",
+						  "ColocAmount", "ColocPercent", "PercentageVolumeCh1",
+						  "PercentageTotalCh1", "PercentageTotalCh2",
+						  "PercentageVolumeCh2", "PercentageMaterialCh1", "PercentageMaterialCh2",
+						  "SumOverThresholdCh1", "SumOverThresholdCh2", "SumCh1", "SumCh2",
+						  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh2", "OverThresholdCh1"]:
+			variables[var] = sources[0].getSettings().get(var)
+		return variables
 		
 	def setCombinedDataUnit(self, dataUnit):
 		"""
