@@ -165,7 +165,6 @@ class ColocalizationPanel(TaskPanel):
 		t = time.time()
 		
 		coloctest.SetMethod(method)
-		#coloctest.SetPixelSize(vx)
 		
 		try:
 			n = float(self.fixedPSF.GetValue())
@@ -174,7 +173,7 @@ class ColocalizationPanel(TaskPanel):
 								"The given width for point spread function is invalid.")
 			return
 		print "Setting PSF width", int(n)
-		coloctest.SetManualPSFSize(int(n))		  
+		coloctest.SetManualPSFSize(int(n))
 
 		coloctest.SetNumIterations(iterations)
 		
