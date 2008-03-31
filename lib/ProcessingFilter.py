@@ -63,6 +63,8 @@ class ProcessingFilter:
 		self.descs = {}
 		self.dataUnit = None 
 		self.initDone = 0
+		self.recordedParameters = {} # We keep another dictionary for recorded values
+									 # so we can determine if we need to record a change or not
 		self.parameters = {}
 		self.inputMapping = {}
 		self.sourceUnits = []
@@ -631,9 +633,10 @@ class ProcessingFilter:
 		"""
 		record the change of a parameter along with information for how to undo it
 		"""
-		oldval = self.parameters.get(parameter, None)
+		oldval = self.recordedParameters.get(parameter, None)
 		if oldval == value:
 			return
+		self.recordedParameters[parameter] = value
 		if self.getType(parameter) == GUI.GUIBuilder.ROISELECTION:
 			i, roi = value
 			setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i

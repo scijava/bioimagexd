@@ -364,12 +364,18 @@ class GUIBuilder(wx.Panel):
 				
 		ch1lowerLbl = wx.StaticText(background, -1,"Ch1 lower:")
 		ch1upperLbl = wx.StaticText(background,-1,"Ch1 upper:")
-		ch1lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
-		ch1upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
+		#ch1lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
+		#ch1upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
 		ch2lowerLbl = wx.StaticText(background, -1,"Ch2 lower:")
 		ch2upperLbl = wx.StaticText(background,-1,"Ch2 upper:")
-		ch2lower = self.createNumberInput(background, currentFilter, item[2], types.IntType, 0, "", self.updateThresholdHistogram)
-		ch2upper = self.createNumberInput(background, currentFilter, item[3], types.IntType, 255, "", self.updateThresholdHistogram)
+		#ch2lower = self.createNumberInput(background, currentFilter, item[2], types.IntType, 0, "", self.updateThresholdHistogram)
+		#ch2upper = self.createNumberInput(background, currentFilter, item[3], types.IntType, 255, "", self.updateThresholdHistogram)
+
+
+		ch1lower = self.createSlider(currentFilter, item[0],item[0], background)
+		ch1upper = self.createSlider(currentFilter, item[1],item[1], background)
+		ch2lower = self.createSlider(currentFilter, item[2],item[2], background)
+		ch2upper = self.createSlider(currentFilter, item[3],item[3], background)
 
 		inputs = [ch1lower, ch1upper, ch2lower, ch2upper]
 		setScatterplotFunc = lambda obj, event, th1, th2, f = currentFilter, inputs = inputs, item = item: self.setScatterplotThresholds(obj, event, th1, th2, f, item, inputs)
@@ -396,11 +402,10 @@ class GUIBuilder(wx.Panel):
 		"""
 		lower1, upper1 = ch1thresholds
 		lower2, upper2 = ch2thresholds
-		print "\n\n******* Setting thresholds", lower1,upper1,lower2,upper2
-		inputs[0].SetValue("%d"%lower1)
-		inputs[1].SetValue("%d"%upper1)
-		inputs[2].SetValue("%d"%lower2)
-		inputs[3].SetValue("%d"%upper2)
+		inputs[0].SetValue(lower1)
+		inputs[1].SetValue(upper1)
+		inputs[2].SetValue(lower2)
+		inputs[3].SetValue(upper2)
 		currentFilter.set("LowerThresholdCh1",lower1)
 		currentFilter.set("UpperThresholdCh1",upper1)
 		currentFilter.set("LowerThresholdCh2",lower2)
@@ -623,58 +628,75 @@ class GUIBuilder(wx.Panel):
 
 		return 0
 		
-	def createSliceSelection(self, n, items, currentFilter):
+	def createSliceSelection(self, n, items, currentFilter, parent = None):
 		"""
 		create a slice selection slider GUI element
 		"""
 		itemName = items[n]
 		item = items[n]
+		level = currentFilter.getParameterLevel(itemName)
 		
+		if not parent: parent = self
 		text = currentFilter.getDesc(itemName)
 		box = wx.BoxSizer(wx.VERTICAL)
 		if text:
 			label = wx.StaticText(self, -1, text)
 			box.Add(label)
+		background = wx.Window(parent, -1)
 		
-		defValue = currentFilter.getDefaultValue(itemName)
-		level = currentFilter.getParameterLevel(itemName)
-		minval, maxval = currentFilter.getRange(itemName)
-		x = 200
-		
-		background = wx.Window(self, -1)
-		slider = wx.Slider(background, -1, value = defValue, minValue = minval, maxValue = maxval,
-		style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (x, -1))
-		
-		longDesc = currentFilter.getLongDesc(itemName)
-		if longDesc:
-			slider.SetToolTip(wx.ToolTip(s))
-		
+		slider = self.createSlider(currentFilter, itemName,item, background)
 		if level:
 			background.SetBackgroundColour(level)
 			if text:
 				label.SetBackgroundColour(level)
-				
-		onSliderScroll = lambda event, its = item, f = currentFilter: \
-								self.onSetSliderValue(event, its, f)
-		slider.Bind(wx.EVT_SCROLL, onSliderScroll)
-		setSliderFunc = lambda obj, event, arg, slider = slider, i = itemName, s = self: \
-								s.onSetSlice(slider, i, arg)
-			
-		lib.messenger.connect(currentFilter, "set_%s" % itemName, setSliderFunc)
-
-		def updateRange(currentFilter, itemName, slider):
-			minval, maxval = currentFilter.getRange(itemName)
-			slider.SetRange(minval, maxval)
-		
-		updateSliderFunc = lambda obj, event, slider = slider, i = itemName, \
-					fi = currentFilter, s = self: updateRange(fi, i, slider)
-		lib.messenger.connect(currentFilter, "update_%s" % itemName, updateSliderFunc)
 		
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
 		self.items[itemName] = box
 
 		return 1
+		
+	def createSlider(self, currentFilter, itemName, item, parent):
+		"""
+		Create a slider
+		"""
+		defValue = currentFilter.getDefaultValue(itemName)
+		minval, maxval = currentFilter.getRange(itemName)
+		x = max(200, maxval)
+		
+		slider = wx.Slider(parent, -1, value = defValue, minValue = minval, maxValue = maxval,
+		style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (x, -1))
+		
+		longDesc = currentFilter.getLongDesc(itemName)
+		if longDesc:
+			slider.SetToolTip(wx.ToolTip(s))
+		
+				
+		onSliderScroll = lambda event, its = item, f = currentFilter: \
+								self.onSetSliderValue(event, its, f, final = False)
+		onSliderScrollFinal = lambda event, its = item, f = currentFilter: \
+								self.onSetSliderValue(event, its, f, final = True)
+								
+		slider.Bind(wx.EVT_SCROLL, onSliderScroll)
+		slider.Bind(wx.EVT_SCROLL_THUMBRELEASE, onSliderScrollFinal)
+		slider.Bind(wx.EVT_SCROLL_CHANGED, onSliderScrollFinal)
+		setSliderFunc = lambda obj, event, arg, slider = slider, i = itemName, s = self: \
+								s.onSetSlice(slider, i, arg)
+			
+		lib.messenger.connect(currentFilter, "set_%s" % itemName, setSliderFunc)
+
+		
+		updateSliderFunc = lambda obj, event, slider = slider, i = itemName, \
+					fi = currentFilter, s = self: s.updateRange(fi, i, slider)
+		lib.messenger.connect(currentFilter, "update_%s" % itemName, updateSliderFunc)
+		return slider
+		
+	def updateRange(self, currentFilter, itemName, slider):
+		"""
+		Update the range of a slider or a spin box
+		"""
+		minval, maxval = currentFilter.getRange(itemName)
+		slider.SetRange(minval, maxval)
 		
 	def createFileSelection(self, n, items, currentFilter):
 		"""
@@ -777,8 +799,7 @@ class GUIBuilder(wx.Panel):
 	def onSetSlice(self, slider, item, value):
 		"""
 		Set the value for the GUI item 
-		"""					
-		
+		"""
 		slider.SetValue(value)
 
 	def onSetSpinFromFilter(self, spin, item, value):
@@ -907,12 +928,7 @@ class GUIBuilder(wx.Panel):
 			
 		lib.messenger.connect(currentFilter, "set_%s" % itemName, f)
 
-		def updateRange(currentFilter, itemName, spin):
-			minval, maxval = currentFilter.getRange(itemName)
-			
-			spin.SetRange(minval, maxval)
-		
-		f = lambda obj, event, spin = spin, i = itemName, fi = currentFilter, s = self: updateRange(fi, i, spin)
+		f = lambda obj, event, spin = spin, i = itemName, fi = currentFilter, s = self: s.updateRange(fi, i, spin)
 		lib.messenger.connect(currentFilter, "update_%s" % itemName, f)
 		
 		return spin
@@ -1034,13 +1050,16 @@ class GUIBuilder(wx.Panel):
 			currentFilter.setParameter(item, thresholds[i])
 		currentFilter.sendUpdateGUI(items)
 			
-	def onSetSliderValue(self, event, items, currentFilter):
+	def onSetSliderValue(self, event, items, currentFilter, final = False):
 		"""
 		Set the slider value
-		"""		 
+		"""
 		value = event.GetPosition()
-		currentFilter.setParameter(items, value)
-
+		if final:
+			currentFilter.setParameter(items, value)
+		else:
+			currentFilter.set(items, value)
+			
 	def onSetSpinValue(self, event, spinbox, itemName, currentFilter):
 		"""
 		Set the spin value
