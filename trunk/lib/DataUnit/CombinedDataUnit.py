@@ -332,8 +332,7 @@ class CombinedDataUnit(DataUnit):
 		#self.byName = {}
 		for i, unit in enumerate(units):
 			self.addSourceDataUnit(unit, no_init = 1)
-		for i in self.sourceunits:
-			i.getSettings().set("ColorTransferFunction", i.getColorTransferFunction())
+
 		self.checkDimensions = chkDims
 
 	def getColorTransferFunction(self):

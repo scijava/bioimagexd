@@ -597,9 +597,6 @@ class ColorTransferEditor(wx.Panel):
 		self.updateGraph()
 				
 		
-		
-		
-		
 	def onDeletePoint(self, event):
 		"""
 		Delete the selected point
@@ -702,7 +699,6 @@ class ColorTransferEditor(wx.Panel):
 			self.updateGraph()
 
 		
-
 	def onEditFunction(self, event):
 		"""
 		Edit the function
@@ -800,7 +796,6 @@ class ColorTransferEditor(wx.Panel):
 		self.modCount += 1
 		 
 			
-	
 	def onDrawFunction(self, event):
 		"""
 		Draw the function
@@ -840,7 +835,6 @@ class ColorTransferEditor(wx.Panel):
 			
 			self.setFromColorTransferFunction(self.ctf, self.otf)
 			
-		
 		if was:
 			self.updateCTFFromPoints()
 		self.freeMode = event.GetIsDown()
@@ -1145,6 +1139,7 @@ class ColorTransferEditor(wx.Panel):
 		Sets the color transfer function that is configured
 					 by this widget
 		"""
+		self.upToDate = 0
 		self.ctf = TF
 		self.minval, self.maxval = TF.GetRange()
 		self.canvas.background = None
