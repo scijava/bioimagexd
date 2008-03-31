@@ -252,7 +252,7 @@ class GUIBuilder(wx.Panel):
 		self.itemSizer.Add(background, (0, 0))
 		self.items[itemName] = background
 		setColorTransferFunction = lambda obj, event, arg, panel = colorPanel, i = item, \
-											s = self: s.onSetCtf(panel, i, arg)
+								   s = self: s.onSetCtf(panel, i, arg)
 	  
 	  	lib.messenger.connect(currentFilter, "set_%s_ctf" % item, setColorTransferFunction)
 		setotf = lambda obj, event, arg, panel = colorPanel, i = item, s = self: s.onSetOtf(panel, i, arg)

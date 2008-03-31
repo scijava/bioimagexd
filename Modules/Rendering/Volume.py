@@ -117,7 +117,6 @@ class VolumeModule(VisualizationModule):
 		self.actor = self.volume
 		self.volume.SetProperty(self.volumeProperty)
 
-		
 		VisualizationModule.__init__(self, parent, visualizer, **kws)
 		self.mapper = None
 		#self.name = "Volume Rendering"
@@ -144,9 +143,8 @@ class VolumeModule(VisualizationModule):
 		self.setShading(0)
 
 		self.vtkObjects = ["otf", "otf2"]
-
 		#self.updateRendering()
-		
+		lib.messenger.connect(None, "switch_datasets", self.onSwitchDatasets)
 		
 	def setParameter(self, parameter, value):
 		"""
@@ -222,7 +220,7 @@ class VolumeModule(VisualizationModule):
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
-		"""			  
+		"""
 		if parameter == "Method":
 			return self.defaultMode
 		if parameter == "Quality":
@@ -241,7 +239,7 @@ class VolumeModule(VisualizationModule):
 	def setDataUnit(self, dataunit):
 		"""
 		Sets the dataunit this module uses for visualization
-		"""		  
+		"""
 		Logging.info("Dataunit for Volume Rendering:", dataunit, kw = "rendering")
 		VisualizationModule.setDataUnit(self, dataunit)
 
@@ -305,13 +303,13 @@ class VolumeModule(VisualizationModule):
 	def setInputChannel(self, inputNum, chl):
 		"""
 		Set the input channel for input #inputNum
-		"""			   
+		"""
 		VisualizationModule.setInputChannel(self, inputNum, chl)
 		if self.dataUnit:
 			inputDataUnit = self.getInputDataUnit(1)
 			if not inputDataUnit:
 				inputDataUnit = self.dataUnit
-			self.colorTransferFunction =	ctf = inputDataUnit.getColorTransferFunction()
+			self.colorTransferFunction = inputDataUnit.getColorTransferFunction()
 			lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
 				 
 			self.volumeProperty.SetColor(self.colorTransferFunction)
@@ -402,7 +400,6 @@ class VolumeModule(VisualizationModule):
 		self.updateQuality()
 		self.updateInterpolation()
 		
-		
 		if not input:
 			input = self.getInput(1)
 		x, y, z = self.dataUnit.getDimensions()
@@ -452,7 +449,16 @@ class VolumeModule(VisualizationModule):
 		Enable the Rendering of this module
 		"""
 		self.renderer.AddVolume(self.volume)
-		self.wxrenwin.Render()		  
+		self.wxrenwin.Render()
+
+	def onSwitchDatasets(self, obj, evt, args):
+		"""
+		Switch color transfer function after switching datasets
+		"""
+		self.colorTransferFunction = args[0].getColorTransferFunction()
+		lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
+		self.volumeProperty.SetColor(self.colorTransferFunction)
+
 		
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
 

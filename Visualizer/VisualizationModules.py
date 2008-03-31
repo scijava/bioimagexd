@@ -137,7 +137,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 
 	def updateData(self):
 		"""
-		"OK Update the data that is displayed
+		OK Update the data that is displayed
 		"""
 		self.showTimepoint(self.timepoint)
 

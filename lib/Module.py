@@ -115,6 +115,7 @@ class Module:
 		Resets the module to initial state
 		"""
 		self.images = []
+		self.dataunits = []
 
 		self.extent = None
 		self.xSize, self.ySize, self.zSize = 0, 0, 0
