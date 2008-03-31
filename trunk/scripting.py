@@ -57,7 +57,7 @@ conf = None
 
 renderingEnabled = True
 
-TFLag = 0
+TFLag = 1
 combinedDataUnit = None
 unhandledException=0
 app = None
