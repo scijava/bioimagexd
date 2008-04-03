@@ -48,7 +48,10 @@ import wx
 import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
-import RegistrationFilters
+try:
+	import RegistrationFilters
+except:
+	pass
 
 from lib.FilterTypes import *
 
@@ -141,10 +144,11 @@ def getFilterList():
 	filterlist += MathFilters.getFilters()
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
-	filterlist += RegistrationFilters.getFilters()
+	try:
+		filterlist += RegistrationFilters.getFilters()
+	except:
+		pass
 	return filterlist
-
-
 
 
 class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
