@@ -101,6 +101,27 @@ class ProcessingFilter:
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
 		
+		self.polyOutput = None
+		self.polyInput = None
+		
+	def setPolyDataInput(self, polydata):
+		"""
+		Set the polydata input of this filter
+		"""
+		self.polyInput = polydata
+		
+	def setPolyDataOutput(self, polydata):
+		"""
+		Set the polydata output of this filter
+		"""
+		self.polyOutput = polydata
+		
+	def getPolyDataOutput(self):
+		"""
+		@return the polydata output
+		"""
+		return self.polyOutput
+		
 	def resetFilters(self):
 		"""
 		reset the filter instances
@@ -380,7 +401,6 @@ class ProcessingFilter:
 		"""
 		Set whether this filter is enabled or not
 		"""
-		print "Setting ", self, "to enabled = ", flag
 		self.enabled = flag
 
 	def getGUI(self, parent, taskPanel):
@@ -622,11 +642,12 @@ class ProcessingFilter:
 			# if it's a list type, then add each parameter in the list to the list of plain parameters
 			elif type(item) == types.ListType:
 				title, items = item
-				if type(items[0]) == types.TupleType:
-					if len(items)>1 and type(items[1]) != types.TupleType:
-						returnList.extend(items[1:])
-					items = items[0]
-				returnList.extend(items)
+				for curritem in items:
+					toadd = curritem
+					if type(curritem) == types.TupleType:
+						returnList.extend(curritem)
+					else:
+						returnList.extend([curritem])
 		return returnList
 		
 	def recordParameterChange(self, parameter, value, modpath):

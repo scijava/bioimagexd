@@ -115,6 +115,7 @@ class Colocalization(Module):
 			self.colocAutoThreshold.AddInput(self.images[0])
 			self.colocAutoThreshold.AddInput(self.images[1])
 			if calcVal == STATISTICS_ONLY:
+				self.colocAutoThreshold.SetCalculateThreshold(0)
 				Logging.info("CALCULATING ONLY STATISTICS", kw = "processing")
 				# When we set the lower thresholds, then the given thresholds will be used
 				Logging.info("Setting lower thresholds ", int(self.thresholds[0][0]), int(self.thresholds[1][0]), "for statistics")
@@ -125,6 +126,7 @@ class Colocalization(Module):
 				self.colocAutoThreshold.SetUpperThresholdCh1(int(self.thresholds[0][1]))
 				self.colocAutoThreshold.SetUpperThresholdCh2(int(self.thresholds[1][1]))			   
 			elif calcVal == THRESHOLDS_ONLY:
+				self.colocAutoThreshold.SetCalculateThreshold(1)
 				Logging.info("CALCULATING ONLY THRESHOLD", kw = "processing")
 				Logging.info("Calculated thresholds, using %d as max" % maxval, kw = "processing")
 				self.colocAutoThreshold.SetUpperThresholdCh1(maxval)

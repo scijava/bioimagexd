@@ -256,15 +256,23 @@ class DataUnit:
 	def getTimepoint(self, timepoint):
 		"""
 		Returns the requested time point
-		Parameters:
-				n		The timepoint we need to return
+		@param timepoint	The timepoint to read
 		"""
 		if not self.dataSource:
 			Logging.error("No datasource specified",
 			"No datasource specified for DataUnit, unable to get timepoint!")
 			return None
 		return self.dataSource.getDataSet(timepoint)
-		
+
+	def getPolyDataAtTimepoint(self, timepoint):
+		"""
+		@return the vtkPolyData object representing the dataset at given timepoint
+		"""
+		if not self.dataSource:
+			Logging.error("No datasource specified",
+			"No datasource specified for DataUnit, unable to get timepoint!")
+			return None
+		return self.dataSource.getPolyData(timepoint)
 
 	def getNumberOfTimepoints(self):
 		"""
@@ -295,14 +303,17 @@ class DataUnit:
 		self.getEmissionWavelength = dataSource.getEmissionWavelength
 		self.getExcitationWavelength = dataSource.getExcitationWavelength
 		self.getNumericalAperture = dataSource.getNumericalAperture
-#		 Logging.info("Dataunit ", repr(self), "got datasource", repr(self.dataSource), kw = "datasource")
-		
-		#self.updateSettings()
-   
+	
 
 	def getFileName(self):
 		"""
 		Return the path to the file this dataunit represents
 		"""
-		return self.dataSource.getFileName()
-		
+		if self.dataSource:
+			return self.dataSource.getFileName()
+		return "unnamed"
+	def __str__(self):
+		return "<DataUnit:"+ os.path.basename(self.getFileName())+":"+self.getName()+">"
+	
+	def __repr__(self):
+		return str(self)

@@ -38,7 +38,7 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for calculating a colocalization map and various colocalization statistics
 	"""		
 	name = "Auto threshold colocalization"
-	category = lib.FilterTypes.FILTERING
+	category = lib.FilterTypes.COLOCALIZATION
 	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
@@ -49,6 +49,7 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		for i in range(1, 3):
 			self.setInputChannel(i, i)
 		self.colocAutoThreshold = vtkbxd.vtkImageAutoThresholdColocalization()
+		self.colocAutoThreshold.SetCalculateThreshold(1)
 		self.done = False
 		self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
 		self.colocAutoThreshold.AddObserver('ProgressEvent', lib.messenger.send)
@@ -116,6 +117,8 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 		images = [self.getInput(x) for x in range(1,3)]
 		self.eventDesc="Calculating colocalization thresholds"
+		
+		self.colocAutoThreshold.RemoveAllInputs()
 
 		if not self.done:
 			self.done = True

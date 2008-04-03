@@ -39,7 +39,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for calculating a colocalization map and various colocalization statistics
 	"""		
 	name = "Colocalization"
-	category = lib.FilterTypes.FILTERING
+	category = lib.FilterTypes.COLOCALIZATION
 	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
@@ -63,6 +63,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.messenger.connect(self.colocFilter, "ProgressEvent", self.updateProgress)
 
 		self.colocAutoThreshold = vtkbxd.vtkImageAutoThresholdColocalization()
+		self.colocAutoThreshold.SetCalculateThreshold(0)
 		self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
 		self.colocAutoThreshold.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.colocAutoThreshold, "ProgressEvent", self.updateProgress)
@@ -236,14 +237,13 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Calculate the P-value
 		"""
-		Logging.info("Calculating P-value")
 		coloctest = vtkbxd.vtkImageColocalizationTest()
 		self.eventDesc = "Calculating P-Value"
 		method = 2
 		if self.parameters["Costes"]: method = 1
 		if self.parameters["Fay"]: method = 0
 		coloctest.SetMethod(method)
-		print "Method=",method
+		Logging.info("Calculating P-value, method = %d"%method)
 
 		
 		if self.parameters["PSF"]:
@@ -279,6 +279,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		images = [self.getInput(x) for x in range(1,3)]
 		self.eventDesc="Calculating colocalization"
 		self.colocFilter.RemoveAllInputs()
+		self.colocAutoThreshold.RemoveAllInputs()
 		depth = 8
 		if self.parameters["OneBit"]:
 			depth = 1
@@ -329,8 +330,6 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		for i in range(len(images)):
 			self.colocFilter.AddInput(images[i])
-			print "Adding input",i
-			print "Setting thresholds",self.parameters["LowerThresholdCh%d"%(i+1)],self.parameters["UpperThresholdCh%d"%(i+1)]
 			self.colocFilter.SetColocalizationLowerThreshold(i, self.parameters["LowerThresholdCh%d"%(i+1)])
 			self.colocFilter.SetColocalizationUpperThreshold(i, self.parameters["UpperThresholdCh%d"%(i+1)])
 			

@@ -224,6 +224,7 @@ class CombinedDataUnit(DataUnit):
 				# Get the vtkImageData containing the results of the operation 
 				# for this time point
 				imageData = self.module.doOperation()
+				polydata = self.module.getPolyDataOutput()
 				Logging.info("Executing with optimizations",kw="processing")
 				imageData = optimize.optimize(image = imageData)
 				Logging.info("Processing done",kw="processing")
@@ -233,6 +234,8 @@ class CombinedDataUnit(DataUnit):
 				if not settings_only:
 					Logging.info("Writing timepoint %d"%timePoint,kw="processing")
 					self.dataWriter.addImageData(imageData)
+					if polydata:
+						self.dataWriter.addPolyData(polydata)
 					self.dataWriter.sync()
 					dims = self.dataWriter.getOutputDimensions()
 					self.settings.set("Dimensions", str(dims))
@@ -269,14 +272,13 @@ class CombinedDataUnit(DataUnit):
 			value = self.sourceunits[i].getDataSource().uniqueId()
 			self.settings.setCounted(key, i, value)
 		
-		print "Writing",self.settings
 		self.settings.writeTo(parser)
 		writer.write()
 
 	def addSourceDataUnit(self, dataUnit, no_init = 0):
 		"""
 		Adds 4D data to the unit together with channel-specific settings.
-		Parameters: dataUnit	The SourceDataUnit to be added
+		@param dataUnit	The SourceDataUnit to be added
 		"""
 		# If one or more SourceDataUnits have already been added, check that the
 		# new SourceDataUnit has the same length as the previously added one(s):

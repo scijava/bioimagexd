@@ -1,4 +1,5 @@
 
+
 # -*- coding: iso-8859-1 -*-
 """
  Unit: BXCDataWriter
@@ -38,10 +39,6 @@ import scripting
 import lib.messenger
 import Logging
 
-class MyConfigParser(RawConfigParser):
-	def optionxform(self, optionstr):
-		return optionstr
-		
 class BXCDataWriter(DataWriter):
 	"""
 	A writer of BioImageXD dataset channel (.bxc) files
@@ -57,6 +54,8 @@ class BXCDataWriter(DataWriter):
 		self.dataSets = []
 		# filename of the .bxc-file
 		
+		self.polyDataFiles = []
+		self.polyDataToWrite = []
 		self.filename = filename
 		# path to the .bxc-file and .vti-file(s)
 		self.path = ""
@@ -65,6 +64,7 @@ class BXCDataWriter(DataWriter):
 		
 		# Number of datasets added to this datasource
 		self.counter = 0
+		self.polycounter = 0
 
 		self.dataUnitSettings = {}
 		self.parser = None
@@ -81,7 +81,7 @@ class BXCDataWriter(DataWriter):
 		Returns the parser that is used to read the .du file
 		"""
 		if not self.parser:
-			self.parser = MyConfigParser()
+			self.parser = scripting.MyConfigParser()
 		return self.parser
 		
 	def getOutputDimensions(self):
@@ -95,6 +95,7 @@ class BXCDataWriter(DataWriter):
 		Writes all datasets pending a write to disk
 		"""
 		ret = 0
+		npoly = n
 		toRemove = []
 		for item in self.imagesToWrite:
 			imagedata, path = item
@@ -106,6 +107,19 @@ class BXCDataWriter(DataWriter):
 			ret += 1
 		for item in toRemove:
 			self.imagesToWrite.remove(item)
+			
+		toRemove = []
+		for item in self.polyDataToWrite:
+			polydata, path = item
+			if npoly == 0:
+				break
+			self.writePolyData(polydata, path)
+			toRemove.append(item)
+			npoly -= 1
+		for item in toRemove:
+			self.polyDataToWrite.remove(item)
+		toRemove = []
+			
 		return ret
 		
 	def write(self):
@@ -122,7 +136,6 @@ class BXCDataWriter(DataWriter):
 			parser.set("ImageData", "file_%d" % i, self.dataSets[i])
 					
 		try:
-			print "Trying to open", self.filename, repr(self.filename)
 			fp = open(self.filename, "w")
 		except IOError, ex:
 			Logging.error("Failed to write settings",
@@ -131,7 +144,32 @@ class BXCDataWriter(DataWriter):
 		parser.write(fp)
 		fp.close()
 		self.sync()
+		
+	def addPolyData(self, polyData):
+		"""
+		Add a vtkPolyData object to be written to the disk
+		"""
+		# We find out the path to the directory where the image data is written
+		if not self.path:
+			# This is determined from self.filename which is the name of the 
+			# .du file this datasource has been loaded from
+			self.path = os.path.dirname(self.filename)
 
+		# Next we determine the name for the .vti file we are writing
+		# We take the name of the .du file this datasource is associated with
+		duFileName = os.path.basename(self.filename)
+		# and strip the .du from the end
+		i = duFileName.rfind(".")
+		imageDataName = duFileName[:i]
+		fileName = "%s_%d.vtp" % (imageDataName, self.polycounter)
+		fileName = fileName.encode("ascii")
+		self.polycounter += 1
+		# Add the file name to our internal list of datasets
+		self.polyDataFiles.append(fileName)
+		filepath = os.path.join(self.path, fileName)
+		# Add data to waiting queue
+		self.polyDataToWrite.append((polyData, filepath))
+		
 	def addImageData(self, imageData):
 		"""
 		Add a vtkImageData object to be written to the disk.
@@ -205,4 +243,33 @@ class BXCDataWriter(DataWriter):
 			Logging.error("Failed to write image data",
 			"Failed to write vtkImageData object to file %s" % self.filename, ex)
 			return
+
+	def writePolyData(self, polyData, filename, callback = None):
+		"""
+		Writes the given vtkPolyData instance to disk
+					 as .vtp-file with the given filename
+		"""
+		writer = vtk.vtkXMLPolyDataWriter()
+		writer.SetFileName(filename)
+		writer.SetInput(polyData)
+		def f(obj, evt):
+			if obj and callback:
+				callback(obj.GetProgress())
+			if scripting.mainWindow:
+				scripting.mainWindow.updateProgressBar(obj, evt, obj.GetProgress(),"Writing surface %s"%os.path.basename(filename), 0)
+		writer.AddObserver("ProgressEvent", lib.messenger.send)
+		lib.messenger.connect(writer, "ProgressEvent", f)
+		Logging.info("Writing polydata to file %s"%filename,kw="pipeline")
+		try:
+			ret = writer.Write()
+			
+			if ret == 0:
+				Logging.error("Failed to write polygonal data",
+				"Failed to write vtkPolyData object to file %s" % filename)
+				return
+		except Exception, ex:
+			Logging.error("Failed to write poly data",
+			"Failed to write vtkPolyData object to file %s" % filename, ex)
+			return
+			
 

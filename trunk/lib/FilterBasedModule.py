@@ -344,7 +344,19 @@ class FilterBasedModule(lib.Module.Module):
 		self.settings = None
 		self.reset()
 		self.currentExecutingFilter = None
-
+		self.polyDataOutput = None
+		
+	def setPolyDataOutput(self, polydata):
+		"""
+		Set the polydata output of this module
+		"""
+		self.polyDataOutput = polydata
+		
+	def getPolyDataOutput(self):
+		"""
+		Return the polydata output
+		"""
+		return self.polyDataOutput
 
 	def getEventDesc(self):
 		"""
@@ -429,6 +441,7 @@ class FilterBasedModule(lib.Module.Module):
 		
 		lastfilter = None
 		wantWhole = False
+		polydata = None
 		x = 1.0/(1+len(enabledFilters))
 		for i, currfilter in enumerate(enabledFilters):
 			if currfilter.requireWholeDataset:
@@ -438,6 +451,8 @@ class FilterBasedModule(lib.Module.Module):
 			self.scale = x
 			self.eventDesc = "Performing %s"%currfilter.name
 			currfilter.setExecutive(self)
+			if polydata:
+				currfilter.setPolyDataInput(polydata)
 			flag = (i == highestFilterIndex)
 			if i > 0:
 				currfilter.setPrevFilter(enabledFilters[i-1])
@@ -450,6 +465,7 @@ class FilterBasedModule(lib.Module.Module):
 			Logging.info("Executing %s"%currfilter.name,kw="pipeline")
 			
 			data = currfilter.execute(data, update=0, last=flag)
+			polydata = currfilter.getPolyDataOutput()
 			
 			if not flag:
 				nextfilter = enabledFilters[i+1]
@@ -480,5 +496,6 @@ class FilterBasedModule(lib.Module.Module):
 			data = lastfilter.convertITKtoVTK(data)
 
 		filterlist.setModified(0)
+		self.setPolyDataOutput(polydata)
 		
 		return data

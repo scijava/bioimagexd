@@ -49,7 +49,6 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def __init__(self):
 		"""
-		Method: __init__()
 		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
@@ -58,28 +57,24 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 	def getParameters(self):
 		"""
-		Method: getParameters
 		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [ ["Convolution kernel", ("KernelX", "KernelY", "KernelZ")] ]
 		
 	def getDesc(self, parameter):
 		"""
-		Method: getDesc
 		Return the description of the parameter
 		"""    
 		return self.descs[parameter]
 		
 	def getType(self, parameter):
 		"""
-		Method: getType
 		Return the type of the parameter
 		"""    
 		return types.IntType
 		
 	def getDefaultValue(self, parameter):
 		"""
-		Method: getDefaultValue
 		Return the default value of a parameter
 		"""           
 		return 2
@@ -87,7 +82,6 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
-		Method: execute
 		Execute the filter with given inputs and return the output
 		"""            
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
@@ -123,7 +117,6 @@ class ErodeFilter(MorphologicalFilter):
 	
 	def __init__(self):
 		"""
-		Method: __init__()
 		Initialization
 		"""        
 		MorphologicalFilter.__init__(self)

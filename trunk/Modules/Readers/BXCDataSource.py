@@ -39,18 +39,6 @@ import Logging
 import scripting
 import vtk
 
-class MyConfigParser(ConfigParser.RawConfigParser):
-	"""
-	Created: Unknown, KP
-	Description: Subclass of RawConfigParser that overrides optionxform to
-	allow for case-sensitive option strings.
-	"""
-	def optionxform(self, optionstr):
-		"""
-		This method converts option strings to be used as "keys"
-		to this parser.
-		"""
-		return optionstr
 
 def getExtensions():
 	return ["bxc"]
@@ -73,6 +61,7 @@ class BXCDataSource(DataSource):
 		# list of references to individual datasets (= timepoints) stored in 
 		# vti-files
 		self.dataSets = []
+		self.polyDataFiles = []
 		# filename of the .du-file
 		self.filename = filename
 		self.baseFilename = ""
@@ -119,10 +108,31 @@ class BXCDataSource(DataSource):
 		"""
 		return len(self.dataSets)
 
+	def getPolyData(self, timepoint):
+		"""
+		Return the polygonal dataset associated with given timepoint
+		"""
+		if not self.polydataReader:
+			if len(self.polyDataFiles) <= timepoint:
+				return None
+			filename = self.polyDataFiles[timepoint]
+			self.polydataReader = vtk.vtkXMLPolyDataReader()
+			self.polydataReader.AddObserver("ProgressEvent", lib.messenger.send)
+			lib.messenger.connect(self.polydataReader, 'ProgressEvent', self.updateProgress)
+			filepath = os.path.join(self.path, filename)
+			if not self.polydataReader.CanReadFile(filepath):
+				Logging.error("Cannot read file",
+				"Cannot read vtkPolyData File %s"%filename)
+			self.polydataReader.SetFileName(filepath)
+			self.polydataReader.Update()
+			self.updateProgress(None, None)
+			self.polydataReader.Update()
+		return self.polydataReader.GetOutput()
+		
 	def getDataSet(self, i, raw = 0):
 		"""
 		Returns the DataSet at the specified index
-		Parameters:   i		  The index
+		@param i  The index
 		"""
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
@@ -153,7 +163,6 @@ class BXCDataSource(DataSource):
 		
 	def getSpacing(self):
 		"""
-		Method: getSpacing()
 		Returns the spacing of the datasets this 
 					 dataunit contains
 		"""
@@ -180,7 +189,7 @@ class BXCDataSource(DataSource):
 		"""
 		Loads the specified DataSet from disk and returns
 					 it as vtkImageData
-		Parameters:   filename	The file where Dataset is loaded from
+		@param filename	The file where Dataset is loaded from
 		"""
 		if not self.reader or self.filename != filename:
 			self.filename = filename
@@ -209,7 +218,7 @@ class BXCDataSource(DataSource):
 		Logging.info("Trying to open %s"%filename, kw = "datasource")
 		try:
 			# A SafeConfigParser is used to parse the .du-file
-			self.parser = MyConfigParser()
+			self.parser = scripting.MyConfigParser()
 			self.parser.read([filename])
 			dataUnitFormat = "NOOP"
 			if self.parser.has_option("Type","Type"):
@@ -249,9 +258,16 @@ class BXCDataSource(DataSource):
 
 		# Then read the .vti-filenames and store them in the dataSets-list:
 		filedir = os.path.dirname(filename)
+		
+		hasPolydata = self.parser.has_section("PolyData")
 		for i in range(int(count)):
-			currentFile = "file_" + str(i)
+			currentFile = "file_%d"%i
 			filename = self.parser.get("ImageData", currentFile)
+			
+			if hasPolydata:
+				polyFileName = self.parser.get("PolyData", currentFile)
+				self.polyDataFiles.append(polyFileName)
+				
 			reader = vtk.vtkXMLImageDataReader()
 			filepath = os.path.join(filedir, filename)
 			if not reader.CanReadFile(filepath):
@@ -260,16 +276,12 @@ class BXCDataSource(DataSource):
 				return
 
 			self.dataSets.append(filename)
-			#Logging.info("dataset[%d] = %s"%(i, self.dataSets[i]))
-
-		dataunitclass = DataUnit
 
 		# If everything went well, we create a new DataUnit-instance of the
 		# correct subclass, so that the DataUnit-instace can take over and
 		# resume data processing. First, we return the DataUnit to the caller,
 		# so it can set a reference to it:
-		dataunit = dataunitclass()
-		#settingsclass = "DataUnit."+self.parser.get("Type", "Type")+"()"
+		dataunit = DataUnit()
 		
 		settings = DataUnitSettings()
 		settings = settings.readFrom(self.parser)
@@ -297,8 +309,6 @@ class BXCDataSource(DataSource):
 					 operates on
 		"""
 		return self.settings.get("Name")
-		
-		
 
 	def getColorTransferFunction(self):
 		"""
@@ -306,12 +316,7 @@ class BXCDataSource(DataSource):
 					 operates on
 		"""
 		Logging.info("Getting colortransferfunction from settings", kw = "ctf")
-		
-		#self.settings.set("ColorTransferFunction", palette)
-#			 except:
-#				 raise "FOO"
-#				 pass
-		
+
 		
 		if not self.ctf:
 			ctf = self.settings.get("ColorTransferFunction")
