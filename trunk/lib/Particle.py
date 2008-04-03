@@ -43,9 +43,8 @@ except ImportError:
 
 class ParticleReader:
 	"""
-	Created: KP
-	Description: A class for reading all particle definitions from .CSV files created by the
-				 segmentation code
+	A class for reading all particle definitions from .CSV files created by the
+	segmentation code
 	"""
 	def __init__(self, filename, filterObjectSize = 2):
 		"""
@@ -130,7 +129,6 @@ class ParticleReader:
 
 class Particle:
 	"""
-	Created: KP
 	Description: A class representing a particle. Stores all relevant info and can calculate the distance
 				 between two particles
 	
@@ -164,6 +162,15 @@ class Particle:
 		"""
 		return self.intval
 		
+	def distance3D(self, x,y,z, x2,y2,z2):
+		"""
+		@return the distance in 3D between points (x,y,z) and (x2,y2,z2)
+		"""
+		distanceX = x - x2
+		distanceY = y - y2 
+		distanceZ = z - z2
+		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
+		
 	def distance(self, particle):	 
 		"""
 		Return the distance between this particle and p
@@ -173,10 +180,7 @@ class Particle:
 		"""
 		particleXPos, particleYPos, particleZPos = particle.posInPixels
 		selfXPos, selfYPos, selfZPos = self.posInPixels
-		distanceX = particleXPos - selfXPos
-		distanceY = particleYPos - selfYPos
-		distanceZ = particleZPos - selfZPos
-		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
+		return self.distance3D(particleXPos, particleYPos, particleZPos, selfXPos, selfYPos, selfZPos)
 		
 	def copy(self, particle):
 		"""
@@ -198,7 +202,7 @@ class Particle:
 	def __str__(self):
 		try:
 			xPosition, yPosition, zPosition = self.posInPixels 
-			return "<Obj#%d (%d, %d, %d) t = %d, inTrack = %s>" \
+			return "<Obj#%d (%d,%d,%d) T%d, %s>" \
 					% (self.intval, xPosition, yPosition, zPosition, self.timePoint, bool(self.inTrack))
 		except:
 			raise "Bad pos", self.pos	# TODO: When does this get raised?
