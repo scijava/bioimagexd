@@ -104,12 +104,30 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		"""
 		self.channelGrouping = value
 		
+	def getChannelGrouping(self):
+		"""
+		@return the status of channel grouping
+		"""
+		return self.channelGrouping
+		
+	def getChannelGroupingByProcedureList(self):
+		"""
+		@return the status of proc list grouping
+		"""
+		return self.procListGrouping
+		
 	def setChannelGroupingByProcedureList(self, value):
 		"""
 		Set the grouping of channels of a single file that are
 					 processed by different procedure lists
 		"""
 		self.procListGrouping = value
+		
+	def getChannelProcessing(self):
+		"""
+		@return the channel processing
+		"""
+		return self.channelProcessing
 		
 	def setChannelProcessing(self, value):
 		"""
@@ -172,7 +190,6 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			
 		filenames.sort(self.sortNumerically)
 		return [perFile[x] for x in filenames]
-#		return perFile.values()
 
 	def createSingleGroupedBXDFile(self, directory, procListName, dataUnits):
 		"""
@@ -355,7 +372,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		parser.add_section("SelectedVariables")
 
 		parser.set("BatchAnalysis","ChannelGrouping",str(self.channelGrouping))
-		parser.set("BatchAnalysis","ChannelProcessing",str(self.channelGrouping))
+		parser.set("BatchAnalysis","ChannelProcessing",str(self.channelProcessing))
 		parser.set("BatchAnalysis","ProcedureListGrouping",str(self.procListGrouping))
 		nameList = self.procedureLists.keys()
 		parser.set("BatchAnalysis", "ProcedureLists", str(nameList))

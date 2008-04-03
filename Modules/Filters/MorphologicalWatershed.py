@@ -43,7 +43,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Initialization
 		"""   
-		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs, requireWholeDataset = 1)
 		self.descs = {"Level": "Segmentation Level", "MarkWatershedLine": "Mark the watershed line",
 		"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
@@ -126,6 +126,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setImageType("UL3")
 		self.itkfilter.Update()
 		print "Morphological watershed took", time.time() - t, "seconds"
+		t = time.time()
 		data = self.itkfilter.GetOutput()
 		self.eventDesc = "Relabeling segmented image"
 		
@@ -141,6 +142,8 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		data = self.relabelFilter.GetOutput()
 				
 		self.relabelFilter.Update()
+		print "Relabeling took", time.time()-t
+		t = time.time()
 		n = self.relabelFilter.GetNumberOfObjects()
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
@@ -161,5 +164,5 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			if self.segCtf:
 				self.dataUnit.getSettings().set("ColorTransferFunction", self.segCtf)	 
-			
+		print "Creating palette took",time.time()-t,"seconds"
 		return data

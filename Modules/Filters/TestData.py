@@ -38,7 +38,7 @@ import csv
 
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Description: A filter for removing solitary noise pixels
+	A filter for generating test data
 	"""		
 	name = "Test data generation"
 	category = lib.FilterTypes.FILTERING

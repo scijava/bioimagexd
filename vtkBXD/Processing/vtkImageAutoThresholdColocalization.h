@@ -215,6 +215,8 @@ public:
   vtkSetMacro(NonZeroCh2,int);
   vtkGetMacro(NonZeroCh2,int)
 
+  vtkGetMacro(CalculateThreshold, int);
+  vtkSetMacro(CalculateThreshold, int);
 protected:
   vtkImageAutoThresholdColocalization();
   ~vtkImageAutoThresholdColocalization();
@@ -248,6 +250,8 @@ private:
   double PearsonWholeImage;
   double PearsonImageAbove;
   double PearsonImageBelow;
+  
+  int CalculateThreshold;
       
   double M1;
   double M2;

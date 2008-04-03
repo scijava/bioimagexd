@@ -59,6 +59,7 @@ vtkImageAutoThresholdColocalization::vtkImageAutoThresholdColocalization()
     LowerThresholdCh1 = LowerThresholdCh2 = -1;
     UpperThresholdCh1 = UpperThresholdCh2 = 255;
     vtkImageData *plot;
+    CalculateThreshold = 1;
     
     OverThresholdCh1 = OverThresholdCh2 = NonZeroCh1 = NonZeroCh2 = 0;
     plot = vtkImageData::New();
@@ -134,7 +135,6 @@ template <class T> void calculateThreshold
     double*ch1BestThresh, double *m, double*b, double*best
     )
 {
-    printf("Calculating threshold, thread id=%d\n", id);
     bool thresholdFound = false, divByZero = false;
     int iteration = 0;
     int N = 0, N2 = 0, Nzero = 0;
@@ -162,10 +162,10 @@ template <class T> void calculateThreshold
     inData[0]->GetScalarRange(range);
     int ch1Max = (int)range[1];
     int ch1Min = 0;
-    printf("ch1Max = %d\n", (int)range[1]);
+    //printf("ch1Max = %d\n", (int)range[1]);
     
     inData[1]->GetScalarRange(range);
-    printf("ch2Max = %d\n", (int)range[1]);
+    //printf("ch2Max = %d\n", (int)range[1]);
     int ch2Max = (int)range[1];
     int ch2Min = 0;
     
@@ -187,7 +187,7 @@ template <class T> void calculateThreshold
         }
             
         ch1threshmax = vtkMath::Round(newMax);
-        printf("Setting ch1threshmax to %f\n", ch1threshmax);
+        //printf("Setting ch1threshmax to %f\n", ch1threshmax);
         ch2threshmax =
             vtkMath::Round(((double) ch1threshmax * (double) *m) +
               (double) *b);
@@ -201,7 +201,7 @@ template <class T> void calculateThreshold
        // If a user specified threshold has been given, then it will be used
        // instead of the calculated threshold        
         if(Ch1Th >= 0 && Ch2Th >= 0) {
-            printf("Using given thresholds %d and %d\n",Ch1Th, Ch2Th);
+            //printf("Using given thresholds %d and %d\n",Ch1Th, Ch2Th);
             thresholdFound = 1;
             
             ch1threshmax = Ch1Th;
@@ -253,16 +253,16 @@ template <class T> void calculateThreshold
         if (!self->GetIncludeZeroPixels())
             N = N - Nzero;
 
-        printf("sumX=%d, sumY=%d\n", sumX, sumY);        
+        //printf("sumX=%d, sumY=%d\n", sumX, sumY);        
         calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
         sumX, sumY, sumXX,sumYY,sumXY,N);
-        printf("pearson1=%f, pearson2=%f, pearson3=%f\n", pearsons1, pearsons2, pearsons3);
+        //printf("pearson1=%f, pearson2=%f, pearson3=%f\n", pearsons1, pearsons2, pearsons3);
 
         r2Prev2 = r2Prev;
         r2Prev = r2;
         r2 = pearsons1 / (sqrt(pearsons2 * pearsons3));
 
-        printf("r2=%f\n", r2);
+        //printf("r2=%f\n", r2);
 
         //if r is not a number then set divide by zero to be true  
         if (((sqrt(pearsons2 * pearsons3)) == 0) || N == 0)
@@ -470,19 +470,21 @@ template < class T >
     double b = ch2Mean - m * ch1Mean;
 
     // Calculate the thresholds 
-    printf("Calculating thresholds based on %d and %d\n",LowerThresholdCh1, LowerThresholdCh2);
+    //printf("Calculating thresholds based on %d and %d\n",LowerThresholdCh1, LowerThresholdCh2);
     calculateThreshold<T>(self,id, inData,outExt, LowerThresholdCh1, LowerThresholdCh2,&ch1BestThresh, &m, &b, &pearsonsBelowTh);
     
     
     ch1threshmax = vtkMath::Round((ch1BestThresh));
     ch2threshmax = vtkMath::Round(((double) ch1BestThresh * (double) m) + (double) b);
-    printf("Calculated ch1 threshmax = %f, ch2Threshmax = %f\n",ch1threshmax, ch2threshmax);    
+    //printf("Calculated ch1 threshmax = %f, ch2Threshmax = %f\n",ch1threshmax, ch2threshmax);    
     // If the user has specified the thresholds, then simply use them.
     // We still need to calculate them, to get the bestr2 value
-    if(LowerThresholdCh1 >= 0) {
+    printf("Calculated thresholds = %d, %d\n", int(ch1threshmax), int(ch2threshmax));
+    if( (LowerThresholdCh1 >= 0) || !self->GetCalculateThreshold()) {
+        printf("Using user defined thresholds\n");
         ch1threshmax = LowerThresholdCh1;
     }
-    if(LowerThresholdCh2 >= 0) {
+    if( (LowerThresholdCh2 >= 0) || !self->GetCalculateThreshold()) {
         ch2threshmax = LowerThresholdCh2;
     }
     

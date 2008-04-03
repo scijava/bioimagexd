@@ -78,7 +78,8 @@ class SurfaceModule(VisualizationModule):
 			"Simplify": "Simplify surface", "PreserveTopology": "Preserve topology",
 			"IsoValue": "Iso value", "SurfaceRangeBegin": "Generate surfaces in range:\n",
 			"SurfaceAmnt": "Number of surfaces", "Transparency": "Surface transparency",
-			"MultipleSurfaces": "Visualize multiple surfaces"}
+			"MultipleSurfaces": "Visualize multiple surfaces",
+			"PolyDataFile":"Surface file","SavePolyData":"Write surface data to file" }
 		
 		self.actor = self.lodActor = vtk.vtkLODActor()
 		self.lodActor.SetMapper(self.mapper)
@@ -121,7 +122,10 @@ class SurfaceModule(VisualizationModule):
 	   			["Iso-Surface", ("IsoValue", )], \
 				["Multiple Surfaces", \
 					("MultipleSurfaces", "SurfaceRangeBegin", GUI.GUIBuilder.NOBR, \
-					"SurfaceRangeEnd", "SurfaceAmnt", "Transparency")]]
+					"SurfaceRangeEnd", "SurfaceAmnt", "Transparency")],
+				["Output surface data",
+		("SavePolyData",("PolyDataFile", "Select the file to which the surface will be written", "*.pol"))]
+		]
 		
 	def getRange(self, parameter):
 		"""
@@ -142,6 +146,8 @@ class SurfaceModule(VisualizationModule):
 		"""
 		Return the default value of a parameter
 		"""           
+		if parameter == "SavePolyData": return False
+		if parameter == "PolyDataFile": return "surface.vtp"
 		if parameter == "Method":
 			return 1
 		if parameter == "Gaussian": 
@@ -173,12 +179,14 @@ class SurfaceModule(VisualizationModule):
 		"""   
 		if parameter == "Method":
 			return GUI.GUIBuilder.CHOICE
-		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces"]: 
+		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces", "SavePolyData"]: 
 			return types.BooleanType
 		if parameter in ["Simplify", "IsoValue", "Transparency"]: 
 			return GUI.GUIBuilder.SLICE
 		if parameter in ["SurfaceRangeBegin", "SurfaceRangeEnd", "SurfaceAmnt", "FeatureAngle"]: 
 			return GUI.GUIBuilder.SPINCTRL
+		if parameter in ["PolyDataFile"]:
+			return GUI.GUIBuilder.FILENAME
 		
 	def setDataUnit(self, dataunit):
 		"""
@@ -262,7 +270,9 @@ class SurfaceModule(VisualizationModule):
 			culler.SetSortingStyleToBackToFront()
 		
 		self.actor.GetProperty().SetOpacity(opacity)
+		
 		input = self.getInput(1)
+		
 		if self.parameters["Gaussian"]:
 			Logging.info("Doing gaussian smoothing", kw = "visualizer")
 			if not self.smooth:
@@ -320,6 +330,11 @@ class SurfaceModule(VisualizationModule):
 
 		
 		self.mapper.SetInput(input)
+		if self.parameters["SavePolyData"]:
+			writer = vtk.vtkXMLPolyDataWriter()
+			writer.SetFileName(self.parameters["PolyDataFile"])
+			writer.SetInput(input)
+			writer.Update()
 		VisualizationModule.updateRendering(self, input)
 		#self.mapper.Update()
 		self.parent.Render()    

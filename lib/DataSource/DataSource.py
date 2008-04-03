@@ -35,6 +35,7 @@ import scripting
 import lib.messenger
 import platform
 import sys
+import bxdexceptions
 
 class DataWriter:
 	"""
@@ -50,27 +51,26 @@ class DataWriter:
 		"""
 		Write pending imagedata to disk
 		"""    
-		raise "Abstract method sync() called"
+		raise bxdexceptions.AbstractMethodCalled("Abstract method sync() called")
 	
 	def write(self):
 		"""
 		Write the data to disk
 		"""    
-		raise "Abstract method write() called"	  
+		raise bxdexceptions.AbstractMethodCalled("Abstract method write() called")  
 		
 	def addImageData(self, imageData):
 		"""
 		Add a vtkImageData object to be written to the disk.
 		"""    
-		raise "Abstract method addImageData"
+		raise bxdexceptions.AbstractMethodCalled("Abstract method addImageData")
 
 	def addImageDataObjects(self, imageDataList):		
 		"""
-		Method: addImageDataObjects(imageDataList)
 		Adds a list of vtkImageData objects to be written to the
 					  disk. Uses addVtiObject to do all the dirty work
 		"""
-		raise "Abstract method addImageDataObjects called"
+		raise bxdexceptions.AbstractMethodCalled("Abstract method addImageDataObjects called")
 		
 class DataSource:
 	"""
@@ -137,6 +137,7 @@ class DataSource:
 		Set the timepoint that this datasource is reading
 		"""
 		self.currentTimepoint = timepoint
+		
 		
 	def setResampling(self, status):
 		"""
@@ -450,7 +451,7 @@ class DataSource:
 		Returns the number of individual DataSets ( = time points)
 		managed by this DataSource
 		"""
-		raise "Abstract method getDataSetCount() in DataSource called"
+		raise bxdexceptions.AbstractMethodCalled("Abstract method getDataSetCount() in DataSource called")
 
 	def getShortName(self):
 		"""
@@ -462,21 +463,27 @@ class DataSource:
 		"""
 		Return the file name
 		"""    
-		raise "Abstract method getFileName() called in DataSource"
-
+		raise bxdexceptions.AbstractMethodCalled("Abstract method getFileName() called in DataSource")
+		
+	def getPolyData(self, timepoint):
+		"""
+		Return the polygonal dataset attached to given timepoint or None if none exists.
+		"""
+		return None
+		
 	def getDataSet(self, i, raw = 0):
 		"""
 		Returns the DataSet at the specified index
-		Parameters:   i		  The index
+		@param i The timepoint to return
 		"""
-		raise "Abstract method getDataSet() in DataSource called"
+		raise bxdexceptions.AbstractMethodCalled("Abstract method getDataSet() in DataSource called")
 
 	def getName(self):
 		"""
 		Returns the name of the dataset series which this datasource
 					 operates on
 		"""
-		raise "Abstract method getName() in DataSource called"
+		raise bxdexceptions.AbstractMethodCalled("Abstract method getName() in DataSource called")
 		
 		
 	def convertFileName(self, filename):

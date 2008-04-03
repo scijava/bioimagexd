@@ -49,10 +49,10 @@ class AbstractMethodCalled(Exception):
 	@since: 27.07.2007
 	@author: SG
 	"""
-	def __init__(self):
+	def __init__(self, *args):
 		"""
 		Basic constructor
 		@since: 27.07.2007
 		@author: SG
 		"""
-		Exception.__init__(self)
+		Exception.__init__(self, *args)

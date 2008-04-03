@@ -492,8 +492,14 @@ class ProcedurePanel(wx.ScrolledWindow):
 			self.procedureListBox.InsertStringItem(i, name)
 			self.procedureListBox.updateSelectedVariables(i, listName = name)
 			
-		print "populating list box"
 		self.populateListBox()
+		chlGrouping = self.analysis.getChannelGrouping()
+		procListGrouping = self.analysis.getChannelGroupingByProcedureList()
+		channelProc = self.analysis.getChannelProcessing()
+		self.groupChannelsCheckbox.SetValue(chlGrouping)
+		self.groupProcListCheckbox.SetValue(procListGrouping)
+		self.radioBox.SetSelection(channelProc)
+
 
 	def onAddProcedureList(self, evt):
 		"""

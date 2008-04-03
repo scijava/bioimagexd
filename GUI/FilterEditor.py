@@ -151,7 +151,7 @@ class FilterEditor(wx.Panel):
 		f = lambda evt, btn = self.addSegmentationBtn, \
 					cats = (lib.FilterTypes.SEGMENTATION, lib.FilterTypes.REGION_GROWING, \
 							lib.FilterTypes.WATERSHED, lib.FilterTypes.MEASUREMENT, \
-							lib.FilterTypes.REGISTRATION): \
+							lib.FilterTypes.REGISTRATION, lib.FilterTypes.COLOCALIZATION, lib.FilterTypes.POLYDATA): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		

@@ -185,7 +185,7 @@ class OGLAnnotation(ogl.Shape):
 		"""
 		Reconstruct state of this object from given dictionary
 		"""
-		for key in state[self.AnnotationType].keys():
+		for key in state.get(self.AnnotationType,{}).keys():
 			self.getAttr(state[self.AnnotationType], key)
 
 	def GetMaintainAspectRatio(self):

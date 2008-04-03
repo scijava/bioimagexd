@@ -577,7 +577,7 @@ class MainWindow(wx.Frame):
 		
 		self.progress.SetValue(int(arg))
 		if int(arg) >= 100:
-			wx.FutureCall(1500, self.clearProgressBar)
+			wx.CallLater(1500, self.clearProgressBar)
 		else:
 			self.progress.Show()
 			

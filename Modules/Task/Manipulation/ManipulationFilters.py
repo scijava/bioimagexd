@@ -48,7 +48,6 @@ import wx
 import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
-import TrackingFilters
 import RegistrationFilters
 
 from lib.FilterTypes import *
@@ -142,7 +141,6 @@ def getFilterList():
 	filterlist += MathFilters.getFilters()
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
-	filterlist += TrackingFilters.getFilters()
 	filterlist += RegistrationFilters.getFilters()
 	return filterlist
 

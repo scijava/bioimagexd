@@ -192,7 +192,6 @@ class DataUnitSettings:
 			# this is done so that all the settings will be read correctly
 			# if the type cannot be determined, then just read the settings that we know how
 			if type:
-				Logging.backtrace()
 				if type in self.modules:
 					settingsclass = self.modules[type][2].getSettingsClass()
 				else:
@@ -353,7 +352,7 @@ class DataUnitSettings:
 		Returns the value of a given key in a format
 					 that can be written to disk.
 		"""
-		Logging.info("Serializing name ", name, kw = "dataunit")
+#		Logging.info("Serializing name ", name, kw = "dataunit")
 		if "ColorTransferFunction" in name:
 			s = lib.ImageOperations.lutToString(value, luttype = "BioImageXD")
 			s2 = ""

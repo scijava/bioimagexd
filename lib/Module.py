@@ -56,6 +56,12 @@ class Module:
 		# If we enable this, then ITK starts eating memory like crazy
 		#import itkConfig
 		#itkConfig.ProgressCallback = self.updateITKProgress
+
+	def getPolyDataOutput(self):
+		"""
+		Return the polygonal data output of this module, or None if no polydata output exists.
+		"""
+		return None
 		
 	def getEventDesc(self):
 		"""
