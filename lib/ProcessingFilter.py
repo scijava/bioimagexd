@@ -507,6 +507,37 @@ class ProcessingFilter:
 			
 			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1)
 		return image
+
+	def getPolyDataInput(self, mapIndex):
+		"""
+		Return the input imagedata #n
+		"""
+		if not self.dataUnit:
+			self.dataUnit = scripting.combinedDataUnit
+		# By default, asking for say, input number 1 gives you 
+		# the first (0th actually) input mapping
+		# these can be thought of as being specified in the GUI where you have as many 
+		# selections of input data as the filter defines (with the variable numberOfInputs)
+		if mapIndex not in self.inputMapping:
+			self.setInputChannel(mapIndex, mapIndex-1)
+			
+		# Input mapping 0 means to return the input from the filter stack above
+		
+		if self.inputMapping[mapIndex] == 0 and self.dataUnit and self.dataUnit.isProcessed():
+			try:
+				image = self.polyInput
+			except:
+				traceback.print_exc()
+				Logging.info("No input with number %d" %self.inputIndex, self.inputs, kw = "processing")
+		else:
+			# If input from stack is not requested, or the dataunit is not processed, then just return 
+			# the image data from the corresponding channel
+			Logging.info("Using input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
+							kw = "processing")
+			
+			image = self.getPolyDataInputFromChannel(self.inputMapping[mapIndex] - 1)
+		return image
+		
 		
 	def getInputDataUnit(self, mapIndex):
 		"""
@@ -555,6 +586,26 @@ class ProcessingFilter:
 			return self.sourceUnits[unitIndex]
 
 		return self.sourceUnits[unitIndex].getTimepoint(currentTimePoint)
+		
+	def getPolyDataInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):
+		"""
+		Return an imagedata object that is the current timepoint for channel #n
+		"""
+		if self.dataUnit.isProcessed():
+			if not self.sourceUnits:
+				self.sourceUnits = self.dataUnit.getSourceDataUnits()
+		else:
+			self.sourceUnits = [self.dataUnit]
+				
+		currentTimePoint = scripting.visualizer.getTimepoint()
+		if scripting.processingTimepoint != -1:
+			currentTimePoint = scripting.processingTimepoint
+		if timepoint != -1:
+			currentTimePoint = timepoint
+		if dataUnit:
+			return self.sourceUnits[unitIndex]
+
+		return self.sourceUnits[unitIndex].getPolyDataAtTimepoint(currentTimePoint)
 		
 	def updateDefaultValues(self):
 		"""

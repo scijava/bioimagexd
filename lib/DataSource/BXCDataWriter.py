@@ -130,8 +130,17 @@ class BXCDataWriter(DataWriter):
 		parser = self.getParser()
 		if not parser.has_section("ImageData"):
 			parser.add_section("ImageData")
+			
+		nPoly = len(self.polyDataFiles)
+		if nPoly:
+			if not parser.has_section("PolyData"):
+				parser.add_section("PolyData")
+				parser.set("PolyData", "numberOfFiles", "%d"%nPoly)
 		n = len(self.dataSets)
 		parser.set("ImageData", "numberOfFiles", "%d" % n)
+		
+		for i in range(nPoly):
+			parser.set("PolyData", "file_%d"%i, self.polyDataFiles[i])
 		for i in range(n):
 			parser.set("ImageData", "file_%d" % i, self.dataSets[i])
 					

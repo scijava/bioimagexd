@@ -271,6 +271,13 @@ class SurfaceModule(VisualizationModule):
 		
 		self.actor.GetProperty().SetOpacity(opacity)
 		
+		polyinput = self.getPolyDataInput(1)
+		if polyinput:
+			Logging.info("Using polydata input", kw="visualizer")
+			self.mapper.SetInput(polyinput)
+			VisualizationModule.updateRendering(self, polyinput)
+			self.parent.Render() 
+			return
 		input = self.getInput(1)
 		
 		if self.parameters["Gaussian"]:
@@ -336,7 +343,6 @@ class SurfaceModule(VisualizationModule):
 			writer.SetInput(input)
 			writer.Update()
 		VisualizationModule.updateRendering(self, input)
-		#self.mapper.Update()
 		self.parent.Render()    
 
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):

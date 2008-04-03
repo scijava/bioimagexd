@@ -81,7 +81,6 @@ class CSVListView(wx.ListCtrl):
 		for i, headerName in enumerate(data[0]):
 			self.InsertColumn(i, headerName)
 		self.data = data[1:]
-#        print "There are ",len(data[1:]),"items"
 		self.SetItemCount(len(data[1:]))
 
 	def OnGetItemText(self, item, col):
@@ -89,7 +88,6 @@ class CSVListView(wx.ListCtrl):
 		A method that returns the value of the given column of given row
 		"""            
 		try:
-			print "Returning", self.data[item][col]
 			return str(self.data[item][col])
 		except:
 			return ""

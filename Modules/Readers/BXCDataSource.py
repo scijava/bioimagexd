@@ -60,7 +60,9 @@ class BXCDataSource(DataSource):
 		DataSource.__init__(self)
 		# list of references to individual datasets (= timepoints) stored in 
 		# vti-files
+		self.polydataReader = None
 		self.dataSets = []
+		self.polyTimepoint = -1
 		self.polyDataFiles = []
 		# filename of the .du-file
 		self.filename = filename
@@ -112,9 +114,10 @@ class BXCDataSource(DataSource):
 		"""
 		Return the polygonal dataset associated with given timepoint
 		"""
-		if not self.polydataReader:
+		if not self.polydataReader or self.polyTimepoint != timepoint:
 			if len(self.polyDataFiles) <= timepoint:
 				return None
+			self.polyTimepoint = timepoint
 			filename = self.polyDataFiles[timepoint]
 			self.polydataReader = vtk.vtkXMLPolyDataReader()
 			self.polydataReader.AddObserver("ProgressEvent", lib.messenger.send)
@@ -265,6 +268,7 @@ class BXCDataSource(DataSource):
 			filename = self.parser.get("ImageData", currentFile)
 			
 			if hasPolydata:
+				print "GOT polydata"
 				polyFileName = self.parser.get("PolyData", currentFile)
 				self.polyDataFiles.append(polyFileName)
 				
