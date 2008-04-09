@@ -58,6 +58,8 @@ public:
 
   vtkUnsignedLongArray* GetBackgroundToObjectCountArray() { return BackgroundToObjectCountArray; }  
   vtkUnsignedLongArray* GetForegroundToBackgroundArray() { return ForegroundToBackgroundArray; }  
+  vtkUnsignedLongArray* GetObjectOverlapArray() { return ObjectOverlapArray; }
+  vtkUnsignedLongArray* GetObjectSizeArray() { return ObjectSizeArray; }
   int SplitExtent(int splitExt[6], 
                                                 int startExt[6], 
                                                 int num, int total);
@@ -87,6 +89,8 @@ protected:
 private:
   vtkUnsignedLongArray* BackgroundToObjectCountArray;
   vtkUnsignedLongArray* ForegroundToBackgroundArray;
+  vtkUnsignedLongArray* ObjectOverlapArray;
+  vtkUnsignedLongArray* ObjectSizeArray;
 
   int BackgroundLevel;
   vtkImageLabelCount(const vtkImageLabelCount&);  // Not implemented.
