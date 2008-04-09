@@ -41,7 +41,6 @@ import wx
 import traceback
 import lib.Command
 import os
-import XMLGUIBuilder
 import GUI.Scatterplot
 RADIO_CHOICE = "RADIO_CHOICE"
 THRESHOLD = "THRESHOLD"
@@ -60,10 +59,7 @@ COLOC_THRESHOLD = "COLOCTHRESHOLD"
 SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION, COLOC_THRESHOLD]
 
 def getGUIBuilderForFilter(obj):
-	if hasattr(obj, "getXMLDescription"):
-		return XMLGUIBuilder.XMLGUIBuilder
-	else:
-		return GUIBuilder
+	return GUIBuilder
 		
 class GUIBuilder(wx.Panel):
 	"""

@@ -53,6 +53,7 @@ class OGLAnnotation(ogl.Shape):
 		self._offset = (0,0)
 		self._name = ""
 		self.attrList = ["_xpos","_ypos","scaleFactor"]
+
 		
 	def getCoveredPoints(self):
 		"""
@@ -64,6 +65,8 @@ class OGLAnnotation(ogl.Shape):
 		"""
 		unoffset a given attribute
 		"""
+		if not hasattr(self, "_canvas"):
+			return
 		canvas = self.GetCanvas()
 		if not canvas:
 			return

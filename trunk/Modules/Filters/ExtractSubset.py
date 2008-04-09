@@ -141,11 +141,18 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetInput(imagedata)
 		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
 		data = self.vtkfilter.GetOutput()
-
+		translate = vtk.vtkImageTranslateExtent()
+		translate.SetInput(data)
+		translation = [0,0,0]
 		if minz > 0:
-			translate = vtk.vtkImageTranslateExtent()
-			translate.SetTranslation((0,0,-minz))
-			translate.SetInput(data)
+			translation[2] = -minz
+		if minx > 0:
+			translation[0] = -minx
+		if miny > 0:
+			translation[1] = -miny
+		if translation != [0,0,0]:
+			translate.SetTranslation(tuple(translation))
 			data = translate.GetOutput()
-		
+			data.Update()
+			print data		
 		return  data

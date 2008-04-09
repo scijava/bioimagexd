@@ -22,7 +22,7 @@
 
 
 =========================================================================*/
-#include "vtkImageLabelAverage.h"
+#include "vtkImageLabelCount.h"
 
 #include "vtkCellData.h"
 #include "vtkImageData.h"
@@ -31,24 +31,26 @@
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkUnsignedCharArray.h"
 
+#include <vtkstd/map>
+#include <vtkstd/list>
+#include <vtkstd/algorithm>
 
-vtkCxxRevisionMacro(vtkImageLabelAverage, "$Revision: 1.36 $");
-vtkStandardNewMacro(vtkImageLabelAverage);
+vtkCxxRevisionMacro(vtkImageLabelCount, "$Revision: 1.36 $");
+vtkStandardNewMacro(vtkImageLabelCount);
 
 //-----------------------------------------------------------------------------
 // Construct object to extract all of the input data.
-vtkImageLabelAverage::vtkImageLabelAverage()
+vtkImageLabelCount::vtkImageLabelCount()
 {
-    NumberOfItems = 0;
-    AverageArray = vtkDoubleArray::New();
     BackgroundLevel = 1;
-    AverageInsideLabels = AverageOutsideLabels = 0;
-    NonZeroVoxels = 0;
+   BackgroundToObjectCountArray = vtkUnsignedLongArray::New();
+   ForegroundToBackgroundArray = vtkUnsignedLongArray::New();
 }
 
 
-int vtkImageLabelAverage::FillInputPortInformation(
+int vtkImageLabelCount::FillInputPortInformation(
   int port, vtkInformation* info)
 {
   info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
@@ -60,7 +62,7 @@ int vtkImageLabelAverage::FillInputPortInformation(
 //-----------------------------------------------------------------------------
 // This templated function executes the filter for any type of data.
 template <class T>
-void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOfInputs,
+void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInputs,
                            vtkImageData **inData,vtkImageData*outData,int outExt[6],
                             T*)
 {    
@@ -69,28 +71,26 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   vtkIdType maskIncX,maskIncY,maskIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
-  T *inPtr;
+  T *fgPtr, *bgPtr;
   unsigned long nonZeroInsideCount = 0, nonZeroOutsideCount = 0;
   unsigned long nonZeroCount = 0;
   double insideSum = 0, outsideSum = 0;
-  unsigned long *maskPtr;
   int* table;
   unsigned long count = 0;
   unsigned long target;       
-  vtkDoubleArray* avgArray = self->GetAverageArray();
-  vtkUnsignedLongArray* numArray = vtkUnsignedLongArray::New();
-  
 
+  vtkUnsignedLongArray* bgToCountArray = self->GetBackgroundToObjectCountArray();
+  vtkUnsignedLongArray* fgToBgArray = self->GetForegroundToBackgroundArray();
+  vtkUnsignedCharArray* counted = vtkUnsignedCharArray::New();
   int bgLevel = self->GetBackgroundLevel();
-  T scalar;
-  unsigned long maskScalar;
-  inPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
-  maskPtr = (unsigned long*) inData[1]->GetScalarPointerForExtent(outExt);
+  T fgScalar, bgScalar;
+  
+  bgPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
+  fgPtr = (T*) inData[1]->GetScalarPointerForExtent(outExt);
   
   int wext[6];
   outData->DeepCopy(inData[0]);
-  //input->GetIncrements(inIncX, inIncY, inIncZ);
-  //output->GetIncrements(outIncX, outIncY, outIncZ);
+
   
   inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
   inData[1]->GetContinuousIncrements(outExt, maskIncX,maskIncY,maskIncZ);
@@ -103,23 +103,30 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
   double avg;
 
   double range[2]; 
-  inData[1]->GetScalarRange(range);
-  printf("Range = %f,%f\n",range[0],range[1]);
-  avgArray -> SetNumberOfValues((unsigned long)range[1]+1);
-  numArray -> SetNumberOfValues((unsigned long)range[1]+1);
-  avgArray -> SetValue(0,0);
-  numArray -> SetValue(0,0);
-  char progressText[200];
+  inData[0]->GetScalarRange(range);
+  bgToCountArray -> SetNumberOfValues((unsigned long)range[1]+1);
+  printf("Number of background objects = %d\n", (unsigned long)range[1]);
   for(int i=0;i<range[1]+1;i++) {
-      avgArray->SetValue(i,0);
-      numArray->SetValue(i,0);
+      bgToCountArray->SetValue(i, 0);
+  }  
+  inData[1]->GetScalarRange(range);
+  fgToBgArray -> SetNumberOfValues((unsigned long)range[1]+1);
+  counted->SetNumberOfValues((unsigned long)range[1]+1);
+
+  char progressText[200];
+  printf("Number of foreground objects = %d\n", (unsigned long)range[1]);
+  for(int i=0;i<range[1]+1;i++) {
+     fgToBgArray->SetValue(i, 0);
+     counted->SetValue(i, 0);
   }
+  
+  std::map<unsigned long,std::list<unsigned long> > fgToBg;
   
   target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
   target++;
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
 
-    sprintf(progressText,"Calculating average intensity of objects (slice %d / %d)",idxZ,maxZ);
+    sprintf(progressText,"Calculating object placement (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
     for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
         if (!id)
@@ -133,64 +140,39 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id,int NumberOf
     
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           for(idxC = 0; idxC < maxC; idxC++ ) {
-            scalar = *inPtr++;
-            maskScalar = (unsigned long) *maskPtr++;
-
+            fgScalar = *fgPtr++;
+            bgScalar = *bgPtr++;
+            std::list<unsigned long>  *bgintlist = &fgToBg[fgScalar];
+            std::list <unsigned long>::iterator result;
+            result = std::find(bgintlist->begin(), bgintlist->end(), bgScalar);
             
-            if(maskScalar > n) {
-                n = maskScalar;
-            }
-            if(scalar) {
-                nonZeroCount++;
-                if(maskScalar >= bgLevel) {
-                    nonZeroInsideCount++;
-                    insideSum += scalar;
-                } else {
-                    //printf("Label = %d, scalar = %f\n", maskScalar,double(scalar));
-                    nonZeroOutsideCount++;
-                    outsideSum += scalar;
-                }
-                
-            }
-            avg = avgArray->GetValue((unsigned long)maskScalar);
-            avg += scalar;
-            avgArray->SetValue((unsigned long)maskScalar, avg);
-            numberOfValues = numArray -> GetValue(maskScalar);
-            numberOfValues++;
-            //if(maskScalar!=1)printf("Number of values %d = %d, avgint=%f\n",maskScalar,numberOfValues,avg/numberOfValues);
-            numArray -> SetValue(maskScalar, numberOfValues);
+            if( fgScalar != 0 && result==bgintlist->end() )
+            {
+            	bgintlist->push_back(bgScalar);
+            	unsigned long val = fgToBgArray->GetValue(fgScalar);
+            	// Check that if the measured value for this foreground object is not the background label
+            	// then count it in
+            	if(val != bgScalar) {
+	            	bgToCountArray->SetValue(bgScalar, bgToCountArray->GetValue(bgScalar)+1);
+    	        	fgToBgArray->SetValue(fgScalar, bgScalar);
+    	        	printf("Foreground object %d is in background object %d\n", fgScalar, bgScalar);
+    	        }
+            } 
             
           }
-          inPtr+=inIncX;
-          maskPtr += maskIncX;
+          fgPtr+=inIncX;
+          bgPtr += maskIncX;
       }
-      inPtr += inIncY;
-      maskPtr += maskIncY;
+      fgPtr += inIncY;
+      bgPtr += maskIncY;
     }  
-    inPtr += inIncZ;
-    maskPtr += maskIncZ;
-  }
-  if(nonZeroInsideCount) {
-    self->SetAverageInsideLabels(insideSum / nonZeroInsideCount);
-  }
-  if(nonZeroOutsideCount) {
-    printf("Sum of intensity outside %f, %d voxels\n",outsideSum, nonZeroOutsideCount);
-    self->SetAverageOutsideLabels(outsideSum / nonZeroOutsideCount);
-  }
-  self->SetNonZeroVoxels(nonZeroCount);
-  
-  for(int i=0;i<=n;i++) {
-     avg = avgArray->GetValue(i);
-     numberOfValues = numArray -> GetValue(i);
-     if(numberOfValues) {
-       avg /= numberOfValues;     
-       avgArray -> SetValue(i,avg);
-     } else avgArray->SetValue(i, 0);
+    fgPtr += inIncZ;
+    bgPtr += maskIncZ;
   }
   
 }
 
-int vtkImageLabelAverage::SplitExtent(int splitExt[6], 
+int vtkImageLabelCount::SplitExtent(int splitExt[6], 
                                                 int startExt[6], 
                                                 int num, int total)
 {
@@ -203,7 +185,7 @@ int vtkImageLabelAverage::SplitExtent(int splitExt[6],
 // algorithm to fill the output from the inputs.
 // It just executes a switch statement to call the correct function for
 // the regions data types.
-void vtkImageLabelAverage::ThreadedRequestData (
+void vtkImageLabelCount::ThreadedRequestData (
   vtkInformation * vtkNotUsed( request ),
   vtkInformationVector** vtkNotUsed( inputVector ),
   vtkInformationVector * vtkNotUsed( outputVector ),
@@ -232,7 +214,7 @@ void vtkImageLabelAverage::ThreadedRequestData (
 
     switch (inData[0][0]->GetScalarType())
   {
-    vtkTemplateMacro(vtkImageLabelAverageExecute(this, id,
+    vtkTemplateMacro(vtkImageLabelCountExecute(this, id,
                     this->GetNumberOfInputConnections(0),inData[0],
                     outData[0], outExt,static_cast<VTK_TT *>(0)));
   default:
@@ -244,7 +226,7 @@ void vtkImageLabelAverage::ThreadedRequestData (
 
 
 //-----------------------------------------------------------------------------
-void vtkImageLabelAverage::PrintSelf(ostream& os, vtkIndent indent)
+void vtkImageLabelCount::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
