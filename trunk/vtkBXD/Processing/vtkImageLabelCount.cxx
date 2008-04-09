@@ -47,6 +47,8 @@ vtkImageLabelCount::vtkImageLabelCount()
     BackgroundLevel = 1;
    BackgroundToObjectCountArray = vtkUnsignedLongArray::New();
    ForegroundToBackgroundArray = vtkUnsignedLongArray::New();
+   ObjectOverlapArray = vtkUnsignedLongArray::New();
+   ObjectSizeArray = vtkUnsignedLongArray::New();
 }
 
 
@@ -81,7 +83,8 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
 
   vtkUnsignedLongArray* bgToCountArray = self->GetBackgroundToObjectCountArray();
   vtkUnsignedLongArray* fgToBgArray = self->GetForegroundToBackgroundArray();
-  vtkUnsignedCharArray* counted = vtkUnsignedCharArray::New();
+  vtkUnsignedLongArray* ObjectOverlapArray = self->GetObjectOverlapArray();
+  vtkUnsignedLongArray* ObjectSizeArray = self->GetObjectSizeArray();
   int bgLevel = self->GetBackgroundLevel();
   T fgScalar, bgScalar;
   
@@ -105,19 +108,21 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
   double range[2]; 
   inData[0]->GetScalarRange(range);
   bgToCountArray -> SetNumberOfValues((unsigned long)range[1]+1);
-  printf("Number of background objects = %d\n", (unsigned long)range[1]);
   for(int i=0;i<range[1]+1;i++) {
       bgToCountArray->SetValue(i, 0);
   }  
   inData[1]->GetScalarRange(range);
   fgToBgArray -> SetNumberOfValues((unsigned long)range[1]+1);
-  counted->SetNumberOfValues((unsigned long)range[1]+1);
+  ObjectSizeArray->SetNumberOfValues((unsigned long)range[1]+1);
+  ObjectOverlapArray->SetNumberOfValues((unsigned long)range[1]+1);
 
   char progressText[200];
-  printf("Number of foreground objects = %d\n", (unsigned long)range[1]);
+
+
   for(int i=0;i<range[1]+1;i++) {
      fgToBgArray->SetValue(i, 0);
-     counted->SetValue(i, 0);
+     ObjectSizeArray->SetValue(i, 0);
+     ObjectOverlapArray->SetValue(i, 0);
   }
   
   std::map<unsigned long,std::list<unsigned long> > fgToBg;
@@ -145,18 +150,18 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
             std::list<unsigned long>  *bgintlist = &fgToBg[fgScalar];
             std::list <unsigned long>::iterator result;
             result = std::find(bgintlist->begin(), bgintlist->end(), bgScalar);
+            ObjectSizeArray->SetValue(fgScalar, ObjectSizeArray->GetValue(fgScalar)+1);
+            if(bgScalar && fgScalar) {
+            	ObjectOverlapArray->SetValue(fgScalar, ObjectOverlapArray->GetValue(fgScalar)+1);
+            }
+            
             
             if( fgScalar != 0 && result==bgintlist->end() )
             {
             	bgintlist->push_back(bgScalar);
-            	unsigned long val = fgToBgArray->GetValue(fgScalar);
-            	// Check that if the measured value for this foreground object is not the background label
-            	// then count it in
-            	if(val != bgScalar) {
-	            	bgToCountArray->SetValue(bgScalar, bgToCountArray->GetValue(bgScalar)+1);
-    	        	fgToBgArray->SetValue(fgScalar, bgScalar);
-    	        	printf("Foreground object %d is in background object %d\n", fgScalar, bgScalar);
-    	        }
+            	bgToCountArray->SetValue(bgScalar, bgToCountArray->GetValue(bgScalar)+1);
+   	        	fgToBgArray->SetValue(fgScalar, bgScalar);
+   	        	printf("Foreground object %d is in background object %d\n", fgScalar, bgScalar);
             } 
             
           }
@@ -169,6 +174,7 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
     fgPtr += inIncZ;
     bgPtr += maskIncZ;
   }
+  
   
 }
 

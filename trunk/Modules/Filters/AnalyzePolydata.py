@@ -153,9 +153,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				print "Poly data unit=",unit
 				self.polyDataSource = unit
 				
-		print "Statistics file=",tracksFile
 		if tracksFile and os.path.exists(tracksFile):
-			print "Got objects file",tracksFile
 			self.set("ObjectsFile", tracksFile)
 			self.defaultObjectsFile = tracksFile
 

@@ -190,9 +190,9 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		
 		if self.highlightSelected:
 			self.counter += 1
-			
 			wx.FutureCall(200, self.sendHighlight)
 		event.Skip()
+		
 	def sendHighlight(self):
 		"""
 		Send an event that will highlight the selected objects
@@ -202,10 +202,11 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		if self.counter <= 0:
 			lib.messenger.send(None, "selected_objects", self.getSelection())
 			self.counter = 0
+			
 	def OnItemActivated(self, event):
 		self.currentItem = event.m_itemIndex
 		
-		if len(self.centersOfMassList) >= self.currentItem:			   
+		if len(self.centersOfMassList) >= self.currentItem: 
 			centerofmass = self.centersOfMassList[self.currentItem]
 			x, y, z = centerofmass
 			

@@ -34,6 +34,7 @@ import codecs
 import csv
 import types
 import wx
+import lib.messenger
 
 class CSVListView(wx.ListCtrl):
 	"""
@@ -54,24 +55,37 @@ class CSVListView(wx.ListCtrl):
 
 		self.attr2 = wx.ListItemAttr()
 		self.attr2.SetBackgroundColour("light blue")
-		
+		self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
+
 	def exportToCsv(self, filename, headers = []):
 		"""
 		write out the data to a .csv file
 		"""
 		f = codecs.open(filename, "wb", "latin-1")
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
+		self.writeOut(w, headers)
+		
+	def writeOut(self, w, headers = []):
+		"""
+		Write the data out
+		"""
 		for i in headers:
-			w.writerow([i])
+			w.writerow(i)
 		for line in self.data:
 			w.writerow(line)
-		f.close()
+		return w
+
 		
 	def importFromCsv(self, filename):
 		"""
 		read a .csv file and show it in the list box
 		"""
 		pass
+		
+	def OnItemActivated(self, event):
+		self.currentItem = event.m_itemIndex
+		lib.messenger.send(self, "item_activated", event.m_itemIndex)
+
 		
 	def setContents(self, data):
 		"""
@@ -87,11 +101,19 @@ class CSVListView(wx.ListCtrl):
 	def OnGetItemText(self, item, col):
 		"""
 		A method that returns the value of the given column of given row
-		"""            
+		"""        
 		try:
-			return str(self.data[item][col])
+			row = self.data[item]
+			if not row:
+				return ""
+			data = row[col]
+			if not data:
+				return ""
 		except:
 			return ""
+		if type(data) not in [types.StringType, types.UnicodeType]:
+			return str(data)
+		return data
  
 	def OnGetItemImage(self, item):
 		"""
