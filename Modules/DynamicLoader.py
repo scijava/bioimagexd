@@ -184,8 +184,10 @@ class PluginLoader:
 			if hasattr(loadedModule, "getClass"):
 				moduleClass = loadedModule.getClass()
 			else:
-				moduleClass = loadedModule.__dict__["%s%s"%(moduleName,classEndsWith)]
-				
+				try:
+					moduleClass = loadedModule.__dict__["%s%s"%(moduleName,classEndsWith)]
+				except:
+					continue
 			settingClass = None
 			if hasattr(loadedModule, "getConfigPanel"):
 				settingClass = loadedModule.getConfigPanel()

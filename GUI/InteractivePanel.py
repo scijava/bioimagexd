@@ -953,6 +953,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			newobj = self.addNewAnnotation(obj.AnnotationType, 0, 0, 10, 10, noUpdate = 1, scaleFactor = 1)
 			newobj.restoreFrom(obj)
 			newobj._offset = (0, 0)
+			newobj.SetCanvas(self)
 		self.setOffset(self.xoffset, self.yoffset)
 		self.updateAnnotations()
 

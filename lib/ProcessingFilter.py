@@ -220,7 +220,10 @@ class ProcessingFilter:
 		"""
 		if self.taskPanel:
 			listOfFilters = self.taskPanel.filterEditor.getFilters(self.name)
-			filterIndex = listOfFilters.index(self)
+			try:
+				filterIndex = listOfFilters.index(self)
+			except:
+				print "Could not find myself in list",self
 			if len(listOfFilters) == 1:
 				func = "getFilter('%s')" % self.name
 			else:

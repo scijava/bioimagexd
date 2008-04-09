@@ -7,6 +7,10 @@ if [ ! -d ../sourceforge ]; then
 	echo "svn co https://bioimagexd.svn.sourceforge.net/svnroot/bioimagexd/bioimagexd/trunk ../sourceforge"
 	exit
 fi
+curr=$PWD
+cd ../sourceforge
+svn up
+cd $curr
 svn update
 rm -fr ../clean-exp
 echo "Exporting repository to clean directory"

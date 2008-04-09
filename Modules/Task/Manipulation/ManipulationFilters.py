@@ -55,82 +55,13 @@ except:
 
 from lib.FilterTypes import *
 
-class IntensityMeasurementList(wx.ListCtrl):
-	def __init__(self, parent, log):
-
-		wx.ListCtrl.__init__(self, parent, -1, size = (450, 250), \
-							style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,)
-
-		self.measurements = []
-		self.InsertColumn(0, "ROI")
-		self.InsertColumn(1, "Voxel #")
-		self.InsertColumn(2, "Sum")
-
-		self.InsertColumn(3, "Min")
-		self.InsertColumn(4, "Max")
-		self.InsertColumn(5, u"Mean\u00B1std.dev.")
-	 
-		#self.InsertColumn(2, "")
-		self.SetColumnWidth(0, 70)
-		self.SetColumnWidth(1, 60)
-		self.SetColumnWidth(2, 60)
-		self.SetColumnWidth(3, 50)
-		self.SetColumnWidth(4, 50)
-		self.SetColumnWidth(5, 100)
-
-		self.SetItemCount(1000)
-
-		self.attr1 = wx.ListItemAttr()
-		self.attr1.SetBackgroundColour("white")
-
-		self.attr2 = wx.ListItemAttr()
-		self.attr2.SetBackgroundColour("light blue")
-		
-		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
-
-	def setMeasurements(self, measurements):
-		self.measurements = measurements
-		
-	def OnItemSelected(self, event):
-		self.currentItem = event.m_itemIndex
-
-	def getColumnText(self, index, col):
-		item = self.GetItem(index, col)
-		return item.GetText()
-
-	def OnGetItemText(self, item, col):
-		
-		
-		if item >= len(self.measurements):
-			return ""
-		m = self.measurements[item]
-		#values.append((mask.getName(),n,totint,avgint, minval, maxval, mean, sigma))
-		
-		if col == 0:
-			return "%s" % m[0]
-		elif col in [3]:
-			return "%.2f" % m[3]
-		elif col == 5:
-			return u"%.2f\u00B1%.2f" % (m[5], m[6])
-		return "%d" % m[col]
-
-	def OnGetItemImage(self, item):
-		return - 1
-
-	def OnGetItemAttr(self, item):
-		if item % 2 == 1:
-			return self.attr1
-		elif item % 2 == 0:
-			return self.attr2
-		else:
-			return None
 
 def getFilters():
 	"""
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [GaussianSmoothFilter, 
-			ROIIntensityFilter, GradientFilter, GradientMagnitudeFilter,
+			GradientFilter, GradientMagnitudeFilter,
 			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
 			ITKSigmoidFilter, ITKLocalMaximumFilter]
 
@@ -223,145 +154,10 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		
 
 		
-class ROIIntensityFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 04.08.2006, KP
-	Description: A filter for calculating the volume, total and average intensity of a ROI
-	"""		
-	name = "Analyze ROIs"
-	category = MEASUREMENT
-	
-	def __init__(self):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, (1, 2))
-	  
-		self.reportGUI = None
-		self.measurements = []
-		self.descs = {"ROI": "Region of Interest", "AllROIs": "Measure all ROIs",
-					"SecondInput":"Use second input as ROI"}
-		self.itkFlag = 1
-		
-	def getInputName(self, n):
-		"""
-		Return the name of the input #n
-		"""			 
-		if n == 2: return "ROI image"
-		return "Source dataset" 
-
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return [["", ("ROI", "AllROIs","SecondInput")]]
-		
-	def getGUI(self, parent, taskPanel):
-		"""
-		Return the GUI for this filter
-		"""				 
-		gui = ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
-		if not self.reportGUI:
-			self.reportGUI = IntensityMeasurementList(self.gui, -1)
-			if self.measurements:
-				self.reportGUI.setMeasurements(self.measurements)
-				
-			gui.sizer.Add(self.reportGUI, (1, 0), flag = wx.EXPAND | wx.ALL)
-			
-		return gui
-		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		if parameter == "ROI":
-			return GUIBuilder.ROISELECTION
-		return types.BooleanType
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""		
-		if parameter == "SecondInput": return False
-		if parameter == "ROI":
-			n = scripting.visualizer.getRegionsOfInterest()
-			if n:
-				return (0, n[0])
-			return 0
-		return 0
-		
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""			   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		
-		if not self.parameters["SecondInput"]:
-			if not self.parameters["AllROIs"]:
-				rois = [self.parameters["ROI"][1]]
-				print "rois =", rois
-			else:
-				rois = scripting.visualizer.getRegionsOfInterest()
-		else:
-			rois = [self.getInput(2)]
-
-		imagedata =	 self.getInput(1)
-		
-		mx, my, mz = self.dataUnit.getDimensions()
-		values = []
-
-		itkOrig = self.convertVTKtoITK(imagedata)
-
-		for mask in rois:
-			if not mask:
-				return imagedata
-			if self.parameters["SecondInput"]:
-				itkLabel = self.convertVTKtoITK(mask)
-
-				roiName = None
-				if mask.GetScalarType() == 9:
-					a, b = mask.GetScalarRange()
-					statValues = range(int(a), int(b))
-				else:
-					statValues = [255]
-			else:
-				n, maskImage = lib.ImageOperations.getMaskFromROIs([mask], mx, my, mz)
-
-				itkLabel =	self.convertVTKtoITK(maskImage)
-				statValues = [255]
-				roiName = mask.getName()
-			labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
-			
-			labelStats.SetInput(0, itkOrig)
-			labelStats.SetInput(1, itkLabel)
-			labelStats.Update()
-			for statval in statValues:
-		
-				n = labelStats.GetCount(statval)
-	
-				totint = labelStats.GetSum(statval)
-				maxval = labelStats.GetMaximum(statval)
-				minval = labelStats.GetMinimum(statval)
-	#			 median = labelStats.GetMedian(255)
-	#			 variance = labelStats.GetVariance(255)
-				mean = labelStats.GetMean(statval)
-				sigma = labelStats.GetSigma(statval)
-				if not roiName:
-					name = "%d"%statval
-				else:
-					name = roiName
-				values.append((name, n, totint, minval, maxval, mean, sigma))
-		if self.reportGUI:
-			self.reportGUI.setMeasurements(values)
-			self.reportGUI.Refresh()
-		self.measurements = values
-		return imagedata
 
 
 class GradientFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
 	Description: A class for calculating the gradient of the image
 	"""		
 	name = "Gradient"

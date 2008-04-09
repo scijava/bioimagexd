@@ -50,7 +50,6 @@ def getFilters():
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [MaskFilter, ITKWatershedSegmentationFilter,
-			 ConnectedComponentFilter,
 			MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
 			ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
 			ITKNeighborhoodConnectedThresholdFilter, ITKOtsuThresholdFilter]
@@ -198,106 +197,11 @@ class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
 		return data
 
 
-class ConnectedComponentFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 12.07.2006, KP
-	Description: A filter for labeling all separate objects in an image
-	"""
-	name = "Connected component labeling"
-	category = SEGMENTATION
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.ignoreObjects = 1
-		
-		self.descs = {"Threshold": "Remove objects with less voxels than:"}
-		self.itkFlag = 1
-		self.origCtf = None
-		self.relabelFilter = None
-		self.itkfilter = None
-		
-	def getParameterLevel(self, parameter):
-		"""
-		Return the level of the given parameter
-		"""
-		return scripting.COLOR_INTERMEDIATE
-			
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""	   
-		return 0
-		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		return types.IntType
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		#return [["",("Level",)]]
-		return [["Minimum object size (in pixels)", ("Threshold", )]]
-
-	def onRemove(self):
-		"""
-		Restore palette upon filter removal
-		"""		   
-		if self.origCtf:			
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
-	
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""					   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-			
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image)
-		if not self.itkfilter:
-			self.itkfilter = itk.ConnectedComponentImageFilter[image, itk.Image.UL3].New()
-		
-		self.eventDesc = "Performing connected component labeling"
-		self.itkfilter.SetInput(image)
-				
-		self.setImageType("UL3")
-		self.itkfilter.Update()
-		data = self.itkfilter.GetOutput()
-	
-		if not self.relabelFilter:
-			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
-		self.relabelFilter.SetInput(data)
-		th = self.parameters["Threshold"]
-		if th:
-			self.relabelFilter.SetMinimumObjectSize(th)
-	
-		data = self.relabelFilter.GetOutput()
-
-		self.eventDesc = "Relabeling segmented image"
-		self.relabelFilter.Update()
-		n = self.relabelFilter.GetNumberOfObjects()
-	
-		settings = self.dataUnit.getSettings()
-		ncolors = settings.get("PaletteColors")
-		if not ncolors or ncolors < n:
-			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
-			if not self.origCtf:
-				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)
-			settings.set("PaletteColors", n)
-		return data
 
 
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 12.07.2006, KP
-	Description: A filter for labeling all separate objects in an image
+	A filter for labeling all separate objects in an image
 	"""		
 	name = "Threshold for maximum object number"
 	category = SEGMENTATION

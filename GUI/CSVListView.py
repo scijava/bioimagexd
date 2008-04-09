@@ -78,6 +78,7 @@ class CSVListView(wx.ListCtrl):
 		Set the contents of the list view
 		"""    
 		assert type(data) == types.ListType
+		self.ClearAll()
 		for i, headerName in enumerate(data[0]):
 			self.InsertColumn(i, headerName)
 		self.data = data[1:]
