@@ -45,31 +45,24 @@ from Timeline import Timeline
 import Visualizer.VisualizerWindow
 import wx
 
-class FSplitPanel(wx.Panel):
-	def __init__(self, parent, id):
-		wx.Panel.__init__(self, parent, id)
-		
-		self.sizer = wx.BoxSizer(wx.VERTICAL)
-		self.SetSizer(self.sizer)
-		self.SetAutoLayout(1)
-		
-	def SplitHorizontally(self, *args):
-		self.sizer.Add(args[0])
-		self.sizer.Add(args[1])
-		self.Layout()
-		print "SplitHorizontally",args
-		
-	def UpdateSize(self):
-		print "UpdateSize()"
-
+import platform
 
 class SplitPanel(wx.SplitterWindow):
 	"""
 	A splitterwindow containing the timeline and it's configuration
 	"""    
 	def __init__(self, parent, ID):
-		wx.SplitterWindow.__init__(self, parent, ID,
-								   )        
+		wx.SplitterWindow.__init__(self, parent, ID)
+		
+	def OnSashPositionChange(self, event):
+		"""
+		An event handler for when the user drags the sash
+		On mac this will currently prevent the resizing 
+		"""
+		if platform.system() == 'Darwin':
+			return False
+		return wx.SplitterWindow.OnSashPositionChange(self, event)
+		
 class TimelinePanel(wx.Panel):
 	"""
 	Contains the timescale and the different "tracks"

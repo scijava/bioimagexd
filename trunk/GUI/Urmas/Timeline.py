@@ -35,13 +35,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import wx.lib.masked as masked
-#import os.path
-#import operator
-#import PreviewFrame
-#import sys
-#import Track
-#import types
 
 import GUI.Dialogs
 import GUI.Urmas.UrmasPalette

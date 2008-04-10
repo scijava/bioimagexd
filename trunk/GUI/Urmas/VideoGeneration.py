@@ -51,8 +51,7 @@ import subprocess
 
 class VideoGenerationDialog(wx.Dialog):
 	"""
-	Created: 29.09.2007, KP
-	Description: a dialog for re-encoding a project based on a project file
+	a dialog for re-encoding a project based on a project file
 	"""
 	def __init__(self, parent, filename):
 		wx.Dialog.__init__(self, parent, -1)
@@ -200,8 +199,11 @@ class VideoEncoder:
 		#file = ".".join(file_coms)
 		
 		cmdLine = self.getCommandLine(vcodec, self.videoFileName)
+		if not os.path.exists(cmdLine[0]):
+			GUI.Dialogs.showmessage(self, "Encoding failed: FFMPEG binary %s does not exist!" % ffmpeg, "Encoding failed")
+			return False
 		subprocess.call(cmdLine)
-		#os.system(cmdLine)
+		return True
 		
 	def deleteFrames(self):
 		"""
@@ -287,15 +289,19 @@ class VideoEncoder:
 			(x, y), fps, br, target = self.presets[self.preset]
 		
 		cmdLine = []
-		ffmpegs = {"linux": "bin/ffmpeg", "linux2": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "bin/ffmpeg.osx"}
+		if not scripting.main_is_frozen():
+			ffmpegs = {"linux": "bin/ffmpeg", "linux2": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "bin/ffmpeg.osx"}
+		else:
+			ffmpegs = {"linux": "bin/ffmpeg", "linux2": "bin/ffmpeg", "win32": "bin\\ffmpeg.exe", "darwin": "../Resources/Bin/ffmpeg.osx"}
 		ffmpeg = "ffmpeg"
 		for i in ffmpegs.keys():
 			if i == sys.platform:
 				ffmpeg = ffmpegs[i]
 				break
+			
+			
 		bindir = scripting.get_main_dir()
 		ffmpeg = os.path.join(bindir, ffmpeg)
-		
 		cmdLine.append(ffmpeg)
 		# scale the quality into the range understood by ffmpeg
 		quality = 11 - self.quality
@@ -536,14 +542,14 @@ class VideoGeneration(wx.Panel):
 		"""
 		Encode video from the frames produced
 		""" 
-		self.encoder.encode()
 		success = 0
-		vidFile = self.encoder.getVideoFileName()
-		if os.path.exists(vidFile):
-			GUI.Dialogs.showmessage(self, "Encoding was successful!", "Encoding done")
-			success = 1
-		else:
-			GUI.Dialogs.showmessage(self, "Encoding failed: File %s does not exist!" % vidFile, "Encoding failed")
+		if self.encoder.encode() == True:
+			vidFile = self.encoder.getVideoFileName()
+			if os.path.exists(vidFile):
+				GUI.Dialogs.showmessage(self, "Encoding was successful!", "Encoding done")
+				success = 1
+			else:
+				GUI.Dialogs.showmessage(self, "Encoding failed: File %s does not exist!" % vidFile, "Encoding failed")
 				
 		deleteFrames = (self.saveProjectBox.GetSelection() == 0)
 		if success and deleteFrames:
