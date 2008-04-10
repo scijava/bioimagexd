@@ -140,17 +140,20 @@ class Track(wx.Panel):
 			try:
 				self.paintTrack()
 			except Exception, e:
-				print "Failed to paint track:", e
+				Logging.backtrace()
+				Logging.info("Failed to paint track", kw="animator")
 				event.Skip()
-			self.renew = 0
-		dc = wx.BufferedPaintDC(self, self.buffer)#,self.buffer)
+			self.renew = False
+		dc = wx.BufferedPaintDC(self, self.buffer)
 		
 	def paintTrack(self):
 		"""
 		Paint the track
 		""" 
-		#print "Painting track",self.buffer.GetWidth(),self.buffer.GetHeight()
-		self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+		#self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+		self.dc = wx.MemoryDC()
+		self.dc.SelectObject(self.buffer)
+		
 		if self.renew != 2:
 			self.dc.Clear()
 			self.dc.SetBrush(wx.Brush(self.bg))
@@ -178,7 +181,6 @@ class Track(wx.Panel):
 				w, h = item.GetSize()
 				x += w
 
-			#self.stored=self.buffer.GetSubBitmap((0,0,self.buffer.GetWidth(),self.buffer.GetHeight()))
 			w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 			self.stored = wx.EmptyBitmap(w, h)
 			mdc = wx.MemoryDC()
@@ -201,6 +203,7 @@ class Track(wx.Panel):
 			self.timePosInPixelsEnd = pos + 5
 		
 		self.dc.EndDrawing()
+		self.dc.SelectObject(wx.NullBitmap)
 		self.dc = None
 
 	def onPaintOverlay(self):
@@ -449,7 +452,6 @@ class Track(wx.Panel):
 		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
-		print "Setting pure state of track"
 		Logging.info("Set pure state of track", state.label, kw = "animator")
 		self.label = state.label
 		self.startOfTrack = state.startOfTrack
@@ -596,10 +598,8 @@ class Track(wx.Panel):
 		self.duration = seconds
 		self.frames = frames
 		
-		
 		w = self.duration * self.timescale.getPixelsPerSecond()
 		self.width = w + self.getLabelWidth()
-		print "Set duration of ", self, " to ", seconds, "new width=", self.width
 		self.buffer = wx.EmptyBitmap(self.width, self.height)
 		self.SetSize((self.width, self.height))
 		self.renew = 0
@@ -675,8 +675,6 @@ class Track(wx.Panel):
 #        self.positionItem.SetSize((space,-1))
 		#self.Layout()
 		self.Refresh()
-		#self.updateLayout()
-		#print "setting positionItem size",space
 
 	def GetSize(self):
 		return (self.width + self.startOfTrack, self.height)

@@ -36,15 +36,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import GUI.Urmas
-#import ImageOperations
-#import math 
-#import os.path
-#import random
-#import sys
-#import threading
-#import TimepointSelection
-
 import GUI.Dialogs
 import lib.messenger
 import Logging
@@ -112,11 +103,7 @@ class SplineTrack(Track):
 		self.splineEditor.setClosed(flag)
 		self.paintTrack()
 		self.Refresh()
-		#if flag and add:
-		#    #self.addSplinePoint(len(self.items))
-		#    
-		#elif add:
-		#    self.removeItem(len(self.items))
+
 
 	def AcceptDrop(self, x, y, data):
 		"""
@@ -434,5 +421,4 @@ class SplineTrack(Track):
 		self.paintTrack()
 		
 		
-		
-#foobar    
+

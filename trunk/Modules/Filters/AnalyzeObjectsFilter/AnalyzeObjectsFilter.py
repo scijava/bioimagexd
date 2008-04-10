@@ -164,10 +164,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		if filename and self.taskPanel:
 			listOfFilters = self.taskPanel.filterList.getFilters()
 			filterIndex = listOfFilters.index(self)
-			if len(listOfFilters) == 1:
-				func = "getFilter()"
-			else:
-				func = "getFilter(%d)" %(filterIndex)
+			func = "getFilter(%d)" %(filterIndex)
 			n = scripting.mainWindow.currentTaskWindowName
 			method="scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
 		

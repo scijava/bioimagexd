@@ -49,11 +49,9 @@ DRAG_OFFSET = 15
 		
 class TrackItem:
 	"""
-	Class: TrackItem
-	Created: 10.02.2005, KP
+
 	Description: A class representing one item on a track
 	"""       
-
 	def __init__(self, parent, text, size, **kws):
 		#wx.Panel.__init__(self,parent,-1)#,style=wx.SIMPLE_BORDER)
 		self.text = text
@@ -134,10 +132,7 @@ class TrackItem:
 		"""       
 		self.dataUnit = dataunit
 		self.thumbtimepoint = self.timepoint
-		#print "self.timepoint=",self.timepoint
-		#self.volume = self.dataUnit.getTimepoint(self.thumbtimepoint)
-		#print "release data=",self.volume.GetReleaseDataFlag()
-		
+
 	def __set_pure_state__(self, state):
 		"""
 		Update the item
@@ -202,7 +197,6 @@ class TrackItem:
 		"""
 		A method that draws this track item
 		"""
-		#self.dc = wx.BufferedDC(wx.ClientDC(self),self.buffer)
 		self.dc = wx.MemoryDC()
 		self.dc.SelectObject(self.buffer)
 

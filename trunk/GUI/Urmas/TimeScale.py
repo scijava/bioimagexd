@@ -44,9 +44,7 @@ import lib.messenger
 
 class TimeScale(wx.Panel):
 	"""
-	Class: TimeScale
-	Created: 04.02.2005, KP
-	Description: Shows a time scale of specified length
+	Shows a time scale of specified length
 	"""
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent, -1, style = wx.RAISED_BORDER)
@@ -102,7 +100,6 @@ class TimeScale(wx.Panel):
 
 	def setOffset(self, x):
 		"""
-		Method: setOffset
 		Sets the offset of the timescale, which is
 					 mainly determined by the tracks' titles
 		"""    
@@ -112,7 +109,6 @@ class TimeScale(wx.Panel):
 
 	def setPixelsPerSecond(self, x):
 		"""
-		Method: setPixelsPerSecond
 		Set how many pixels the timeline will show per second
 		"""    
 		self.perSecond = x
@@ -120,7 +116,6 @@ class TimeScale(wx.Panel):
 
 	def setZoomLevel(self, level):
 		"""
-		Method: setZoomLevel
 		Set a zoom level affecting the pixels per second
 		"""    
 		if self.zoomLevel != level:
@@ -132,43 +127,37 @@ class TimeScale(wx.Panel):
 		
 	def getPixelsPerSecond(self):
 		"""
-		Method: getPixelsPerSecond
 		Return the pixels per second, modified by the zoom level
 		"""        
 		return int(self.perSecond * self.zoomLevel)
 
 	def setDuration(self, seconds):
 		"""
-		Method: setDuration
 		Set the length of the timescale
 		"""        
 		self.seconds = seconds
 		
 		self.width = self.getPixelsPerSecond() * seconds + 2 * self.xOffset
 		self.height = 20 + self.yOffset
-		self.SetSize((self.width + 10, self.height))
-		#print "Set Size to %d,%d"%(self.width+10,self.height+10)
+		self.SetSize((self.width , self.height))
 		self.buffer = wx.EmptyBitmap(self.width, self.height)
-		#print self.buffer.GetWidth(),self.buffer.GetHeight()
 		self.SetMinSize((self.width + 10, self.height))
-		#Logging.info("Set timescale size to %d,%d"%(self.width,self.height),kw="animator")
 		lib.messenger.send(None, "set_timeline_size", (self.width, self.height))
 		self.paintScale()
 		self.Refresh()
 		
 	def getDuration(self):
 		"""
-		Method: getDuration
 		Return the length of the timescale
 		"""           
 		return self.seconds
 
 	def paintScale(self):
 		"""
-		Method: paintScale
 		Paint the timescale
 		"""        
-		dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
+		dc = wx.MemoryDC()
+		dc.SelectObject(self.buffer)
 		#col=self.GetBackgroundColour()
 		r, g, b = self.bgcolor
 		col = wx.Colour(r, g, b)
@@ -176,20 +165,18 @@ class TimeScale(wx.Panel):
 		self.dc.BeginDrawing()
 		dc.SetBackground(wx.Brush(col))
 		dc.Clear()
-
-		# draw the horizontal line
-		#self.dc.DrawLine(self.xOffset,0,self.xOffset+self.seconds*self.perSecond,0)
-		#self.dc.DrawLine(self.xOffset,self.height-1,self.xOffset+self.seconds*self.perSecond,self.height-1)
-
-		#self.dc.SetTextForeground(color)        
+		
+		cx, cy, cw, ch = self.GetClientRect()
+		xoff = self.xOffset + cx
+		yoff = self.yOffset + cy
 		self.dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		# and the tick marks and times
-		self.dc.DrawLine(self.xOffset, 0, self.width, 0)
+		self.dc.DrawLine(xoff, 0, self.width, 0)
 		r, g, b = self.fgcolor
 		self.dc.SetPen(wx.Pen((r, g, b)))
 		for i in range(0, self.seconds + 1):
-			x = i * self.getPixelsPerSecond() + self.xOffset
-			y = 10 + self.yOffset
+			x = i * self.getPixelsPerSecond() + xoff
+			y = 10 + yoff
 			if not i % 10:
 				h = int(i / 3600)
 				m = int(i / 60)
@@ -212,12 +199,11 @@ class TimeScale(wx.Panel):
 				self.dc.DrawLine(x, -1, x, d)
 				self.dc.DrawLine(x, self.height - d - 4, x, self.height)
 		self.dc.EndDrawing()
+		dc.SelectObject(wx.NullBitmap)
 		self.dc = None
 	
 	def onPaint(self, event):
 		"""
-		Method: onPaint
-		The event handler for paint events. Just blits
-					 a bmp
+		The event handler for paint events. Just blits a bmp
 		"""    
 		dc = wx.BufferedPaintDC(self, self.buffer)

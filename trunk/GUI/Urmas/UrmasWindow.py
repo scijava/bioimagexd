@@ -85,7 +85,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.timeline = GUI.Urmas.Timeline.Timeline(self.splitter, self.control, size = (768, 50))
 		self.timelinePanel = TimelinePanel.TimelinePanel(self.splitter, self.control, size = (1024, 500), p = self.parent)
 		self.timelinePanel.timeline = self.timeline
-		self.splitter.SplitHorizontally(self.timeline, self.timelinePanel, -300)
+		self.splitter.SplitHorizontally(self.timeline, self.timelinePanel, 350)
 		
 		self.control.setTimelinePanel(self.timelinePanel)
 		

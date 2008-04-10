@@ -56,7 +56,6 @@ import wx
 
 class Timeline(scrolled.ScrolledPanel):
 	"""
-	Created: 04.02.2005, KP
 	Description: Class representing the timeline with different tracks
 	"""    
 	def __init__(self, parent, control, **kws):
@@ -134,15 +133,7 @@ class Timeline(scrolled.ScrolledPanel):
 					i.updateItemSizes()
 					i.setDuration(self.seconds, self.frames)
 					print i.GetSize()
-			#if t:
-			#    sizer.Fit(t)
-		#print self.timepointTracks[0].GetSize()
-		#self.FitInside()
-		#self.SetupScrolling()
-		#self.Layout()        
-		#print self.timepointSizer.GetSize()
-		#self.SetBackgroundColour((255,0,0))
-		#print self.timepointTracks[0].GetSize(),self.GetSize()
+
 		
 	def AcceptDrop(self, x, y, data):
 		"""
@@ -172,7 +163,6 @@ class Timeline(scrolled.ScrolledPanel):
 		Method called to indicate that a user is dragging
 					 something to this track
 		""" 
-		#print "OnDragOver"
 		self.SetBackgroundColour((192, 192, 192))
 		self.Refresh()
 		
