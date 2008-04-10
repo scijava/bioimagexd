@@ -829,6 +829,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
         // By default, skip the entry
         pos += size;
     }
+    return 0;
 }
 int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
 {

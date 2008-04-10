@@ -134,7 +134,6 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		maxx -= 1
 		maxy -= 1
 		scripting.wantWholeDataset=1
-		print "VOI=", minx, maxx, miny, maxy, minz, maxz
 		imagedata = self.getInput(1)
 		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
 		imagedata.Update()
@@ -154,5 +153,5 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 			translate.SetTranslation(tuple(translation))
 			data = translate.GetOutput()
 			data.Update()
-			print data		
+			print data
 		return  data

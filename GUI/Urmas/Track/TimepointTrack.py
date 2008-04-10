@@ -44,9 +44,8 @@ import wx
  
 class TimepointTrack(Track):
 	"""
-	Class: TimepointTrack
-	Created: 13.04.2005, KP
-	Description: A class representing a timepoint track in the timeline
+
+	A class representing a timepoint track in the timeline
 	"""       
 	def __init__(self, name, parent, **kws):
 		self.nameColor = (128, 195, 155)
@@ -71,7 +70,6 @@ class TimepointTrack(Track):
 	
 	def AcceptDrop(self, x, y, data):
 		"""
-		Method: AcceptDrop
 		Method called to indicate that a user is no longer dragging
 					 something to this track
 		"""
@@ -86,7 +84,6 @@ class TimepointTrack(Track):
 			
 	def showThumbnail(self, flag):
 		"""
-		Method: showThumbnail
 		A method to set a flag indicating, whether to show a
 					 thumbnail on the items in this track
 		"""           
@@ -97,7 +94,6 @@ class TimepointTrack(Track):
 	
 	def insertTimepoints(self, timepoints):
 		"""
-		Method: insertTimepoints(tps)
 		Insert the given timepoints to the track
 		"""              
 		pos = self.dragEndPosition
@@ -105,14 +101,9 @@ class TimepointTrack(Track):
 			self.addTimepoint(pos, tp, 0)
 			pos += 1
 			self.paintTrack()
-#        self.Refresh()
-#        self.Layout()
-		#self.sizer.Fit(self)
-			
 
 	def addTimepoint(self, position, timepoint, update = 1):
 		"""
-		Method: addTimepoint
 		A method to add a new item to this track
 		"""              
 		h = self.height
@@ -140,7 +131,6 @@ class TimepointTrack(Track):
 			
 	def setItemAmount(self, n):
 		"""
-		Method: setItemAmount
 		A method to set the amount of items in this track
 		"""               
 		self.remove()
@@ -150,7 +140,6 @@ class TimepointTrack(Track):
 			
 	def __set_pure_state__(self, state):
 		"""
-		Method: __set_pure_state__()
 		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
 		""" 
