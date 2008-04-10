@@ -51,6 +51,7 @@ from GUI import MenuManager
 import lib.messenger
 import time
 import scripting
+import platform
 
 class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	"""
@@ -81,6 +82,10 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.sizer.Add(self.palette, 0, flag = wx.EXPAND)
 
 		self.splitter = TimelinePanel.SplitPanel(self, -1)
+		# Disable sash dragging on mac, because rendering window doesn't follow 
+		if platform.system() == 'Darwin':
+			self.splitter.SetSashSize(-1)
+			self.splitter.SetMinimumPaneSize(350)
 		w = self.GetSize()[0]
 		self.timeline = GUI.Urmas.Timeline.Timeline(self.splitter, self.control, size = (768, 50))
 		self.timelinePanel = TimelinePanel.TimelinePanel(self.splitter, self.control, size = (1024, 500), p = self.parent)
