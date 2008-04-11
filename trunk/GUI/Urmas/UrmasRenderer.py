@@ -326,7 +326,6 @@ class UrmasRenderer:
 		self.spf = duration / float(frames)
 		frame = timepos / self.spf
 		if self.pausedRendering:
-			print "\n\n\n**** SETTING PAUSE FRAME TO ", frame, "spf=", self.spf
 			self.pauseFrame = frame
 		self.renderFrame(frame, timepos, self.spf, preview = 1, use_cam = do_use_cam) 
 		lib.messenger.send(None, "view_camera", self.cam)
@@ -424,7 +423,6 @@ class UrmasRenderer:
 
 		# If we found no splinepoint definining the position
 		# and there has been no previous splinepoint
-		print "point=", point, "lastpos=", self.lastSplinePosition, "firstpoint=", self.firstpoint
 		if (not point) and (not self.lastSplinePosition) and self.firstpoint:
 			first_start, first_end = self.firstpoint.getPosition()
 			# then if there is no camera interpolator that would define 
@@ -536,16 +534,12 @@ class UrmasRenderer:
 			cam.OrthogonalizeViewUp()
 		elif self.currTrack:
 			# if there's movement in z direction
-#            print "lastpoint=",self.lastpoint,"point=",point
 			if self.lastpoint and abs(self.lastpoint[2] - point[2]) > 2:
-				#print "Orthogonalizing because old z=",self.lastpoint[2],"!= new z",point[2]
 				Logging.info("Orthogonalize because oldz!=newz", kw = "animator")
 				cam.OrthogonalizeViewUp()
 		self.lastpoint = point
 		
 		renderer.ResetCameraClippingRange()
 		
-
-					
 
 		

@@ -241,6 +241,8 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		if tracksFile:
 			self.tracksFile = tracksFile
 			self.reader = lib.Particle.ParticleReader(tracksFile, 0)
+		else:
+			self.reader = None
 			
 		fgImage = self.getInput(2)
 		
@@ -250,12 +252,12 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		labelcount.Update()
 
-		if not self.objects:
+		if not self.objects and self.reader:
 			self.objects = self.reader.read()
 			
 		timepoint = self.getCurrentTimepoint()
 		self.centersOfMassList = []
-		if self.oldTimepoint != timepoint:
+		if  self.objects and self.oldTimepoint != timepoint:
 			for obj in self.objects[timepoint]:
 				x, y,z  = obj.getCenterOfMass()
 				self.centersOfMassList.append((x,y,z))
@@ -295,7 +297,6 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 			data.append(entry)
 			dataentry = [i, objcount]
 			self.items[i] = dataentry
-		print "Total of ",totalCount,"objects"
 		
 		
 		agg = []
@@ -304,9 +305,6 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		agg.append("%.2f%%"%((float(bgColocCount) / bgCount)*100))
 		agg.append("%.2f%%"%((float(fgColocCount) / fgCount)*100))
 		mean, sd = meanstdev(fgObjCounts)
-		print u"%.2f \u00B1 %.2f"%(mean,sd)
-		print sum(fgObjCounts)/len(fgObjCounts)
-		print "Mean, stdev=",mean,sd
 		largest = 0
 		for count in self.countCounts.keys():
 			if self.countCounts[count] > largest:

@@ -298,7 +298,7 @@ class ProcessingFilter:
 
 			if scalarType == "unsigned char":
 				ImageType = itk.VTKImageToImageFilter.IUC3
-			elif scalarType == "unsigned int":
+			elif scalarType in ["unsigned int", "unsigned long"]:
 				conv = vtk.vtkImageCast()
 				conv.SetInput(image)
 				ImageType = itk.VTKImageToImageFilter.IUL3
@@ -309,6 +309,7 @@ class ProcessingFilter:
 			else:
 				ImageType = itk.VTKImageToImageFilter.IUC3
 
+		Logging.info("Scalar type = %s"%scalarType)
 		self.vtkToItk = ImageType.New()
 
 		#if self.prevFilter and self.prevFilter.getITK():

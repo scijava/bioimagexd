@@ -57,7 +57,7 @@ class SplitPanel(wx.SplitterWindow):
 	def OnSashPositionChange(self, event):
 		"""
 		An event handler for when the user drags the sash
-		On mac this will currently prevent the resizing 
+		On mac this will currently prevent the resizing	
 		"""
 		if platform.system() == 'Darwin':
 			return False
