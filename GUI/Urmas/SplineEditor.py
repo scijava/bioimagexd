@@ -386,20 +386,8 @@ class SplineEditor:
 		volumeProperty.SetColor(colorTransferFunction)
 		volumeProperty.SetScalarOpacity(opacityTransferFunction)
 		volumeProperty.ShadeOff()
-		#volumeProperty.SetInterpolationTypeToLinear()
-
-		
-		#volumeMapper = vtk.vtkVolumeTextureMapper2D()
-		
-#        volumeMapper = vtk.vtkVolumeTextureMapper3D()
-		
 		data.Update()
-#        ncomps=data.GetNumberOfScalarComponents()
-#        if ncomps>1:
-#            volumeProperty.IndependentComponentsOff()
-#        else:
-#            volumeProperty.IndependentComponentsOn()                    
-#        volumeMapper.SetInput(self.data)
+
 
 		self.volumeMapper =  vtk.vtkFixedPointVolumeRayCastMapper()
 		self.volumeMapper.SetIntermixIntersectingGeometry(1)
@@ -486,7 +474,6 @@ class SplineEditor:
 		lst = []
 		for i in range(points):
 			pt = self.getRandomPoint()
-			#self.spline.SetHandlePosition(i,pt)
 			lst.append(pt)
 		self.setSplinePoints(lst)
 			

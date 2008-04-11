@@ -35,17 +35,15 @@ import types
 import lib.messenger
 import scripting
 import vtk
+import lib.FilterTypes
 
-MORPHOLOGICAL = "Morphological operations"
-FEATUREDETECTION = "Feature detection"
-FILTERING = "Filtering"
 
 class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A base class for morphological operations
 	"""     
 	name = "Morphological filter"
-	category = MORPHOLOGICAL
+	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
@@ -59,7 +57,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""            
-		return [ ["Convolution kernel", ("KernelX", "KernelY", "KernelZ")] ]
+		return [ ["Kernel size", ("KernelX", "KernelY", "KernelZ")] ]
 		
 	def getDesc(self, parameter):
 		"""
@@ -92,7 +90,6 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		image = self.getInput(1)
 		  
-		#print "Setting input=",image  
 		self.vtkfilter.SetInput(image)
 		if update:
 			self.vtkfilter.Update()
@@ -104,16 +101,15 @@ def getFilters():
     This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
     """
     return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
-            SobelFilter, HybridMedianFilter, MedianFilter]
+            SobelFilter, MedianFilter]
 
 
 class ErodeFilter(MorphologicalFilter):
 	"""
-	Created: 13.04.2006, KP
 	Description: An erosion filter
 	"""     
 	name = "Erode 3D"
-	category = MORPHOLOGICAL
+	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
@@ -129,7 +125,7 @@ class VarianceFilter(MorphologicalFilter):
 	Variance filter
 	"""     
 	name = "Variance 3D"
-	category = MORPHOLOGICAL
+	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
@@ -145,7 +141,7 @@ class DilateFilter(MorphologicalFilter):
 	A 3D dilation filter
 	"""      
 	name = "Dilate 3D"
-	category = MORPHOLOGICAL
+	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
@@ -161,7 +157,7 @@ class RangeFilter(MorphologicalFilter):
 	A filter that sets the value of the neighborhood to be the max-min of that nbh
 	"""     
 	name = "Range 3D"
-	category = MORPHOLOGICAL
+	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
 		"""
@@ -177,7 +173,7 @@ class SobelFilter(MorphologicalFilter):
 	A sobel filter in 3D
 	"""     
 	name = "Sobel 3D"
-	category = FEATUREDETECTION
+	category = lib.FilterTypes.FEATUREDETECTION
 	
 	def __init__(self):
 		"""
@@ -206,41 +202,7 @@ class SobelFilter(MorphologicalFilter):
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()
 		
-class HybridMedianFilter(MorphologicalFilter):
-	"""
-    A 2D median filter that preserves edges and corners
-	"""     
-	name = "Hybrid median 2D"
-	category = FILTERING
-	level = scripting.COLOR_BEGINNER
-	
-	def __init__(self):
-		"""
-		Initialization
-		"""        
-		MorphologicalFilter.__init__(self)
-		self.vtkfilter = vtk.vtkImageHybridMedian2D()        
-		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
-		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
-		self.eventDesc = "Performing hybrid median filtering"
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""  
-		return []
-		
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""            
-		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None        
-		image = self.getInput(1)
-		self.vtkfilter.SetInput(image)
-		if update:
-			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()         
+
 		
 		
 class MedianFilter(MorphologicalFilter):
@@ -248,7 +210,7 @@ class MedianFilter(MorphologicalFilter):
 	A median filter
 	"""     
 	name = "Median 3D"
-	category = FILTERING
+	category = lib.FilterTypes.FILTERING
 	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
