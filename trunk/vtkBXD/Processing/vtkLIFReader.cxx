@@ -26,8 +26,6 @@
 
 =========================================================================*/
 
-// Handles currently only 8 bit data
-
 #include "vtkLIFReader.h"
 #include "vtkXMLDataParser.h"
 #include "vtkObjectFactory.h"
@@ -43,7 +41,7 @@
 #include <vtkstd/vector>
 #include <iostream>
 
-typedef unsigned  long OFFSET_TYPE;
+typedef unsigned long OFFSET_TYPE;
 
 // Vectors for one image
 typedef vtkstd::vector<ChannelData*> ImageChannelsTypeBase;
@@ -64,6 +62,7 @@ vtkStandardNewMacro(vtkLIFReader);
 vtkLIFReader::vtkLIFReader()
 {
   this->InitializeAttributes();
+  this->FileName = NULL;
   this->SetNumberOfInputPorts(0); // Source
   this->SetNumberOfOutputPorts(1);
 }
@@ -71,6 +70,10 @@ vtkLIFReader::vtkLIFReader()
 vtkLIFReader::~vtkLIFReader()
 {
   this->Clear();
+  if (this->FileName)
+	{
+    delete [] this->FileName;
+	}
 }
 
 void vtkLIFReader::PrintSelf(ostream& os, vtkIndent indent)
@@ -195,10 +198,15 @@ void vtkLIFReader::SetFileName(const char *fname)
 	}
 
   this->Clear();
+  if (this->FileName)
+	{
+	  delete [] this->FileName;
+	  this->FileName = NULL;
+	}
 
   if (fname)
 	{
-	  this->FileName = new char[strlen(fname)];
+	  this->FileName = new char[strlen(fname)+1];
 	  strcpy(this->FileName,fname);
 	}
 
@@ -587,7 +595,7 @@ int vtkLIFReader::ReadLIFHeader()
     while (this->ReadChar(this->File) != TestCode) {}
     unsigned int memDescrSize = this->ReadUnsignedInt(this->File) * 2;
     // Skip over memory description
-    this->File->seekg(static_cast<OFFSET_TYPE>(memDescrSize),ios::cur);
+    this->File->seekg(memDescrSize,ios::cur);
   
     // Add image offset if memory size is > 0
     if (memorySize > 0)
@@ -752,7 +760,6 @@ void vtkLIFReader::LoadDimensionInfoToStruct(vtkXMLDataElement *Element, Dimensi
 void vtkLIFReader::InitializeAttributes()
 {
   this->File = NULL;
-  this->FileName = NULL;
   this->FileSize = 0;
   this->Dimensions = NULL;
   this->Channels = NULL;
@@ -773,7 +780,6 @@ void vtkLIFReader::Clear()
     {
     this->File->close();
     delete this->File;
-    delete [] this->FileName;
     }
 
 // These deletes also every item in vectors
@@ -782,6 +788,7 @@ void vtkLIFReader::Clear()
   if (this->Images) delete this->Images;
   if (this->Offsets) this->Offsets->Delete();
   if (this->ImageSizes) this->ImageSizes->Delete();
+  this->InitializeAttributes();
 }
 
 int vtkLIFReader::RequestInformation(vtkInformation* vtkNotUsed(request),
@@ -841,7 +848,7 @@ int vtkLIFReader::RequestUpdateExtent(vtkInformation* vtkNotUsed(request),
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
   //vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
-  outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), ext);
   // Get the requested update extent from the output.
   outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
   printf("vtkLIFReader Requested update extent = %d, %d, %d, %d, %d, %d\n", uext[0], uext[1], uext[2], uext[3], uext[4], uext[5]);
@@ -855,8 +862,8 @@ int vtkLIFReader::RequestUpdateExtent(vtkInformation* vtkNotUsed(request),
   return 1;
 }
 
-int vtkLIFReader::RequestData(vtkInformation *request,
-                              vtkInformationVector **inputVector,
+int vtkLIFReader::RequestData(vtkInformation* vtkNotUsed(request),
+                              vtkInformationVector** vtkNotUsed(inputVector),
                               vtkInformationVector *outputVector)
 {
   int extent[6];
@@ -950,11 +957,12 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 		  pointDataArray->SetNumberOfComponents(3);
 		  // Change rgb order to bgr
 		  unsigned char temp;
+		  unsigned char *bufPointer = static_cast<unsigned char*>(buffer);
 		  for (unsigned long long i = 2; i < bufferSize; i +=3)
 			{
-			  temp = (static_cast<unsigned char*>(buffer))[i-2];
-			  (static_cast<unsigned char*>(buffer))[i-2] = (static_cast<unsigned char*>(buffer))[i];
-			  (static_cast<unsigned char*>(buffer))[i] = temp;
+			  temp = bufPointer[i-2];
+			  bufPointer[i-2] = bufPointer[i];
+			  bufPointer[i] = temp;
 			}
 		}
 	  pointDataArray->SetNumberOfValues(bufferItems);
@@ -968,7 +976,7 @@ int vtkLIFReader::RequestData(vtkInformation *request,
 	  pointDataArray = vtkUnsignedShortArray::New();
 	  pointDataArray->SetNumberOfComponents(1);
 	  pointDataArray->SetNumberOfValues(bufferItems);
-	  pointDataArray->SetArray(static_cast<unsigned short*>(buffer),bufferSize,0);
+	  pointDataArray->SetArray(static_cast<unsigned short*>(buffer),bufferItems,0);
 	  imageData->GetPointData()->SetScalars(pointDataArray);
 	  pointDataArray->Delete();
 	}

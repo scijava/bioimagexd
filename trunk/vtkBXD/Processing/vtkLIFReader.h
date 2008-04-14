@@ -146,7 +146,9 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   int RequestInformation(vtkInformation* vtkNotUsed(request),
                          vtkInformationVector** vtkNotUsed(inputVector),
                          vtkInformationVector*);    
-  int RequestUpdateExtent(vtkInformation*, vtkInformationVector**,vtkInformationVector*);
+  int RequestUpdateExtent(vtkInformation* vtkNotUsed(request),
+						  vtkInformationVector** vtkNotUsed(inputVector),
+						  vtkInformationVector*);
   int RequestData(vtkInformation* vtkNotUsed(request),
                   vtkInformationVector** vtkNotUsed(inputVector),
                   vtkInformationVector*);
