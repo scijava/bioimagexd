@@ -20,6 +20,7 @@ vtkImageSolitaryFilter.cxx
 vtkLSMReader.cxx
 vtkLIFReader.cxx
 vtkImageLabelCount.cxx
+
 )
 
 # --------------------------------------------------------------------------
