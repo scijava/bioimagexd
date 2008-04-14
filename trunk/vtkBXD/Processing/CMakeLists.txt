@@ -19,7 +19,6 @@ vtkImageSimpleMIP.cxx
 vtkImageSolitaryFilter.cxx
 vtkLSMReader.cxx
 vtkLIFReader.cxx
-vtkMRCReader.cxx
 vtkImageLabelCount.cxx
 )
 
