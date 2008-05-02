@@ -44,13 +44,13 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter = vtk.vtkImageEuclideanDistance()
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
-		self.descs = {"ConsiderAnisotropy":"Consider anisotropy","CastToUnsignedChar":"Cast to unsigned char"}
+		self.descs = {"Algorithm":"Calculation algorithm","ConsiderAnisotropy":"Consider anisotropy","CastToUnsignedChar":"Cast to unsigned char"}
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [  ["Euclidean distance", ("ConsiderAnisotropy","CastToUnsignedChar")]]
+		return [  ["Euclidean distance", ("Algorithm","ConsiderAnisotropy","CastToUnsignedChar")]]
 		
 
 		
@@ -74,12 +74,23 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""	   
+		if parameter == "Algorithm":
+			return GUI.GUIBuilder.CHOICE
 		return types.BooleanType
+		
+	def getRange(self, parameter):
+		"""
+		Return the range of values available for parameter
+		"""
+		if parameter == "Algorithm":
+			return ["Saito with caching for 2^n square images", "Saito"]
 
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
 		"""		
+		if parameter == "Algorithm":
+			return 0
 		return True
 		
 	def execute(self, inputs, update = 0, last = 0):
@@ -93,6 +104,7 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetInput(image)
 		
 		self.vtkfilter.SetConsiderAnisotropy(self.parameters["ConsiderAnisotropy"])
+		self.vtkfilter.SetAlgorithm(self.parameters["Algorithm"])
 		data = self.vtkfilter.GetOutput()
 		if self.parameters["CastToUnsignedChar"]:
 			cast = vtk.vtkImageCast()
