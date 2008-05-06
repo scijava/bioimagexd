@@ -58,16 +58,16 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return a long description of the parameter
 		""" 
-		Xhelp = "Threshold that a pixel's horizontal neighbor needs to be over so that the pixel is not removed."
-		Yhelp = "Threshold that a pixel's vertical neighbor needs to be over so that the pixel is not removed."
-		Thresholdhelp = "Threshold that a pixel needs to be over to get processed by solitary filter."
+		Algorithmhelp = "Using Saito algorithm may be slow for 2^n square images, so use the cached Sauto Algorithm choice for these."
+		ConsiderAnisotropyhelp = "If the x, y and z pixel or voxel lengths are not the same (for instance voxel length in z is greater than in x and y) then use consider anisotropy."
+		CastToUnsignedCharhelp = "This filter outputs short (16 bit) data, but BioImdgeXD uses 8 bit (unsigned char) for display, so you might want to convert the output to unsigned char."
 		
-		if parameter == "HorizontalThreshold":
-			return Xhelp
-		elif parameter == "VerticalThreshold":
-			return Yhelp
-		elif parameter == "ProcessingThreshold":
-			return Thresholdhelp
+		if parameter == "Algorithm":
+			return Algorithmhelp
+		elif parameter == "ConsiderAnisotropyhelp":
+			return ConsiderAnisotropyhelp
+		elif parameter == "CastToUnsignedCharhelp":
+			return CastToUnsignedCharhelp
 		return ""
 		
 	def getType(self, parameter):
