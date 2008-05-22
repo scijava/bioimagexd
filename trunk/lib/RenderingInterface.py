@@ -100,7 +100,7 @@ class RenderingInterface:
 		"""		   
 		self.currentTimePoint = timepoint
 		if self.dataUnit.isProcessed():
-			self.currentData = self.dataUnit.doPreview(scripting.WHOLE_DATASET, 0, timepoint)
+			self.currentData = self.dataUnit.doPreview(scripting.WHOLE_DATASET, True, timepoint)
 		else:
 			self.currentData = self.dataUnit.getTimepoint(timepoint)
 		self.dimensions = self.currentData.GetDimensions()

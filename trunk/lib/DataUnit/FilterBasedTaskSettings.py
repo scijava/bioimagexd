@@ -70,8 +70,9 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		"""	   
 		DataUnitSettings.writeTo(self, parser)
 		filterList = self.get("FilterList")
-		filterList.writeOut(parser)
-
+		if filterList:
+			filterList.writeOut(parser)
+	
 	def deserialize(self, name, value):
 		"""
 		Returns the value of a given key

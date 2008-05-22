@@ -323,7 +323,7 @@ class Histogram(wx.Panel):
 		Set the dataunit from which the histogram is drawn
 		"""
 		self.dataUnit = dataUnit
-		
+
 		self.renew = 1
 		self.noupdate = noupdate
 		self.scalarMax = dataUnit.getScalarRange()[1]
@@ -331,7 +331,7 @@ class Histogram(wx.Panel):
 		self.upperThreshold = self.scalarMax
 		self.scale = self.scalarMax / 255.0
 		self.updatePreview()
-		
+
 	def updatePreview(self, *args, **kws):
 		"""
 		Update the histogram
@@ -358,7 +358,6 @@ class Histogram(wx.Panel):
 				self.colorTransferFunction = self.replaceCTF
 			self.backGround = self.parent.GetBackgroundColour()
 
-
 			histogram, self.percent, self.values, xoffset = lib.ImageOperations.histogram(self.data, \
 																bg = self.backGround, \
 																colorTransferFunction = self.colorTransferFunction, \
@@ -379,7 +378,7 @@ class Histogram(wx.Panel):
 				self.parent.Layout()
 				self.size = (width,height)
 			self.renew = 0
-		
+
 		self.paintPreview()
 
 		

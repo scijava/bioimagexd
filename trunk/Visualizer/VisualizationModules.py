@@ -40,7 +40,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A class representing a visualization module
 	"""
-	def __init__(self, parent, visualizer, **kws):
+	def __init__(self, parent, visualizer, numberOfInputs = (1,1), *args, **kws):
 		"""
 		Initialization
 		"""
@@ -67,7 +67,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		self.inputIndex = 0
 		self.data = None
 		self.vtkObjects = []
-		lib.ProcessingFilter.ProcessingFilter.__init__(self, changeCallback = self.parameterChanged)
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, numberOfInputs = numberOfInputs, changeCallback = self.parameterChanged)
 
 	def set(self, parameter, value):
 		"""
@@ -150,7 +150,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 			return
 		if not scripting.renderingEnabled:
 			return
-		if self.visualizer.getProcessedMode():
+		if self.dataUnit.isProcessed():
 			Logging.info("Will render processed data instead", kw = "rendering")
 			self.data = self.dataUnit.doPreview(scripting.WHOLE_DATASET, 1, self.timepoint)
 		else:

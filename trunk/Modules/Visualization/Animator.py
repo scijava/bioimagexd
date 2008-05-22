@@ -179,18 +179,19 @@ class AnimatorMode(VisualizationMode):
 		self.visualizer.sliderWin.SetDefaultSize((-1, 64))
 		
 		if not self.urmaswin:
-			# Ugly hack
 			self.urmaswin = GUI.Urmas.UrmasWindow.UrmasWindow(self.parent, \
 																self.visualizer.menuManager, \
 																self.visualizer.mainwin.taskWin, \
 																self.visualizer)
 			
 		else:
+			print "Restoring",self.urmaswin
+			self.urmaswin.Show(1)
+			self.parent.Show(1)
 			self.urmaswin.enableRendering(1)
-			self.urmaswin.Show()
-			wx.CallAfter(self.urmaswin.updateRenderWindow)
 			self.urmaswin.controlpanel.Show(1)
-		
+			wx.CallAfter(self.urmaswin.updateRenderWindow)
+			
 		return self.urmaswin
 		
 	def Render(self):
@@ -261,7 +262,3 @@ class AnimatorMode(VisualizationMode):
 		Method called when the user tries to reload the mode
 		"""    
 		pass
-
-#	def __del_(self):
-#		print "Deleting urmaswin"
-#		del self.urmaswin

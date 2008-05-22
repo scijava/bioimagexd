@@ -104,6 +104,7 @@ class DataSource:
 		self.resampledVoxelSize = None
 		self.timestamps = []
 		self.absoluteTimestamps = []
+		self.dimensions = None
 		
 		self.resampling = False
 
@@ -535,6 +536,8 @@ class DataSource:
 				self.bitdepth = 16
 			elif scalartype == 11:
 				self.bitdepth = 16
+			elif scalartype == 10:
+				self.bitdepth = 32
 			else:
 				raise "Bad LSM bit depth, %d, %s" % (scalartype, data.GetScalarTypeAsString())
 			self.singleBitDepth = self.bitdepth

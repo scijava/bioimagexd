@@ -27,6 +27,7 @@ import lib.ProcessingFilter
 import vtk
 import types
 import GUI.GUIBuilder
+import lib.messenger
 import lib.FilterTypes
 import scripting
 
@@ -137,11 +138,13 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		imagedata = self.getInput(1)
 		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
 		imagedata.Update()
+		print "Imagedata=",imagedata
 		self.vtkfilter.SetInput(imagedata)
 		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
 		data = self.vtkfilter.GetOutput()
 		translate = vtk.vtkImageTranslateExtent()
 		translate.SetInput(data)
+		print "input data=",data
 		translation = [0,0,0]
 		if minz > 0:
 			translation[2] = -minz
@@ -151,7 +154,13 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 			translation[1] = -miny
 		if translation != [0,0,0]:
 			translate.SetTranslation(tuple(translation))
+			#translate.SetOutputOrigin(0,0,0)
 			data = translate.GetOutput()
 			data.Update()
-			print data
+			
+		reslice = vtk.vtkImageChangeInformation()
+		reslice.SetOutputOrigin(0,0,0)
+		reslice.SetInput(data)
+		data = reslice.GetOutput()
+		print "Returning data",data
 		return  data

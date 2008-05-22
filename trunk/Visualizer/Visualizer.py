@@ -786,11 +786,12 @@ class Visualizer:
 
 		if self.dataUnit and self.dataUnit.isProcessed():
 			currentTask = self.mainwin.getCurrentTaskName()
-			ssize = self.conf.getConfigItem("%s_TaskPanelSize"%currentTask, "Sizes")
-			if ssize:
-				x,y = [int(x) for x in ssize[1:-1].split(",")]
+			if currentTask:
+				ssize = self.conf.getConfigItem("%s_TaskPanelSize"%currentTask, "Sizes")
+				if ssize:
+					x,y = [int(x) for x in ssize[1:-1].split(",")]
 				
-				self.mainwin.taskWin.SetDefaultSize((x,y))
+					self.mainwin.taskWin.SetDefaultSize((x,y))
 		
 		return 1
 
@@ -883,6 +884,7 @@ class Visualizer:
 		"""
 		Set the mode of visualization
 		"""
+		oldMode = self.mode
 		if self.mode == mode:
 			Logging.info("Mode %s already selected" % mode, kw = "visualizer")
 			if self.dataUnit and self.currentMode.dataUnit != self.dataUnit:
@@ -902,17 +904,28 @@ class Visualizer:
 
 			if hasattr(self.currentWindow, "enable"):
 				self.currentWindow.enable(0)
+			print "\nDEACTIVATING", oldMode, mode
+
 			self.currentMode.deactivate(self.mode)
-			del self.currentWindow
-			del self.currentMode
-			self.currentMode = None
-			self.currentWindow = None
+			modes = [oldMode, mode]
+			modes.sort()
+			if modes != ['3d', 'animator']:
+				print "\n\n\nDELETING"
+				del self.currentWindow
+				del self.currentMode
+				self.currentMode = None
+				self.currentWindow = None
+				del self.instances[oldMode]
 		else:
 			if self.currentWindow:print "\n\nCurrent window still lives=",self.currentWindow
 
 		modeclass, settingclass, module = self.modes[mode]
 		
-		self.currentMode = modeclass(self.visWin, self)
+		if mode in self.instances and self.instances[mode]:
+			self.currentMode = self.instances[mode]	
+		else:
+			self.currentMode = modeclass(self.visWin, self)
+			
 
 		if not module.showZoomToolbar():
 			self.toolWin.SetDefaultSize((500, 0))
@@ -934,6 +947,8 @@ class Visualizer:
 		scripting.wantWholedataset = 1
 
 		self.currentWindow = self.currentMode.activate(self.sidebarWin)
+
+		self.instances[mode] = self.currentMode
 
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
@@ -1092,6 +1107,7 @@ class Visualizer:
 		"""
 		Sets the dataunit this module uses for visualization
 		"""
+		print "Setting dataunit",dataunit
 		self.dataUnit = dataunit
 		self.setUpTimeSliderFromDataunit(dataunit)
 		count = dataunit.getNumberOfTimepoints()

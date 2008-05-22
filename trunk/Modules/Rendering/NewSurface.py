@@ -62,6 +62,8 @@ class SurfaceModule(VisualizationModule):
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 		#self.name = "Surface Rendering"
+		for i in range(1, 3):
+			self.setInputChannel(i, i)
 		self.normals = vtk.vtkPolyDataNormals()
 		self.smooth = None
 		self.volumeModule = None

@@ -378,14 +378,30 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		self.shadingBtn.SetValue(1)
 		self.shading = 1
 		self.shadingBtn.Bind(wx.EVT_CHECKBOX, self.onCheckShading)
+		self.borderBtn = wx.CheckBox(self.lightPanel, -1, "Show borders")
+		self.borderBtn.SetValue(1)
+		self.border = 1
+		self.borderBtn.Bind(wx.EVT_CHECKBOX, self.onCheckBorder)
 		
 		self.lightSizer.Add(self.shadingBtn, (4, 0))
+		self.lightSizer.Add(self.borderBtn, (5, 0))
 		
 	def onCheckShading(self, event):
 		"""
 		Toggle use of shading
 		"""  
 		self.shading = event.IsChecked()        
+
+	def onCheckBorder(self, event):
+		"""
+		Toggle use of borderds
+		"""  
+		self.border = event.IsChecked()        
+		prop = self.module.planeWidgetX.GetPlaneProperty()
+		prop.SetOpacity(0.0)
+		for d in ["X","Y","Z"]:
+			eval("self.module.planeWidget%s.SetPlaneProperty(prop)"%d)
+			eval("self.module.planeWidget%s.SetMarginProperty(prop)"%d)
 		
 		
 	def alignCamera(self, event):

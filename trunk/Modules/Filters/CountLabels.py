@@ -118,7 +118,6 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		An event handler for item activation
 		"""
-		print "Actiate item",item,
 		if len(self.centersOfMassList) > item:
 			print "Showing center of mass=",self.centersOfMassList[item]
 			centerofmass = self.centersOfMassList[item]
@@ -126,8 +125,7 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 			lib.messenger.send(None, "show_centerofmass", item, centerofmass)
 			lib.messenger.send(None, "zslice_changed", int(z))
 			lib.messenger.send(None, "update_helpers", 1)
-		else:
-			print "Item ",item,"not defined"
+
 	def getGUI(self, parent, taskPanel):
 		"""
 		Return the GUI for this filter

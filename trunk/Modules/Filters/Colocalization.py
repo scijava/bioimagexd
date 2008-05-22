@@ -313,7 +313,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.colocAutoThreshold.SetLowerThresholdCh2(self.parameters["LowerThresholdCh2"])
 		self.colocAutoThreshold.SetUpperThresholdCh1(self.parameters["UpperThresholdCh1"])
 		self.colocAutoThreshold.SetUpperThresholdCh2(self.parameters["UpperThresholdCh2"])
-
+	
 		if self.oldThresholds != (ch1Lower, ch1Upper, ch2Lower, ch2Upper):
 			Logging.info("Calculating statistics")
 			self.colocAutoThreshold.Update()
@@ -343,4 +343,3 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.listctrl.updateListCtrl(self.getResultVariableDict())
 	
 		return data
-			

@@ -47,6 +47,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		self.defaultLower = 128
 		self.defaultUpper = 255
+		self.thresholdInitialized = False
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.vtkfilter = vtk.vtkImageThreshold()
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
@@ -147,10 +148,11 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
-		
-		if self.dataUnit:
+
+		if self.dataUnit and self.thresholdInitialized != n:
 			dataUnit = self.getInputDataUnit(inputNum)
 			if dataUnit:
+				self.thresholdInitialized = n
 				lib.messenger.send(self, "set_UpperThreshold_dataunit", dataUnit)
 		
 	def execute(self, inputs, update = 0, last = 0):

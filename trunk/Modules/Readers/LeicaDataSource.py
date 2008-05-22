@@ -189,6 +189,11 @@ class LeicaDataSource(DataSource):
 			
 		return dataunits
 
+	def uniqueId(self):
+		"""
+		Return a unique id identifying this channel
+		"""
+		return "%s|%s|%d"%(self.filename, self.experiment, self.channel)
 	def getName(self):
 		"""
 		Returns the name of the dataset series which this datasource

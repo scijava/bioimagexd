@@ -162,7 +162,7 @@ class UrmasRenderer:
 		"""
 		self.control = control
 		self.dataUnit = control.getDataUnit()
-		data = self.dataUnit.getTimepoint(0)
+		#data = self.dataUnit.getTimepoint(0)
 		#print "Setting dataunit to",self.dataUnit
 		self.renderingInterface.setDataUnit(self.dataUnit)
 		self.renderingInterface.setCurrentTimepoint(0)

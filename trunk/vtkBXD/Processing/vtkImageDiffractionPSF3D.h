@@ -64,7 +64,7 @@ double t[] = {
 		0.00014476};
 
 
-class VTK_BXD_BIOIMAGEXD_EXPORT vtkImageDiffractionPSF3D : public vtkImageSource
+class VTK_BXD_PROCESSING_EXPORT vtkImageDiffractionPSF3D : public vtkImageSource
 {
 public:
   vtkTypeRevisionMacro(vtkImageDiffractionPSF3D,vtkImageSource);
@@ -76,8 +76,8 @@ public:
 
   // Description:
   // Set / Get the Wavelength (perhaps in nm)
-  vtkSetMacro(Lambda,double);
-  vtkGetMacro(Lambda,double);
+  vtkSetMacro(Wavelength,double);
+  vtkGetMacro(Wavelength,double);
       
   // Description:
   // Set / Get the Index of Refraction of the media
@@ -114,11 +114,6 @@ public:
   vtkGetMacro(Normalization,int);
 
   // Description:
-  // Toggle whether the result should be in dB
-  vtkSetMacro(dB,bool);
-  vtkGetMacro(dB,bool);
-
-  // Description:
   // The dimensions of the dataset
   vtkSetVector3Macro(Dimensions,int);
   vtkGetVectorMacro(Dimensions,int,3);
@@ -140,7 +135,7 @@ private:
   vtkImageDiffractionPSF3D(const vtkImageDiffractionPSF3D&);  // Not implemented.
 void operator=(const vtkImageDiffractionPSF3D&);  // Not implemented.
 
-  double Lambda;
+  double Wavelength;
   double RefractionIndex;
   double PixelSpacing;
   double SliceSpacing;

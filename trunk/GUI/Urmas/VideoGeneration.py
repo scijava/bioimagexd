@@ -64,6 +64,12 @@ class VideoGenerationDialog(wx.Dialog):
 		self.sizer.Fit(self)
 		
 		lib.messenger.connect(None, "video_generation_close", self.onClose)
+
+	def disableFrameDeletion(self):
+		"""
+		disable the option to delete the frames / save a projet
+		"""
+		self.videoGeneration.disableFrameDeletion()
 		
 	def onClose(self, *args):
 		"""
@@ -87,7 +93,7 @@ class VideoEncoder:
 		self.codec = "QuickTime MPEG4"
 		self.size = (320,240)
 		self.frameList = []
-		self.fps = 12
+		self.fps = 15
 		self.videoFileName = ""
 		self.outputCodecs = {"MPEG1":("mpeg1video", "mpg"), "MPEG2":("mpeg2video", "mpg"), \
 							"WMV1":("wmv1", "wmv"), "WMV2":("wmv2", "wmv"), "MS MPEG4":("msmpeg4", "avi"), \
@@ -254,7 +260,7 @@ class VideoEncoder:
 		self.codec = codec
 		self.fps = fps
 		self.format = format
-		self.frameList = inputLines[8:]
+		self.frameList = inputLines[9:]
 		self.setPreset(int(preset))
 		
 	def getPattern(self):
@@ -313,6 +319,8 @@ class VideoEncoder:
 			cmdLine.append("-y")
 			cmdLine.append("-qscale")
 			cmdLine.append("%d"%quality)
+			cmdLine.append("-r")
+			cmdLine.append("%.2f"%frameRate)
 			cmdLine.append("-s")
 			cmdLine.append("%dx%d"%(width, height))
 			cmdLine.append("-i")
@@ -339,8 +347,7 @@ class VideoEncoder:
 
 class VideoGeneration(wx.Panel):
 	"""
-	Created: 05.05.2005, KP
-	Description: A page for controlling video generation
+	A panel for controlling video generation
 	"""
 	def __init__(self, parent, control = None, visualizer = None, filename = ""):
 		"""
@@ -373,11 +380,14 @@ class VideoGeneration(wx.Panel):
 			self.encoder.setSize(*size)
 			self.frames = self.control.getFrames()
 			self.fps = self.control.getFrames() / float(self.control.getDuration())
+			self.encoder.setFPS(self.fps)
 			self.durationInSecs = self.control.getDuration()
 		else:
 			self.frames = self.encoder.getFrameAmount()
 			self.fps = self.encoder.getFPS()
 			self.durationInSecs = self.frames / self.fps
+			
+		self.frameDeletionDisabled = False
 
 		self.outputExts = [["png", "bmp", "jpg", "tif", "pnm"], ["mpg", "mpg", "avi", "wmv", "avi", "avi", "mov"]]
 		self.outputFormats = [["PNG", "BMP", "JPEG", "TIFF", "PNM"],
@@ -446,8 +456,12 @@ class VideoGeneration(wx.Panel):
 		"""
 		Render the whole damn thing
 		"""
+		
+		
 		self.okButton.Enable(0)
 		self.encoder.setPath(self.rendir.GetValue())
+		videofile = self.videofile.GetValue()
+		
 		self.encoder.setVideoFileName(self.videofile.GetValue())
 
 		quality = self.qualitySlider.GetValue()
@@ -455,10 +469,16 @@ class VideoGeneration(wx.Panel):
 		path = self.encoder.getPath()
 		file = self.encoder.getVideoFileName()
 
+		if os.path.exists(file):
+			dlg = wx.MessageDialog(self, "File '%s' already exists. Overwrite?"%os.path.basename(file), "File already exists")
+			if dlg.ShowModal() not in [wx.ID_YES, wx.ID_OK]:
+				self.okButton.Enable(1)
+				return
 
 		if not os.path.isdir(path):
 			dlg = wx.MessageDialog(self, "Directory '%s' doesn't exist. Create it?"%path, "Directory does not exist.")
 			if dlg.ShowModal() in [wx.ID_CANCEL, wx.ID_NO]:
+				self.okButton.Enable(1)
 				return
 			dn = path
 			while not os.path.exists(dn):
@@ -551,10 +571,10 @@ class VideoGeneration(wx.Panel):
 			else:
 				GUI.Dialogs.showmessage(self, "Encoding failed: File %s does not exist!" % vidFile, "Encoding failed")
 				
-		deleteFrames = (self.saveProjectBox.GetSelection() == 0)
+		deleteFrames = (self.saveProjectBox.GetSelection() == 0) and not self.frameDeletionDisabled
 		if success and deleteFrames:
 			self.encoder.deleteFrames()
-		elif not deleteFrames:
+		elif not deleteFrames and not self.frameDeletionDisabled:
 			filename = GUI.Dialogs.askSaveAsFileName(self, "Save rendering project as", "rendering.bxr", \
 												"BioImageXD Rendering Project (*.bxr)|*.bxr")
 			if filename:
@@ -753,6 +773,14 @@ class VideoGeneration(wx.Panel):
 		self.renderingsizer.Add(self.videofile, (4, 0), flag = wx.EXPAND | wx.ALL)
 		self.renderingsizer.Add(self.videofileBtn, (4, 1), flag = wx.EXPAND | wx.ALL)
 		self.mainsizer.Add(self.renderingsizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+		
+		
+	def disableFrameDeletion(self):
+		"""
+		disable the option to delete the frames / save a projet
+		"""
+		self.saveProjectBox.Enable(False)
+		self.frameDeletionDisabled = True
 		
 	def updateGUIFromEncoder(self):
 		"""

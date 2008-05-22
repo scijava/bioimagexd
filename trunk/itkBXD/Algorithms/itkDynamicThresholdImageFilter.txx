@@ -26,8 +26,8 @@
 
 =========================================================================*/
 
-#ifndef _itkDynamicThresholdImageFilter_txx
-#define _itkDynamicThresholdImageFilter_txx
+#ifndef __itkDynamicThresholdImageFilter_txx
+#define __itkDynamicThresholdImageFilter_txx
 
 #include "itkDynamicThresholdImageFilter.h"
 #include "itkProgressReporter.h"

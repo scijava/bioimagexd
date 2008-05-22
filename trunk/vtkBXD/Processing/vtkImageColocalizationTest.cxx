@@ -114,15 +114,8 @@ float* makeKernel(double radius,int*ksize) {
                 //krnl[y][x] = v;
             }
         }
-        /*
-        float *kernel2 = new float[size-2];
-        for (int i=0; i<size-2; i++)
-            kernel2[i] = kernel[i+1];
-        if (size-2==1)
-            kernel2[0] = 1;
-        delete[] kernel;*/
+
         *ksize=size;
-/*        return kernel2;*/
         return kernel;
 }
 

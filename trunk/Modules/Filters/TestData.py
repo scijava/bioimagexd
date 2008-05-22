@@ -108,7 +108,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		A callback for stuff to do when this filter is being removed.
 		"""
-		self.dataUnit.setModifiedDimensions(None)
+		if self.dataUnit:
+			self.dataUnit.setModifiedDimensions(None)
 				
 	def getLongDesc(self, parameter):
 		"""
