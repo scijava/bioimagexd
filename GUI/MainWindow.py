@@ -30,7 +30,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.71 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-VERSION = "0.9.0 beta"
+from bxdversion import VERSION
 
 import GUI.AboutDialog
 import BatchProcessor
@@ -61,12 +61,14 @@ import ScriptEditor
 import SettingsWindow
 import sys
 import time
-import TreeWidget
+import GUI.TreeWidget
 import types
 import UIElements
 import UndoListBox
 from Visualizer.Visualizer import Visualizer
 import wx
+
+
 
 class MainWindow(wx.Frame):
 	"""
@@ -143,6 +145,7 @@ class MainWindow(wx.Frame):
 		
 		descs = []
 		self.splash.SetMessage("Initializing application...")
+
 		for modeclass, ign, module in self.readers.values():
 			exts = module.getExtensions()
 			wcs = ""
@@ -153,7 +156,10 @@ class MainWindow(wx.Frame):
 				wcs += "*.%s;" % ext
 				wcs += "*.%s;" % ext.upper()
 				self.datasetWildcards += wcs
+
+			if len(exts) > 0:
 				descs.append("%s|%s" % (module.getFileType(), wcs[:-1]))
+			
 		self.datasetWildcards = self.datasetWildcards[:-1]
 		self.datasetWildcards += "|"
 		self.datasetWildcards += "|".join(descs)
@@ -251,7 +257,7 @@ class MainWindow(wx.Frame):
 		lib.messenger.send(None, "update_progress", 0.9, "Pre-loading visualization views...")
 		
 		# Create the file tree
-		self.tree = TreeWidget.TreeWidget(self.treeWin)
+		self.tree = GUI.TreeWidget.TreeWidget(self.treeWin)
 		
 		# Alias for scripting
 		self.fileTree = self.tree
@@ -445,6 +451,8 @@ class MainWindow(wx.Frame):
 		"""
 		selected = self.tree.getSelectedDataUnits()
 		dataunits = {}
+		if len(selected)==1 and hasattr(selected[0], "getSourceDataUnits"):
+			selected = selected[0].getSourceDataUnits()
 		for i in selected:
 			pth = i.dataSource.getPath()
 			if pth in dataunits:
@@ -1314,6 +1322,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		eid = self.visToId[mode]
 		if scripting.currentVisualizationMode == mode:
+			# If the user re-clicks on the icon, then close it (same as tasks) and load slices mode
+			unit = self.visualizer.dataUnit
+			self.visualizer.closeVisualizer()
+			self.visualizer.closeVisualizer()
+			self.infoWin.SetDefaultSize(self.infoWin.origSize)
+			self.loadVisualizer(self.defaultModeName, dataunit = unit)
 			return
 		scripting.currentVisualizationMode = mode
 		lib.messenger.send(None, "update_progress", 0.1, "Loading %s view..." % mode)
@@ -1340,7 +1354,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if self.visualizer:
 			hasDataunit = bool(self.visualizer.dataUnit)
 			didSetDataUnit = False
-			if not hasDataunit and not self.visualizer.getProcessedMode():
+			self.visualizer.enable(False)
+			if not self.visualizer.getProcessedMode():
 				Logging.info("Setting dataunit for visualizer", kw = "main")
 				self.visualizer.setDataUnit(dataunit)
 				didSetDataUnit = True
@@ -1349,6 +1364,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
 			self.showVisualization(self.visPanel)
 			self.visualizer.enable(True)
+#			if not didSetDataUnit:
+#				self.visualizer.setDataUnit(dataunit)
 			if hasDataunit:
 				Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
 				self.visualizer.updateRendering()
@@ -1474,6 +1491,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		import GUI.Urmas.VideoGeneration
 
 		dlg = GUI.Urmas.VideoGeneration.VideoGenerationDialog(self, filename)
+		dlg.disableFrameDeletion()
 		dlg.ShowModal()
 		dlg.Destroy()
 		scripting.videoGeneration = None
@@ -1525,7 +1543,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		Logging.info("Got %d dataunits"%len(dataunits), kw="io")
 		# We might get tuples from leica
-		d = {}
+		d = GUI.TreeWidget.OrderedDict()
 		self.visualizer.enable(0)
 		if type(dataunits[0]) == types.TupleType:
 			for (name, unit) in dataunits:
@@ -1737,6 +1755,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		Load a dataunit and a given mode to visualizer
 		"""
+		print "\n\nLOADVISUALIZER",mode,dataunit
 		scripting.currentVisualizationMode = mode
 
 		if not self.visualizer:
@@ -1750,9 +1769,11 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
 		shouldReload = kws.get("reload", 0)
+		
 		self.visualizer.setVisualizationMode(mode, shouldReload = shouldReload)
 
 		if not "init" in kws and dataunit:
+			print "SETTIN DATAUNIT",dataunit
 			self.visualizer.setDataUnit(dataunit)
 		else:
 			self.visualizer.toggleTimeSlider(0)

@@ -163,7 +163,6 @@ class Timeline(scrolled.ScrolledPanel):
 		"""
 		Set the scrollbars
 		"""         
-		print "my size now=", self.GetSize()
 		self.SetupScrolling()
 		
 	def getSplineTracks(self):

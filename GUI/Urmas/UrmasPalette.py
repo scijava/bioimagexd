@@ -48,7 +48,6 @@ from wx.lib.statbmp  import GenStaticBitmap as StaticBitmap
 
 class UrmasDropTarget(wx.PyDropTarget):
 	"""
-	Created: 12.04.2005, KP
 	Description: A drop target for dragging from the palette to timeline
 	"""
 	def __init__(self, tgt, datatype):
@@ -98,7 +97,6 @@ class UrmasDropTarget(wx.PyDropTarget):
 
 class UrmasPalette(wx.Panel):
 	"""
-	Created: 12.04.2005, KP
 	Description: A palette from which items can be dragged to the timeline
 	"""
 	def __init__(self, parent, control):

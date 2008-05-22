@@ -38,6 +38,7 @@ import MainWindow
 import scripting
 import wx                  # This module uses the new wx namespace
 import wx.html
+import bxdversion
 
 class AboutDialog(wx.Dialog):
 	def __init__(self, parent):
@@ -52,7 +53,7 @@ class AboutDialog(wx.Dialog):
 			self.about.SetStandardFonts()
 		col = self.GetBackgroundColour()
 		bgcol = "#%2x%2x%2x"% (col.Red(), col.Green(), col.Blue())
-		dict = {"bgcolor":bgcol, "version":MainWindow.VERSION, 
+		dict = {"bgcolor":bgcol, "version":bxdversion.VERSION, 
 		"icondir":scripting.get_icon_dir()}
 		self.about.SetPage(aboutText%dict)
 		#ir = self.about.GetInternalRepresentation()  02.07.07 M.B.

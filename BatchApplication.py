@@ -18,8 +18,8 @@ class BatchMainWindow:
 		"""
 		print progress report
 		"""
-		print "%d%% %s"%(int(100*progress), text)
-		
+		#print "%d%% %s"%(int(100*progress), text)
+		pass
 class BXDBatchApplication:
 	"""
 	Created: 01.01.2008, KP

@@ -59,8 +59,8 @@ class UrmasControl:
 		self.timescale = None
 		self.splineEditor = None
 		self.splinePointAmount = 5
-		self.duration = 60 # seconds
-		self.frames = 12 * self.duration # frames
+		self.duration = 10 # seconds
+		self.frames = 15 * self.duration # frames
 		self.animationMode = 0
 		self.viewMode = 0
 		self.frameSize = (512, 512)

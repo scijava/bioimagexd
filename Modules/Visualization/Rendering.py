@@ -387,7 +387,7 @@ class RenderingMode(VisualizationMode):
 		Set the dataunit to be visualized
 		"""
 		self.dataUnit = dataUnit
-	
+		print "Setting dataunit, modules=",self.modules, dataUnit
 		if not len(self.modules):
 			# we instruct loadModule not to render the scene, software
 			# we can set the view before rendering

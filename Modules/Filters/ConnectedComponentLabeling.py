@@ -28,6 +28,7 @@ import lib.FilterTypes
 import itk
 import types
 import lib.ImageOperations
+import scripting
 
 class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""

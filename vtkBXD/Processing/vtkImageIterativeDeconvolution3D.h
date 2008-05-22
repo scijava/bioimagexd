@@ -29,13 +29,16 @@
 #define __vtkImageIterativeDeconvolution3D_h
 
 #include "vtkBXDProcessingWin32Header.h"
-#include "vtkImageMultipleInputFilter.h"
+#include "vtkThreadedImageAlgorithm.h"
+#include "vtkInformation.h"
+#include "vtkInformationVector.h"
+#include "vtkStreamingDemandDrivenPipeline.h"
 
-class VTK_BXD_PROCESSING_EXPORT vtkImageIterativeDeconvolution3D : public vtkImageMultipleInputFilter
+class VTK_BXD_PROCESSING_EXPORT vtkImageIterativeDeconvolution3D : public vtkThreadedImageAlgorithm
 {
 public:
   static vtkImageIterativeDeconvolution3D *New();
-  vtkTypeRevisionMacro(vtkImageIterativeDeconvolution3D,vtkImageMultipleInputFilter);
+  vtkTypeRevisionMacro(vtkImageIterativeDeconvolution3D,vtkThreadedImageAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);  
 
   // Description:
@@ -62,10 +65,6 @@ public:
   vtkSetMacro(Normalize,bool);
   vtkGetMacro(Normalize,bool);
   // Description:
-  // Toggle whether the result should be in dB
-  vtkSetMacro(dB,bool);
-  vtkGetMacro(dB,bool);
-  // Description:
   // Log mean pixel value to track convergence
   vtkSetMacro(LogMean,bool);
   vtkGetMacro(LogMean,bool);
@@ -88,13 +87,13 @@ public:
   vtkImageIterativeDeconvolution3D();
   ~vtkImageIterativeDeconvolution3D();
 
+int RequestInformation(vtkInformation * vtkNotUsed(request), vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+int RequestUpdateExtent (vtkInformation* vtkNotUsed(request), vtkInformationVector** inputVector, vtkInformationVector* outputVector);
+int SplitExtent(int splitExt[6],int startExt[6], int num, int total);
+void ThreadedRequestData (vtkInformation * vtkNotUsed( request ), vtkInformationVector** vtkNotUsed( inputVector ), vtkInformationVector * vtkNotUsed( outputVector ),
+  vtkImageData ***inData, vtkImageData **outData, int outExt[6], int id);
 
-  void ExecuteInformation(vtkImageData **inputs, vtkImageData *output);
-  void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
-  void ExecuteInformation(){this->vtkImageMultipleInputFilter::ExecuteInformation();};
-  
-  void ThreadedExecute(vtkImageData **inDatas, vtkImageData *outData,
-                       int extent[6], int id);
+int FillInputPortInformation(int port, vtkInformation* info);
 
   void InitOutput(int outExt[6], vtkImageData *outData);
 private:
@@ -111,7 +110,6 @@ private:
     bool LogMean;
     bool AntiRing;
     double ChangeThresholdPercent;
-    bool dB;
     bool DetectDivergence;
 };
 

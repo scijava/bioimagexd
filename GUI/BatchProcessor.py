@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Logging
 import Dialogs
+import scripting
 
 import lib.messenger
 import GUI.MenuManager
@@ -595,6 +596,8 @@ class BatchProcessor(wx.Frame):
 		self.createMenubar()
 		
 		self.Layout()
+		scripting.visualizer.enable(0)
+		self.Bind(wx.EVT_CLOSE, self.onClose)
 		
 	def setInputDataUnits(self, dataUnits):
 		"""
@@ -630,6 +633,7 @@ class BatchProcessor(wx.Frame):
 		Close the batch processor
 		"""	  
 		scripting.unregisterDialog("BatchProcessor")
+		scripting.visualizer.enable(1)
 		self.Destroy()
 	
 	def onLoadAnalysis(self, evt):

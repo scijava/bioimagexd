@@ -37,19 +37,6 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-#import Animator
-#import CameraView
-#import wx.lib.masked as masked
-#import operator
-#import os.path
-#import PreviewFrame
-#import SplineEditor
-#import sys
-#import Timeline
-#import Track
-#from Visualizer import VisualizerWindow
-#from vtk.wx.wxVTKRenderWindowInteractor import wxVTKRenderWindowInteractor
-
 
 import lib.messenger
 from wx.lib.masked import TimeCtrl
@@ -59,7 +46,6 @@ import wx
 #class RenderingConfigPanel(wx.Panel):
 class RenderingConfigPanel:
 	"""
-	Created: 04.02.2005, KP
 	Description: Contains configuration options for the timeline
 	"""	   
 	def __init__(self, parent, control):
@@ -69,8 +55,8 @@ class RenderingConfigPanel:
 		#wx.wizard.WizardPageSimple.__init__(self,parent)
 		self.control.setTimelineConfig(self)
 		self.sizer = wx.GridBagSizer(5, 5)
-		self.fps = 12.00
-		self.secs = 60
+		self.fps = 15.00
+		self.secs = 10
 		self.parent = parent
 		self.updated = 0
 		self.in_fps = 0
@@ -82,11 +68,10 @@ class RenderingConfigPanel:
 		
 		self.totalFramesLabel = wx.StaticText(self.parent, -1, "Frames:")
 		self.durationLabel = wx.StaticText(self.parent, -1, "Duration:")
-		#self.fpsLabel=wx.StaticText(self,-1,"12 / second")
 
-		self.totalFrames = wx.TextCtrl(self.parent, -1, "720", size = (50, -1), style = wx.TE_PROCESS_ENTER)
+		self.totalFrames = wx.TextCtrl(self.parent, -1, "120", size = (50, -1), style = wx.TE_PROCESS_ENTER)
 		self.spin = wx.SpinButton( self.parent, -1, style = wx.SP_VERTICAL , size = (-1, 25))
-		self.duration = TimeCtrl(self.parent, -1, "00:01:00", fmt24hr = True, size = (50, 25), style = wx.TE_PROCESS_ENTER, spinButton = self.spin)
+		self.duration = TimeCtrl(self.parent, -1, "00:00:10", fmt24hr = True, size = (50, 25), style = wx.TE_PROCESS_ENTER, spinButton = self.spin)
 		
 		
 		self.totalFrames.Bind(wx.EVT_TEXT, self.updateFrameCount)
@@ -108,10 +93,9 @@ be the same size as the final frame.""")
 		self.resLst = [(0, 0), (320, 240), (512, 512), (640, 480), (720, 576), (800, 600)]
 		self.frameSize = wx.Choice(self.parent, -1,
 		choices = ["Custom", "320 x 240", "512 x 512", "640 x 480", "720x576 (PAL)", "800 x 600"])
-		self.frameSize.SetSelection(1)		  
+		self.frameSize.SetSelection(3)		  
 		self.frameSize.Bind(wx.EVT_CHOICE, self.onUpdateFrameSize)
 		self.outputsizer.Add(self.durationLabel, (0, 0))
-		#self.outputsizer.Add(self.duration,(0,1))	 
 		self.outputsizer.Add(box, (0, 1))	
 		
 		self.outputsizer.Add(self.totalFramesLabel, (1, 0))
@@ -119,7 +103,7 @@ be the same size as the final frame.""")
 				
 		#self.outputsizer.Add(self.fpsLabel,(2,1))
 		self.frameRateLbl = wx.StaticText(self.parent, -1, "Frame rate:")
-		self.frameRate = wx.TextCtrl(self.parent, -1, "%.2f" % 12, style = wx.TE_PROCESS_ENTER)
+		self.frameRate = wx.TextCtrl(self.parent, -1, "%.2f" % self.fps, style = wx.TE_PROCESS_ENTER)
 		self.frameRate.Bind(wx.EVT_TEXT, self.updateFPS)
 		
 		
@@ -293,7 +277,7 @@ be the same size as the final frame.""")
 		if secs == 0:
 			return
 		newframes = self.fps * secs
-		self.totalFrames.SetValue("%d" % newframes)
+		self.totalFrames.ChangeValue("%d" % newframes)
 		#self.fpsLabel.SetLabel("%.2f / second"%newfps)
 		
 	def updateFrameCount(self, event):

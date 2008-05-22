@@ -201,6 +201,7 @@ vtkLSMReader::vtkLSMReader()
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);      
   this->ChannelDataTypes = 0;
+  this->TrackWavelengths = 0;
   this->ImageOffsets = 0;
   this->ReadSizes = 0;
   this->Clean();
@@ -215,6 +216,9 @@ vtkLSMReader::~vtkLSMReader()
   this->StripOffset->Delete();
   this->StripByteCount->Delete();
   this->LaserNames->Delete();
+  if(this->TrackWavelengths) {
+    this->TrackWavelengths->Delete();
+  }
   if(this->ChannelDataTypes) {
       this->ChannelDataTypes->Delete();
   }
@@ -290,6 +294,7 @@ void vtkLSMReader::Clean()
    
    
   this->LaserNames = vtkStringArray::New();
+  this->TrackWavelengths = vtkUnsignedIntArray::New();
   this->DataSpacing[0] = this->DataSpacing[1] = this->DataSpacing[2] =  1.0f;
   this->Dimensions[0] = this->Dimensions[1] = this->Dimensions[2] = this->Dimensions[3] = this->Dimensions[4] = 0;
   this->NewSubFileType = 0;
@@ -443,7 +448,7 @@ int vtkLSMReader::ClearChannelNames()
     {
     return 0;
     }
-  
+
   for(int i=0;i<this->GetNumberOfChannels();i++)
     {
     delete [] this->ChannelNames[i];
@@ -739,16 +744,18 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // Skip time interval in seconds (8 bytes)
   //pos += 1*8;
   this->TimeInterval = this->ReadDouble(f, &pos);
+  printf("Time interval = %f\n", this->TimeInterval);
   
   // If each channel has different datatype (meaning DataType == 0), then
   // read the offset to more information and read the info
+  this->ChannelDataTypesOffset = this->ReadInt(f, &pos);
+  unsigned long scanInformationOffset = this->ReadUnsignedInt(f, &pos);
   if(this->DataType == 0) {
-    this->ChannelDataTypesOffset = this->ReadInt(f, &pos);
     this->ReadChannelDataTypes(f, this->ChannelDataTypesOffset);
   }
 
   // Read scan information
-  unsigned long scanInformationOffset = this->ReadUnsignedInt(f, &pos);
+  printf("Scan information offset = %d\n", scanInformationOffset);
   this->ReadScanInformation(f, scanInformationOffset);
   // SKip Zeiss Vision KS-3D speific data
   pos +=  4;
@@ -765,17 +772,27 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
     unsigned int subblocksOpen = 0;
     char* name;
     double gain;
+    double wavelength;
     int mode;
+    char* chName; 
+    int chIsOn = 0, trackIsOn = 0, isOn = 0;
     while( 1 ) {
         entry = this->ReadUnsignedInt(f, &pos);
         type =  this->ReadUnsignedInt(f, &pos);
         size =  this->ReadUnsignedInt(f, &pos);
                 
+        //printf("entry=%d\n", entry);
         if(type == TYPE_SUBBLOCK && entry == SUBBLOCK_END) subblocksOpen--;
-        else if(type == TYPE_SUBBLOCK) subblocksOpen++;
-        
+        else if(type == TYPE_SUBBLOCK) {
+            subblocksOpen++;
+        }
+       
         switch(entry) {
             case DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST:
+                gain = this->ReadDouble(f, &pos);
+                continue;
+                break;
+            case DETCHANNEL_ENTRY_DETECTOR_GAIN_LAST:
                 gain = this->ReadDouble(f, &pos);
                 continue;
                 break;
@@ -786,10 +803,72 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
             case LASER_ENTRY_NAME:
                 name = new char[size+1];
                 this->ReadData(f, &pos, size, name);
-                printf("Name of laser: %s, type = %d\n", name, type);
+                //printf("Laser name: %s\n", name);
                 this->LaserNames->InsertNextValue(name);
+                delete name;
                 continue;
                 break;
+            case ILLUMCHANNEL_ENTRY_WAVELENGTH:
+                wavelength = this->ReadDouble(f, &pos);
+         
+                continue;
+                break;
+            case ILLUMCHANNEL_DETCHANNEL_NAME: 
+                chName = new char[size+1];
+                this->ReadData(f, &pos, size, chName);
+//                printf("chName = %s\n", chName);
+                delete chName;
+                continue;
+                break;
+            case TRACK_ENTRY_ACQUIRE:
+                trackIsOn = this->ReadInt(f, &pos);
+                
+                continue;
+                break;
+            case TRACK_ENTRY_NAME:
+                chName = new char[size+1];
+                this->ReadData(f, &pos, size, chName);
+                if(trackIsOn) {
+                  //  printf("Track name = %s is on\n", chName);
+                }
+                delete chName;
+                continue;
+                break;      
+            case DETCHANNEL_DETECTION_CHANNEL_NAME:
+               chName = new char[size+1];
+                this->ReadData(f, &pos, size, chName);
+                if(chIsOn) {
+                    //printf("Detection channel name = %s is on\n", chName);
+                }
+                delete chName;
+                continue;
+                break;
+            case DETCHANNEL_ENTRY_ACQUIRE:
+                chIsOn = this->ReadInt(f, &pos);
+                continue;
+                break;
+    
+            case ILLUMCHANNEL_ENTRY_AQUIRE:
+                isOn = this->ReadInt(f, &pos);
+                if(isOn) {
+                   if(trackIsOn) {    
+                         this->TrackWavelengths->InsertNextValue(wavelength);            
+                         //printf("Acquired using wavelength: %f\n", wavelength);
+                   }                   
+                }
+                continue;
+                break;
+            case RECORDING_ENTRY_DESCRIPTION:
+                Description = new char[size+1];
+                this->ReadData(f, &pos, size, Description);
+                //printf("Description: %s\n", Description);
+                continue;
+                break;
+            case RECORDING_ENTRY_OBJETIVE:
+                Objective = new char[size+1];
+                this->ReadData(f, &pos, size, Objective);
+                continue;
+                
             case SUBBLOCK_RECORDING:
                 break;
             case SUBBLOCK_LASERS:

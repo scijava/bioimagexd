@@ -27,6 +27,9 @@ Name: "eng"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
+Source: "C:\BioImageXD\msvcp71.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "C:\BioImageXD\msvcr71.dll"; DestDir: {app}; Flags: ignoreversion
+
 __FILES__
 
 ;;;;;; THESE ARE FOR VC++ 8.0

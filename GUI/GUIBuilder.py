@@ -288,16 +288,17 @@ class GUIBuilder(wx.Panel):
 		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[0],setDataunitFunc)
 		lib.messenger.connect(currentFilter,"set_%s_dataunit"%item[1],setDataunitFunc)
 		
+		print "Setting dataUnit"
 		histogram.setDataUnit(dataUnit, noupdate = 1)
-		
+		print "done"
 		self.itemSizer.Add(background, (0, 0), flag=wx.EXPAND)
-		
+
 		bgsizer = wx.GridBagSizer()
 		bgsizer.Add(histogram, (0,0), span=(1,2))
-				
+
 		lowerLbl = wx.StaticText(background, -1,"Lower threshold:")
 		upperLbl = wx.StaticText(background,-1,"Upper threshold:")
-		
+
 		lower = self.createNumberInput(background, currentFilter, item[0], types.IntType, 0, "", self.updateThresholdHistogram)
 		upper = self.createNumberInput(background, currentFilter, item[1], types.IntType, 255, "", self.updateThresholdHistogram)
 
@@ -309,9 +310,9 @@ class GUIBuilder(wx.Panel):
 		background.SetAutoLayout(1)
 		background.Layout()
 		self.items[itemName] = background
-		
+
 		return 0
-		
+
 	def createColocalizationThresholdSelection(self, n, items, currentFilter):
 		"""
 		create a scatterplot GUI element that can be used to select a lower and upper threshold
@@ -904,6 +905,7 @@ class GUIBuilder(wx.Panel):
 							i = input:self.validateAndPassOn(event, i, p, itemType, f, chainFunction)
 		input.Bind(wx.EVT_TEXT_ENTER, valid)
 		input.Bind(wx.EVT_KILL_FOCUS, valid)
+		input.Bind(wx.EVT_TEXT, valid)
 		
 		f = lambda obj, event, arg, input = input, it = item, s = self: s.onSetNumber(input, it, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % item, f)
@@ -940,8 +942,8 @@ class GUIBuilder(wx.Panel):
 	def onSetNumber(self, input, item, value):
 		"""
 		Set the value for the GUI item
-		"""				
-		input.SetValue(str(value))
+		"""
+		input.ChangeValue(str(value))
 
 	def onSetBool(self, input, item, value):
 		"""

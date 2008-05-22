@@ -35,11 +35,26 @@ import types
 import lib.messenger
 import platform
 import Configuration
+import Modules.DynamicLoader
+
+class OrderedDict(dict):
+	def __init__(self):
+		dict.__init__(self)
+		self._keyList = []
+		
+	def __setitem__(self, key, value):
+		if key not in self._keyList:
+			self._keyList.append(key)
+		return dict.__setitem__(self, key, value)
+		
+	def items(self):
+		return [(x, self[x]) for x in self._keyList]
+	def keys(self):
+		return self._keyList
 
 class TreeWidget(wx.SashLayoutWindow):
 	"""
-	Created: 10.01.2005, KP
-	Description: A panel containing the tree
+	A panel containing the tree
 	"""
 	def __init__(self, parent):
 		"""
@@ -57,7 +72,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.onSelectionChanging, id = self.tree.GetId())
 		self.tree.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.onActivateItem, id = self.tree.GetId())
 		self.tree.Bind(wx.EVT_KEY_DOWN, self.onKeyDown, id = self.tree.GetId())
-		self.items = {}
+		self.items = OrderedDict()
 		self.greenitems = []
 		self.yellowitems = []
 		self.dataUnitToPath = {}
@@ -83,8 +98,12 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.bioradfiles = None
 		self.interfilefiles = None
 		self.liffiles = None
+		self.mrcfiles = None
+		self.lastSelection = None
 		
 		self.dataUnitItems = []
+		self.groupedDataUnit = None
+		self.groupedItems = []
 		
 		self.itemColor = (0, 0, 0)
 		
@@ -92,6 +111,8 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.tree.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
 		self.ID_CLOSE_DATAUNIT = wx.NewId()
+		self.ID_GROUP_DATAUNIT = wx.NewId()
+		self.ID_UNGROUP = wx.NewId()
 		self.menu = wx.Menu()
 		self.tree.SetHelpText("Files that you open appear in this tree.")        
 	   
@@ -99,7 +120,47 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.tree.Bind(wx.EVT_MENU, self.onCloseDataset, id = self.ID_CLOSE_DATAUNIT)
 		self.Bind(wx.EVT_MENU, self.onCloseDataset, id = self.ID_CLOSE_DATAUNIT)
 		self.menu.AppendItem(item)
-
+		item = wx.MenuItem(self.menu, self.ID_GROUP_DATAUNIT, "Group dataset")
+		self.tree.Bind(wx.EVT_MENU, self.onCloseDataset, id = self.ID_GROUP_DATAUNIT)
+		self.Bind(wx.EVT_MENU, self.onGroupDataset, id = self.ID_GROUP_DATAUNIT)
+		self.menu.AppendItem(item)
+		item = wx.MenuItem(self.menu, self.ID_UNGROUP, "Ungroup")
+		self.tree.Bind(wx.EVT_MENU, self.onUngroup, id = self.ID_UNGROUP)
+		self.Bind(wx.EVT_MENU, self.onUngroup, id = self.ID_UNGROUP)
+		self.menu.AppendItem(item)
+		
+	def onUngroup(self, evt):
+		"""
+		Ungroup all dataunits
+		"""
+		self.groupedDataUnit = None
+		self.unmarkItems(self.groupedItems, "}")
+		self.groupedItems = []
+	def onGroupDataset(self, event):
+		"""
+		Add the selected dataunit into a grouping
+		"""
+		selections = self.tree.GetSelections()
+		if not selections and self.selectedItem:
+			selections = [self.selectedItem]
+		if not self.groupedDataUnit:
+			pluginLoader = Modules.DynamicLoader.getPluginLoader()
+			taskMod = pluginLoader.getPluginModule("Task", "Process")
+			unitType = taskMod.getDataUnit()
+			moduleType = pluginLoader.getPluginClass("Task","Process")
+			self.groupedDataUnit = unitType()
+			module = moduleType()
+			self.groupedDataUnit.setModule(module)
+		
+		for item in selections:
+			if item in self.groupedItems: continue
+			self.groupedItems.append(item)
+			self.markBlue([item], "}")
+			obj = self.tree.GetPyData(item)
+			print "Adding source dataunit",obj
+			self.groupedDataUnit.addSourceDataUnit(obj)
+		
+		print "Now=",self.groupedDataUnit.getSourceDataUnits()
 			
 	def onRightClick(self, event):
 		"""
@@ -159,6 +220,8 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.interfilefiles = None
 			elif i == self.liffiles:
 				self.liffiles = None
+			elif i == self.mrcfiles:
+				self.mrcfiles = None
 
 			parent = self.tree.GetItemParent(i)
 			self.tree.Delete(i)
@@ -169,6 +232,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			wx.CallAfter(self.removeEmptyParents)
 		else:
 			self.removeParents = []
+			
+		
 					
 	def onCloseDataset(self, event):
 		"""
@@ -267,7 +332,19 @@ class TreeWidget(wx.SashLayoutWindow):
 				if txt[-len(appendchar):] != appendchar:
 					self.tree.SetItemText(item, txt + appendchar)
 			self.tree.SetItemTextColour(item, (255, 0, 0))
-
+			
+	def unmarkItems(self, items, appendchar = ""):	
+		"""
+		Unmark the given items
+		"""
+		for item in items:
+			if appendchar != "":
+				txt = self.tree.GetItemText(item)
+				if txt[-len(appendchar):] == appendchar:
+					newtext = txt[:-len(appendchar)]
+					self.tree.SetItemText(item, newtext)
+			self.tree.SetItemTextColour(item, self.itemColor)
+			
 	def markBlue(self, items, appendchar = ""):
 		"""
 		Mark given items blue
@@ -346,6 +423,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			
 			self.tree.SetPyData(item, "2")
 			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
+			
 		elif objtype == "oif":
 			if not self.oiffiles:
 				self.oiffiles = self.tree.AppendItem(self.root, "Olympus files")
@@ -358,6 +436,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.Expand(item)
 			self.tree.SetPyData(item, "2")
 			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
+			
 		elif objtype == "pic":
 			if not self.bioradfiles:
 				self.bioradfiles = self.tree.AppendItem(self.root, "BioRad files")
@@ -374,9 +453,8 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.SetItemImage(self.interfilefiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 			item = self.interfilefiles
 			self.tree.Expand(item)
+			
 		elif objtype == "bxd":
-		
-		
 			if not self.bxdfiles:
 				self.bxdfiles = self.tree.AppendItem(self.root, "BioImageXD files")
 				self.tree.SetPyData(self.bxdfiles, "1")        
@@ -392,8 +470,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 		elif objtype == "bxc":
-		
-		
 			if not self.bxdfiles:
 				self.bxdfiles = self.tree.AppendItem(self.root, "BioImageXD files")
 				self.tree.SetPyData(self.bxdfiles, "1")        
@@ -411,6 +487,20 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.SetItemImage(self.liffiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 			item = self.liffiles
+			self.tree.Expand(item)
+			item = self.tree.AppendItem(item, name)
+			self.tree.Expand(item)
+			self.tree.SetPyData(item, "2")
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
+			
+		elif objtype in ["mrc","st"]:
+			if not self.mrcfiles:
+				self.mrcfiles = self.tree.AppendItem(self.root, "MRC files")
+				self.tree.SetPyData(self.mrcfiles, "1")
+				self.tree.SetItemImage(self.mrcfiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.mrcfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
+
+			item = self.mrcfiles
 			self.tree.Expand(item)
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)
@@ -448,6 +538,8 @@ class TreeWidget(wx.SashLayoutWindow):
 		"""
 		Returns the selected dataunits
 		"""            
+		if self.groupedDataUnit:
+			return [self.groupedDataUnit]
 		items = self.tree.GetSelections()
 		objs = [self.tree.GetPyData(x) for x in items]
 		objs = filter(lambda x:type(x) != types.StringType, objs)
@@ -527,6 +619,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		A event handler called when user selects and item.
 		"""      
 		item = event.GetItem()
+		self.lastSelection = item
 		if not item.IsOk():
 			return
 		

@@ -104,8 +104,19 @@
 #define LASER_ENTRY_POWER                        0x050000003
 
 #define DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST     0x070000003
+#define DETCHANNEL_ENTRY_DETECTOR_GAIN_LAST      0x070000004
 #define DETCHANNEL_ENTRY_INTEGRATION_MODE        0x070000001
+#define DETCHANNEL_ENTRY_ACQUIRE                 0x07000000B
+#define DETCHANNEL_DETECTION_CHANNEL_NAME        0x070000014
 
+#define RECORDING_ENTRY_DESCRIPTION              0x010000002
+
+#define ILLUMCHANNEL_ENTRY_WAVELENGTH            0x090000003
+#define ILLUMCHANNEL_ENTRY_AQUIRE                0x090000004
+#define ILLUMCHANNEL_DETCHANNEL_NAME             0x090000005
+
+#define TRACK_ENTRY_ACQUIRE                      0x040000006
+#define TRACK_ENTRY_NAME                         0x04000000C
 #define TYPE_SUBBLOCK   0
 #define TYPE_LONG       4
 #define TYPE_RATIONAL   5
@@ -200,6 +211,9 @@ public:
   vtkBooleanMacro(SwapBytes,int);
 
   int GetDataTypeForChannel(unsigned int channel);
+  
+  vtkGetStringMacro(Objective);
+  vtkGetStringMacro(Description);
 
   vtkGetStringMacro(FileName);
   vtkGetVector3Macro(VoxelSizes,double);
@@ -215,6 +229,7 @@ public:
   vtkGetMacro(TimeInterval, double);
   vtkGetObjectMacro(TimeStampInformation,vtkDoubleArray);
   vtkGetObjectMacro(ChannelColors,vtkIntArray);
+  vtkGetObjectMacro(TrackWavelengths, vtkUnsignedIntArray);
   unsigned int GetUpdateChannel();
   vtkImageData* GetTimePointOutput(int,int);
 
@@ -289,6 +304,7 @@ int RequestData(
   unsigned int Compression;
   vtkUnsignedIntArray *StripOffset;
   vtkUnsignedIntArray *ChannelDataTypes;
+  vtkUnsignedIntArray *TrackWavelengths;
   unsigned int SamplesPerPixel;
   vtkUnsignedIntArray *StripByteCount;
   unsigned int LSMSpecificInfoOffset;
@@ -316,7 +332,8 @@ int RequestData(
   vtkIntArray *ChannelColors;
   char **ChannelNames;
   vtkDoubleArray *TimeStampInformation;
-  
+  char* Objective;
+  char* Description;
   double TimeInterval;
 
   unsigned char CharPointerToUnsignedChar(char *);

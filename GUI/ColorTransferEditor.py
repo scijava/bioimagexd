@@ -2,7 +2,6 @@
 """
  Unit: ColorTransferEditor
  Project: BioImageXD
- Created: 30.10.2004, KP
  Description:
 
  A widget used to view and modify a color transfer function. The widget
@@ -39,10 +38,6 @@ import scripting
 import lib.messenger
 import math
 import os.path
-try:
-	import psyco
-except:
-	psyco = None
 import time
 import vtk
 import wx
@@ -50,7 +45,6 @@ import wx
 
 class CTFButton(wx.BitmapButton):
 	"""
-	Created: 18.04.2005, KP
 	Description: A button that shows a ctf as a palette and lets the user modify it
 				 by clicking on the button
 	"""	   
@@ -125,7 +119,6 @@ class CTFButton(wx.BitmapButton):
 
 class CTFPaintPanel(wx.Panel):
 	"""
-	Created: 16.04.2005, KP
 	Description: A widget onto which the transfer function is painted
 	"""
 	def __init__(self, parent, **kws):
@@ -165,18 +158,20 @@ class CTFPaintPanel(wx.Panel):
 		"""
 		rx, ry = x - self.xoffset, self.maxy - (y - self.yoffset)
 		
-		
 		xcoeff = maxval / self.maxx
 		rx *= xcoeff
+		print "Maxval=",maxval,"maxx=",self.maxx,"xcoeff=",xcoeff
 		
 		if rx < 0:rx = 0
 		if ry < 0:ry = 0
 		if rx > maxval:rx = maxval
 		if ry > maxval:ry = maxval
+		print "toGraph(%d, %d) = (%d,%d)"%(x,y,rx,ry)
 		return (rx, ry)
 		
 	def onPaint(self, event):
 		dc = wx.BufferedPaintDC(self, self.buffer)
+		
 	def createLine(self, x1, y1, x2, y2, color = "WHITE", brush = None, **kws):
 		"""
 		Draws a line from (x1,y1) to (x2,y2). The method
@@ -407,7 +402,6 @@ class CTFPaintPanel(wx.Panel):
 
 class CTFValuePanel(wx.Panel):
 	"""
-	Created: 17.04.2005, KP
 	Description: A widget onto which the colors transfer function is painted
 	"""
 	def __init__(self, parent):
@@ -439,7 +433,6 @@ class CTFValuePanel(wx.Panel):
 		
 class ColorTransferEditor(wx.Panel):
 	"""
-	Created: 30.10.2004, KP
 	Description: A widget used to view and modify an intensity transfer function
 	"""
 	def __init__(self, parent, **kws):
@@ -550,14 +543,6 @@ class ColorTransferEditor(wx.Panel):
 		self.canvas.Bind(wx.EVT_MOTION, self.onDrawFunction)
 		
 		self.pos = (0, 0)
-		
-		if psyco and 0:
-			psyco.bind(self.onSetMaxNodes)
-			psyco.bind(self.onDrawFunction)
-			psyco.bind(self.onEditFunction)
-			psyco.bind(self.updateGraph)
-			psyco.bind(self.setFromColorTransferFunction)
-			psyco.bind(self.getPointsFromFree)
 		
 	def onSetMaxNodes(self, evt):
 		"""
@@ -801,17 +786,16 @@ class ColorTransferEditor(wx.Panel):
 		Draw the function
 		"""		   
 		if event.Dragging():
-			if self.freeMode:		 
+			if self.freeMode:
 				self.drawFreeMode(event)
 			else:
 				x, y = event.GetPosition()
 				x, y = self.canvas.toGraphCoords(x, y, self.maxval)
 	
-	
 				if self.selectedPoint:
 					self.modifyPoint(self.selectedPoint, (x, y))
 					self.upToDate = 0
-					self.updateGraph()					  
+					self.updateGraph()
 				return
    
 	def updatePreview(self):
@@ -950,7 +934,7 @@ class ColorTransferEditor(wx.Panel):
 		self.ctf.RemoveAllPoints()
 		self.otf.RemoveAllPoints()
 		if self.freeMode:
-			for i in xrange(0, self.maxval):
+			for i in xrange(0, self.maxval+1):
 				r, g, b = self.redfunc[i], self.greenfunc[i], self.bluefunc[i]
 				r /= 255.0
 				g /= 255.0

@@ -392,11 +392,15 @@ class FilterBasedModule(lib.Module.Module):
 		"""
 		Does a preview calculation for the x-y plane at depth depth
 		"""
-		if self.settings.get("ShowOriginal"):
+		if self.settings and self.settings.get("ShowOriginal"):
 			Logging.info("Returning original data", kw="dataunit")
 			return self.images[0] 
-		filterlist = self.settings.get("FilterList")
-		modified = filterlist.getModified()
+		if self.settings:
+			filterlist = self.settings.get("FilterList")
+			if not filterlist:
+				modified = 0
+			else:
+				modified = filterlist.getModified()
 		if self.timepoint != self.cachedTimepoint:
 			modified = 1
 		if not self.preview or modified:
@@ -418,7 +422,10 @@ class FilterBasedModule(lib.Module.Module):
 		Manipulationes the dataset in specified ways
 		"""
 		filterlist = self.settings.get("FilterList")
-		modified = filterlist.getModified()
+		if filterlist:
+			modified = filterlist.getModified()
+		else:
+			modified = 0
 		if preview and not modified and self.cached and self.timepoint == self.cachedTimepoint:
 			Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d" % 
 				(self.timepoint, self.cachedTimepoint), kw = "pipeline")

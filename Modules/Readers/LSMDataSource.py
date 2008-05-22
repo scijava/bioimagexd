@@ -37,6 +37,7 @@ import vtk
 import vtkbxd
 import struct
 import time
+import re
 
 def getExtensions(): 
 	return ["lsm"]
@@ -58,6 +59,8 @@ class LsmDataSource(DataSource):
 		DataSource.__init__(self)
 		# Name and path of the lsm-file:
 		self.filename = filename
+		self.numericalAperture = 0
+		self.excitationWavelength = 0
 		self.timepoint = -1
 		self.shortname = os.path.basename(filename)
 		self.path = ""
@@ -70,7 +73,6 @@ class LsmDataSource(DataSource):
 		# TODO: what is this?
 		self.count = 0
 
-		self.dimensions = None
 		self.spacing = None
 		self.origin = None
 		self.voxelsize = None
@@ -307,6 +309,41 @@ class LsmDataSource(DataSource):
 		self.ctf = None
 		return self.getColorTransferFunction()
 		
+	def getNumericalAperture(self):
+		"""
+		Returns the numerical aperture used to image this channel
+		managed by this DataSource
+		"""
+		if not self.numericalAperture:
+			objective = self.reader.GetObjective()
+			print "\n\nObjective for file",self.getName(),"is",objective 
+			# Plan-Apochromat 63x/1.40 Oil DIC M27
+			naRE = re.compile('(\d+)\.(\d+)')
+			m = naRE.search(objective)
+			if m:
+				self.numericalAperture = float(m.group(0))
+		return self.numericalAperture
+
+	def getExcitationWavelength(self):
+		"""
+		Returns the excitation wavelength used to image this channel
+		managed by this DataSource
+		"""
+		if not self.excitationWavelength:
+			name = self.reader.GetChannelName(self.channelNum)
+			trackRE=re.compile('.*-T(\d+)')
+			m = trackRE.match(name)
+			if not m:
+				currentTrack = self.channelNum
+			else:
+				currentTrack = int(m.group(1))
+				
+			wavelengths = self.reader.GetTrackWavelengths()
+			wavelength = wavelengths.GetValue(currentTrack-1)
+			self.excitationWavelength = wavelength
+			print "Excitation wavelength for track",currentTrack,"is",wavelength
+			
+		return self.excitationWavelength
 		
 	def getName(self):
 		"""

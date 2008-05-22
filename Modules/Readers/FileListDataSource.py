@@ -30,7 +30,6 @@ __date__ = "$Date: 2005 / 01 / 13 13:42:03 $"
 
 from lib.DataSource.DataSource import DataSource
 import Image
-import TiffImagePlugin
 import Logging
 import os.path
 import vtk
@@ -186,8 +185,8 @@ class FileListDataSource(DataSource):
 			rdr.Allow8BitBMPOn()
 		if mpr == "ExtTIFF" and not isRGB:
 			rdr.RawModeOn()
-		
-		rdr.SetFileLowerLeft(self.flipVertically)
+		if ext == "tiff":
+			rdr.SetFileLowerLeft(self.flipVertically)
 		return rdr
 
 	def getReadersFromFilenames(self):

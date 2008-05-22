@@ -62,7 +62,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	"""
 	def __init__(self, parent, menumanager, taskwin, visualizer):
 		self.scrolled = 1
-		self.frozen = 0
 		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, -1)
 		self.parent = parent
 		self.taskWin = taskwin
@@ -122,11 +121,9 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		"""
 		Enable / Disable rendering of this window	  
 		"""
-		if flag and self.frozen:
-			self.frozen = 0
+		if flag and self.IsFrozen():
 			self.Thaw()
-		elif not flag:
-			self.frozen = 1
+		if not flag and not self.IsFrozen():
 			self.Freeze()
 		
 	def enableRendering(self, flag):

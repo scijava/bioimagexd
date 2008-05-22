@@ -30,7 +30,7 @@
 #include "vtkPointData.h"
 
 #include "vtkMath.h"
-#include <ostream.h>
+#include <ostream>
 #include <math.h>
 
 vtkCxxRevisionMacro(vtkImageDiffractionPSF3D, "$Revision: 1.36 $");
@@ -40,12 +40,11 @@ vtkStandardNewMacro(vtkImageDiffractionPSF3D);
 // Construct object to extract all of the input data.
 vtkImageDiffractionPSF3D::vtkImageDiffractionPSF3D()
 {
-    this->SetLambda(510);
+    this->SetWavelength(510);
     this->SetRefractionIndex(1);
     this->SetNumericalAperture(0.6);
     this->SetSphericalAberration(0);
     this->SetNormalization(3);
-    this->SetdB(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -103,202 +102,201 @@ void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
 
   int uExtent[6];
 
-//  printf("Estimated memory size %d\n",output->GetEstimatedMemorySize());
-//  output->PrintSelf(cout,indent);
   int outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   int dims[3];
     
-  double Lambda=self->GetLambda();
+  double Wavelength=self->GetWavelength();
+  printf("Wavelength = %f\n", Wavelength);
   double RefractionIndex=self->GetRefractionIndex();
+  printf("RefractionIndex = %f\n", RefractionIndex);
   double PixelSpacing=self->GetPixelSpacing();
+  printf("Pixel spacing = %f\n", PixelSpacing);
   double SliceSpacing=self->GetSliceSpacing();
+  printf("Slice spacing = %f\n", SliceSpacing);
   double NumericalAperture=self->GetNumericalAperture();
+  printf("Numerical aperture = %f\n", NumericalAperture);
   double SphericalAberration=self->GetSphericalAberration();
-  int dB=self->GetdB();
+  printf("Spherical aberration = %f\n", SphericalAberration);
   int Normalization=self->GetNormalization();
-  
-  uExtent[0]=uExtent[2]=uExtent[4]=0;
-  uExtent[1]=self->GetDimensions()[0]-1;
-  uExtent[3]=self->GetDimensions()[1]-1;
-  uExtent[5]=self->GetDimensions()[2]-1;    
-    
+  printf("Normalization = %d\n", Normalization);
+
   int w = self->GetDimensions()[0];
   int h = self->GetDimensions()[1];
   int d = self->GetDimensions()[2];
+  printf("Output Dimensions = %d, %d, %d\n",w,h,d);
   int ic = w/2;
   int jc = h/2;
   int kc = d/2;
   int stepsPerCycle = 8;
   
 
-  //output->AllocateScalars();
+//  output->AllocateScalars();
+  int dims2[3];
+  output->GetDimensions(dims2);
+  printf("Dimensions = %d, %d, %d\n", dims2[0], dims2[1], dims2[2]);
   output->GetIncrements(outIncX, outIncY, outIncZ);
-  maxX = uExtent[1] - uExtent[0];
-  maxY = uExtent[3] - uExtent[2];
-  maxZ = uExtent[5] - uExtent[4];
+  printf("Icnrements = %d, %d, %d\n", outIncX, outIncY, outIncZ);
+  T* outPtr2 = outPtr;
+  for(int l = 0;l < w*h*d;l++)*outPtr2++=0;
+  float a = 2*vtkMath::Pi()*RefractionIndex/Wavelength;
+  double dRing = 0.6*Wavelength/(PixelSpacing*NumericalAperture);
+  //vtkDebugMacro(<<"PSF: peak to first dark ring (w/o sph. aber.). Rayleigh resolution = " << dRing <<" pixels\n");
+  printf("PSF: peak to first dark ring. Rayleigh resolution = %fpx\n", dRing);
 
-  float a = 2*vtkMath::Pi()*RefractionIndex/Lambda;
-  double dRing = 0.6*Lambda/(PixelSpacing*NumericalAperture);
-  vtkDebugMacro(<<"PSF: peak to first dark ring (w/o sph. aber.). Rayleigh resolution = " << dRing <<" pixels\n");
-
-  int rMax = 2+(int)sqrt(ic*ic+jc*jc);
-  vtkDebugMacro(<<"rMax="<<rMax<<"\n");
+  int rMax = 2+(int)sqrt((float)ic*ic+jc*jc);
+ printf("rMax = %d\n", rMax);
   float *integral = new float[rMax];
   double upperLimit = tan(asin(NumericalAperture/RefractionIndex));
-	double waveNumber = 2*vtkMath::Pi()*RefractionIndex/Lambda;
+  double waveNumber = 2*vtkMath::Pi()*RefractionIndex/Wavelength;
 
-  
-  #define GET_AT(x,y,z,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX)
   #define SET_AT(x,y,z,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX)=val
 
   float **pixels=new float*[d];
     
-  for(int i=0;i<d;i++)pixels[i]=new float[w*h];
-  for(int k = 0; k < d; k++ ) {
-      double kz = waveNumber*(k - kc)*SliceSpacing;
-			for (int r = 0; r < rMax; r++)
-       {
-    
-				double kr = waveNumber*r*PixelSpacing;
-				int numCyclesJ = 1 + (int)(kr*upperLimit/3);
-				int numCyclesCos = 1 + (int)(fabs(kz)*0.36*upperLimit/6);
-				int numCycles = numCyclesJ;
-				if(numCyclesCos > numCycles)numCycles = numCyclesCos;
-				int nStep = 2*stepsPerCycle*numCycles;
-				int m = nStep/2;
-				double step = upperLimit/nStep;
-				double sumR = 0;
-				double sumI = 0;
-				//Simpson's rule
-				//Assume that the sperical aberration varies with the  (% aperture)^4
-				//f(a) = f(0) = 0, so no contribution
-				double u = 0;
-				double bessel = 1;
-				double root = 1;
-				double angle = kz;
-				//2j terms
-				for (int j = 1; j < m; j++){
-					u = 2*j*step;
-					kz = waveNumber*((k - kc)*SliceSpacing +
-						SphericalAberration*(u/upperLimit)*(u/upperLimit)*(u/upperLimit)*(u/upperLimit));
-					root = sqrt(1 + u*u);
-					bessel = self->J0(kr*u/root);
-					angle = kz/root;
-					sumR += 2*cos(angle)*u*bessel/2;
-					sumI += 2*sin(angle)*u*bessel/2;
-				}
-
-				//2j - 1 terms
-				for (int j = 1; j <= m; j++){
-					u = (2*j-1)*step;
-					kz = waveNumber*((k - kc)*SliceSpacing +
-						SphericalAberration*(u/upperLimit)*(u/upperLimit)*(u/upperLimit)*(u/upperLimit));
-					root = sqrt(1 + u*u);
-					bessel = self->J0(kr*u/root);
-					angle = kz/root;
-					sumR += 4*cos(angle)*u*bessel/2;
-					sumI += 4*sin(angle)*u*bessel/2;
-				}
-				//f(b)
-				u = upperLimit;
-				kz = waveNumber*((k - kc)*SliceSpacing + SphericalAberration);
+  for(int i=0;i<d;i++) {
+  	pixels[i]=new float[w*h];
+  	for(int j = 0; j < w*h;j++) pixels[i][j] = 0;
+  }
+  
+  for(int k = 0; k < d; k++ )
+  {
+  		printf("Calculating PSF for slice %d\n", k);
+		double kz = waveNumber*(k - kc)*SliceSpacing;
+		printf("Slice spacing = %f, pixel spacing = %f\n", SliceSpacing, PixelSpacing);
+		printf("wave number = %f, kz = %f\n", waveNumber, kz);
+		for (int r = 0; r < rMax; r++)
+		{
+			double kr = waveNumber*r*PixelSpacing;
+			int numCyclesJ = 1 + (int)(kr*upperLimit/3);
+			int numCyclesCos = 1 + (int)(fabs(kz)*0.36*upperLimit/6);
+			int numCycles = numCyclesJ;
+			if(numCyclesCos > numCycles)numCycles = numCyclesCos;
+			int nStep = 2*stepsPerCycle*numCycles;
+			int m = nStep/2;
+			double step = upperLimit/nStep;
+			double sumR = 0;
+			double sumI = 0;
+			//Simpson's rule
+			//Assume that the sperical aberration varies with the  (% aperture)^4
+			//f(a) = f(0) = 0, so no contribution
+			double u = 0;
+			double bessel = 1;
+			double root = 1;
+			double angle = kz;
+			//2j terms
+			for (int j = 1; j < m; j++){
+				u = 2*j*step;
+				kz = waveNumber*((k - kc)*SliceSpacing +
+					SphericalAberration*(u/upperLimit)*(u/upperLimit)*(u/upperLimit)*(u/upperLimit));
 				root = sqrt(1 + u*u);
 				bessel = self->J0(kr*u/root);
 				angle = kz/root;
-				sumR += cos(angle)*u*bessel/2;
-				sumI += sin(angle)*u*bessel/2;
-
-				integral[r] = (float)(step*step*(sumR*sumR + sumI*sumI)/9);
+				sumR += 2*cos(angle)*u*bessel/2;
+				sumI += 2*sin(angle)*u*bessel/2;
 			}
-			double uSlices = (k - kc);
-			for (int j = 0; j < h; j++){
+
+			//2j - 1 terms
+			for (int j = 1; j <= m; j++){
+				u = (2*j-1)*step;
+				kz = waveNumber*((k - kc)*SliceSpacing +
+					SphericalAberration*(u/upperLimit)*(u/upperLimit)*(u/upperLimit)*(u/upperLimit));
+				root = sqrt(1 + u*u);
+				bessel = self->J0(kr*u/root);
+				angle = kz/root;
+				sumR += 4*cos(angle)*u*bessel/2;
+				sumI += 4*sin(angle)*u*bessel/2;
+			}
+			//f(b)
+			u = upperLimit;
+			kz = waveNumber*((k - kc)*SliceSpacing + SphericalAberration);
+			root = sqrt(1 + u*u);
+			bessel = self->J0(kr*u/root);
+			angle = kz/root;
+			sumR += cos(angle)*u*bessel/2;
+			sumI += sin(angle)*u*bessel/2;
+
+			integral[r] = (float)(step*step*(sumR*sumR + sumI*sumI)/9);
+		}
+		double uSlices = (k - kc);
+		for (int j = 0; j < h; j++)
+		{
 //				IJ.showProgress((float)j/h);
-				for (int i = 0; i < w; i++){
-					double rPixels = sqrt((i - ic)*(i-ic) + (j-jc)*(j - jc));
-           
-					pixels[k][i + w*j] = self->interp(integral,(float)rPixels);
-           
-					//pixels[kSym][i + w*j] = interp(integral,(float)rPixels);
-				}
-			}
-		}
-		int n = w*h;
-		if(Normalization == 1){
-			float peak = pixels[kc][ic + w*jc];
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					if(pixels[k][ind] > peak)
-						peak = pixels[k][ind];
-				}
-			}
-			float f = 1/peak;
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					pixels[k][ind] *= f;
-				}
-			}
-		}else if(Normalization == 2){
-			float peak = pixels[kc][ic + w*jc];
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					if(pixels[k][ind] > peak)
-						peak = pixels[k][ind];
-				}
-			}
-			float f = 255/peak;
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					pixels[k][ind] *= f;
-					if(pixels[k][ind] > 255)pixels[k][ind] = 255;
-				}
-			}
-		}else if(Normalization == 3){
-			float area = 0;
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					area += pixels[k][ind];
-				}
-			}
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					pixels[k][ind] /= area;
-				}
-			}
-		}
-		if(dB){
-			double SCALE = 10/log(10);
-			for (int k = 0; k < d; k++){
-				for (int ind = 0; ind < n; ind++){
-					if(pixels[k][ind] > 0.000000001)
-						pixels[k][ind] = (float)(SCALE*log(pixels[k][ind]));
-					else
-						pixels[k][ind] = -90;
-				}
-			}
-		}
+			for (int i = 0; i < w; i++){
+				double rPixels = sqrt((float)(i - ic)*(i-ic) + (j-jc)*(j - jc));
 
-float*ptr=(float*)pixels;
-for(int k=0;k<d;k++) {
-    for(int j = 0 ; j < w*h; j++) {
-    *outPtr=(T)pixels[k][j];
-    outPtr++;
-    }
-}
+				pixels[k][i + w*j] = self->interp(integral,(float)rPixels);
+	   
+				//pixels[kSym][i + w*j] = interp(integral,(float)rPixels);
+			}
+		}
+	}
+	int n = w*h;
+	if(Normalization == 0){
+		float peak = pixels[kc][ic + w*jc];
+		for (int k = 0; k < d; k++){
+			for (int ind = 0; ind < n; ind++){
+				if(pixels[k][ind] > peak)
+					peak = pixels[k][ind];
+			}
+		}
+		float f = 1/peak;
+		for (int k = 0; k < d; k++){
+			for (int ind = 0; ind < n; ind++){
+				pixels[k][ind] *= f;
+			}
+		}
+	}else if(Normalization == 1){
+		float peak = pixels[kc][ic + w*jc];
+		for (int k = 0; k < d; k++){
+			for (int ind = 0; ind < n; ind++){
+				if(pixels[k][ind] > peak)
+					peak = pixels[k][ind];
+			}
+		}
+		float f = 255/peak;
+		for (int k = 0; k < d; k++){
+			for (int ind = 0; ind < n; ind++){
+				pixels[k][ind] *= f;
+				if(pixels[k][ind] > 255)pixels[k][ind] = 255;
+			}
+		}
+	}else if(Normalization == 2){
+		float area = 0;
+		for (int k = 0; k < d; k++){
+			for (int ind = 0; ind < n; ind++){
+				area += pixels[k][ind];
+			}
+		}
+		for (int k = 0; k < d; k++){
+			for (int ind = 0; ind < n; ind++){
+				pixels[k][ind] /= area;
+			}
+		}
+	}
+	printf("d*n=%d\n", d*n);
+	for(int k = 0; k < d; k++) {
+		for(int ind = 0; ind < n; ind++) {
+			*outPtr=(T)pixels[k][ind];
+			outPtr++;
+		}
+		
+	}
         
-delete[] integral;
+	delete[] integral;
   
-for(int i=0;i<d;i++)delete[] pixels[i];
-delete[] pixels;
+	for(int i=0;i<d;i++)delete[] pixels[i];
+	delete[] pixels;
 }
 
 void vtkImageDiffractionPSF3D::ExecuteData(vtkDataObject *output)
 {
   vtkImageData *data = this->AllocateOutputData(output);
   int *outExt = data->GetExtent();
-  void *outPtr = data->GetScalarPointerForExtent(outExt);
+  void *outPtr = data->GetScalarPointer(); 
 
+  printf("Extent = %d,%d,%d,%d,%d,%d\n", outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   // Call the correct templated function for the output
   switch (VTK_FLOAT)
     {
@@ -313,7 +311,7 @@ void vtkImageDiffractionPSF3D::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
-  os << indent << "Wavelength: "<< Lambda << "\n";
+  os << indent << "Wavelength: "<< Wavelength << "\n";
   os << indent << "Index of Refraction: "<< RefractionIndex << "\n";
   os << indent << "Spacing: (" << PixelSpacing << ","<< PixelSpacing << ","<<SliceSpacing<<")\n";
   os << indent << "Numerical Aperture n*sin(theta): " << NumericalAperture << "\n";
@@ -327,7 +325,6 @@ void vtkImageDiffractionPSF3D::PrintSelf(ostream& os, vtkIndent indent)
           os << "*** MALFORMED NORMALIZATION PARAMETER ***\n";
   }
   os << indent << "Dimensions: (" << Dimensions[0] << ","<<Dimensions[1] <<","<<Dimensions[2]<<")\n";
-  os << indent << "Output in dB: " << (dB?"yes":"no") << "\n";
 
 }
 

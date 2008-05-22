@@ -463,9 +463,11 @@ class ProcessingFilter:
 			choices = [self.processInputText]
 		else:
 			choices = []
+		print "Choices=",self.dataUnit
 		# If the input is a processed dataunit, i.e. output from a task,
 		# then we offer both the task output and the individual channels
 		if self.dataUnit.isProcessed():
+			print self.dataUnit.getSourceDataUnits()
 			for i, dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
 				choices.append(dataunit.getName())
 		else:
@@ -508,7 +510,6 @@ class ProcessingFilter:
 			# the image data from the corresponding channel
 			Logging.info("Using input from channel %d as input %d" % (self.inputMapping[mapIndex] - 1, mapIndex), \
 							kw = "processing")
-			
 			image = self.getInputFromChannel(self.inputMapping[mapIndex] - 1)
 		return image
 
@@ -581,9 +582,11 @@ class ProcessingFilter:
 		else:
 			self.sourceUnits = [self.dataUnit]
 				
-		currentTimePoint = scripting.visualizer.getTimepoint()
 		if scripting.processingTimepoint != -1:
 			currentTimePoint = scripting.processingTimepoint
+		else:
+			currentTimePoint = scripting.visualizer.getTimepoint()
+
 		if timepoint != -1:
 			currentTimePoint = timepoint
 		if dataUnit:
@@ -619,7 +622,8 @@ class ProcessingFilter:
 			return
 		self.initDone = 0
 		for item in self.getPlainParameters():
-			self.setParameter(item, self.getDefaultValue(item))
+			defaultValue = self.getDefaultValue(item)
+			self.setParameter(item,defaultValue)
 		self.initDone = 1
 		
 	def getNumberOfInputs(self):

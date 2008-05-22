@@ -68,6 +68,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		# Some variables for quickly determining the platform 
 		self.is_windows = platform.system() == "Windows"
 		self.is_mac = platform.system() == "Darwin"
+		self.enabled = True
 		
 		# A counter for wheel rotations so that we can react to a given number of rotations
 		# since a single rotation of wheel produces quite many events
@@ -921,12 +922,18 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Sets the data unit that is displayed
 		"""	   
 		self.dataUnit = dataUnit
-		if dataUnit:
+		if dataUnit and self.enabled:
 			self.voxelSize = dataUnit.getVoxelSize()
 			x, y, z = self.dataUnit.getDimensions()
 			self.buffer = wx.EmptyBitmap(x, y)
 			self.dataDimX, self.dataDimY, self.dataDimZ = x,y,z
 			wx.CallAfter(self.readAnnotationsFromCache)
+
+	def enable(self, flag):
+		"""
+		Enable/Disable updates
+		"""
+		self.enabled = flag
 		
 	def readAnnotationsFromCache(self):
 		"""
