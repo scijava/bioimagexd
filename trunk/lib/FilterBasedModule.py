@@ -433,7 +433,7 @@ class FilterBasedModule(lib.Module.Module):
 		else:
 			del self.cached
 			self.cached = None
-		
+	
 		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
 
 		data = self.images

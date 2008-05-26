@@ -1,6 +1,7 @@
 #! /bin/bash
 
 VTK_SOURCE_DIR="/Users/kallepahajoki/VTK"
+ITK_SOURCE_DIR="/Users/kallepahajoki/ITK/InsightToolkit-3.4.0/bin/"
 
 if [ "$1" != "" ]; then
     VTK_SOURCE_DIR=$1
@@ -32,25 +33,47 @@ do
 done
 
 cd /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib
-LIBS="`echo _ItkVtkGluePython.so`"
-#for lib in $LIBS
-#do
-#  DEPS="`otool -L  $lib |grep /Users |grep -v vtk|cut -d' ' -f1`"
-#  for dep in $DEPS
-#  do
-#     ndep="`basename $dep`"
-#     install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/$ndep $lib
-#  done
-#done
-LIBS="`echo _ItkVtkGluePython.so`"
+LIBS="`echo _*.so`"
 for lib in $LIBS
 do
-  DEPS="`otool -L  $lib |grep vtk|cut -d' ' -f1`"
+  DEPS="`otool -L  $lib |grep vtk |cut -d' ' -f1`"
   for dep in $DEPS
   do
      ndep="`basename $dep`"
      install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/$ndep $lib
   done
+  DEPS="`otool -L  $lib |grep -i itk |grep -v /|cut -d' ' -f1`"
+  for dep in $DEPS
+  do
+     ndep="`basename $dep`"
+     install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/$ndep $lib
+  done
+
+ DEPS="`otool -L  $lib |grep -i itk |grep  $ITK_SOURCE_DIR |cut -d' ' -f1`"
+  for dep in $DEPS
+  do
+      ndep="`echo $dep | sed s,$ITK_SOURCE_DIR,,`"
+      if [ ! -e "$ndep" ]; then
+         install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/$ndep $lib
+      else
+         install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/WrapITK/lib/$ndep $lib
+      
+      fi
+  done
+done
+
+cd /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/
+LIBS="`echo *.dylib`"
+for lib in $LIBS
+do
+
+  DEPS="`otool -L  $lib |grep -i itk |grep -v /|cut -d' ' -f1`"
+  for dep in $DEPS
+  do
+     ndep="`basename $dep`"
+     install_name_tool -change $dep /Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit/$ndep $lib
+  done
+
 done
 
 

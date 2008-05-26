@@ -633,10 +633,10 @@ class ColocalizationPanel(TaskPanel):
 
 		minval, maxval = sources[0].getScalarRange()
 		minval2, maxval2 = sources[1].getScalarRange()
-		if minval2 < minval:
-			minval = minval2
-		if maxval2 > maxval:
-			maxval = maxval2
+		minval = min(minval, minval2)
+		bitmax1 = (2**sources[0].getSingleComponentBitDepth())-1
+		bitmax2 = (2**sources[0].getSingleComponentBitDepth())-1
+		maxval = max(maxval, maxval2, bitmax1, bitmax2)
 		self.lowerthreshold.SetRange(minval, maxval)
 		self.lowerthreshold.SetValue((maxval - minval) / 2)
 		self.upperthreshold.SetRange(minval, maxval)

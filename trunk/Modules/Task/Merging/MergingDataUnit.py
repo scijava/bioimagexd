@@ -33,7 +33,6 @@ import MergingSettings
 
 class MergingDataUnit(CombinedDataUnit):
 	"""
-	Created: 03.07.2005, KP
 	Description: Class for a merged channels dataset
 	"""
 	def __init__(self, name = ""):

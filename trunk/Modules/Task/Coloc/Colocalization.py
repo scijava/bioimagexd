@@ -103,7 +103,6 @@ class Colocalization(Module):
 
 #		for i in self.images:
 #			i.Update()
-		print [x.GetScalarRange()[1] for x in self.images]
 		maxval = int(max([x.GetScalarRange()[1] for x in self.images]))
 		Logging.info("Maximum value = %d"%maxval, kw="processing") 
 		settings = self.settingsLst[0]

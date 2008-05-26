@@ -93,6 +93,9 @@ class FilterBasedTaskSettings(DataUnitSettings):
 					 that can be written to disk.
 		"""
 		if name == "FilterList":
-			return str(value.getFilterNames())
+			if value:
+				return str(value.getFilterNames())
+			else:
+				return "[]"
 		else:
 			return DataUnitSettings.serialize( name, value)
