@@ -406,7 +406,8 @@ class Scatterplot(wx.Panel):
 		"""
 		self.sources = dataUnit.getSourceDataUnits()
 		self.dataUnit = dataUnit
-		self.scalarMax = max([sourceUnit.getScalarRange()[1] for sourceUnit in self.sources])
+#		self.scalarMax = max([sourceUnit.getScalarRange()[1] for sourceUnit in self.sources])
+		self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
 		
 		self.buffer = wx.EmptyBitmap(*self.size)
 		self.updatePreview()
@@ -615,13 +616,13 @@ class Scatterplot(wx.Panel):
 		dc.DrawLine(self.xoffset + horizontalLegendWidth + upper1 * c, 0, self.xoffset + horizontalLegendWidth + upper1 * c, 255)
 		dc.DrawLine(self.xoffset + horizontalLegendWidth, ymax - upper2 * c, self.xoffset + horizontalLegendWidth + 255, ymax - upper2 * c)
 		
-		borders = lib.ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
-		borders = borders.ConvertToBitmap()
-		
-		overlay = lib.ImageOperations.getOverlay(int((upper1 - lower1) * c), int((upper2 - lower2) * c), (0, 0, 255), 64)
-		overlay = overlay.ConvertToBitmap()
-		dc.DrawBitmap(overlay, self.xoffset + horizontalLegendWidth + lower1 * c, ymax - upper2 * c, 1)
-		dc.DrawBitmap(borders, self.xoffset + horizontalLegendWidth + lower1 * c, ymax - upper2 * c, 1)
+		if upper1 != lower1 and upper2 != lower2:
+			overlay = lib.ImageOperations.getOverlay(int((upper1 - lower1) * c), int((upper2 - lower2) * c), (0, 0, 255), 64)
+			overlay = overlay.ConvertToBitmap()
+			borders = lib.ImageOperations.getOverlayBorders(int((upper1 - lower1) * c) + 1, int((upper2 - lower2) * c) + 1, (0, 0, 255), 90, lineWidth = 2)
+			borders = borders.ConvertToBitmap()
+			dc.DrawBitmap(overlay, self.xoffset + horizontalLegendWidth + lower1 * c, ymax - upper2 * c, 1)
+			dc.DrawBitmap(borders, self.xoffset + horizontalLegendWidth + lower1 * c, ymax - upper2 * c, 1)
 		
 		if not self.scatterLegend:
 			self.scatterLegend = lib.ImageOperations.paintCTFValues(self.scatterCTF, width = self.legendWidth, height = 256, paintScale = 1)

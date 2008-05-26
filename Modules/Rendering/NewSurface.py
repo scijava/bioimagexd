@@ -80,8 +80,7 @@ class SurfaceModule(VisualizationModule):
 			"Simplify": "Simplify surface", "PreserveTopology": "Preserve topology",
 			"IsoValue": "Iso value", "SurfaceRangeBegin": "Generate surfaces in range:\n",
 			"SurfaceAmnt": "Number of surfaces", "Transparency": "Surface transparency",
-			"MultipleSurfaces": "Visualize multiple surfaces",
-			"PolyDataFile":"Surface file","SavePolyData":"Write surface data to file" }
+			"MultipleSurfaces": "Visualize multiple surfaces","SolidColor":"Color surface with max. intensity"}
 		
 		self.actor = self.lodActor = vtk.vtkLODActor()
 		self.lodActor.SetMapper(self.mapper)
@@ -121,12 +120,10 @@ class SurfaceModule(VisualizationModule):
 		return [["", ("Method", )], \
 				["Smoothing options", \
 					("Gaussian", "Normals", "FeatureAngle", "Simplify", "PreserveTopology") ], \
-	   			["Iso-Surface", ("IsoValue", )], \
+	   			["Iso-Surface", ("IsoValue", "SolidColor")], \
 				["Multiple Surfaces", \
 					("MultipleSurfaces", "SurfaceRangeBegin", GUI.GUIBuilder.NOBR, \
 					"SurfaceRangeEnd", "SurfaceAmnt", "Transparency")],
-				["Output surface data",
-		("SavePolyData",("PolyDataFile", "Select the file to which the surface will be written", "*.pol"))]
 		]
 		
 	def getRange(self, parameter):
@@ -148,8 +145,8 @@ class SurfaceModule(VisualizationModule):
 		"""
 		Return the default value of a parameter
 		"""           
-		if parameter == "SavePolyData": return False
-		if parameter == "PolyDataFile": return "surface.vtp"
+		if parameter == "SolidColor":
+			return 0
 		if parameter == "Method":
 			return 1
 		if parameter == "Gaussian": 
@@ -181,14 +178,12 @@ class SurfaceModule(VisualizationModule):
 		"""   
 		if parameter == "Method":
 			return GUI.GUIBuilder.CHOICE
-		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces", "SavePolyData"]: 
+		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces","SolidColor"]: 
 			return types.BooleanType
 		if parameter in ["Simplify", "IsoValue", "Transparency"]: 
 			return GUI.GUIBuilder.SLICE
 		if parameter in ["SurfaceRangeBegin", "SurfaceRangeEnd", "SurfaceAmnt", "FeatureAngle"]: 
 			return GUI.GUIBuilder.SPINCTRL
-		if parameter in ["PolyDataFile"]:
-			return GUI.GUIBuilder.FILENAME
 		
 	def setDataUnit(self, dataunit):
 		"""
@@ -250,7 +245,17 @@ class SurfaceModule(VisualizationModule):
 		dataUnit = self.getInputDataUnit(1)
 		if not dataUnit:
 			dataUnit = self.dataUnit
-		self.mapper.SetLookupTable(dataUnit.getColorTransferFunction())
+		dataCtf = dataUnit.getColorTransferFunction()
+		if self.parameters["SolidColor"]:
+			ctf = vtk.vtkColorTransferFunction()
+			ctf.AddRGBPoint(0, 0,0,0)
+			minval, maxval = dataCtf.GetRange()
+			r,g,b = dataCtf.GetColor(maxval)
+			ctf.AddRGBPoint(1, r,g,b)
+			ctf.AddRGBPoint(maxval, r,g,b)
+		else:
+			ctf = dataCtf
+		self.mapper.SetLookupTable(ctf)
 		self.mapper.ScalarVisibilityOn()
 		
 		min, max = self.data.GetScalarRange()
@@ -339,11 +344,6 @@ class SurfaceModule(VisualizationModule):
 
 		
 		self.mapper.SetInput(input)
-		if self.parameters["SavePolyData"]:
-			writer = vtk.vtkXMLPolyDataWriter()
-			writer.SetFileName(self.parameters["PolyDataFile"])
-			writer.SetInput(input)
-			writer.Update()
 		VisualizationModule.updateRendering(self, input)
 		self.parent.Render()    
 

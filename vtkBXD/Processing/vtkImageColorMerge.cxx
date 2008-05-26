@@ -76,7 +76,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     unsigned long count = 0;
     unsigned long target;    
 
-//    printf("Executing colorMerging id=%d\n",id);
+    printf("Executing colorMerging id=%d\n",id);
     unsigned char **ctfs;        
     int **itfs;
     int itfCount = self->GetITFCount();
@@ -102,7 +102,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     
     ctfs = new unsigned char*[NumberOfInputs];
     
-    
+
     inPtrs=new T*[NumberOfInputs];
     int moreThanOne = 0;
     int *scalarComponents = new int[NumberOfInputs];
@@ -111,7 +111,9 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     vtkIntensityTransferFunction* itf;
     vtkColorTransferFunction* ctf;
     int isIdentical = 0;
-    
+
+    printf("Out ext=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4],outExt[5]);
+
     const unsigned char* map;
     
     for(i=0; i < NumberOfInputs; i++) {
@@ -124,14 +126,14 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             continue;
         }
         
-        
+
         isIdentical = 1;
         ctf = self->GetColorTransferFunction(i);
         double range[2];
         ctf->GetRange(range);
         int n = int(range[1]-range[0])+1;
 //  n++;
-        //printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1],n);
+        printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1],n);
         map = ctf->GetTable(range[0],range[1],n);
         //printf("Got table\n");
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
@@ -139,7 +141,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
 
         
         if( itfCount ) {
-            //printf("Got %d itfs\n",itfCount);
+            printf("Got %d itfs\n",itfCount);
             itf = self->GetIntensityTransferFunction(i);
 
             //printf("ITF%d has range %d\n",i,itf->GetRangeMax());
@@ -149,15 +151,15 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 isIdentical = 0;
                 allIdentical = 0;                
             }
-        }    
-        
-        //printf("Value of function 1 at 255=%d\n",itfs[0][255]);
-        //printf("Value of function 2 at 255=%d\n",itfs[1][255]);
-        
+        }
+
+        printf("Value of function 1 at 255=%d\n",itfs[0][255]);
+        printf("Value of function 2 at 255=%d\n",itfs[1][255]);
+
         for(int x=0,xx = 0; xx < n; xx++) {
-                if(!isIdentical) {                    
+                if(!isIdentical) {
+
                     x=itfs[i][xx];
-                    //printf("Mapping value %d for ch%d to %d, itf range=%d\n",xx,i,x,itf->GetRangeMax());    
                 } else x=xx;
 
                 ctfs[i][3*xx] = map[3*x];
@@ -167,7 +169,7 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         } 
     }
 //    printf("Out extent=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4], outExt[5]);
-    //printf("Created the ctfs\n");
+    printf("Created the ctfs\n");
     outPtr=(unsigned char*)outData->GetScalarPointerForExtent(outExt);
     
     
@@ -176,8 +178,8 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    //printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
-    //printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
+    printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
+    printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
     int currScalar = 0;
     int alphaScalar; 
     int n = 0;
@@ -277,12 +279,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         }
         outPtr += outIncZ;      
     }
-    
+    printf("Processing done\n");
     for(int i = 0; i < NumberOfInputs; i++) {        
         if(ctfs[i])
             delete[] ctfs[i];
     }
-    //printf("Deleting itfs[]\n");
+    printf("Deleting itfs[]\n");
     delete[]itfs;
     //delete modctfs;
     //printf("deleting ctfs\n");

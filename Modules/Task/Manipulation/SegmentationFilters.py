@@ -736,8 +736,9 @@ class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
 		self.itkfilter.SetInsideValue(0)
 		self.itkfilter.SetOutsideValue(255)
 		self.itkfilter.SetNumberOfHistogramBins(255)
-		if update:
-			self.itkfilter.Update()
+		self.itkfilter.Update()
+		print "Threshold=", self.itkfilter.GetThreshold()
+		self.setParameter("Lower",self.itkfilter.GetThreshold())
 		
 		data = self.itkfilter.GetOutput()
 		return data 

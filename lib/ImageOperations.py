@@ -618,7 +618,8 @@ def getOverlay(width, height, color, alpha):
 	"""
 	Method: getOverlay(width, height, color, alpha)
 	Create an overlay of given color with given alpha
-	"""		  
+	"""
+	print "Generating overlay",width,height,color
 	size = width * height * 3
 	formatString = "%ds" % size
 	red, green, blue = color
@@ -910,9 +911,11 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	imagedata2.Update()
 	x0, x1 = imagedata1.GetScalarRange()
 	d = 255.0 / x1
+	sc1max = x1
 
 	x0, x1 = imagedata2.GetScalarRange()
 	d = 255.0 / x1
+	sc2max = x1
 	
 	app = vtk.vtkImageAppendComponents()
 	app.AddInput(imagedata1)
@@ -926,6 +929,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	acc = vtk.vtkImageAccumulate()
 	
 	n = 255
+	#n = min(max(sc1max,sc2max),255)
 	acc.SetComponentExtent(0, n, 0, n, 0, 0)
 	acc.SetInputConnection(shiftscale.GetOutputPort())
 	acc.Update()
@@ -959,6 +963,10 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	Logging.info("Scatterplot has dimensions: ", data.GetDimensions(), data.GetExtent(), kw = "imageop")						  
 	data.SetWholeExtent(data.GetExtent())
 	img = vtkImageDataToWxImage(data)
+	#w, h = img.GetWidth(), img.GetHeight()
+	#if w < 255 or h < 255:
+	#	dh = 255-h
+	#	img.Resize((255, 255),(0, 0), 0,0,0)
 	return img, ctf, origData
 	
 def getZoomFactor(imageWidth, imageHeight, screenWidth, screenHeight):

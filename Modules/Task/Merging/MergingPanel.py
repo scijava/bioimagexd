@@ -105,12 +105,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		#self.editAlphaPanel = wx.Panel(self.settingsNotebook,-1)
 		self.editAlphaPanel = wx.Panel(self.editIntensityPanel, -1)
 		self.editAlphaSizer = wx.GridBagSizer()
-		
-		#self.alphaEditor = IntensityTransferEditor(self.editAlphaPanel)
-		#self.alphaEditor.setIntensityTransferFunction(self.alphaTF)
-		#self.alphaEditor.setAlphaMode(1)
-		#self.editAlphaSizer.Add(self.alphaEditor,(0,0),span=(1,2))        
-		
+
 		self.alphaModeBox = wx.RadioBox(self.editAlphaPanel, -1, "Alpha channel construction",
 		choices = ["Maximum Mode", "Average Mode", "Image Luminance"], \
 					majorDimension = 2, style = wx.RA_SPECIFY_COLS)
@@ -160,6 +155,12 @@ class MergingPanel(TaskPanel.TaskPanel):
 		for unit in dataunits:
 			setting = unit.getSettings()
 			minval, maxval = unit.getScalarRange()
+			ctf = unit.getColorTransferFunction()
+			ctfmin, ctfmax = ctf.GetRange()
+			print "CTF range=",ctfmax
+			bitmax = (2**unit.getSingleComponentBitDepth()-1)
+			print "bitmax=",bitmax
+			maxval = max(ctfmax, maxval,bitmax)
 			itf = vtkbxd.vtkIntensityTransferFunction()
 			itf.SetRangeMax(maxval)
 			self.alphaTF.SetRangeMax(maxval)
@@ -223,8 +224,13 @@ class MergingPanel(TaskPanel.TaskPanel):
 		
 		for i in sources:
 			minval, maxval = i.getScalarRange()
+			ctf = i.getColorTransferFunction()
+			ctfmin, ctfmax = ctf.GetRange()
+			bitmax = (2**i.getSingleComponentBitDepth()-1)
+			maxval = max(ctfmax, maxval,bitmax)
 			if maxval > totmax:
 				totmax = maxval
+
 		self.alphaTF.SetRangeMax(int(totmax))
 		
 		for i in range(len(sources)):

@@ -159,6 +159,8 @@ class TreeWidget(wx.SashLayoutWindow):
 			obj = self.tree.GetPyData(item)
 			print "Adding source dataunit",obj
 			self.groupedDataUnit.addSourceDataUnit(obj)
+		setting = self.groupedDataUnit.getSettings()
+		setting.set("FilterList",[])
 		
 		print "Now=",self.groupedDataUnit.getSourceDataUnits()
 			

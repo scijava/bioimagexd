@@ -173,14 +173,14 @@ class Merging(Module):
 			self.merge.AddInput(image)
 			self.merge.AddLookupTable(self.ctfs[i])
 			self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
-		
+
 		#data = self.getLimitedOutput(self.merge)
-		
+
 		data = self.merge.GetOutput()
-		
+
 		t3 = time.time()
 		Logging.info("Merging took %.4f seconds" % (t3 - t1), kw = "processing")
-		lib.messenger.send(None, "update_progress", 100, "Done.")
+		#lib.messenger.send(None, "update_progress", 100, "Done.")
 		
 		#data.GlobalReleaseDataFlagOn()
 		return data
