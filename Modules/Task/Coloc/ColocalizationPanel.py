@@ -463,7 +463,7 @@ class ColocalizationPanel(TaskPanel):
 		w.writerow([namestr2])
 		w.writerow(["Timepoint", self.timePoint])
 		w.writerow([time.ctime()])
-		for item in self.headervals:
+		for item in self.listctrl.headervals:
 			header, val1, val2, col = item
 			header = self.decode(header)
 			if type(val1) == types.UnicodeType:

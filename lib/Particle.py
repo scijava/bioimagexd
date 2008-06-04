@@ -104,16 +104,17 @@ class ParticleReader:
 				skipNext = 1
 				continue
 			else:
-				obj, sizemicro, size, cog, umcog, avgint = line
+				obj, sizemicro, size, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line
 			try:
 				size = int(size)
 				sizemicro = float(sizemicro)
 			except ValueError:
 				continue
 			obj = int(obj)
-			cog = [float(coordinate) for coordinate in cog[1:-1].split(", ")]
-			#cog = eval(cog)
-			umcog = [float(coordinate) for coordinate in umcog[1:-1].split(", ")]
+			cog = [cogX,cogY,cogZ]
+			#cog = [float(coordinate) for coordinate in cog[1:-1].split(", ")]
+			umcog = [umcogX,umcogY,umcogZ]
+			#umcog = [float(coordinate) for coordinate in umcog[1:-1].split(", ")]
 			avgint = float(avgint)  
 			if size >= self.filterObjectSize and obj != 0: 
 				particle = Particle(umcog, cog, self.timepoint, size, avgint, obj)

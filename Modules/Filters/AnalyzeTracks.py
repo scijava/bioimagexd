@@ -32,8 +32,9 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import lib.ProcessingFilter
 import lib.FilterTypes
 import GUI.GUIBuilder
-
 import GUI.CSVListView
+import os
+import wx
 
 class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
