@@ -106,9 +106,9 @@ void vtkImageIterativeDeconvolution3DExecute(vtkImageIterativeDeconvolution3D *s
                             T*)
 {
     int i;
-    int inIncX,inIncY,inIncZ;
-    int psfIncX,psfIncY,psfIncZ;
-    int outIncX,outIncY,outIncZ;
+    vtkIdType inIncX,inIncY,inIncZ;
+    vtkIdType psfIncX,psfIncY,psfIncZ;
+    vtkIdType outIncX,outIncY,outIncZ;
     int maxX,maxY,maxZ;
     int idxX,idxY,idxZ;
     float* inPtr;
@@ -121,8 +121,8 @@ void vtkImageIterativeDeconvolution3DExecute(vtkImageIterativeDeconvolution3D *s
     int dims[3];
     
     inData[0][0]->GetIncrements(inIncX, inIncY, inIncZ);
-     inData[1][0]->GetIncrements(psfIncX, psfIncY, psfIncZ);
-   outData[0]->GetIncrements(outIncX, outIncY, outIncZ);
+	inData[1][0]->GetIncrements(psfIncX, psfIncY, psfIncZ);
+	outData[0]->GetIncrements(outIncX, outIncY, outIncZ);
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];

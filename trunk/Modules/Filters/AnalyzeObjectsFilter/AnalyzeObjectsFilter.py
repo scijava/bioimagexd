@@ -107,13 +107,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
 		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Volume (micrometers)", "Volume (pixels)", "Center of Mass", \
-					"Center of Mass (micrometers)", "Avg. Intensity"])
+		w.writerow(["Object #", "Volume (micrometers)", "Volume (pixels)", "Center of Mass X", \
+					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
+					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity"])
 		for i, (volume, volumeum) in enumerate(self.values):
 			cog = self.centersofmass[i]
 			umcog = self.umcentersofmass[i]
 			avgint = self.avgIntList[i]
-			w.writerow([str(i + 1), str(volumeum), str(volume), str(cog), str(umcog), str(avgint)])
+			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint)])
 		f.close()
 
 	def getGUI(self, parent, taskPanel):

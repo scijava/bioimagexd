@@ -231,7 +231,7 @@ template<class TInputImage, class TOutputImage>
 void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 ::GetColumnPixels(unsigned long x,unsigned long y,unsigned long z,const TInputImage* image,VectorType &column) const
 {
-  long largestX = image->GetRequestedRegion().GetSize().m_Size[0];
+  unsigned long largestX = image->GetRequestedRegion().GetSize().m_Size[0];
   if (x > largestX) return;
 
   long startY = y - (this->m_Neighborhood.second - 1) / 2;

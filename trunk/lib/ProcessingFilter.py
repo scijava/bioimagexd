@@ -293,6 +293,7 @@ class ProcessingFilter:
 
 		if cast == types.FloatType:
 			ImageType = itk.VTKImageToImageFilter.IF3
+			scalarType = "float"
 		elif not cast:
 			scalarType = image.GetScalarTypeAsString()
 
