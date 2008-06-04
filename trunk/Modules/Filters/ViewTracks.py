@@ -36,6 +36,7 @@ import scripting
 import os.path
 import types
 import wx
+import Modules
 
 class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
