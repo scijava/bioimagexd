@@ -52,7 +52,7 @@ class CutBoxModule(VisualizationModule):
 	def __init__(self, parent, visualizer, **kws):
 		"""
 		Initialization
-		"""     
+		"""
 		self.boxWidget = None
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
@@ -116,7 +116,7 @@ class CutBoxModule(VisualizationModule):
 		"""            
 		# return [ ["Smoothing",("Normals","FeatureAngle")],
 		#["Warping",("Slice","Scale")] ]
-		return [["", ("ShowControls", "ClippedModule", "AllModules")]]
+		return [["", ("ShowControls", "ClippedModule", "AllModules", "InsideOut")]]
 		
 	def getDefaultValue(self, parameter):
 		"""
@@ -211,7 +211,6 @@ class CutBoxModule(VisualizationModule):
 		Update the Rendering of this module
 		"""             
 		input = self.getInput(1)
-
 		if self.parameters["InsideOut"]:
 			self.boxWidget.InsideOutOn()
 		else:
