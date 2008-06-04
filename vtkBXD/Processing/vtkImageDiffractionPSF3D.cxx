@@ -102,7 +102,7 @@ void vtkImageDiffractionPSF3DExecute(vtkImageDiffractionPSF3D *self,
 
   int uExtent[6];
 
-  int outIncX,outIncY,outIncZ;
+  vtkIdType outIncX,outIncY,outIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   int dims[3];
