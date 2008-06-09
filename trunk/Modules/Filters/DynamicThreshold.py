@@ -119,10 +119,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		inputImage = self.getInput(1)
 		inputImage = self.convertVTKtoITK(inputImage)
 
-		# Import itkBXD now because otherwise it would really slow down the
-		# application's starting procedure (about 5 seconds)
-		import itkBXD
-		dynamicThresholdFilter = itkBXD.DynamicThresholdImageFilter[inputImage,inputImage].New()
+		dynamicThresholdFilter = itk.DynamicThresholdImageFilter[inputImage,inputImage].New()
 		self.filter = dynamicThresholdFilter
 		dynamicThresholdFilter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
 		dynamicThresholdFilter.SetNeighborhood(self.parameters["X"],self.parameters["Y"])

@@ -177,7 +177,7 @@ class GalleryPanel(InteractivePanel):
 		self.timepoint = -1
 		self.setTimepoint(tp)
 		x, y = self.paintSize
-		self.setScrollbars(x, y)
+		#self.setScrollbars(x, y)
 		self.calculateBuffer()
 		self.updatePreview()
 			#self.imagedata=image

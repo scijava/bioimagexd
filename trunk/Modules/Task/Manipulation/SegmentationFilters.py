@@ -52,7 +52,7 @@ def getFilters():
 	return [MaskFilter, ITKWatershedSegmentationFilter,
 			MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
 			ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
-			ITKNeighborhoodConnectedThresholdFilter, ITKOtsuThresholdFilter]
+			ITKNeighborhoodConnectedThresholdFilter]
 
 
 class MaskFilter(ProcessingFilter.ProcessingFilter):
@@ -679,67 +679,3 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		#	 return self.convertITKtoVTK(data,imagetype="UC3")
 			
 		return data			   
-
-
-class ITKOtsuThresholdFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 26.05.2006, KP
-	Description: A class for thresholding the image using the otsu thresholding
-	"""		
-	name = "Otsu threshold"
-	category = SEGMENTATION
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		
-		self.descs = {"Upper": "Upper threshold", "Lower": "Lower threshold"}
-		self.itkFlag = 1
-		self.itkfilter = None
-
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""	   
-		if parameter == 'Upper':
-			return 255
-		if parameter == 'Lower':
-			return 0
-		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		if parameter in ["Lower", "Upper"]:
-			return GUIBuilder.THRESHOLD
-				
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""
-		return [["Threshold", (("Lower", "Upper"), )]]
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-			
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image)
-
-		self.itkfilter = itk.OtsuThresholdImageFilter.IUC3IUC3.New()
-		self.itkfilter.SetInput(image)
-		self.itkfilter.SetInsideValue(0)
-		self.itkfilter.SetOutsideValue(255)
-		self.itkfilter.SetNumberOfHistogramBins(255)
-		self.itkfilter.Update()
-		print "Threshold=", self.itkfilter.GetThreshold()
-		self.setParameter("Lower",self.itkfilter.GetThreshold())
-		
-		data = self.itkfilter.GetOutput()
-		return data 
-		
