@@ -66,6 +66,9 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 
 	def updateProgress(self):
+		"""
+		Update progress event handler
+		"""
 		lib.ProcessingFilter.ProcessingFilter.updateProgress(self,self.filter,"ProgressEvent")
 
 	def getParameters(self):
@@ -77,6 +80,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getType(self, param):
 		"""
 		Returns the types of parameters for GUI.
+		@param param Parameter name
 		"""
 		if param == "StatisticsType":
 			return GUI.GUIBuilder.CHOICE
@@ -84,7 +88,8 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getDefaultValue(self, param):
 		"""
-		Description:
+		Returns the default value of the parameter
+		@param param Parameter name
 		"""
 		if param == "StatisticsType":
 			return self.statisticsType
@@ -95,7 +100,8 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getParameterLevel(self, param):
 		"""
-		Description:
+		Returns the level of knowledge for using parameter
+		@param param Parameter name
 		"""
 		if param in ["X","Y","StatisticsType"]:
 			return scripting.COLOR_INTERMEDIATE
@@ -103,12 +109,13 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getRange(self, param):
 		"""
-		Description:
+		Returns range of list parameter
+		@param param Parameter name
 		"""
 		if param == "StatisticsType":
 			return ("Mean","Median")
 		
-	def execute(self, inputs, update = 0, last = 0):
+	def execute(self, inputs = (1,1), update = 0, last = 0):
 		"""
 		Execute filter in input image and return output image
 		"""

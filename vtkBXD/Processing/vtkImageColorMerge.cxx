@@ -153,8 +153,14 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             }
         }
 
-        printf("Value of function 1 at 255=%d\n",itfs[0][255]);
-        printf("Value of function 2 at 255=%d\n",itfs[1][255]);
+		if (i == 0)
+		  {
+			printf("Value of function 1 at 255=%d\n",itfs[0][255]);
+		  }
+		if (i == 1)
+		  {
+			printf("Value of function 2 at 255=%d\n",itfs[1][255]);
+		  }
 
         for(int x=0,xx = 0; xx < n; xx++) {
                 if(!isIdentical) {
@@ -242,9 +248,9 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                     //printf("Reading components straight from data, ncomps=%d\n",scalarComponents[i]);
                     r += currScalar;
                     inPtrs[i]++;
-                    g += *inPtrs[i];
+                    g += (int)*inPtrs[i];
                     inPtrs[i]++;
-                    b += *inPtrs[i];
+                    b += (int)*inPtrs[i];
                 }
                 
                 //scalar += currScalar;
