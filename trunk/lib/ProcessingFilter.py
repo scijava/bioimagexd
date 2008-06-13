@@ -34,6 +34,7 @@ __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
 import types
 import vtk
+import itk
 import lib.Command
 import sys
 import Logging
@@ -277,13 +278,6 @@ class ProcessingFilter:
 		"""
 		Convert the image data to ITK image
 		"""
-		try:
-			import itk
-		except ImportError:
-			print "Could not import ITK, terminating."
-			sys.exit()
-		# self.itk = 1
-		
 		if "itkImage" in str(image.__class__):
 			return image
 		if not self.itkFlag:
@@ -775,3 +769,16 @@ class ProcessingFilter:
 		Return the default value of a parameter
 		"""
 		return 0
+
+	def castITKImage(self, img, type):
+		"""
+		Casts ITK image to different type
+		@parameter img Original image to be casted
+		@parameter type itk.Image type of result image
+		"""
+		cast = itk.CastImageFilter[img,type].New()
+		cast.SetInput(img)
+		data = cast.GetOutput()
+		data.Update()
+		return data
+	
