@@ -88,24 +88,24 @@ int vtkImageAutoThresholdColocalization::RequestUpdateExtent (
   inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
   memcpy(uext, ext, 6*sizeof(int));
   inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
+
   return 1;    
 }
 
 //----------------------------------------------------------------------------
-void vtkImageAutoThresholdColocalization::
+/*void vtkImageAutoThresholdColocalization::
 ComputeInputUpdateExtents(vtkDataObject * output)
 {
     int inExt[6];
-    inExt[0] = inExt[1] = inExt[2] = inExt[3] = inExt[4] = inExt[5] =
-        0;
+    inExt[0] = inExt[1] = inExt[2] = inExt[3] = inExt[4] = inExt[5] = 0;
 
     for (int idx = 0; idx < this->NumberOfInputs; idx++) {
         if (this->Inputs[idx] != NULL) {
             //      this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
             this->Inputs[idx]->SetUpdateExtent(inExt);
         }
-    }
-}
+	}
+	}*/
 
 //----------------------------------------------------------------------------
 void vtkImageAutoThresholdColocalization::
@@ -171,13 +171,13 @@ template <class T> void calculateThreshold
     
     newMax = ch1threshmax = ch1Max;
     ch2threshmax = ch2Max;
-    
+
     inData[0]->GetContinuousIncrements(outExt, inIncX, inIncY, inIncZ);
-    
+
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];    
-    
+
     while ((thresholdFound == false) && iteration < 30) {
         
         if (iteration == 2 && r2 < 0) {
@@ -382,7 +382,6 @@ template < class T >
 
      
     int maxval=(int)pow(2.0f,sizeof(T)*8.0f)-1;
-    
 
     for (idxZ = 0; idxZ <= maxZ; idxZ++) {
         for (idxY = 0; idxY <= maxY; idxY++) {
@@ -399,12 +398,14 @@ template < class T >
             inPtr1 += inIncY;
             inPtr2 += inIncY;
         }
+
         inPtr1 += inIncZ;
         inPtr2 += inIncZ;
     }
     double ch1Mean = ch1Sum / N;
     double ch2Mean = ch2Sum / N;
     double ch3Mean = ch3Sum / N;
+
     N = 0;
     inPtr1 = (T *) inData[0]->GetScalarPointerForExtent(outExt);
     inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);

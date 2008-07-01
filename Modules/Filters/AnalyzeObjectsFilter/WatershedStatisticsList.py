@@ -148,6 +148,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		Set the flag indicating whether the selection of the objects will be highlighted
 		"""
 		self.highlightSelected = flag
+		
 	def setCentersOfMass(self, centersofmassList):
 		self.centersOfMassList = centersofmassList
 		self.Freeze()
@@ -157,6 +158,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			self.SetStringItem(i, 3, "(%d,%d,%d)" % (cog))
 		self.Thaw()
 		self.Refresh()
+		
 	def setVolumes(self, volumeList):
 		self.volumeList = volumeList
 		self.Freeze()
@@ -164,7 +166,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			#print "vol=",vol,"volum=",volum
 			if self.GetItemCount() <= i:
 				self.InsertStringItem(i, "")
-			self.SetStringItem(i, 0, "#%d" % i)
+			self.SetStringItem(i, 0, "#%d" % (i+1))
 			self.SetStringItem(i, 1, "%d px" % (vol))	
 			self.SetStringItem(i, 2, u"%.3f \u03BCm" % (volum))	  
 		self.Thaw()
@@ -213,7 +215,6 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			lib.messenger.send(None, "show_centerofmass", self.currentItem, centerofmass)
 			lib.messenger.send(None, "zslice_changed", int(z))
 			lib.messenger.send(None, "update_helpers", 1)
-		
 
 	def OnItemDeselected(self, evt):
 		print ("OnItemDeselected: %s" % evt.m_itemIndex)

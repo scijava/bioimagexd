@@ -229,7 +229,7 @@ public:
   vtkGetMacro(TimeInterval, double);
   vtkGetObjectMacro(TimeStampInformation,vtkDoubleArray);
   vtkGetObjectMacro(ChannelColors,vtkIntArray);
-  vtkGetObjectMacro(TrackWavelengths, vtkUnsignedIntArray);
+  vtkGetObjectMacro(TrackWavelengths, vtkDoubleArray);
   unsigned int GetUpdateChannel();
   vtkImageData* GetTimePointOutput(int,int);
 
@@ -304,7 +304,7 @@ int RequestData(
   unsigned int Compression;
   vtkUnsignedIntArray *StripOffset;
   vtkUnsignedIntArray *ChannelDataTypes;
-  vtkUnsignedIntArray *TrackWavelengths;
+  vtkDoubleArray *TrackWavelengths;
   unsigned int SamplesPerPixel;
   vtkUnsignedIntArray *StripByteCount;
   unsigned int LSMSpecificInfoOffset;

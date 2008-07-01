@@ -139,10 +139,11 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 				itkLabel =	self.convertVTKtoITK(maskImage)
 				statValues = [255]
 				roiName = mask.getName()
+
 			labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
 			
 			labelStats.SetInput(0, itkOrig)
-			labelStats.SetInput(1, itkLabel)
+			labelStats.SetLabelInput(itkLabel)
 			labelStats.Update()
 			for statval in statValues:
 		

@@ -134,10 +134,9 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.relabelFilter = itk.RelabelComponentImageFilter[data, data].New()
 
 		self.relabelFilter.SetInput(data)
-		th = self.parameters["Threshold"]
-		if th:
-			self.relabelFilter.SetMinimumObjectSize(th)
 
+		th = self.parameters["Threshold"]
+		self.relabelFilter.SetMinimumObjectSize(th)
 	
 		data = self.relabelFilter.GetOutput()
 				

@@ -97,7 +97,6 @@ class Colocalization(Module):
 		"""
 		Calculates the colocalization map and optionally the thresholds used
 		"""
-
 		Logging.info("Doing ", self.depth, "-bit colocalization", kw = "processing")
 		self.colocFilter.SetOutputDepth(self.depth)
 
@@ -179,7 +178,7 @@ class Colocalization(Module):
 					settings.set(i, val)			
 		self.eventDesc = "Calculating colocalization..."
 		outScalar = self.settings.get("OutputScalar")
-		Logging.info("Using ", outScalar, " as output scalar")#,kw="processing")
+		Logging.info("Using ", outScalar, "as output scalar")#,kw="processing")
 		self.colocFilter.SetOutputScalarValue(outScalar)
 
 		for i in range(len(self.images)):

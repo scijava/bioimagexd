@@ -282,14 +282,17 @@ template<class TInputImage, class TOutputImage>
 void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 ::SetStatisticsType(int type)
 {
+  if (type == this->m_StatisticsType) return;
+
   if (type == itkGetStaticConstMacro(Median))
 	{
-	  this->m_StatisticsType = itkGetStaticConstMacro(Median);
+	  this->m_StatisticsType = type;
 	}
   else
 	{
 	  this->m_StatisticsType = itkGetStaticConstMacro(Mean);
 	}
+
   this->Modified();
 }
 
@@ -311,7 +314,7 @@ template<class TInputImage, class TOutputImage>
 int DynamicThresholdImageFilter<TInputImage,TOutputImage>
 ::SetNeighborhood(unsigned int first, unsigned int second)
 {
-  if (first > 0 && second > 0)
+  if (first > 0 && second > 0 && (first != this->m_Neighborhood.first || second != this->m_Neighborhood.second))
 	{
 	  first = first % 2 ? first : first + 1;
 	  second = second % 2 ? second : second + 1;

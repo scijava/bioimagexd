@@ -52,10 +52,12 @@ class ImageDimensions: public ImageDimensionsTypeBase {};
 // Vectors for all images
 typedef vtkstd::vector<ImageChannels*> VectorChannelTypeBase;
 typedef vtkstd::vector<ImageDimensions*> VectorDimensionTypeBase;
-typedef vtkstd::vector<const char*> VectorImageTypeBase; 
+typedef vtkstd::vector<const char*> VectorImageTypeBase;
+typedef vtkstd::vector<vtkUnsignedLongLongArray*> VectorTimeStampBase;
 class ChannelVector: public VectorChannelTypeBase {};
 class DimensionVector: public VectorDimensionTypeBase {};
 class ImageVector: public VectorImageTypeBase {};
+class TimeStampVector: public VectorTimeStampBase {};
 
 vtkStandardNewMacro(vtkLIFReader);
 
@@ -174,6 +176,7 @@ int vtkLIFReader::OpenFile()
   this->Channels = new ChannelVector;
   this->Dimensions = new DimensionVector;
   this->Images = new ImageVector;
+  this->TimeStamps = new TimeStampVector;
   this->Offsets = vtkUnsignedLongLongArray::New();
   this->ImageSizes = vtkUnsignedLongLongArray::New();
   this->Modified();
@@ -251,38 +254,31 @@ int vtkLIFReader::GetDimensionCount()
 
 int vtkLIFReader::SetCurrentImage(int image)
 {
-  this->Modified();
-  if (image >= 0 && image < this->GetImageCount())
+  if (image >= 0 && image < this->GetImageCount() && image != this->CurrentImage)
     {
       this->CurrentImage = image;
       this->CurrentChannel = -1;
+	  this->Modified();
       return 1;
     }
-  else
-    {
-      this->CurrentImage = -1;
-      this->CurrentChannel = -1;
-      return 0;
-    }
+
+  return 0;
 }
 
 int vtkLIFReader::SetCurrentChannel(int channel)
 {
-  this->Modified();
   if (this->CurrentImage >= 0 && channel >= 0 && 
-      channel < this->GetChannelCount(this->CurrentImage))
+      channel < this->GetChannelCount(this->CurrentImage) && 
+	  channel != this->CurrentChannel)
     {
       this->CurrentChannel = channel;
 	  this->SetImageDimensions();
 	  this->SetImageVoxelSizes();
+	  this->Modified();
       return 1;
     }
 
-  else
-    {
-      this->CurrentChannel = -1;
-      return 0;
-    }
+  return 0;
 }
 
 void vtkLIFReader::SetCurrentImageAndChannel(int image, int channel)
@@ -293,17 +289,14 @@ void vtkLIFReader::SetCurrentImageAndChannel(int image, int channel)
 
 int vtkLIFReader::SetCurrentTimePoint(int i)
 {
-  this->Modified();
-  if (this->CurrentImage >= 0 && i >= 0 && i < this->GetImageDims()[3])
+  if (this->CurrentImage >= 0 && i >= 0 && i < this->GetImageDims()[3] && i != this->CurrentTimePoint)
     {
       this->CurrentTimePoint = i;
+	  this->Modified();
       return 1;
     }
-  else
-    {
-      this->CurrentTimePoint = -1;
-      return 0;
-    }
+
+  return 0;
 }
 
 unsigned int vtkLIFReader::GetImageVoxelCount(int image)
@@ -345,11 +338,10 @@ int vtkLIFReader::GetImageSlicePixelCount()
 
 int vtkLIFReader::SetImageVoxelSizes()
 {
-  this->Modified();
-  this->ImageVoxels[0] = this->ImageVoxels[1] = this->ImageVoxels[2] = 0.0;
-
   if (this->CurrentImage < 0 || this->CurrentImage >= this->Dimensions->size())
 	return 0;
+
+  this->ImageVoxels[0] = this->ImageVoxels[1] = this->ImageVoxels[2] = 0.0;
 
   for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(this->CurrentImage)->begin();
        dimIter != this->Dimensions->at(this->CurrentImage)->end(); dimIter++)
@@ -380,12 +372,12 @@ int vtkLIFReader::SetImageVoxelSizes()
 		}
     }
 
+  this->Modified();
   return 1;
 }
 
 int vtkLIFReader::SetImageDimensions()
 {
-  this->Modified();
   if (this->CurrentImage < 0 || this->CurrentImage >= this->Dimensions->size())
 	return 0;
 
@@ -411,6 +403,7 @@ int vtkLIFReader::SetImageDimensions()
 
   // Earlier checks are moved from here because those are application specific.
 
+  this->Modified();
   return 1;
 }
 
@@ -517,6 +510,46 @@ double vtkLIFReader::GetTimeInterval()
   return this->GetTimeInterval(this->CurrentImage);
 }
 
+vtkUnsignedLongLongArray* vtkLIFReader::GetTimeStamps(int image)
+{
+  if (image < 0 || image >= this->GetImageCount())
+	{
+	  vtkErrorMacro(<< "Requested timestamps of image that doesn't exist.");
+	  return NULL;
+	}
+  return this->TimeStamps->at(image);
+}
+
+vtkUnsignedLongLongArray* vtkLIFReader::GetTimeStamps()
+{
+  return this->GetTimeStamps(this->CurrentImage);
+}
+
+int vtkLIFReader::GetFramesPerTimePoint(int image)
+{
+  if (image < 0 || image >= this->GetImageCount())
+	{
+	  vtkErrorMacro(<< "Requested frames per time point of image that doesn't exist.");
+	  return 0;
+	}
+
+  int frames = 1;
+  for (ImageDimensionsTypeBase::const_iterator dimIter = this->Dimensions->at(image)->begin();
+	   dimIter != this->Dimensions->at(image)->end(); dimIter++)
+	{
+	  if ((*dimIter)->DimID == DimIDZ) frames *= (*dimIter)->NumberOfElements;
+	  if ((*dimIter)->DimID == DimIDL) frames *= (*dimIter)->NumberOfElements;
+	}
+  frames *= this->Channels->at(image)->size();
+
+  return frames;
+}
+
+int vtkLIFReader::GetFramesPerTimePoint()
+{
+  return this->GetFramesPerTimePoint(this->CurrentImage);
+}
+
 int vtkLIFReader::ReadLIFHeader()
 {
   if (!this->File) {
@@ -552,6 +585,7 @@ int vtkLIFReader::ReadLIFHeader()
   // Read and parse xml header
   this->File->read(xmlHeader,xmlChars);
   this->ParseXMLHeader(xmlHeader,xmlChars);
+  delete xmlHeader;
 
   // Find image offsets
   this->Offsets->SetNumberOfValues(this->GetImageCount());
@@ -656,7 +690,7 @@ int vtkLIFReader::ParseInfoHeader(vtkXMLDataElement *rootElement, int root)
   // If Image element found
   if (elementImage) 
 	{
-    this->ReadImage(elementImage);
+    this->ParseImage(elementImage);
     // Check that image info is read correctly and then add image name
     if (Channels->size() > Images->size() || Dimensions->size() > Images->size())
       {
@@ -682,16 +716,27 @@ int vtkLIFReader::ParseInfoHeader(vtkXMLDataElement *rootElement, int root)
   return 1;
 }
 
-void vtkLIFReader::ReadImage(vtkXMLDataElement *elementImage)
+void vtkLIFReader::ParseImage(vtkXMLDataElement *elementImage)
 {
   vtkXMLDataElement *elementImageDescription = elementImage->FindNestedElementWithName("ImageDescription");
+  vtkXMLDataElement *elementTimeStampList = elementImage->FindNestedElementWithName("TimeStampList");
 
   if (elementImageDescription)
     {
-    vtkXMLDataElement *elementChannels = elementImageDescription->FindNestedElementWithName("Channels");
-    vtkXMLDataElement *elementDimensions = elementImageDescription->FindNestedElementWithName("Dimensions");
-    if (elementChannels && elementDimensions)
-	  {
+	  this->ParseImageDescription(elementImageDescription);
+    }
+
+  // Parse time stamps even if there aren't any, then add empty
+  // vtkUnsignedLongLong to timestamps vector
+  this->ParseTimeStampList(elementTimeStampList);
+}
+
+void vtkLIFReader::ParseImageDescription(vtkXMLDataElement *elementImageDescription)
+{
+  vtkXMLDataElement *elementChannels = elementImageDescription->FindNestedElementWithName("Channels");
+  vtkXMLDataElement *elementDimensions = elementImageDescription->FindNestedElementWithName("Dimensions");
+  if (elementChannels && elementDimensions)
+	{
 	  ImageChannels *ImgChannels = new ImageChannels;
 	  ImageDimensions *ImgDimensions = new ImageDimensions;
 	  vtkXMLDataElement *Iterator;
@@ -718,8 +763,37 @@ void vtkLIFReader::ReadImage(vtkXMLDataElement *elementImage)
 			
 	  this->Channels->push_back(ImgChannels);
 	  this->Dimensions->push_back(ImgDimensions);
-	  }
-    }
+	  this->Modified();
+	}
+}
+
+void vtkLIFReader::ParseTimeStampList(vtkXMLDataElement *elementTimeStampList)
+{
+  vtkUnsignedLongLongArray *timeStampArray = vtkUnsignedLongLongArray::New();
+  if (elementTimeStampList)
+	{
+	  int timeStamps = elementTimeStampList->GetNumberOfNestedElements();
+	  unsigned long highInt;
+	  unsigned long lowInt;
+	  unsigned long long timeStamp;
+	  timeStampArray->SetNumberOfValues(timeStamps);
+	  for (int i = 0; i < timeStamps; ++i)
+		{
+		  vtkXMLDataElement *elementTimeStamp = elementTimeStampList->GetNestedElement(i);
+		  elementTimeStamp->GetScalarAttribute("HighInteger",highInt);
+		  elementTimeStamp->GetScalarAttribute("LowInteger",lowInt);
+		  timeStamp = highInt;
+		  timeStamp <<= 32;
+		  timeStamp += lowInt;
+		  timeStamp /= 10000; // Convert to ms
+		  timeStampArray->SetValue(i,timeStamp);
+		}
+	}
+  else
+	{
+	  timeStampArray->SetNumberOfValues(0);
+	}
+  this->TimeStamps->push_back(timeStampArray);
   this->Modified();
 }
 
@@ -771,6 +845,7 @@ void vtkLIFReader::InitializeAttributes()
   this->CurrentChannel = -1;
   this->CurrentTimePoint = -1;
   this->LifVersion = 0;
+  this->TimeStamps = NULL;
 }
 
 void vtkLIFReader::Clear()
@@ -788,6 +863,7 @@ void vtkLIFReader::Clear()
   if (this->Images) delete this->Images;
   if (this->Offsets) this->Offsets->Delete();
   if (this->ImageSizes) this->ImageSizes->Delete();
+  if (this->TimeStamps) delete this->TimeStamps;
   this->InitializeAttributes();
 }
 
@@ -854,10 +930,9 @@ int vtkLIFReader::RequestUpdateExtent(vtkInformation* vtkNotUsed(request),
   printf("vtkLIFReader Requested update extent = %d, %d, %d, %d, %d, %d\n", uext[0], uext[1], uext[2], uext[3], uext[4], uext[5]);
   // If they request an update extent that doesn't cover the whole slice
   // then modify the uextent 
-  if(uext[1] < ext[1] ) uext[1] = ext[1];
-  if(uext[3] < ext[3] ) uext[3] = ext[3];
-  outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext,6);
-  //request->Set(vtkStreamingDemandDrivenPipeline::REQUEST_UPDATE_EXTENT(), uext,6);
+  if (uext[1] < ext[1]) uext[1] = ext[1];
+  if (uext[3] < ext[3]) uext[3] = ext[3];
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext, 6);
 
   return 1;
 }
@@ -1091,6 +1166,8 @@ int vtkLIFReader::CopyHeaderInfo(const vtkLIFReader *reader)
   copy(reader->Images->begin(),reader->Images->end(),this->Images->begin());
   this->Offsets->DeepCopy(reader->Offsets);
   this->ImageSizes->DeepCopy(reader->ImageSizes);
+  this->TimeStamps->resize(reader->TimeStamps->size());
+  copy(reader->TimeStamps->begin(),reader->TimeStamps->end(),this->TimeStamps->begin());
   this->LifVersion = reader->LifVersion;
   this->HeaderInfoRead = 1;
 
