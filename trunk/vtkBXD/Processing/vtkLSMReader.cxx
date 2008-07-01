@@ -294,7 +294,7 @@ void vtkLSMReader::Clean()
    
    
   this->LaserNames = vtkStringArray::New();
-  this->TrackWavelengths = vtkUnsignedIntArray::New();
+  this->TrackWavelengths = vtkDoubleArray::New();
   this->DataSpacing[0] = this->DataSpacing[1] = this->DataSpacing[2] =  1.0f;
   this->Dimensions[0] = this->Dimensions[1] = this->Dimensions[2] = this->Dimensions[3] = this->Dimensions[4] = 0;
   this->NewSubFileType = 0;
@@ -1399,7 +1399,7 @@ int vtkLSMReader::RequestUpdateExtent (
   outInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
   // Get the requested update extent from the output.
   outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(), uext);
-  
+
   // If they request an update extent that doesn't cover the whole slice
   // then modify the uextent 
   if(uext[1] < ext[1] ) uext[1] = ext[1];

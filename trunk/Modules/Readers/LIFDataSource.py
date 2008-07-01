@@ -60,7 +60,6 @@ class LIFDataSource(DataSource):
 		
 		self.spacing = None
 		self.voxelSize = None
-		self.dimensions = None
 		self.ctf = None
 
 		# Use vtkLIFReader
@@ -144,8 +143,8 @@ class LIFDataSource(DataSource):
 
 	def internalGetDimensions(self):
 		"""
-		Returns the (x,y,z) dimensions of the dataset this dataunit contains
-		@return 3-tuple of dimensions of the dataset	
+		Returns the (x,y,z,t) dimensions of the dataset this dataunit contains
+		@return 4-tuple of dimensions of the dataset	
 		"""
 		dimensions = self.reader.GetImageDims()
 		# Make sure that every dimension is at least 1. This prevents
@@ -282,17 +281,27 @@ class LIFDataSource(DataSource):
 
 	def createTimeStamps(self):
 		"""
-		Creates time stamps for setTimeStamps method
+		Creates time stamps for setTimeStamps and setAbsoluteTimeStamps methods
 		"""
-		dimensions = self.reader.GetImageDims()
-		if dimensions[3] > 0:
-			interval = self.reader.GetTimeInterval(self.imageNum)
-			timePoint = 0.0
-			timestamps = []
-			for i in range(dimensions[3]):
-				timestamps.append(timePoint)
-				timePoint += interval
-			self.setTimeStamps(timestamps)
+		timeStamps = self.reader.GetTimeStamps(self.imageNum)
+		absoluteTimeStamps = []
+		relativeTimeStamps = [0.00]
+		if timeStamps.GetSize() > 0:
+			absoluteTimeStamps = [timeStamps.GetValue(0)]
+
+		timePoints = self.getDataSetCount()
+		framesPerTimePoint = self.reader.GetFramesPerTimePoint(self.imageNum)
+		if timePoints * framesPerTimePoint > timeStamps.GetSize():
+			timePoints = timeStamps.GetSize() / framesPerTimePoint
+
+		for i in range(1,timePoints):
+			timeStamp = timeStamps.GetValue(framesPerTimePoint * i)
+			earlierTS = timeStamps.GetValue(framesPerTimePoint * (i-1))
+			absoluteTimeStamps.append(timeStamp)
+			relativeTimeStamps.append((timeStamp - earlierTS)/1000.0 + relativeTimeStamps[i-1])
+
+		self.setTimeStamps(relativeTimeStamps)
+		self.setAbsoluteTimeStamps(absoluteTimeStamps)		
 
 	def uniqueID(self):
 		"""

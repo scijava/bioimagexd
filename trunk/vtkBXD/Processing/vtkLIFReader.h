@@ -42,6 +42,7 @@ typedef struct DimensionData;
 class ChannelVector;
 class DimensionVector;
 class ImageVector;
+class TimeStampVector;
 //ETX
 
 const int MemBlockCode = 0x70;
@@ -50,6 +51,7 @@ const int DimIDX = 1;
 const int DimIDY = 2;
 const int DimIDZ = 3;
 const int DimIDT = 4;
+const int DimIDL = 5;
 const int DimIDR = 6;
 
 class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
@@ -113,6 +115,10 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   const char* GetCurrentImageName();
   double GetTimeInterval(int);
   double GetTimeInterval();
+  vtkUnsignedLongLongArray* GetTimeStamps(int);
+  vtkUnsignedLongLongArray* GetTimeStamps();
+  int GetFramesPerTimePoint(int);
+  int GetFramesPerTimePoint();
 
   vtkGetMacro(CurrentImage,int);
   vtkGetMacro(CurrentChannel,int);
@@ -128,7 +134,9 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
 // Protected methods
   int ParseXMLHeader(const char*, unsigned long);
   int ParseInfoHeader(vtkXMLDataElement*, int root = 1);
-  void ReadImage(vtkXMLDataElement*);
+  void ParseImage(vtkXMLDataElement*);
+  void ParseImageDescription(vtkXMLDataElement*);
+  void ParseTimeStampList(vtkXMLDataElement*);
   void LoadChannelInfoToStruct(vtkXMLDataElement*, ChannelData*);
   void LoadDimensionInfoToStruct(vtkXMLDataElement*, DimensionData*);
   void InitializeAttributes();
@@ -171,6 +179,7 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   int ImageDims[4];
   double ImageVoxels[3];
   int LifVersion;
+  TimeStampVector *TimeStamps;
 
  private: // Only define operator= and copy constructor to prevent illegal use
   void operator=(const vtkLIFReader&);
