@@ -225,7 +225,7 @@ int RequestUpdateExtent (
   vtkInformationVector** inputVector,
   vtkInformationVector* outputVector);  
 
-// void ComputeInputUpdateExtents( vtkDataObject*output );
+  void ComputeInputUpdateExtents( vtkDataObject*output );
 
   void ExecuteInformation(vtkImageData **inputs, vtkImageData **output);
   void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
