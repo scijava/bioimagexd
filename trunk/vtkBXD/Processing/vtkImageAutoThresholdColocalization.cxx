@@ -93,19 +93,17 @@ int vtkImageAutoThresholdColocalization::RequestUpdateExtent (
 }
 
 //----------------------------------------------------------------------------
-/*void vtkImageAutoThresholdColocalization::
+void vtkImageAutoThresholdColocalization::
 ComputeInputUpdateExtents(vtkDataObject * output)
 {
-    int inExt[6];
-    inExt[0] = inExt[1] = inExt[2] = inExt[3] = inExt[4] = inExt[5] = 0;
-
-    for (int idx = 0; idx < this->NumberOfInputs; idx++) {
-        if (this->Inputs[idx] != NULL) {
-            //      this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
-            this->Inputs[idx]->SetUpdateExtent(inExt);
-        }
+  for (int idx = 0; idx < this->NumberOfInputs; idx++)
+	{
+	  if (this->Inputs[idx] != NULL)
+		{
+		  this->Inputs[idx]->SetUpdateExtent( this->Inputs[idx]->GetWholeExtent() );
+		}
 	}
-	}*/
+}
 
 //----------------------------------------------------------------------------
 void vtkImageAutoThresholdColocalization::
