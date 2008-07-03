@@ -139,7 +139,6 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
         ctfs[i] = new unsigned char[n*3];
 
-        
         if( itfCount ) {
             printf("Got %d itfs\n",itfCount);
             itf = self->GetIntensityTransferFunction(i);
@@ -153,11 +152,11 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
             }
         }
 
-		if (i == 0)
+		if (i == 0 && itfs[i] != NULL)
 		  {
 			printf("Value of function 1 at 255=%d\n",itfs[0][255]);
 		  }
-		if (i == 1)
+		if (i == 1 && itfs[i] != NULL)
 		  {
 			printf("Value of function 2 at 255=%d\n",itfs[1][255]);
 		  }
