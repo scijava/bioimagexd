@@ -63,7 +63,7 @@ def getFilters():
 	return [GaussianSmoothFilter, 
 			GradientFilter, GradientMagnitudeFilter,
 			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
-			ITKSigmoidFilter, ITKLocalMaximumFilter]
+			ITKLocalMaximumFilter]
 
 # fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
 def getFilterList():
@@ -348,79 +348,6 @@ class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
-		return data			   
-
-
-   
-
-
-class ITKSigmoidFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 29.05.2006, KP
-	Description: A class for mapping an image data thru sigmoid image filter
-	"""		
-	name = "Sigmoid filter (ITK)" 
-	category = FILTERING
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.itkFlag = 1
-		self.descs = {"Minimum": "Minimum output value", "Maximum": "Maximum Output Value", \
-						"Alpha": "Alpha", "Beta": "Beta"}
-		
-	def getParameterLevel(self, parameter):
-		"""
-		Return the level of the given parameter
-		"""
-		return scripting.COLOR_EXPERIENCED				   
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return [["Data range", ("Minimum", "Maximum")],
-		]		 
-
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""	   
-		if parameter == "Minimum":
-			return 0.0
-		if parameter == "Maximum":
-			return 1.0
-		if parameter == "Alpha":
-			return 
-		return 0
-		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		return types.FloatType
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""					   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-			
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image, cast = types.FloatType)
-		if not self.itkfilter:
-			f3 = itk.Image.F3
-			self.itkfilter = itk.SigmoidImageFilter[f3, f3].New()
-		self.itkfilter.SetInput(image)
-		
-		self.setImageType("F3")
-		data = self.itkfilter.GetOutput()
-		if update:
-			data.Update()
-
 		return data			   
 
 
