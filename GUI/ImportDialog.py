@@ -239,7 +239,7 @@ class ImportDialog(wx.Dialog):
 		
 		self.patternEdit = wx.TextCtrl(self, -1, "", style = wx.TE_PROCESS_ENTER, size = (400, -1))
 		
-		self.patternEdit.Enable(0)
+		self.patternEdit.Enable(1)
 		
 		self.patternUpdateBtn = wx.Button(self, -1, "Update")
 		self.patternUpdateBtn.Bind(wx.EVT_BUTTON, self.updateListOfImages)
@@ -507,7 +507,7 @@ enter the information below.""")
 	def setInputType(self, event):
 		"""
 		A method called when the input type is changed
-		"""        
+		"""
 		self.patternEdit.Enable(self.choice.GetSelection() == 0)
 	 
 	def updateSelection(self, event, updatePreview = 0):
