@@ -325,3 +325,4 @@ class AnnotationToolbar(wx.Window):
 			dims = self.visualizer.dataUnit.getDimensions()
 			mask = MaskTray.Mask(name, dims, imagedata)
 			self.visualizer.setMask(mask)
+			

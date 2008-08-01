@@ -378,9 +378,10 @@ class DataSource:
 					self.resampleFilter.SetAxisMagnificationFactor(2, zf)
 				else:
 					self.resampleFilter.RemoveAllInputs()
+					
 				self.resampleFilter.SetInputConnection(data.GetProducerPort())
-
 				data = self.resampleFilter.GetOutput()
+				
 		if self.mask:
 			if not self.maskImageFilter:
 				self.maskImageFilter = vtk.vtkImageMask()

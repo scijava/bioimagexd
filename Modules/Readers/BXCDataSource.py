@@ -141,8 +141,8 @@ class BXCDataSource(DataSource):
 		data = self.loadVti(self.dataSets[i])
 		if raw:
 			return data
+		
 		data = self.getResampledData(data, i)
-   
 		
 		if data.GetScalarType() != 3 and not raw and self.settings.getType() != "Process":
 			data = self.getIntensityScaledData(data)

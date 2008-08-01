@@ -816,7 +816,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 	dc = None	 
 	return bmp, percent, retvals, xoffset
 
-def getMaskFromROIs(rois, mx, my, mz):
+def getMaskFromROIs(rois, mx, my, mz, value = 255):
 	"""
 	Create a mask that contains all given Regions of Interest
 	"""
@@ -828,18 +828,23 @@ def getMaskFromROIs(rois, mx, my, mz):
 	coveredPointAmount = len(insideMap.keys())
 	for x, y in insideMap.keys():
 		insMap[(x, y)] = 1    
-	return coveredPointAmount, getMaskFromPoints(insMap, mx, my, mz)
+	return coveredPointAmount, getMaskFromPoints(insMap, mx, my, mz, value)
 	
-def getMaskFromPoints(points, mx, my, mz):
+def getMaskFromPoints(points, mx, my, mz, value = 255):
 	"""
-	Create a mask where all given points are set to 255
+	Create a mask where all given points are set to value (between 0-255)
 	"""
+	if value > 255:
+		value = 255
+	elif value < 0:
+		value = 0
+
 	size = mx * my
 	pointStructString = "%dB" % size
 	pointData = []
 	for y in range(0, my):
 		for x in range(0, mx):
-			pointData.append(255 * points.get((x, y), 0))
+			pointData.append(value * points.get((x, y), 0))
 	packedPointString = struct.pack(pointStructString, *pointData)
 	
 	importer = vtk.vtkImageImport()
