@@ -198,8 +198,7 @@ class OlympusDataSource(DataSource):
 		if not self.originalScalarRange:
 			self.originalScalarRange = 0, (2 ** self.getBitDepth()) - 1
 		
-		if self.resampling:
-			data = self.getResampledData(data, i)
+		data = self.getResampledData(data, i)
 		data = self.getIntensityScaledData(data)
 		
 		return data

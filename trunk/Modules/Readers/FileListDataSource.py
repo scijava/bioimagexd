@@ -315,7 +315,6 @@ class FileListDataSource(DataSource):
 			extract.SetInput(data)
 			data = extract.GetOutput()
 			
-			
 		if self.flipVertically:
 			flip = vtk.vtkImageFlip()
 			flip.SetFilteredAxis(1)
@@ -326,6 +325,7 @@ class FileListDataSource(DataSource):
 			flip.SetFilteredAxis(0)
 			flip.SetInput(data)
 			data = flip.GetOutput()
+			
 		return data
 		
 	def getDataBitDepth(self, data):

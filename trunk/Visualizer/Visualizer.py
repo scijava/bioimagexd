@@ -67,7 +67,6 @@ class Visualizer:
 		visualizerInstance = self
 		self.masks = []
 		self.setLater = 0
-		self.currentMask = None
 		self.currSliderPanel = None
 		self.delayed = 0
 		self.immediateRender = 1
@@ -102,6 +101,7 @@ class Visualizer:
 		lib.messenger.connect(None, "update_dataset_info", self.onUpdateGUIFromDataset)
 		lib.messenger.connect(None, "data_changed", self.updateRendering)
 		lib.messenger.connect(None, "itf_update", self.updateRendering)
+		lib.messenger.connect(None, "remove_mask", self.onRemoveMask)
 		self.closed = 0
 		self.initialized = 0
 		self.renderer = None
@@ -253,11 +253,9 @@ class Visualizer:
 
 	def setMask(self, mask):
 		"""
-		Set the current mask
+		Add mask in masks list
 		"""
 		self.masks.insert(0, mask)
-		self.currentMask = mask
-		self.dataUnit.setMask(mask)
 
 	def createSliders(self):
 		"""
@@ -1489,3 +1487,11 @@ class Visualizer:
 		"""
 		self.changing = time.time()
 		wx.FutureCall(200, lambda e = event, s = self: s.timesliderMethod(e))
+
+	def onRemoveMask(self, obj, event, mask):
+		"""
+		Remove a mask from masks list
+		"""
+		if mask >= 0 and mask < len(self.masks):
+			self.masks.pop(mask)
+			

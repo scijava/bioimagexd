@@ -40,6 +40,7 @@ import wx
 
 import GUI.PainterHelpers
 import GUI.OGLAnnotations
+import GUI.MaskTray
 
 ZOOM_TO_BAND = 1
 MANAGE_ANNOTATION = 2
@@ -141,13 +142,17 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.ID_SUB_BG = wx.NewId()
 		item = wx.MenuItem(self.subbgMenu, self.ID_SUB_BG, "Subtract background")
 		self.subbgMenu.AppendItem(item)
+
+		self.ID_ZERO_BG = wx.NewId()
+		item = wx.MenuItem(self.subbgMenu, self.ID_ZERO_BG, "Set background to zero")
+		self.subbgMenu.AppendItem(item)
 		
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_VARY)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_NONE)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_LINEAR)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)
-		
 		self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
+		self.Bind(wx.EVT_MENU, self.onSetBackgroundToZero, id = self.ID_ZERO_BG)
 		
 		GUI.PainterHelpers.registerHelpers(self)
 		
@@ -169,6 +174,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
 		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
+		lib.messenger.connect(None, "mask_changed", self.onMaskSelectionChanged)
 
 	def deregister(self):
 		"""
@@ -993,7 +999,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 			dc.EndDrawing()
 					
 
-
 	def paintPreview(self, dc):
 		"""
 		Paints the image to a DC
@@ -1082,3 +1087,26 @@ class InteractivePanel(ogl.ShapeCanvas):
 		mime = "image/%s" % ext
 		img = self.buffer.ConvertToImage()
 		img.SaveMimeFile(filename, mime)
+
+	def onSetBackgroundToZero(self, event):
+		"""
+		Set background pixels of ROI to zero
+		"""
+		if not self.subtractROI: return
+
+		mx, my, mz = self.dataUnit.getDimensions()
+		rois = [self.subtractROI]
+		n, maskImage = lib.ImageOperations.getMaskFromROIs(rois, mx, my, mz)
+		name = self.subtractROI.getName()
+		mask = GUI.MaskTray.Mask(name, (mx,my,mz), maskImage)
+		scripting.visualizer.setMask(mask)
+		self.dataUnit.setMask(mask)
+		
+		self.updatePreview(1)
+
+	def onMaskSelectionChanged(self, obj, event):
+		"""
+		Update preview after selecting a mask
+		"""
+		self.updatePreview(1)
+		

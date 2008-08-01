@@ -216,7 +216,7 @@ class LsmDataSource(DataSource):
 
 		if raw:
 			return data
-		if self.resampling:
+		if self.resampling or self.mask:
 			data = self.getResampledData(data, i)
 		if self.explicitScale or (data.GetScalarType() != 3 and not raw):
 			data = self.getIntensityScaledData(data)
