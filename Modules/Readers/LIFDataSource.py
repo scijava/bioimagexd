@@ -249,13 +249,6 @@ class LIFDataSource(DataSource):
 			
 		return self.ctf
 
-	def resetColorTransferFunction(self):
-		"""
-		Resets the CTF of the data source.
-		"""
-		self.ctf = None
-		return self.getColorTransferFunction()
-
 	def getBitDepth(self):
 		"""
 		Returns resolution of the current image's current channel.

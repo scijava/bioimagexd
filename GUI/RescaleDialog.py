@@ -119,7 +119,7 @@ color depth. Use the histograms below to the select how the intensities in your 
 	def setDataUnits(self, dataunits):
 		"""
 		Set the dataunits to be resampled
-		"""        
+		"""
 		self.dataUnits = dataunits
 		unitclass = self.taskPanels["Merging"][2].getDataUnit()
 		self.mergeUnit = unitclass("Preview for scaling intensity")

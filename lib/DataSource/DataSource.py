@@ -580,3 +580,13 @@ class DataSource:
 		scripting.inIO = (progress < 1.0)
 		if scripting.mainWindow:
 			scripting.mainWindow.updateProgressBar(obj, evt, progress,msg, notinvtk)
+
+	def resetColorTransferFunction(self):
+		"""
+		A method that will reset the CTF from the datasource.
+					 This is useful e.g. when scaling the intensities of the
+					 dataset
+		"""
+		self.ctf = None
+		return self.getColorTransferFunction()
+	
