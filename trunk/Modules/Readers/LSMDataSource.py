@@ -299,16 +299,6 @@ class LsmDataSource(DataSource):
 			self.ctf = ctf
 		return self.ctf
 		
-	def resetColorTransferFunction(self):
-		"""
-		A method that will reset the CTF from the datasource.
-					 This is useful e.g. when scaling the intensities of the
-					 dataset
-		"""
-		self.scalarRange = None
-		self.ctf = None
-		return self.getColorTransferFunction()
-		
 	def getNumericalAperture(self):
 		"""
 		Returns the numerical aperture used to image this channel

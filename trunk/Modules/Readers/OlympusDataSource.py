@@ -484,15 +484,6 @@ class OlympusDataSource(DataSource):
 		"""
 		return self.getFileName() + "|" + str(self.channel) 
 
-	def resetColorTransferFunction(self):
-		"""
-		A method that will reset the CTF from the datasource.
-					 This is useful e.g. when scaling the intensities of the	
-					 dataset
-		"""
-		self.ctf = None
-		return self.getColorTransferFunction()
-	
 	def getBitDepth(self):
 		"""
 		return the bit depth of the images returned by this datasource
