@@ -101,24 +101,24 @@ def execute_limited(pipeline, updateExtent = None):
 	#	retval.SetUpdateExtent(updateExtent)
 	#pipeline.Update()
 	#return pipeline.GetOutput()
-	
+	import pdb
+	#pdb.set_trace()
 	if not memLimit:
 		get_memory_limit()
 	if noLimits or (not memLimit and not alwaysSplit):
 		streamer = vtk.vtkImageDataStreamer()
 		streamer.SetNumberOfStreamDivisions(1)
-		streamer.GetExtentTranslator().SetSplitModeToZSlab()
-		
+
 	if alwaysSplit:
 		Logging.info("Using vtkImageDataStreamer with %d divisions"%numberOfDivisions, kw = "pipeline")
 		streamer = vtk.vtkImageDataStreamer()
 		streamer.SetNumberOfStreamDivisions(numberOfDivisions)
-		streamer.GetExtentTranslator().SetSplitModeToZSlab()
 	elif (memLimit and not noLimits):
 		Logging.info("Using vtkMemoryLimitImageDataStreamer with with limit=%dMB"%memLimit, kw = "pipeline")
 		streamer = vtk.vtkMemoryLimitImageDataStreamer()
 		streamer.SetMemoryLimit(1024*memLimit)
-		streamer.GetExtentTranslator().SetSplitModeToZSlab()
+
+	streamer.GetExtentTranslator().SetSplitModeToZSlab()		
 	
 	executing = 1
 	streamer.SetInputConnection(pipeline.GetOutputPort())

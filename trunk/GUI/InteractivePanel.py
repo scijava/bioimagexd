@@ -155,7 +155,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MENU, self.onSetBackgroundToZero, id = self.ID_ZERO_BG)
 		
 		GUI.PainterHelpers.registerHelpers(self)
-		
+
 		self.zoomFactor = 1
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClickROI)
@@ -346,7 +346,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 	def addListener(self, evt, func):
 		"""
 		Add a listener to an event
-		"""		   
+		"""
 		if not self.listeners.has_key(evt):
 			self.listeners [evt] = [func]
 		else:

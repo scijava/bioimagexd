@@ -178,12 +178,12 @@ class PickVariablesDialog(wx.Dialog):
 				descs[v] = f.getResultVariableDesc(v)
 				c = varCount.get(v, 0)
 				varCount[v] = c+1
-		
+
 		alreadySetVariables = analysis.getSelectedVariables(name)
 		counts={}
 		
 		self.filters = []
-		
+
 		i = 0
 		for (currFilter, filterVariables) in variables:
 			for varName in filterVariables:
@@ -192,13 +192,15 @@ class PickVariablesDialog(wx.Dialog):
 				inChs = ", ".join(currFilter.getSelectedInputChannelNames())
 				self.checkListCtrl.SetStringItem(i, 2, inChs)
 	
-	
+
 				# Set the name the variable will be known as
 				# if this has not been set before, then it will of the form
 				# ListNameVarName
-				if varName in alreadySetVariables:
-					asName = alreadySetVariables.get(varName)
-					self.checkListCtrl.CheckItem(i, True)
+				for (key,value) in alreadySetVariables.items():
+					if varName == value:
+						asName = key
+						self.checkListCtrl.CheckItem(i, True)
+						break
 				else:
 					asName = "%s%s"%(name, varName)
 					if varCount[varName] > 1:
@@ -226,7 +228,6 @@ class CheckListCtrl(wx.ListCtrl,
 		listmix.ListCtrlAutoWidthMixin.__init__(self)
 		listmix.CheckListCtrlMixin.__init__(self)
 		
-		
 		self.InsertColumn(0, "")
 		self.InsertColumn(1, "Variable")
 		self.InsertColumn(2, "Inputs")
@@ -237,6 +238,18 @@ class CheckListCtrl(wx.ListCtrl,
 		self.SetColumnWidth(2, 110)
 		self.SetColumnWidth(3, 190)
 		self.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT, self.OnBeginEdit)
+
+		self.selectAllMenu = wx.Menu()
+		self.ID_SELECT_ALL = wx.NewId()
+		item = wx.MenuItem(self.selectAllMenu, self.ID_SELECT_ALL, "Select all")
+		self.selectAllMenu.AppendItem(item)
+		self.ID_CLEAR_ALL = wx.NewId()
+		item = wx.MenuItem(self.selectAllMenu, self.ID_CLEAR_ALL, "Clear all")
+		self.selectAllMenu.AppendItem(item)
+		
+		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
+		self.Bind(wx.EVT_MENU, self.onSelectAll, id = self.ID_SELECT_ALL)
+		self.Bind(wx.EVT_MENU, self.onClearAll, id = self.ID_CLEAR_ALL)
 		
 	def OnBeginEdit(self, evt):
 		"""
@@ -246,6 +259,26 @@ class CheckListCtrl(wx.ListCtrl,
 			evt.Veto()
 		else:
 			evt.Allow()
+
+	def onRightClick(self, evt):
+		"""
+		Event handler called when user pushes right mouse button
+		"""
+		self.PopupMenu(self.selectAllMenu, evt.GetPosition())
+
+	def onSelectAll(self, evt):
+		"""
+		Event handler for 'select all' menu choice
+		"""
+		for i in xrange(self.GetItemCount()):
+			self.CheckItem(i, True)
+
+	def onClearAll(self, evt):
+		"""
+		Event handler for 'clear all' menu choice
+		"""
+		for i in xrange(self.GetItemCount()):
+			self.CheckItem(i, False)
 
 
 class ProcedureListCtrl(wx.ListCtrl,
@@ -591,7 +624,7 @@ class BatchProcessor(wx.Frame):
 		self.filterEditor = self.procedurePane.filterEditor
 		
 		self.splitter.SetMinimumPaneSize(20)
-		self.splitter.SplitVertically(self.procedurePane, self.grid, 300)
+		self.splitter.SplitVertically(self.procedurePane, self.grid, 400)
 
 		self.createMenubar()
 		

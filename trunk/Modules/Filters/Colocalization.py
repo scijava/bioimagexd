@@ -273,7 +273,6 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Execute the filter with given inputs and return the output
 		"""
-		
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		images = [self.getInput(x) for x in range(1,3)]
