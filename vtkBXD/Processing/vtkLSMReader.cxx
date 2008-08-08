@@ -805,7 +805,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 this->ReadData(f, &pos, size, name);
                 //printf("Laser name: %s\n", name);
                 this->LaserNames->InsertNextValue(name);
-                delete name;
+                delete[] name;
                 continue;
                 break;
             case ILLUMCHANNEL_ENTRY_WAVELENGTH:
@@ -817,7 +817,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 chName = new char[size+1];
                 this->ReadData(f, &pos, size, chName);
 //                printf("chName = %s\n", chName);
-                delete chName;
+                delete[] chName;
                 continue;
                 break;
             case TRACK_ENTRY_ACQUIRE:
@@ -831,7 +831,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 if(trackIsOn) {
                   //  printf("Track name = %s is on\n", chName);
                 }
-                delete chName;
+                delete[] chName;
                 continue;
                 break;      
             case DETCHANNEL_DETECTION_CHANNEL_NAME:
@@ -840,7 +840,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 if(chIsOn) {
                     //printf("Detection channel name = %s is on\n", chName);
                 }
-                delete chName;
+                delete[] chName;
                 continue;
                 break;
             case DETCHANNEL_ENTRY_ACQUIRE:

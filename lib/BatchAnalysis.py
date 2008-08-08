@@ -327,14 +327,19 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			varName = selectedVars[var]
 			if var in varHeaders:
 				i = varHeaders.index(var)
+
+				# Following doesn't work since it cannot find results of vars
+				# that end with number other than 1 (f. ex. M2)
+				# Maybe this number should be put in front of the variable name
+				# or use #number in the end?
+				#reg = re.compile("([0-9]+)$")
 				
-				reg = re.compile("([0-9]+)$")
-				
-				try:
-					match = reg.search(var)
-					n = int(match.groups(0)[0])
-				except:
-					n= 1
+				#try:
+				#	match = reg.search(var)
+				#	n = int(match.groups(0)[0])
+				#except:
+				#	n = 1
+				n = 1
 				value = procedureList.getResultVariable(varName, nth = n-1)
 				row[i] = value
 			else:

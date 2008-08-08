@@ -567,6 +567,7 @@ class DataSource:
 			progress = 1.0
 		else:
 			progress = obj.GetProgress()
+
 		notinvtk = 0
 		currentTimepoint = self.getCurrentTimepoint()
 		timestamp = self.getTimeStamp(currentTimepoint)
