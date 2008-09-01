@@ -60,7 +60,7 @@ class ImportDialog(wx.Dialog):
 	def __init__(self, parent, imageMode = 1):
 		"""
 		Initialize the dialog
-		"""    
+		"""
 		scripting.registerDialog("import", self)
 		self.dataUnit = DataUnit()
 
@@ -271,10 +271,12 @@ class ImportDialog(wx.Dialog):
 		self.imageInfoSizer = wx.StaticBoxSizer(self.imageInfoBox, wx.VERTICAL)
 		
 		previewBox = wx.BoxSizer(wx.VERTICAL)
-		self.zslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 1, \
+		self.zslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2, \
 									style = wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_AUTOTICKS)
-		self.timeslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 1, \
+		self.zslider.Disable()
+		self.timeslider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2, \
 									style = wx.SL_LABELS | wx.SL_AUTOTICKS)
+		self.timeslider.Disable()
 
 		self.zslider.Bind(wx.EVT_SCROLL, self.onChangeZSlice)
 		self.timeslider.Bind(wx.EVT_SCROLL, self.onChangeTimepoint)
@@ -343,7 +345,7 @@ class ImportDialog(wx.Dialog):
 		box.Add(self.lblZ)
 
 		self.spcLbl = wx.StaticText(self, -1, "Dataset Spacing:")
-		self.spacingLbl = wx.StaticText(self, -1, "0.00 x 0.00 x 0.00")
+		self.spacingLbl = wx.StaticText(self, -1, "1.00 x 1.00 x 1.00")
 		
 		n = 0
 		msglbl = wx.StaticText(self, -1,
@@ -513,7 +515,7 @@ enter the information below.""")
 	def updateSelection(self, event, updatePreview = 0):
 		"""
 		This method is called when user selects items in the listbox
-		"""   
+		"""
 		idxs = self.sourceListbox.GetSelections()
 		files = []
 		
@@ -528,10 +530,7 @@ enter the information below.""")
 				ex.show()
 				return
 
-		if not idxs:
-			n = self.sourceListBox.GetCount()
-		else:
-			n = len(idxs)
+		n = self.dataSource.getNumberOfImages()
 	
 		self.setNumberOfImages(n)
 		
@@ -555,6 +554,8 @@ enter the information below.""")
 			slices = int(slices)
 			self.setNumberOfSlices(slices)
 
+		self.preview.updatePreview()
+
 	def setNumberOfTimepoints(self, n = 1):
 		"""
 		Set the number of timepoints
@@ -567,12 +568,19 @@ enter the information below.""")
 		print "Setting number of timepoints to", n
 		self.timepointEdit.SetValue("%d"%n)
 		currentTime = self.timeslider.GetValue()
-		self.timeslider.SetRange(1, n)
+
 		if currentTime < 1:
 			currentTime = 1
 		if currentTime > n:
 			currentTime = n
 		self.timeslider.SetValue(currentTime)
+		self.timeslider.SetRange(1, n)
+		if n == 1:
+			self.timeslider.Disable()
+		else:
+			self.timeslider.Enable()
+
+		self.preview.setTimepoint(self.timeslider.GetValue() - 1)
 
 	def onUpdateNumberOfImages(self, evt):
 		"""
@@ -608,6 +616,8 @@ enter the information below.""")
 			self.setNumberOfTimepoints(timepoints)
 		except:
 			pass
+		
+		self.preview.updatePreview()
 
 	def setNumberOfSlices(self, n = 1):
 		"""
@@ -617,17 +627,23 @@ enter the information below.""")
 		"""
 		if n < 1:
 			n = 1
-			
+
 		self.depthEdit.SetValue("%d"%n)
 		self.dataSource.setSlicesPerTimepoint(n)
 		currentZ = self.zslider.GetValue()
-		self.zslider.SetRange(1, n)
 		
 		if currentZ < 1:
 			currentZ = 1
 		if currentZ > n:
 			currentZ = n
 		self.zslider.SetValue(currentZ)
+		self.zslider.SetRange(1, n)
+		if n == 1:
+			self.zslider.Disable()
+		else:
+			self.zslider.Enable()
+
+		self.preview.setZSlice(self.zslider.GetValue() - 1)
 	
 	def sortNumerically(self, item1, item2):
 		"""
@@ -873,7 +889,11 @@ enter the information below.""")
 			ex.show()
 			self.sourceListbox.Clear()
 			return
+
 		n = len(filelist)
+		if self.dataSource.is3DImage():
+			n = self.dataSource.getNumberOfImages()
+
 		print "Setting number of images to ",n
 		self.setNumberOfImages(n)
 		#if self.imageInfo != ext:
@@ -885,7 +905,7 @@ enter the information below.""")
 	def updateImageInfo(self, obj = None, event = ""):
 		"""
 		A method that reads information from an image
-		"""                
+		"""
 		print "Getting dimensions..."
 		self.dimensions = (self.x, self.y, self.z) = self.dataSource.getDimensions()
 		print "Got dims", self.dimensions

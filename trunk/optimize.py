@@ -101,8 +101,7 @@ def execute_limited(pipeline, updateExtent = None):
 	#	retval.SetUpdateExtent(updateExtent)
 	#pipeline.Update()
 	#return pipeline.GetOutput()
-	import pdb
-	#pdb.set_trace()
+
 	if not memLimit:
 		get_memory_limit()
 	if noLimits or (not memLimit and not alwaysSplit):

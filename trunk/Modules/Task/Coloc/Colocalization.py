@@ -109,7 +109,6 @@ class Colocalization(Module):
 		if calcVal:
 			self.eventDesc = "Calculating thresholds"
 			Logging.info("Calculating thresholds, calcval=%d" % calcVal, kw = "processing")
-
 			self.colocAutoThreshold.AddInput(self.images[0])
 			self.colocAutoThreshold.AddInput(self.images[1])
 			if calcVal == STATISTICS_ONLY:

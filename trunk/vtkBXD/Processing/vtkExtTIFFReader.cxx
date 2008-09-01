@@ -50,6 +50,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include "vtkStringArray.h"
+#include "vtkUnsignedShortArray.h"
 
 extern "C" {
 #include "vtk_tiff.h"
@@ -70,6 +72,7 @@ public:
   void Clean();
   int CanRead();
   int Open( const char *filename );
+  int GetNumberOfSubFiles();
   TIFF *Image;
   unsigned int Width;
   unsigned int Height;
@@ -79,6 +82,8 @@ public:
   unsigned short Photometrics;
   unsigned short PlanarConfig;
   unsigned long int TileDepth;
+  unsigned short NumberOfPages;
+  vtkUnsignedShortArray* SubFiles;
   static void ErrorHandler(const char* module, const char* fmt, va_list ap);
 };
 
@@ -130,11 +135,18 @@ void vtkExtTIFFReaderInternal::Clean()
   this->Photometrics = 0;
   this->PlanarConfig = 0;
   this->TileDepth = 0;
+  this->NumberOfPages = 0;
+  if (this->SubFiles)
+	{
+	  this->SubFiles->Delete();
+	  this->SubFiles = 0;
+	}
 }
 
 vtkExtTIFFReaderInternal::vtkExtTIFFReaderInternal()
 {
   this->Image           = NULL;
+  this->SubFiles = NULL;
   TIFFSetErrorHandler(&vtkExtTIFFReaderInternalErrorHandler);
   TIFFSetWarningHandler(&vtkExtTIFFReaderInternalErrorHandler);
   this->Clean();
@@ -161,7 +173,24 @@ int vtkExtTIFFReaderInternal::Initialize()
       {
       this->TileDepth = 0;
       }
-    }
+
+	this->NumberOfPages = TIFFNumberOfDirectories(this->Image);
+	this->SubFiles = vtkUnsignedShortArray::New();
+
+	if (this->NumberOfPages > 1)
+	  {
+		for (unsigned short page = 0; page < this->NumberOfPages; ++page)
+		  {
+			long subfiletype = 6;
+			if (TIFFGetField(this->Image, TIFFTAG_SUBFILETYPE, &subfiletype))
+			  {
+				if (subfiletype == 0) this->SubFiles->InsertNextValue(page);
+			  }
+			TIFFReadDirectory(this->Image);
+		  }
+		TIFFSetDirectory(this->Image,0);
+	  }
+	}
   return 1;
 }
 
@@ -179,6 +208,11 @@ int vtkExtTIFFReaderInternal::CanRead()
            ( this->BitsPerSample == 8) );
 }
 
+int vtkExtTIFFReaderInternal::GetNumberOfSubFiles()
+{
+  return this->SubFiles->GetMaxId() + 1;
+}
+
 vtkExtTIFFReader::vtkExtTIFFReader()
 {
   this->InitializeColors();
@@ -193,7 +227,7 @@ vtkExtTIFFReader::~vtkExtTIFFReader()
 }
 
 void vtkExtTIFFReader::ExecuteInformation()
-{    
+{
   this->InitializeColors();
   //printf("vtkExtTIFFReader::ExecuteInformation()\n");
   this->ComputeInternalFileName(this->DataExtent[4]);
@@ -221,6 +255,13 @@ void vtkExtTIFFReader::ExecuteInformation()
   this->DataExtent[1] = this->GetInternalImage()->Width - 1;
   this->DataExtent[2] = 0;
   this->DataExtent[3] = this->GetInternalImage()->Height - 1;
+
+  if (this->GetInternalImage()->NumberOfPages > 1 && !this->FileNames)
+	{
+	  this->DataExtent[4] = 0;
+	  this->DataExtent[5] = this->GetInternalImage()->SubFiles->GetMaxId() + 1 > 0 ? this->GetInternalImage()->SubFiles->GetMaxId() : this->GetInternalImage()->NumberOfPages - 1;
+	  }
+
   //printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
 
   if(this->GetInternalImage()->BitsPerSample==16) {
@@ -263,8 +304,8 @@ void vtkExtTIFFReader::ExecuteInformation()
 
 
 template <class OT>
-void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
-                          int *outExt, vtkIdType* vtkNotUsed(outInc), long)
+void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr, int *outExt,
+							 vtkIdType* vtkNotUsed(outInc), long , int idx)
 {
   if ( !self->GetInternalImage()->Open(self->GetInternalFileName()) )
     {
@@ -275,7 +316,7 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr,
     
 //printf("Reading image...\n");
   self->ReadImageInternal(self->GetInternalImage()->Image, 
-                          outPtr, outExt, sizeof(OT) );
+                          outPtr, outExt, sizeof(OT), idx );
 
   // close the file
     //printf("Closing the file\n");
@@ -296,25 +337,27 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
   data->GetExtent(outExtent);
     //data->GetUpdateExtent(uExtent);
   data->GetIncrements(outIncr);
-    //printf("out extent=%d,%d,%d,%d,%d,%d\n",outExtent[0],outExtent[1],outExtent[2],outExtent[3],outExtent[4],outExtent[5]);    
+  //printf("out extent=%d,%d,%d,%d,%d,%d\n",outExtent[0],outExtent[1],outExtent[2],outExtent[3],outExtent[4],outExtent[5]);
    //printf("update extent=%d,%d,%d,%d,%d,%d\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   long pixSize = data->GetNumberOfScalarComponents()*sizeof(OT);  
 
    //printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
   outPtr2 = outPtr;
   int idx2;
-    char progressText[100];
+  char progressText[100];
+
   for (idx2 = outExtent[4]; idx2 <= outExtent[5]; ++idx2)
-    {
-    self->ComputeInternalFileName(idx2);
+	{
+	  self->ComputeInternalFileName(idx2);
+
     // read in a TIFF file
-    vtkExtTIFFReaderUpdate2(self, outPtr2, outExtent, outIncr, pixSize);
-    self->UpdateProgress((idx2 - outExtent[4])/
-                         (outExtent[5] - outExtent[4] + 1.0));
-        sprintf(progressText,"slice %d",idx2);
-        self->SetProgressText(progressText);        
-    outPtr2 += outIncr[2];
-    }
+	  vtkExtTIFFReaderUpdate2(self, outPtr2, outExtent, outIncr, pixSize, idx2);
+	  self->UpdateProgress((idx2 - outExtent[4])/
+						   (outExtent[5] - outExtent[4] + 1.0));
+	  sprintf(progressText,"slice %d",idx2);
+	  self->SetProgressText(progressText);
+	  outPtr2 += outIncr[2];
+	}
 }
 
 
@@ -326,12 +369,12 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
     
   //printf("Allocating output data\n");
   vtkImageData *data = this->AllocateOutputData(output);
-  int ext[6];
-  int dims[3];
-  data->GetDimensions(dims);
-  //printf("Dims=%d,%d,%d\n",dims[0],dims[1],dims[2]);
   
-  output->GetWholeExtent(ext);
+  //int dims[3];
+  //data->GetDimensions(dims);
+  //printf("Dims=%d,%d,%d\n",dims[0],dims[1],dims[2]);
+  //int ext[6];
+  //output->GetWholeExtent(ext);
   //printf("Ext=%d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
   //printf("Data type=%s\n",data->GetScalarTypeAsString());
   if (this->InternalFileName == NULL)
@@ -352,9 +395,8 @@ void vtkExtTIFFReader::ExecuteData(vtkDataObject *output)
     vtkTemplateMacro3(vtkExtTIFFReaderUpdate, this, data, (VTK_TT *)(outPtr));
     default:
       vtkErrorMacro("UpdateFromFile: Unknown data type");
-    }   
+    }
    data->GetPointData()->GetScalars()->SetName("Tiff Scalars");
-    
 }
 
 int vtkExtTIFFReader::RequestUpdateExtent (
@@ -377,8 +419,8 @@ int vtkExtTIFFReader::RequestUpdateExtent (
 
   // If they request an update extent that doesn't cover the whole slice
   // then modify the uextent 
-  if(uext[1] < ext[1] ) uext[1] = ext[1];
-  if(uext[3] < ext[3] ) uext[3] = ext[3];
+  if(uext[1] < ext[1]) uext[1] = ext[1];
+  if(uext[3] < ext[3]) uext[3] = ext[3];
   if(uext[0] > ext[0]) uext[0] = ext[0];
   if(uext[2] > ext[2]) uext[2] = ext[2];
   //printf("Setting uextent to %d,%d,%d,%d,%d,%d\n",PRT_EXT(uext));
@@ -511,9 +553,9 @@ void vtkExtTIFFReader::InitializeColors()
   else this->ImageFormat = vtkExtTIFFReader::NOFORMAT;
 }
 
-void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr, 
-                                       int* outExt, 
-                                       unsigned int size )
+void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr, 
+										 int* outExt, unsigned int size,
+										 int idx)
 {
   if ( this->GetInternalImage()->Compression == COMPRESSION_OJPEG )
       {
@@ -525,11 +567,17 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
     //printf("width=%d, height=%d, size=%d\n",width,height,size);
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-      //printf("isize=%d, height=%d\n",isize,height);
+	//      printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
-    tdata_t buf = _TIFFmalloc(isize);      
-    
+    tdata_t buf = _TIFFmalloc(isize);
+
+	// Open right directory if multipage tiff file
+	if (this->InternalImage->SubFiles->GetMaxId() >= 0 && this->InternalImage->SubFiles->GetMaxId() >= idx)
+	  {
+		TIFFSetDirectory(this->InternalImage->Image,idx);
+	  }
+
      // special case for 16-bit grayscale
     if(this->GetInternalImage()->BitsPerSample==16 && this->GetFormat()== vtkExtTIFFReader::GRAYSCALE)
     {
@@ -539,7 +587,6 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
             
         if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
           {
-          image = (unsigned short*)outPtr;
           for ( row = 0; row < (int)height; row ++ )
             {
             if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
@@ -551,13 +598,10 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
               for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
                     *image++ = *buf2++;
               }
-    
-              
             }
               _TIFFfree(buf);
-            return;
+			  return;
           }
- 
   }
   else if(this->GetInternalImage()->BitsPerSample==8) {
    
@@ -566,7 +610,6 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
             
         if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
           {
-          image = (unsigned char*)outPtr;
           for ( row = 0; row < (int)height; row ++ )
             {
             if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
@@ -578,18 +621,12 @@ void vtkExtTIFFReader::ReadImageInternal( void* vtkNotUsed(in), void* outPtr,
               for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
                     *image++ = *buf2++;
               }
-    
-              
             }
               _TIFFfree(buf);
-            return;
-          }  
+			  return;
+          }
   }
-      
 }
-
-
-
 
 int vtkExtTIFFReader::CanReadFile(const char* fname)
 {
@@ -607,4 +644,13 @@ int vtkExtTIFFReader::CanReadFile(const char* fname)
 void vtkExtTIFFReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
+}
+
+int vtkExtTIFFReader::GetNumberOfSubFiles() const
+{
+  this->InternalImage->Open(this->FileName);
+  this->InternalImage->Initialize();
+  int subPages = this->InternalImage->GetNumberOfSubFiles();
+  this->InternalImage->Clean();
+  return subPages;
 }

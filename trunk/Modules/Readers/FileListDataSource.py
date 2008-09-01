@@ -35,6 +35,7 @@ import os.path
 import vtk
 import vtkbxd
 import traceback
+import lib
 def getExtensions(): 
 	return []
 
@@ -52,7 +53,7 @@ class FileListDataSource(DataSource):
 	def __init__(self, filenames = [], callback = None):
 		"""
 		Constructor
-		"""    
+		"""
 		DataSource.__init__(self)
 		self.name = "Import"
 		self.extMapping = {"tif": "TIFF", "tiff": "TIFF", "png": "PNG", "jpg": "JPEG", "jpeg": "JPEG", \
@@ -72,16 +73,13 @@ class FileListDataSource(DataSource):
 		self.tps = -1
 		# Store results of checking dimensions of given filenames in a dictionary
 		self.dimensionCheck = {}
-		if filenames:
-			self.numberOfImages = len(filenames)
-			self.getDataSetCount()
-		
 		self.imageDims = {}
 		
 		self.numberOfImages = 0
 		self.readers = []
 		self.slicesPerTimepoint = 1
 		self.is3D = 0
+		self.rdrstr = ""
 		
 	def getFileName(self):
 		"""
@@ -111,15 +109,21 @@ class FileListDataSource(DataSource):
 		"""
 		set the filenames that will be read
 		"""
+		self.filenames = filenames
 		if not self.dimensions:
 			self.retrieveImageInfo(filenames[0])
-		self.filenames = filenames
-		self.numberOfImages = len(filenames)
+
 		if not self.checkImageDimensions(filenames):
 			raise Logging.GUIError("Image dimensions do not match", \
 									"Some of the selected files have differing dimensions, \
 									and cannot be imported into the same dataset.")		 
 		self.getReadersFromFilenames()
+		self.numberOfImages = len(filenames)
+		if self.is3D and not self.isRGB:
+			if self.readers:
+				self.numberOfImages = 0
+				for rdr in self.readers:
+					self.numberOfImages += rdr.GetNumberOfSubFiles()
 		
 	def setVerticalFlip(self, flag):
 		"""
@@ -197,7 +201,6 @@ class FileListDataSource(DataSource):
 		for i in self.readers:
 			del i
 		self.readers = []
-		
 
 		if not self.filenames:
 			raise Logging.GUIError("No files could be found", \
@@ -208,6 +211,7 @@ class FileListDataSource(DataSource):
 		
 		isRGB = 1
 		ext = files[0].split(".")[-1].lower()
+		dim = self.dimMapping[ext]
 		
 		if ext in ["tif", "tiff"]:
 			tiffimg = Image.open(files[0])
@@ -216,15 +220,17 @@ class FileListDataSource(DataSource):
 			else:
 				print "MODE ISN'T RGB, THEREFOR NOT RGB"
 				isRGB = 0
-		self.isRGB = isRGB
+			rdr = self.getReaderByExtension(ext, isRGB)
+			rdr.SetFileName(files[0])
+			if not isRGB and rdr.GetNumberOfSubFiles() > 1:
+				dim = 3
 				
+		self.isRGB = isRGB
+		self.is3D = (dim == 3)
+		
 		dirName = os.path.dirname(files[0])
 		print "THERE ARE ", self.slicesPerTimepoint, "SLICES PER TIMEPOINT"
 		ext = files[0].split(".")[-1].lower()
-
-		dim = self.dimMapping[ext]
-		self.is3D = (dim == 3)
-		self.readers = []
 		
 		if dim == 3:
 			totalFiles = len(files)
@@ -259,21 +265,19 @@ class FileListDataSource(DataSource):
 				for i in range(0, self.slicesPerTimepoint):
 					arr.InsertNextValue(filelst[0])
 					filelst = filelst[1:]
-				
 				rdr.SetFileNames(arr)
 				rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.slicesPerTimepoint - 1)
 				rdr.SetDataSpacing(self.spacing)
 				rdr.SetDataOrigin(0, 0, 0)
 				self.readers.append(rdr)
-
 			return
+		
 		elif imgAmnt == 1:
 			# If only one file
 			rdr = self.getReaderByExtension(ext, isRGB)
 			rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.slicesPerTimepoint - 1)
 			rdr.SetDataSpacing(self.spacing)
 			rdr.SetDataOrigin(0, 0, 0)
-			
 			rdr.SetFileName(files[0])
 
 			Logging.info("Reader = ", rdr, kw = "io")
@@ -354,10 +358,9 @@ class FileListDataSource(DataSource):
 		
 		if ext == "bmp":
 			rdr.Allow8BitBMPOn()
-		
 		rdr.SetFileName(filename)
-		rdr.Update()
 		data = rdr.GetOutput()
+		data.Update()
 		self.numberOfComponents = data.GetNumberOfScalarComponents()
 		
 		if not self.ctf:
@@ -379,17 +382,31 @@ class FileListDataSource(DataSource):
 	def getTimepoint(self, n, onlyDims = 0):
 		"""
 		Return the nth timepoint
-		"""		   
+		"""
 		if not self.readers:
 			self.getReadersFromFilenames()
+
+		if self.is3DImage():
+			if not self.readers:
+				raise Logging.GUIError("Attempt to read bad timepoint", "Timepoint %d is not defined by the given filenames" % n)
+			self.reader = self.readers[0]
+			minZ = n * self.slicesPerTimepoint
+			maxZ = (n+1) * self.slicesPerTimepoint - 1
+			extract = vtk.vtkExtractVOI()
+			extract.SetInput(self.reader.GetOutput())
+			extract.SetVOI(0, self.x - 1, 0, self.y - 1, minZ, maxZ)
+			translate = vtk.vtkImageTranslateExtent()
+			translate.SetInput(extract.GetOutput())
+			translate.SetTranslation((0,0,-minZ))
+			data = translate.GetOutput()
+		else:
+			if n >= len(self.readers):
+				n = 0
+				raise Logging.GUIError("Attempt to read bad timepoint", "Timepoint %d is not defined by the given filenames" % n)
 			
-		if n >= len(self.readers):
-			raise Logging.GUIError("Attempt to read bad timepoint", \
-									"Timepoint %d is not defined by the given filenames" % n)
-			n = 0
-			
-		self.reader = self.readers[n]
-		data = self.reader.GetOutput()
+			self.reader = self.readers[n]
+			data = self.reader.GetOutput()
+
 		if not self.voxelsize:
 			size = data.GetSpacing()
 			x, y, z = [size.GetElement(x) for x in range(0, 3)]
@@ -397,7 +414,8 @@ class FileListDataSource(DataSource):
 			print "Read voxel size", self.voxelsize
 
 		if onlyDims:
-			return 
+			return
+
 		return data		   
 	
 
@@ -459,3 +477,10 @@ class FileListDataSource(DataSource):
 					 operates on
 		"""
 		return self.ctf
+
+	def getNumberOfImages(self):
+		"""
+		Returns number of images in this data source.
+		"""
+		return self.numberOfImages
+	

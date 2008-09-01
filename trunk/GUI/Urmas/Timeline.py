@@ -69,7 +69,7 @@ class Timeline(scrolled.ScrolledPanel):
 		self.selectedTrack = None
 		control.setTimeline(self)
 		self.sizer = wx.GridBagSizer(5, 1)
-		
+		self.sizer.AddGrowableCol(0)
 		self.timepointSizer = wx.GridBagSizer(2, 1)
 		self.splineSizer = wx.GridBagSizer(2, 1)
 		self.keyframeSizer = wx.GridBagSizer(2, 1)
@@ -79,11 +79,15 @@ class Timeline(scrolled.ScrolledPanel):
 		self.timeScale.setDuration(self.control.getDuration())
 
 		self.sizer.Add(self.timeScale, (0, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		self.sizer.Add(self.timepointSizer, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		self.sizer.Add(self.splineSizer, (2, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		self.sizer.Add(self.keyframeSizer, (3, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		
 		self.Unbind(wx.EVT_CHILD_FOCUS)
 		
-		self.haveTp = 0
-		self.haveSp = 0
-		self.haveKf = 0
+		self.haveTp = 1
+		self.haveSp = 1
+		self.haveKf = 1
    
 		self.timepointTracks = []
 		self.splinepointTracks = []
@@ -98,12 +102,9 @@ class Timeline(scrolled.ScrolledPanel):
 		self.timeScale.SetSize((w, h))
 		dt = GUI.Urmas.UrmasPalette.UrmasDropTarget(self, "Track")
 		self.SetDropTarget(dt)
-		
-		
+			
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
-		
-   
 		
 		
 		#self.sizer.Fit(self)
@@ -512,9 +513,15 @@ class Timeline(scrolled.ScrolledPanel):
 		self.frames = frames
 		self.timeScale.setDuration(seconds)
 		tx, ty = self.timeScale.GetSize()
+		print "configureTimeline(", seconds,",",frames,")"
 		for i in self.timepointTracks + self.splinepointTracks + self.keyframeTracks:
 			if i:
 				i.setDuration(seconds, frames)
+#		for sizer in [self.timepointSizer, self.splineSizer, self.keyframeSizer]:
+#			print "Size=", sizer.GetSize()
+
+#		self.Layout()
+#		self.Refresh()
 
 	def __str__(self):
 		"""

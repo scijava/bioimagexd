@@ -62,7 +62,6 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		"""
 		A method used to set the GUI widgets to their proper values
 		"""
-		print "\n\nGETTING FILTER LIST FORM SETTINGS"
 		self.filterList = self.settings.get("FilterList")
 		
 		if self.filterList:

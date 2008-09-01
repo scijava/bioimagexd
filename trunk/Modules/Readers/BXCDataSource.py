@@ -299,7 +299,7 @@ class BXCDataSource(DataSource):
 		if data.GetNumberOfScalarComponents() == 3:
 			for i in range(0, 3) :
 				dataSource = RGBComponentDataSource(self, i)
-				dataunit = dataunitclass()
+				dataunit = DataUnit()
 				dataunit.setDataSource(dataSource)
 				settings = DataUnitSettings()
 				settings = settings.readFrom(self.parser)
