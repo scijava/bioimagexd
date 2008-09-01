@@ -47,7 +47,6 @@ import wx
 
 class SplineTrack(Track):
 	"""
-	Created: 13.04.2005, KP
 	Description: A class representing a spline track in the timeline
 	"""       
 	def __init__(self, name, parent, **kws):

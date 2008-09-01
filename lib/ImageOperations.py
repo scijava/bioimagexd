@@ -719,8 +719,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			if i >= lower and i <= upper:
 				sumth += c
 	retvals = values[: ]
-
-	Logging.info("lower = %d, upper = %d, total sum of %d values" \
+	Logging.info("lower = %d, upper = %d, total amount of %d values" \
 					% (lower, upper, len(values)), sum, kw = "imageop")
 	if sumth:
 		percent = (float(sumth) / sum)

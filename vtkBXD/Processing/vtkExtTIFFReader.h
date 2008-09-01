@@ -94,14 +94,13 @@ public:
   vtkGetMacro(RawMode,int);
   vtkBooleanMacro(RawMode,int);
      
-     
 //BTX
   enum { NOFORMAT, RGB, GRAYSCALE, PALETTE_RGB, PALETTE_GRAYSCALE, OTHER };
 
 
 
   void ReadImageInternal( void *, void *outPtr,  
-                          int *outExt, unsigned int size );
+                          int *outExt, unsigned int size, int );
   
 
   // Description:
@@ -109,6 +108,10 @@ public:
   vtkExtTIFFReaderInternal *GetInternalImage()
     { return this->InternalImage; }
 //ETX
+
+  // Description:
+  // Method to check if set TIFF file is multipage
+  int GetNumberOfSubFiles() const;
 
 protected:
   vtkExtTIFFReader();

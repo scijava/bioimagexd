@@ -45,8 +45,7 @@ import lib.messenger
 
 class Track(wx.Panel):
 	"""
-	Created: 04.02.2005, KP
-	Description: A class representing a track in the timeline
+	A class representing a track in the timeline
 	"""
 	def __init__(self, name, parent, **kws):
 		wx.Panel.__init__(self, parent, -1, style = wx.SIMPLE_BORDER)
@@ -81,7 +80,6 @@ class Track(wx.Panel):
 		self.overlayPos = -1
 		self.overlayItem = None              
 		
-		#self.sizer=wx.GridBagSizer()
 		self.color = None
 		self.parent = parent
 
@@ -91,7 +89,7 @@ class Track(wx.Panel):
 		self.width = d * self.timescale.getPixelsPerSecond() + self.getLabelWidth()
 
 		self.buffer = wx.EmptyBitmap(self.width, self.height)
-		self.SetSize((self.width, self.height))
+		self.SetMinSize((self.width, self.height))
 		self.dragEndPosition = 0
 				
 		self.items = []
@@ -144,6 +142,8 @@ class Track(wx.Panel):
 				Logging.info("Failed to paint track", kw="animator")
 				event.Skip()
 			self.renew = False
+		print "Buffered painting", self.buffer.GetWidth(),self.buffer.GetHeight()
+		print self.GetSize()
 		dc = wx.BufferedPaintDC(self, self.buffer)
 		
 	def paintTrack(self):
@@ -153,18 +153,20 @@ class Track(wx.Panel):
 		#self.dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
 		self.dc = wx.MemoryDC()
 		self.dc.SelectObject(self.buffer)
-		
+		print "Selecting object with size", self.buffer.GetWidth(), self.buffer.GetHeight()
 		if self.renew != 2:
 			self.dc.Clear()
 			self.dc.SetBrush(wx.Brush(self.bg))
 			#self.dc.SetPen(wx.Pen(self.fg,1))
 			self.dc.BeginDrawing()
+			
 			self.dc.DrawRectangle(0, 0, self.getLabelWidth(), self.height)
 			
 			self.dc.SetTextForeground(self.fg)
 			weight = wx.NORMAL
 			if self.bold:
 				weight = wx.BOLD
+				print "Painting bold"
 			self.dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, weight))
 			self.dc.DrawText(self.label, 2, 1)
 			
@@ -175,6 +177,7 @@ class Track(wx.Panel):
 		
 			x = self.startOfTrack + self.getLabelWidth()
 			for item in self.items:
+				print "Drawing in pos", x
 				self.dc.DrawBitmap(item.buffer, x, 0)
 				item.SetPosition((x, 0))
 		
@@ -182,6 +185,7 @@ class Track(wx.Panel):
 				x += w
 
 			w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
+			print "Creating stored bitmap", w,h
 			self.stored = wx.EmptyBitmap(w, h)
 			mdc = wx.MemoryDC()
 			mdc.SelectObject(self.stored)
@@ -304,10 +308,8 @@ class Track(wx.Panel):
 		Item is clicked
 		"""
 		ret = self.onEvent("Down", event)
-		#print "ret=",ret,"selectedItem=",self.selectedItem
 		if ret:
 			item = self.selectedItem
-			#print "dragmode=",self.selectedItem.dragMode
 		else:
 			item = None
 			
@@ -315,8 +317,6 @@ class Track(wx.Panel):
 			return ret
 		self.selectedItem = None
 		if item:
-			#print "Setting overlay item"
-			#self.timePosItem=self.selectedItem
 			start, end = item.getPosition()
 			self.overlayItem = item
 			self.overlayPos = start
@@ -347,7 +347,6 @@ class Track(wx.Panel):
 		"""
 		if self.selectedItem:
 			self.selectedItem.onUp(event)
-		#if not self.onEvent("Up",event):
 		self.setSelected(event)
 		
 				
@@ -361,9 +360,10 @@ class Track(wx.Panel):
 		"""
 		Selects this track
 		"""
-		#print "setSelected(",event,")"
+		print "setSelected(",event,")"
 		if event:
 			self.bold = 1
+			print "I'm selected"
 			self.parent.setSelectedTrack(self)
 		else:
 			print "\n\n*** IM NOT SELECTE#D ANYMORE"
@@ -375,7 +375,10 @@ class Track(wx.Panel):
 			self.overlayPos = -1
 			self.overlayItem = None              
 			
+		self.renew = 0
 		self.paintTrack()
+		self.Update()
+		self.parent.Refresh()
 			
 	def setEnabled(self, flag):
 		"""
@@ -594,16 +597,16 @@ class Track(wx.Panel):
 		"""
 		A method to set the length of this track, affecting
 					 size of its items
-		"""              
+		"""    
 		self.duration = seconds
 		self.frames = frames
 		
 		w = self.duration * self.timescale.getPixelsPerSecond()
 		self.width = w + self.getLabelWidth()
 		self.buffer = wx.EmptyBitmap(self.width, self.height)
-		self.SetSize((self.width, self.height))
+		self.SetMinSize((self.width, self.height))
 		self.renew = 0
-		self.paintTrack()
+		self.updateLayout()
 
 	def expandToMax(self, keep_ratio = 0):
 		"""
@@ -699,8 +702,6 @@ class Track(wx.Panel):
 		"""
 		A method that updates the layout of this track
 		"""               
-		#self.Layout()
-		#self.parent.Layout()
 		for item in self.items:
 			item.updateItem()
 		self.paintTrack()
