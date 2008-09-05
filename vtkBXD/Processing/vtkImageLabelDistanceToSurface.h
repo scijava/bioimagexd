@@ -80,6 +80,12 @@ public:
   // Set the physical scaling of a single voxel
   vtkGetVectorMacro(VoxelSize,double,3);
   vtkSetVectorMacro(VoxelSize,double,3);
+  
+  // Description:
+  // Set the center of mass of the surface
+  vtkGetVectorMacro(SurfaceCOM,double,3);
+  vtkSetVectorMacro(SurfaceCOM,double,3);
+  
 
 protected:
   vtkImageLabelDistanceToSurface();
@@ -102,7 +108,7 @@ private:
   vtkDoubleArray* DistanceToPointArray;
   double MeasurePoint[3];
   double VoxelSize[3];
-
+  double SurfaceCOM[3];
   int BackgroundLevel;
   vtkImageLabelDistanceToSurface(const vtkImageLabelDistanceToSurface&);  // Not implemented.
   void operator=(const vtkImageLabelDistanceToSurface&);  // Not implemented.
