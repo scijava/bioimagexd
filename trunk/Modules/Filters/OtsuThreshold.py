@@ -94,7 +94,10 @@ class OtsuThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		# Rescale since output must be unsigned char but input is not
 		# necessarily unsigned char. OtsuThreshold cannot be initialized with
 		# different input and output types at least with default wrappers
-		rescale = itk.RescaleIntensityImageFilter[image,itk.Image.UC3].New()
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
+		outputTypestr = "itk.Image.UC%d"%dim
+		outputType = eval(outputTypestr)
+		rescale = itk.RescaleIntensityImageFilter[image,outputType].New()
 		rescale.SetOutputMinimum(0)
 		rescale.SetOutputMaximum(255)
 		rescale.SetInput(self.itkfilter.GetOutput())

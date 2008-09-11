@@ -104,15 +104,17 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
 		if not self.itkfilter:
 			try:
-				ul3 = itk.Image.UL3
-				self.itkfilter = itk.MorphologicalWatershedImageFilter[image, ul3].New()
+				typestr = "itk.Image.UL%d"%dim
+				ul = eval(typestr)
+				self.itkfilter = itk.MorphologicalWatershedImageFilter[image, ul].New()
 			except:
 				Logging.info("Failed to get MorphologicalWatershedImageFilter, trying watershed module")
-				traceback.print_exc()
+				Logging.traceback.print_exc()
 				import watershed
-				self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul3].New()
+				self.itkfilter = watershed.MorphologicalWatershedImageFilter[image, ul].New()
 		
 		markWatershedLine = self.parameters["MarkWatershedLine"]
 		self.itkfilter.SetMarkWatershedLine(markWatershedLine)
@@ -123,7 +125,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		Logging.info("Using watershed level %d"%self.parameters["Level"])
 		self.itkfilter.SetLevel(self.parameters["Level"])
 				
-		self.setImageType("UL3")
+		self.setImageType("UL%d"%dim)
 		self.itkfilter.Update()
 		print "Morphological watershed took", time.time() - t, "seconds"
 		t = time.time()

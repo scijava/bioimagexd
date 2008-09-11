@@ -35,6 +35,7 @@ import types
 import lib.messenger
 import scripting
 import vtk
+import itk
 import lib.FilterTypes
 
 
@@ -49,8 +50,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Initialization
 		"""        
-		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-	
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))	
 		self.descs = {"KernelX": "X", "KernelY": "Y", "KernelZ": "Z"}
 	
 	def getParameters(self):
@@ -62,7 +62,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getDesc(self, parameter):
 		"""
 		Return the description of the parameter
-		"""    
+		"""
 		return self.descs[parameter]
 		
 	def getType(self, parameter):
@@ -97,11 +97,11 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 
 
 def getFilters():
-    """
-    This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
-    """
-    return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
-            SobelFilter, MedianFilter]
+	"""
+	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+	"""
+	return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
+			SobelFilter, MedianFilter, OpeningByReconstruction, GrayscaleFillHole]
 
 
 class ErodeFilter(MorphologicalFilter):
@@ -123,7 +123,7 @@ class ErodeFilter(MorphologicalFilter):
 class VarianceFilter(MorphologicalFilter):
 	"""
 	Variance filter
-	"""     
+	"""
 	name = "Variance 3D"
 	category = lib.FilterTypes.MORPHOLOGICAL
 	
@@ -193,16 +193,14 @@ class SobelFilter(MorphologicalFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""            
+		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None        
+			return None
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()
-		
-
 		
 		
 class MedianFilter(MorphologicalFilter):
@@ -221,3 +219,118 @@ class MedianFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageMedian3D()     
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
+
+class OpeningByReconstruction(MorphologicalFilter):
+	"""
+	OpeningByReconstructionFilter
+	OpeningByReconstruction(f) = DilationByReconstruction(f,Erosion(f))
+	"""
+	name = "Opening by reconstruction"
+	category = lib.FilterTypes.MORPHOLOGICAL
+	level = scripting.COLOR_INTERMEDIATE
+
+	def __init__(self):
+		"""
+		Initialization
+		"""
+		MorphologicalFilter.__init__(self)
+		self.itkFlag = 1
+		self.filter = None
+		self.pc = itk.PyCommand.New()
+		self.pc.SetCommandCallable(self.updateProgress)
+
+	def updateProgress(self):
+		"""
+		Update progress event handler
+		"""
+		lib.ProcessingFilter.ProcessingFilter.updateProgress(self,self.filter,"ProgressEvent")
+
+	def execute(self, inputs, update = 0, last = 0):
+		"""
+		Execute the filter with given inputs and return the output
+		"""
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
+			return None
+		image = self.getInput(1)
+		image = self.convertVTKtoITK(image)
+
+		kernelX = self.parameters["KernelX"]
+		kernelY = self.parameters["KernelY"]
+		kernelZ = self.parameters["KernelZ"]
+		region = image.GetLargestPossibleRegion()
+		size = region.GetSize()
+		dim = region.GetImageDimension()
+		strel = itk.strel(dim)
+
+		if kernelX > size.GetElement(0):
+			kernelX = size.GetElement(0)
+		if kernelY > size.GetElement(1):
+			kernelY = size.GetElement(1)
+		if dim == 3 and kernelZ > size.GetElement(2):
+			kernelZ = size.GetElement(2)
+
+		if dim == 3:
+			radius = (kernelX,kernelY,kernelZ)
+		else:
+			radius = (kernelX,kernelY)
+		strel.SetRadius(radius)
+
+		self.filter = itk.OpeningByReconstructionImageFilter[image,image,strel].New()
+		self.filter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
+		self.filter.SetKernel(strel)
+		self.filter.SetInput(image)
+		output = self.filter.GetOutput()
+		output.Update()
+
+		return output
+		
+
+class GrayscaleFillHole(MorphologicalFilter):
+	"""
+	GrayscaleFillHole removes local minima not connected to the boundary of the
+	image
+	"""
+	name = "Grayscale fill hole"
+	category = lib.FilterTypes.MORPHOLOGICAL
+	level = scripting.COLOR_BEGINNER
+
+	def __init__(self):
+		"""
+		Initialization
+		"""
+		MorphologicalFilter.__init__(self)
+		self.descs = {}
+		self.itkFlag = 1
+		self.filter = None
+		self.pc = itk.PyCommand.New()
+		self.pc.SetCommandCallable(self.updateProgress)
+
+	def updateProgress(self):
+		"""
+		Update progress event handler
+		"""
+		lib.ProcessingFilter.ProcessingFilter.updateProgress(self,self.filter,"ProgressEvent")
+
+	def getParameters(self):
+		"""
+		Return the list of parameters needed for configuring this GUI
+		"""
+		return []
+
+	def execute(self, inputs, update = 0, last = 0):
+		"""
+		Execute the filter with given inputs and return the output
+		"""
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
+			return None
+
+		image = self.getInput(1)
+		image = self.convertVTKtoITK(image)
+
+		self.filter = itk.GrayscaleFillholeImageFilter[image,image].New()
+		self.filter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
+		self.filter.SetInput(image)
+		output = self.filter.GetOutput()
+		output.Update()
+
+		return output

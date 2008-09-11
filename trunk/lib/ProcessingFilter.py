@@ -285,24 +285,27 @@ class ProcessingFilter:
 				"A non-ITK filter %s tried to convert data to ITK image data" % self.name)
 			return image
 
+		dim = image.GetDataDimension()
 		if cast == types.FloatType:
-			ImageType = itk.VTKImageToImageFilter.IF3
+			typestr = "itk.VTKImageToImageFilter.IF%d"%dim
+			ImageType = eval(typestr)
 			scalarType = "float"
 		elif not cast:
 			scalarType = image.GetScalarTypeAsString()
 
-			if scalarType == "unsigned char":
-				ImageType = itk.VTKImageToImageFilter.IUC3
-			elif scalarType in ["unsigned int", "unsigned long"]:
+			if scalarType in ["unsigned int", "unsigned long"]:
 				conv = vtk.vtkImageCast()
 				conv.SetInput(image)
-				ImageType = itk.VTKImageToImageFilter.IUL3
+				typestr = "itk.VTKImageToImageFilter.IUL%d"%dim
+				ImageType = eval(typestr)
 				conv.SetOutputScalarTypeToUnsignedLong()
 				image = conv.GetOutput()
 			elif scalarType == "unsigned short":
-				ImageType = itk.VTKImageToImageFilter.IUS3
+				typestr = "itk.VTKImageToImageFilter.IUS%d"%dim
+				ImageType = eval(typestr)
 			else:
-				ImageType = itk.VTKImageToImageFilter.IUC3
+				typestr = "itk.VTKImageToImageFilter.IUC%d"%dim	
+				ImageType = eval(typestr)					
 
 		Logging.info("Scalar type = %s"%scalarType)
 		self.vtkToItk = ImageType.New()
