@@ -41,8 +41,7 @@ MEDIAN = 1
 
 class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	A dynamic threshold filter. Uses
-	itkBXD.DynamicThresholdImageFilter.
+	A dynamic threshold filter. Uses itkBXD.DynamicThresholdImageFilter.
 	"""
 	name = "Dynamic threshold"
 	category = lib.FilterTypes.SEGMENTATION
