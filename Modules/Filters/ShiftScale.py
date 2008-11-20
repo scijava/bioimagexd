@@ -53,13 +53,13 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Applying a shift and scale to image intensity"
-		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to range 0-255"}
+		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to range 0-255", "NoOverflow":"Prevent over/underflow"}
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["", ("Shift", "Scale", "AutoScale")]]
+		return [["", ("Shift", "Scale", "AutoScale", "NoOverflow")]]
 		
 		
 	def getLongDesc(self, parameter):
@@ -74,7 +74,7 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter in ["Shift", "Scale"]:
 			return types.FloatType
-		elif parameter == "AutoScale":
+		elif parameter in  ["AutoScale","NoOverflow"]:
 			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
@@ -97,6 +97,7 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		image = self.getInput(1)
 		print "Using ",image
 		self.vtkfilter.SetInput(image)
+		self.vtkfilter.SetClampOverflow(self.parameters["NoOverflow"])
 		if self.parameters["AutoScale"]:
 			x, y = image.GetScalarRange()
 			print "image type=", image.GetScalarTypeAsString()
@@ -112,8 +113,12 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			self.vtkfilter.SetShift(self.parameters["Shift"])
 			self.vtkfilter.SetScale(self.parameters["Scale"])
-		
-		if update:
+			
+			print "Shift=",self.parameters["Shift"], "scale=",self.parameters["Scale"]
 			self.vtkfilter.Update()
+			print "New Scalar range=", self.vtkfilter.GetOutput().GetScalarRange()
+		
+#		if update:
+#			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()	 
 		

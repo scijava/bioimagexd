@@ -40,6 +40,7 @@
 #include "vtkUnsignedShortArray.h"
 #include <vtkstd/vector>
 #include <iostream>
+#include <limits>
 
 typedef unsigned long OFFSET_TYPE;
 
@@ -585,7 +586,7 @@ int vtkLIFReader::ReadLIFHeader()
   // Read and parse xml header
   this->File->read(xmlHeader,xmlChars);
   this->ParseXMLHeader(xmlHeader,xmlChars);
-  delete xmlHeader;
+  delete[] xmlHeader;
 
   // Find image offsets
   this->Offsets->SetNumberOfValues(this->GetImageCount());
@@ -1067,6 +1068,8 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
   extent[1] = extent[3] = extent[5] = 0;
   spacing[0] = spacing[1] = spacing[2] = 1.0;
   origin[0] = origin[1] = origin[2] = 0.0;
+  int yDim = 0;
+  int zDim = 0;
 
   if (this->CurrentImage < 0) return;
 
@@ -1085,6 +1088,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
 		}
       else if ((*imgDims)->DimID == DimIDY)
 		{
+		yDim = 1;
 		extent[3] = (*imgDims)->NumberOfElements - 1;
 		if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
 	        strcmp((*imgDims)->Unit,""))
@@ -1095,6 +1099,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
 		}
       else if ((*imgDims)->DimID == DimIDZ)
 		{
+		zDim = 1;
 		extent[5] = (*imgDims)->NumberOfElements - 1;
 		if (strcmp((*imgDims)->Unit,"m") == 0 || strcmp((*imgDims)->Unit,"M") == 0 ||
 	        strcmp((*imgDims)->Unit,""))
@@ -1106,10 +1111,11 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
     }
 
   // Normalize spacing
-  if (spacing[0] > 1.0e-15)
+  if (spacing[0] > std::numeric_limits<float>::epsilon())
     {
-      spacing[1] /= spacing[0];
-      spacing[2] /= spacing[0];
+	  // If there is no y or z dimension, leave spacing as 1.0
+      if (yDim) spacing[1] /= spacing[0];
+      if (zDim) spacing[2] /= spacing[0];
       spacing[0] = 1.0;
     }
 }

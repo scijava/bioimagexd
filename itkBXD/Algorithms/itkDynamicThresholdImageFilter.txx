@@ -44,6 +44,7 @@ DynamicThresholdImageFilter<TInputImage,TOutputImage>
   this->SetNeighborhood(defaultNbh,defaultNbh);
   this->m_InsideValue = vcl_numeric_limits<OutputPixelType>::max();
   this->m_OutsideValue = 0;
+  this->m_Threshold = 0;
 }
 
 template<class TInputImage, class TOutputImage>
@@ -75,6 +76,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 	}
   os << indent << "Inside value: " << this->m_InsideValue << std::endl;
   os << indent << "Outside value: " << this->m_OutsideValue << std::endl;
+  os << indent << "Threshold: " << this->m_Threshold << std::endl;
 }
 
 template<class TInputImage, class TOutputImage>
@@ -101,8 +103,8 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   // Create vector for median pixels
   VectorType medianPixels(this->m_Neighborhood.first * this->m_Neighborhood.second);
 
-  long nIterCols = (this->m_Neighborhood.first - 1) / 2;
-  long nIterRows = (this->m_Neighborhood.second - 1) / 2;
+  unsigned long nIterCols = (this->m_Neighborhood.first - 1) / 2;
+  unsigned long nIterRows = (this->m_Neighborhood.second - 1) / 2;
   unsigned long startCol;
   unsigned long endCol;
   unsigned long startRow;
@@ -128,9 +130,9 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
   itk::ImageRegionIterator<TOutputImage> outIter(outputImage,outRegion);
 
   // Calculate dynamic threshold per pixel and set pixel values to min or max
-  long x = 0;
-  long y = 0;
-  long z = 0;
+  unsigned long x = 0;
+  unsigned long y = 0;
+  unsigned long z = 0;
   itk::ProgressReporter progress(this,0,rows*columns*slices,100);
   for (z = 0; z < slices; ++z)
 	{
@@ -148,7 +150,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 				}
 			  else
 				{
-				  long nextCol = x + nIterCols;
+				  unsigned long nextCol = x + nIterCols;
 				  if (nextCol < columns)
 					{
 					  this->GetColumnPixels(nextCol,y,z,inputImage,columnPixels[nextCol]);
@@ -193,6 +195,7 @@ void DynamicThresholdImageFilter<TInputImage,TOutputImage>
 				  threshold = *medianIterator;
 				}
 
+			  threshold += this->m_Threshold; // Add user threshold
 			  inIter.Get() > threshold ? outIter.Set(this->m_InsideValue) : outIter.Set(this->m_OutsideValue);
 			  ++inIter;
 			  ++outIter;

@@ -38,9 +38,8 @@ __date__ = "$Date: 2004/01/20 22:41:28 $"
 import vtk
 import Logging
 import lib.messenger
+import math
 
-
-math = vtk.vtkMath()
 			
 class SplineEditor:
 	"""
@@ -287,7 +286,7 @@ class SplineEditor:
 		sd = vtk.vtkMath.Distance2BetweenPoints(p0, p1)
 		for x in range(pp0 + 1, pp1 + 1):
 			p1 = points.GetPoint(x)
-			d += vtk.vtkMath.Distance2BetweenPoints(p0, p1)
+			d += math.sqrt(vtk.vtkMath.Distance2BetweenPoints(p0, p1))
 			p0 = p1
 		return d
 		
@@ -386,14 +385,20 @@ class SplineEditor:
 		volumeProperty.SetColor(colorTransferFunction)
 		volumeProperty.SetScalarOpacity(opacityTransferFunction)
 		volumeProperty.ShadeOff()
+
 		data.Update()
+		ncomps = data.GetNumberOfScalarComponents()
+		if ncomps > 1:
+			volumeProperty.IndependentComponentsOff()
+		else:
+			volumeProperty.IndependentComponentsOn()
 
 
 		self.volumeMapper =  vtk.vtkFixedPointVolumeRayCastMapper()
 		self.volumeMapper.SetIntermixIntersectingGeometry(1)
 		self.volumeMapper.SetSampleDistance(2)
 		self.volumeMapper.SetBlendModeToComposite()
-		#volume.SetMapper(self.volumeMapper)
+	
 		self.volumeMapper.SetInput(self.data)
 		volumeMapper = self.volumeMapper
 
@@ -462,9 +467,9 @@ class SplineEditor:
 		"""
 		Return a random point for the spline
 		"""        
-		pt = (math.Random(-self.dataExtensionX, self.dataWidth() + self.dataExtensionX),
-				math.Random(-self.dataExtensionY, self.dataHeight() + self.dataExtensionY),
-				math.Random(-self.dataExtensionZ, self.dataDepth() + self.dataExtensionZ))
+		pt = (vtk.vtkMath.Random(-self.dataExtensionX, self.dataWidth() + self.dataExtensionX),
+				vtk.vtkMath.Random(-self.dataExtensionY, self.dataHeight() + self.dataExtensionY),
+				vtk.vtkMath.Random(-self.dataExtensionZ, self.dataDepth() + self.dataExtensionZ))
 		return pt
 
 	def initSpline(self, points):

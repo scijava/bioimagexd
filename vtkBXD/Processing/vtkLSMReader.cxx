@@ -1332,7 +1332,7 @@ int vtkLSMReader::RequestData(
   channel = this->GetUpdateChannel();
   int nSlices = (outExtent[5]-outExtent[4])+1;
   vtkDebugMacro(<<"Timepoint="<<timepoint<<", channel="<<channel<<", "<<nSlices<<" slices"<<"\n");
-  numberOfPixels = this->Dimensions[0]*this->Dimensions[1]*this->Dimensions[2];
+  numberOfPixels = this->Dimensions[0]*this->Dimensions[1]*(outExtent[5]-outExtent[4]+1 );
   int dataType = this->GetDataTypeForChannel(channel);
   size = numberOfPixels * this->BYTES_BY_DATA_TYPE(dataType);
   vtkDebugMacro(<<"numberOfPixels=" << numberOfPixels << ", buffer size="<<size<<", datatype="<<dataType<<", bytes by datatype="<<this->BYTES_BY_DATA_TYPE(dataType)<<"\n");

@@ -269,22 +269,28 @@ def loadBXDLutFromString(lut, ctf):
 	j = 0
 	start = int(start)
 	end = int(end)
-	k = ( len(lut) / 3 ) - 1
-	reds = lut[0: k + 1]
-	greens = lut[k + 1: 2 * k + 2]
-	blues = lut[(2 * k) + 2: 3 * k + 3]
+
+	handle = vtkbxd.vtkHandleColorTransferFunction()
+	handle.SetInputString(lut,len(lut))
+	handle.LoadColorTransferFunctionFromString(ctf, start, end)
+	
+	#k = ( len(lut) / 3 ) - 1
+	#reds = lut[0: k + 1]
+	#greens = lut[k + 1: 2 * k + 2]
+	#blues = lut[(2 * k) + 2: 3 * k + 3]
 			
-	j = 0
-	for i in range(start, end + 1):
-		red = ord(reds[j])
-		green = ord(greens[j])
-		blue = ord(blues[j])
+	#j = 0
+	#for i in range(start, end + 1):
+	#	red = ord(reds[j])
+	#	green = ord(greens[j])
+	#	blue = ord(blues[j])
 	  
-		red /= 255.0
-		green /= 255.0
-		blue /= 255.0		
-		ctf.AddRGBPoint(i, red, green, blue)
-		j += 1
+	#	red /= 255.0
+	#	green /= 255.0
+	#	blue /= 255.0		
+	#	ctf.AddRGBPoint(i, red, green, blue)
+	#	j += 1
+
 	return 
 			
 def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
@@ -296,8 +302,8 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 		ctfrange The range to which construct the CTF
 	"""		   
 	if lut[0: 6] == "BXDLUT":
-		
 		return loadBXDLutFromString(lut, ctf)
+	
 	failed = 1
 	if len(lut) != 768:
 		try:
@@ -329,20 +335,23 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 def saveLUT(ctf, filename):
 	"""
 	Save a CTF as ImageJ binary LUT
-	"""    
+	"""
 	ext = filename.split(".")[-1]
 	ltype = "ImageJ"
 	if ext.lower() == "bxdlut":
 		ltype = "BioImageXD"
-	fileName = open(filename, "wb")
-	stringOfLUT = lutToString(ctf, luttype = ltype)
-	fileName.write(stringOfLUT)
-	fileName.close()
+	try:
+		fileName = open(filename, "wb")
+		stringOfLUT = lutToString(ctf, luttype = ltype)
+		fileName.write(stringOfLUT)
+		fileName.close()
+	except:
+		pass
 	
 def lutToString(ctf, luttype = "ImageJ"):
 	"""
 	Write a lut to a string
-	"""    
+	"""
 	stringOfLUT = ""
 	minval, maxval = ctf.GetRange()
 	if luttype == "ImageJ":
@@ -354,34 +363,40 @@ def lutToString(ctf, luttype = "ImageJ"):
 		Logging.info("Adding to BXDLUT structure the minval=%d, maxval=%d" % (minval, maxval), kw = "ctf")
 		
 		stringOfLUT += struct.pack("f", minval)
-		
 		stringOfLUT += struct.pack("f", maxval)
-	for col in range(0, 3):
-		for i in range(0, int(maxval) + 1, int(perColor)):
-			val = [0, 0, 0]
+
+	handle = vtkbxd.vtkHandleColorTransferFunction()
+	handle.ColorTransferFunctionToString(ctf,int(perColor))
+	ctfstr = handle.GetOutputString()
+	for i in xrange(0,ctfstr.GetNumberOfTuples()):
+		stringOfLUT += chr(ctfstr.GetValue(i))
+		
+	#for col in range(0, 3):
+	#	for i in range(0, int(maxval) + 1, int(perColor)):
+	#		val = [0, 0, 0]
 			
-			ctf.GetColor(i, val)
-			red, green, blue = val
-			red *= 255
-			green *= 255
-			blue *= 255
-			red = int(red)
-			green = int(green)
-			blue = int(blue)
-			if red < 0: 
-				red = 0
-			if blue < 0: 
-				blue = 0
-			if green < 0: 
-				green = 0
-			if red >= 255: 
-				red = 255
-			if green >= 255: 
-				green = 255
-			if blue >= 255: 
-				blue = 255
-			color = [red, green, blue]
-			stringOfLUT += chr(color[col])
+	#		ctf.GetColor(i, val)
+	#		red, green, blue = val
+	#		red *= 255
+	#		green *= 255
+	#		blue *= 255
+	#		red = int(red)
+	#		green = int(green)
+	#		blue = int(blue)
+	#		if red < 0: 
+	#			red = 0
+	#		if blue < 0: 
+	#			blue = 0
+	#		if green < 0: 
+	#			green = 0
+	#		if red >= 255: 
+	#			red = 255
+	#		if green >= 255: 
+	#			green = 255
+	#		if blue >= 255: 
+	#			blue = 255
+	#		color = [red, green, blue]
+	#		stringOfLUT += chr(color[col])
 	return stringOfLUT
 		
 def getAsParameterList(iTF):
@@ -557,26 +572,61 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 	return bitmap
 	
 	
-def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2):
+def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2, filename = ""):
 	"""
 	Returns a randomly created CTF.
 	"""
-	ctf = vtk.vtkColorTransferFunction()
+	try:
+		ctf = vtk.vtkColorTransferFunction()
+		if filename:
+			loadLUT(filename, ctf)
+	except:
+		ctf = vtk.vtkColorTransferFunction()
+
+	ctfFileSize = ctf.GetSize()
+	if ctfFileSize > 0:
+		for i in range(0, ignoreColors):
+			color = ctf.GetColor(i)
+			ctf.AddRGBPoint(ctf.GetSize(),color[0],color[1],color[2])
+		
 	for i in range(0, ignoreColors):
 		ctf.AddRGBPoint(i, 0, 0, 0)
-	
+
 	if ctfLowerBound < 1: 
 		ctfLowerBound = 1
-	for i in range(int(ctfLowerBound), int(ctfUpperBound)):
-		red = 0
-		green = 0
-		blue = 0    
-		while red + green + blue < 1.5:
-			red = random.random()
-			green = random.random()
-			blue = random.random()
-		ctf.AddRGBPoint(float(i), float(red), float(green), float(blue))
+
+	if ctfFileSize > 0 and ctf.GetSize() > ctfLowerBound:
+		ctfLowerBound = ctf.GetSize()
+
+	handle = vtkbxd.vtkHandleColorTransferFunction()
+	handle.CreateRandomColorTransferFunction(ctf, ctfLowerBound, ctfUpperBound - 1, 1.5)
+	#for i in range(int(ctfLowerBound), int(ctfUpperBound)):
+	#	red = 0
+	#	green = 0
+	#	blue = 0
+	#	while red + green + blue < 1.5:
+	#		red = random.random()
+	#		green = random.random()
+	#		blue = random.random()
+	#	ctf.AddRGBPoint(float(i), float(red), float(green), float(blue))
+
+	if ctf.GetSize() > ctfUpperBound:
+		for i in xrange(ctfUpperBound, ctf.GetSize()-1):
+			ctf.RemovePoint(i)
+
+	if ctfFileSize + ignoreColors < ctf.GetSize():
+		for i in range(0, ignoreColors):
+			color = ctf.GetColor(ctf.GetSize()-1)
+			ctf.AddRGBPoint(i,color[0],color[1],color[2])
+			ctf.RemovePoint(ctf.GetSize()-1)
+
+		saveLUT(ctf,filename)
 		
+		for i in range(0, ignoreColors):
+			color = ctf.GetColor(i)
+			ctf.AddRGBPoint(ctf.GetSize(),color[0],color[1],color[2])
+			ctf.AddRGBPoint(i,0,0,0)
+
 	return ctf
 
 def fire(ctfLowerBound, ctfUpperBound):

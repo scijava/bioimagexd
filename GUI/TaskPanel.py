@@ -101,11 +101,7 @@ class TaskPanel(ScrolledPanel):
 
 		#self.staticLine=wx.StaticLine(self)
 		#self.mainsizer.Add(self.staticLine,(2,0),span=(1,1),flag=wx.EXPAND)
-		self.mainsizer.Add(self.buttonPanel, (n, 0), span = (1, 1), flag = wx.EXPAND)
-		
-		self.buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-		self.buttonPanel.SetSizer(self.buttonSizer)
-		self.buttonPanel.SetAutoLayout(1)
+		self.mainsizer.Add(self.buttonPanel, (n, 0), span = (1, 1))#, flag = wx.EXPAND)
 
 		n += 1
 		self.filePath = None
@@ -276,13 +272,15 @@ class TaskPanel(ScrolledPanel):
 		"""
 		create the buttons on the bottom of the	 panel
 		"""
-		self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
-
+		self.buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.buttonPanel.SetSizer(self.buttonSizer)
+		#self.buttonPanel.SetAutoLayout(1)		
+		#self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
 		self.previewButton = wx.Button(self.buttonPanel, -1, "Apply")
 		self.previewButton.Bind(wx.EVT_BUTTON, self.doPreviewCallback)
-		self.buttonsSizer2.AddSpacer((5,5))
-		self.buttonsSizer2.Add(self.previewButton, 1, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
-		self.buttonsSizer2.AddSpacer((5,5))
+		#self.buttonSizer.AddSpacer((5,5))
+		self.buttonSizer.Add(self.previewButton, 1, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
+		self.buttonSizer.AddSpacer((5,5))
 
 	def onHelp(self, evt):
 		"""

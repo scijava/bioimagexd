@@ -40,6 +40,7 @@ import wx.lib.colourselect as csel
 import wx.lib.scrolledpanel as scrolled
 import lib.messenger
 from lib.persistence import state_pickler
+import scripting
 
 class RendererConfiguration(wx.MiniFrame):
 	"""

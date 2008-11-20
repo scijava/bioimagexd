@@ -29,6 +29,7 @@ import itk
 import types
 import lib.ImageOperations
 import scripting
+import os.path
 
 class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -91,12 +92,15 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
-		self.itkfilter = itk.ConnectedComponentImageFilter[image, itk.Image.UL3].New()
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
+		typestr = "itk.Image.UL%d"%dim
+		outImageType = eval(typestr)
+		self.itkfilter = itk.ConnectedComponentImageFilter[image, outImageType].New()
 		
 		self.eventDesc = "Performing connected component labeling"
 		self.itkfilter.SetInput(image)
 				
-		self.setImageType("UL3")
+		self.setImageType("UL%d"%dim)
 		self.itkfilter.Update()
 		data = self.itkfilter.GetOutput()
 	
@@ -115,7 +119,8 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 		if not self.origCtf or not ncolors or ncolors < n:
-			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
+			filename = os.path.join(scripting.get_preview_dir(),"palette.bxdlut")
+			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1, filename = filename)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
 			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)

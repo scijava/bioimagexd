@@ -86,7 +86,7 @@ class ColocalizationSettings(DataUnitSettings):
 					 number of channels and timepoints
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
-		print "Initializing colocaliztion for %d channels" % channels
+		print "Initializing colocalization for %d channels" % channels
 		self.set("ColocalizationDepth", 8)
 		if hasattr(dataunit, "getScalarRange"):
 			minval, maxval = dataunit.getScalarRange()

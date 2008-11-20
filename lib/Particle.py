@@ -51,6 +51,7 @@ class ParticleReader:
 		Initialize the reader and necessary information for the reader
 		"""
 		self.rdr = csv.reader(open(filename), dialect = "excel", delimiter = ";")
+		print "Reading file",filename
 		self.filterObjectSize = filterObjectSize
 		self.timepoint = -1  
 		self.volumes = []
@@ -104,24 +105,22 @@ class ParticleReader:
 				skipNext = 1
 				continue
 			else:
-				obj, sizemicro, size, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line
+				obj, sizemicro, size, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line[0:10]
 			try:
 				size = int(size)
 				sizemicro = float(sizemicro)
 			except ValueError:
 				continue
 			obj = int(obj)
-			cog = [cogX,cogY,cogZ]
-			#cog = [float(coordinate) for coordinate in cog[1:-1].split(", ")]
-			umcog = [umcogX,umcogY,umcogZ]
-			#umcog = [float(coordinate) for coordinate in umcog[1:-1].split(", ")]
+			cog = map(int, [float(cogX), float(cogY), float(cogZ)])
+			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
 			avgint = float(avgint)  
 			if size >= self.filterObjectSize and obj != 0: 
 				particle = Particle(umcog, cog, self.timepoint, size, avgint, obj)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
 				self.objects.append(obj)
-				self.cogs.append((int(cog[0]), int(cog[1]), int(cog[2])))
+				self.cogs.append(cog)
 				self.volumes.append((size, sizemicro))
 				self.avgints.append(avgint)
 		if curr:
@@ -627,12 +626,11 @@ class ParticleTracker:
 				if not failed and len(track) > 1:
 					angleFactor = self.calculateAngleFactor(testParticle, track)
 					if angleFactor==-1:
-						print "Angle criterion failed"
 						failed = 1
 				# If we got a match between the previous particle (oldParticle)
 				# and the currently tested particle (testParticle) and testParticle
 				# is not in a track
-				if (not failed) and (not testParticle.inTrack):
+				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
 					#print "Score=",currScore
 					# if there's no other particle that fits the criteria

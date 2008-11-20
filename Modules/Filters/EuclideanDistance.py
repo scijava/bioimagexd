@@ -90,10 +90,16 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetAlgorithm(self.parameters["Algorithm"])
 		data = self.vtkfilter.GetOutput()
 		if self.parameters["CastToUnsignedChar"]:
-			cast = vtk.vtkImageCast()
+			self.vtkfilter.Update()
+			cast = vtk.vtkImageShiftScale()
+			x0, x1 = data.GetScalarRange()
+			print data
+			print "Scalar range=",x0,x1
 			cast.SetInput(self.vtkfilter.GetOutput())
 			cast.SetOutputScalarTypeToUnsignedChar()
-			cast.SetClampOverflow(1)
+			#cast.SetClampOverflow(1)
+			cast.SetScale(255.0/x1)
+			print "Setting scale to ", 255.0/x1
 			data = cast.GetOutput()
 		if update:
 			self.vtkfilter.Update()

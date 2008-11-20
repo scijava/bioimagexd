@@ -30,6 +30,7 @@ import GUI.GUIBuilder
 import lib.messenger
 import lib.FilterTypes
 import scripting
+import bxdevents
 
 class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -48,7 +49,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter = vtk.vtkExtractVOI()
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
-		
+		self.translation = []
 		self.descs = {"UseROI": "Use Region of Interest to define resulting region", \
 						"ROI": "Region of Interest Used in Cutting", \
 						"FirstSlice": "First Slice in Resulting Stack", \
@@ -102,6 +103,13 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 		return 1
 		
+	def onRemove(self):
+		"""
+		A method called when this filter is removed
+		"""
+		if self.translation:
+			lib.messenger.send(None, bxdevents.TRANSLATE_DATA, (-self.translation[0], -self.translation[1], -self.translation[2]))
+		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
@@ -152,6 +160,15 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 			translation[0] = -minx
 		if miny > 0:
 			translation[1] = -miny
+		newTranslation = translation[:]
+		if self.translation:
+			dx = self.translation[0]-minx
+			dy = self.translation[1]-miny
+			dz = self.translation[2]-minz
+			newTranslation = [dx,dy,dz]
+		self.translation = newTranslation
+		
+		lib.messenger.send(None, bxdevents.TRANSLATE_DATA, tuple(self.translation))
 		if translation != [0,0,0]:
 			translate.SetTranslation(tuple(translation))
 			#translate.SetOutputOrigin(0,0,0)
