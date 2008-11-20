@@ -35,6 +35,7 @@ import os
 import codecs
 import Logging
 import csv
+import lib.ParticleReader
 
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -76,14 +77,14 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ClusterDistance":"Min. distance for clustering (in px)",
 		"Cache":"Cache timepoints",
 		"CacheAmount":"# of timepoints cached",
-		"CreateAll":"Create all timepoints at once"}
+		"CreateAll":"Create all timepoints at once","CreateNoise":"Create noise"}
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
-			["Noise",("ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
+			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
 			["Objects",("NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange")],
 			["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
 			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
@@ -126,7 +127,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd"]:
 			return types.IntType
 			
-		if parameter in ["Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll"]:
+		if parameter in ["CreateNoise","Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll"]:
 			return types.BooleanType
 			
 		return types.IntType
@@ -230,7 +231,15 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				print "Adding fluctuations to object numbers"
 				objs = self.createFluctuations(objs)
 			self.objects.append(objs)
+
 			
+		self.tracks = []
+		for tp, objs in enumerate(self.objects):
+			for i, (objN, (x,y,z), size) in enumerate(objs):
+				if len(self.tracks) <= objN:
+					self.tracks.append([])
+				p = lib.Particle.Particle((x,y,z),(x,y,z), tp, size, 20, objN)
+				self.tracks[objN].append(p)
 		if self.parameters["Clustering"]:
 			print "Introducing clustering"
 			self.clusterObjects(self.objects)
@@ -241,33 +250,45 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		combine=[]
 		clustered={}
+		
+		clusteredObjN={}
 		for tp,objs in enumerate(objects):
-			for i, ((x,y,z), size) in enumerate(objs):
-				for j, ((x2,y2,z2),size) in enumerate(objs):
-					if i==j:continue
-					if (tp,i) in clustered or (tp,j) in clustered: continue
+			for i, (objN, (x,y,z), size) in enumerate(objs):
+				for j, (objN2, (x2,y2,z2),size) in enumerate(objs):
+					if objN==objN2:continue
+					if objN in clusteredObjN: continue
+					if objN2 in clusteredObjN: continue
+					if (tp,objN) in clustered or (tp,objN2) in clustered: continue
 					d = math.sqrt((x2-x)**2+(y2-y)**2+(z2-z)**2)
 					if d < self.parameters["ClusterDistance"]:
 						if random.random()*100<self.parameters["ClusterPercentage"]:
-							combine.append((tp,i,j))
-							clustered[(tp,i)]=1
-							clustered[(tp,j)]=1
+							combine.append((tp,objN,i,objN2,j))
+							clustered[(tp,objN2)]=1
+							clustered[(tp,objN)]=1
+							clusteredObjN[objN]=1
+							clusteredObjN[objN2]=1
+
 		toremove=[]
-		for tp,i,j in combine:
+		for tp,objN, i,objN2, j in combine:
 			ob1 = objects[tp][i]
 			ob2 = objects[tp][j]
+			if len(self.tracks[objN])>tp and len(self.tracks[objN2])>tp:
+				self.tracks[objN].remove(self.tracks[objN][tp])
+				self.tracks[objN2].remove(self.tracks[objN2][tp])
 			toremove.append((tp,ob1,ob2))
-			(x1,y1,z1),s1 = ob1
-			(x2,y2,z2),s2 = ob2
+			objN,(x1,y1,z1),s1 = ob1
+			objN2, (x2,y2,z2),s2 = ob2
 			s3 = int((s1+s2)*0.7)
 			x3 = (x1+x2)/2
 			y3 = (y1+y2)/2
 			z3 = (z1+z2)/2
-			objects[tp].append(((x3,y3,z3), s3))
+			objects[tp].append((objN,(x3,y3,z3), s3))
+			self.tracks[objN].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, 20, objN))
 
 		for tp,ob1,ob2 in toremove:
 			objects[tp].remove(ob1)
 			objects[tp].remove(ob2)
+		
 				
 	def createFluctuations(self, objects):
 		"""
@@ -299,14 +320,14 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					rx, ry, rz = self.getPointInsideCell()
 					print "it's",rx,ry,rz
 					self.towardsPoints.append((rx,ry,rz))
-					
+			
 			self.numberOfObjects = random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])
 			for obj in range(0, self.numberOfObjects):
 				print "Creating object %d"%obj
 				(rx,ry,rz), size = self.createObject()
-				objs.append( ((rx,ry,rz), size ))
+				objs.append( (obj, (rx,ry,rz), size ))
 		else:
-			for (rx,ry,rz),size in self.objects[tp-1]:
+			for objN, (rx,ry,rz),size in self.objects[tp-1]:
 				if self.parameters["RandomMovement"]:
 					speedx = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
 					speedy = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
@@ -343,7 +364,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					change = random.randint(0, maxchange)
 					if random.random()<0.5:change*=-1
 					size+=change
-				objs.append(((rx,ry,rz),size))
+				objs.append((objN, (rx,ry,rz),size))
 		return objs
 		
 	def createObject(self):
@@ -412,7 +433,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
 		print "Creating objects"
-		for (rx,ry,rz), size in self.objects[currentTimepoint]:
+		for objN, (rx,ry,rz), size in self.objects[currentTimepoint]:
 			rx+=shiftx
 			ry+=shifty
 			rz+=shiftz
@@ -507,21 +528,20 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		f = codecs.open(filename, "awb", "latin1")
-		Logging.info("Saving statistics to file %s"%filename, kw="processing")
+
+		#f = codecs.open(filename, "awb", "latin1")
+		#Logging.info("Saving statistics to file %s"%filename, kw="processing")
 		
-		w = csv.writer(f, dialect = "excel", delimiter = ";")
+		#w = csv.writer(f, dialect = "excel", delimiter = ";")
 		
-		settings = dataUnit.getSettings()
-		settings.set("StatisticsFile", filename)
-		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Center of mass","Size"])
+		#settings = dataUnit.getSettings()
+		#settings.set("StatisticsFile", filename)
+		#w.writerow(["Timepoint %d" % timepoint])
+		#w.writerow(["Object #", "Center of mass","Size"])
 					
-		i=0
-		for (rx,ry,rz),size in self.objects[timepoint]:
-			w.writerow([str(i + 1), "%d, %d, %d"%(rx,ry,rz),str(size)])
-			i+=1
-		f.close()
+		if timepoint==self.parameters["Time"]-1:
+			trackWriter = lib.ParticleReader.ParticleWriter()
+			trackWriter.writeTracks(filename, self.tracks, 3)
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""

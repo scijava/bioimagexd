@@ -379,12 +379,11 @@ class DataUnitSettings:
 		Returns the value of a given key
 		"""
 		if "ColorTransferFunction" in name:
- #			 try:
 			data = eval(value)
 			colorTransferFunction = vtk.vtkColorTransferFunction()
-			
 			lib.ImageOperations.loadLUTFromString(data, colorTransferFunction)
 			return colorTransferFunction
+		
 		# Annotations is a list of classes that can easily be
 		# pickled / unpickled
 		if "Annotations" in name:

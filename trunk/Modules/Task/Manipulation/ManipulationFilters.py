@@ -62,7 +62,7 @@ def getFilters():
 	"""
 	return [GaussianSmoothFilter, 
 			GradientFilter, GradientMagnitudeFilter,
-			ITKAnisotropicDiffusionFilter, ITKGradientMagnitudeFilter,
+			ITKAnisotropicDiffusionFilter, 
 			ITKLocalMaximumFilter]
 
 # fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
@@ -195,8 +195,7 @@ class GradientFilter(ProcessingFilter.ProcessingFilter):
 
 class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A class for calculating the gradient magnitude of the image
+	A class for calculating the gradient magnitude of the image
 	"""		
 	name = "Gradient magnitude"
 	category = FEATUREDETECTION
@@ -230,12 +229,11 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 			
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()			 
+		return self.vtkfilter.GetOutput()
 
 		
 class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
 	Description: A class for doing anisotropic diffusion on ITK
 	"""		
 	name = "Gradient anisotropic diffusion (ITK)"
@@ -308,47 +306,6 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		return self.itkfilter.GetOutput()			 
 
 
-class ITKGradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 13.04.2006, KP
-	Description: A class for calculating gradient magnitude on ITK
-	"""		
-	name = "Gradient magnitude (ITK)"
-	category = FEATUREDETECTION
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.eventDesc = "Performing edge detection (gradient magnitude)"
-		self.itkFlag = 1
-		self.itkfilter = None
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return []		 
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""					   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-			
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image)
-		if not self.itkfilter:
-			self.itkfilter = itk.GradientMagnitudeImageFilter[image, image].New()
-
-		self.itkfilter.SetInput(image)
-		
-		if update:
-			self.itkfilter.Update()
-		data = self.itkfilter.GetOutput()
-		return data			   
 
 
 class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):

@@ -70,6 +70,8 @@ public:
   itkGetConstMacro(InsideValue, OutputPixelType);
   itkSetMacro(OutsideValue, OutputPixelType);
   itkGetConstMacro(OutsideValue, OutputPixelType);
+  itkSetMacro(Threshold, OutputPixelType);
+  itkGetMacro(Threshold, OutputPixelType);
 
   /* Public methods */
   void SetStatisticsType(int);
@@ -98,6 +100,7 @@ private:
   NeighborhoodType m_Neighborhood;
   OutputPixelType m_InsideValue;
   OutputPixelType m_OutsideValue;
+  OutputPixelType m_Threshold;
 };
 }
 

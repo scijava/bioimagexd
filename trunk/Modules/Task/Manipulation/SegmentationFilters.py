@@ -49,7 +49,7 @@ def getFilters():
 	"""
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
-	return [MaskFilter, ITKWatershedSegmentationFilter,
+	return [MaskFilter,
 			MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
 			ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
 			ITKNeighborhoodConnectedThresholdFilter]
@@ -128,74 +128,6 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		return self.vtkfilter.GetOutput()
 
 
-class ITKWatershedSegmentationFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Created: 13.04.2006, KP
-	Description: A filter for doing watershed segmentation
-	"""
-	name = "Watershed segmentation (old)"
-	category = WATERSHED
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		
-		
-		self.descs = {"Threshold": "Segmentation Threshold", "Level": "Segmentation Level"}
-		self.itkFlag = 1
-		self.itkfilter = None
-
-	def getParameterLevel(self, parameter):
-		"""
-		Return the level of the given parameter
-		"""
-		return scripting.COLOR_INTERMEDIATE
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""	   
-		if parameter == "Threshold":
-			return 0.01
-		if parameter == "Level":
-			return 0.2
-		return 0
-		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		return types.FloatType
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return [["", ("Threshold", "Level")]]
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""					   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-			
-		self.eventDesc = "Performing watershed segmentation"
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image, cast = types.FloatType)
-		self.itkfilter = itk.WatershedImageFilter.IF3.New()
-		self.itkfilter.SetInput(image)
-		self.itkfilter.SetThreshold(self.parameters["Threshold"])
-		self.itkfilter.SetLevel(self.parameters["Level"])
-				
-		self.setImageType("UL3")
-		if update:
-			self.itkfilter.Update()
-		data = self.itkfilter.GetOutput()
-		return data
-
 
 
 
@@ -263,6 +195,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 				
 		self.setImageType("UL3")
 		self.itkfilter.Update()
+		print "\n\n", self.itkfilter.GetThresholdValue()
 		data = self.itkfilter.GetOutput()
 		return data
 

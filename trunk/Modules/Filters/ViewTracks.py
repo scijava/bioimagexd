@@ -36,6 +36,7 @@ import scripting
 import os.path
 import types
 import wx
+import Modules.DynamicLoader
 import Modules
 
 class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
@@ -62,12 +63,14 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		self.descs = {"MinLength": "Min. length of track (# of timepoints)",
 			"ResultsFile": "Tracking results file:",
-			"Track": "Track to visualize"}
+			"Track": "Track to visualize",
+			"AllTracks":"Visualize all tracks"}
 	
 		self.numberOfPoints = None
 		lib.messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)
 		
 		self.particleFile = ""
+		
 	def setParameter(self, parameter, value):
 		"""
 		Set a value for the parameter
@@ -90,6 +93,14 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				lib.messenger.send(None, "update_helpers", 1)
 		if parameter == "MinLength":
 			lib.messenger.send(self, "update_Track")
+		
+		if parameter == "AllTracks":
+			if self.tracks and value:
+				lib.messenger.send(None, "visualize_tracks", self.tracks)
+				lib.messenger.send(None, "update_helpers", 1)
+			if not value:
+				lib.messenger.send(None, "visualize_tracks", [])
+				lib.messenger.send(None, "update_helpers", 1)
 		  
 	def updateSelectedTracks(self, obj, evt, tracks):
 		"""
@@ -109,7 +120,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""            
 		return [["Tracking", ("MinLength", )],        
 		["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
-		["Visualization", ("Track", )]]
+		["Visualization", ("Track", "AllTracks")]]
 
 		
 	def getLongDesc(self, parameter):
@@ -127,6 +138,8 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			return GUI.GUIBuilder.SPINCTRL
 		if parameter == "Track":
 			return GUI.GUIBuilder.SLICE            
+		if parameter == "AllTracks":
+			return types.BooleanType
 		return GUI.GUIBuilder.FILENAME
 		
 	def getRange(self, parameter):
@@ -155,6 +168,8 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			return 3
 		if parameter == "ResultsFile":
 			return "track_results.csv"
+		if parameter == "AllTracks":
+			return False
 		return "statistics.csv"
 		
 		
@@ -236,7 +251,6 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			print "Track", i, "has time range", mintp, maxtp
 			for tp in range(mintp, maxtp + 1):
 				val, pos = track.getObjectAtTime(tp)
-				print "    value at tp ", tp, "(pos ", pos, ") is ", val
 				# Set the value at row i, column tp+1 (because there is the column for enabling
 				# this track)
 				table.SetValue(i, tp + 1, pos, override = 1)

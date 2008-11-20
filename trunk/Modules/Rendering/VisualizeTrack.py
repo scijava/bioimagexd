@@ -58,7 +58,8 @@ class VisualizeTrackModule(VisualizationModule):
 
 		self.descs = {"TrackFile": "Select the track file", "AllTracks": "Show all tracks", \
 					"Track": "Select the track to visualize", "MinLength": "Minimum length of track", \
-					"ShowObject": "Show object using surface rendering"}
+					"ShowObject": "Show object using surface rendering",
+					"SameStartingPoint":"Tracks start at same point"}
 		
 		self.showTracks = []
 			
@@ -92,7 +93,7 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""            
-		return [  ]
+		return [ ["",("SameStartingPoint",)] ]
 		
 	def getDefaultValue(self, parameter):
 		"""
@@ -108,7 +109,8 @@ class VisualizeTrackModule(VisualizationModule):
 			return False
 		if parameter == "ShowObject":
 			return False
-			
+		return False
+		
 	def getRange(self, parameter):
 		"""
 		If a parameter has a certain range of valid values, the values can be queried with this function
@@ -139,7 +141,7 @@ class VisualizeTrackModule(VisualizationModule):
 			return GUIBuilder.SLICE
 		if parameter == "MinLength":
 			return GUIBuilder.SLICE
-		if parameter == "AllTracks":
+		if parameter in ["AllTracks","SameStartingPoint"]:
 			return types.BooleanType
 
 	def __getstate__(self):
@@ -195,12 +197,11 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		Update the Rendering of this module
 		"""             
-		#data = self.data
-		#self.mapper.SetInput(data)
 		for actor in self.actors:
 			self.renderer.RemoveActor(actor)
 		if self.showTracks:
 			edges = vtk.vtkCellArray()
+			inputUnit = self.getInputDataUnit(1)
 
 			tracks = self.getPoints(self.showTracks)
 			appendLines  = vtk.vtkAppendPolyData()
@@ -236,12 +237,28 @@ class VisualizeTrackModule(VisualizationModule):
 			for actor in self.actors:
 				self.renderer.AddActor(actor)
 
+			dataw, datay, dataz = inputUnit.getDimensions()
 			for track in tracks:
-				for i, (x, y, z) in enumerate(track[:-1]):
+				dx, dy, dz = 0,0,0
+				if self.parameters["SameStartingPoint"]:
+					dx = -track[0][0]
+					dy = -track[0][1]
+					dz = -track[0][2]
+					dx+=dataw/2
+					dy+=datay/2
+					dz+=dataz/2
 				
+				for i, (x, y, z) in enumerate(track[:-1]):
+					x+=dx
+					y+=dy
+					z+=dz
+					x2,y2,z2 = track[i + 1]
+					x2+=dx
+					y2+=dy
+					z2+=dz
 					linesource = vtk.vtkLineSource()
 					linesource.SetPoint1(x, y, z)
-					linesource.SetPoint2(*track[i + 1])
+					linesource.SetPoint2(x2, y2, z2)
 					tubeFilter = vtk.vtkTubeFilter()
 					tubeFilter.SetRadius(1.5)
 					tubeFilter.SetNumberOfSides(10)

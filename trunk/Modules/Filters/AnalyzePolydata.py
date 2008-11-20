@@ -32,6 +32,7 @@ __date__ = "$Date$"
 import lib.ProcessingFilter
 import scripting
 import types
+import lib.Math
 import GUI.GUIBuilder
 import itk
 import os
@@ -65,11 +66,25 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,(2,2))
 		for i in range(1, 3):
 			self.setInputChannel(i, i)
+		self.itkFlag = 1
 		self.descs = {"PolyDataFile":"Surface file", "ObjectsFile":"Segmented objects file",
 			"DistanceToSurface":"Measure distance to surface","InsideSurface":"Analyze whether object is inside the surface"}
 			
-		self.resultVariables = {"DistanceList":"List of object distances to surface"}
-		self.headers = ["Object","Position","Distance to surface (COM)","Distance to surface (All)","Inside surface"]
+		self.resultVariables = {"NumObjsOutside":"Number of objects whose center of mass is outside the surface",
+		"NumObjsInside":"Number of objects whose center of mass is inside the surface",
+		"AvgDistanceCOMtoSurface":"Average distance from all objects' center of mass to surface",
+		"AvgDistanceCOMtoCellCOM":"Average distance from all objects' center of mass to cell center of mass",
+		"NumVoxelsInside":"Number of voxels inside the surface",
+		"NumVoxelsOutside":"Number of voxels outside the surface",
+		"PercentageVoxelsInside":"Avg. percentage of voxels inside the surface",
+		"AvgDistanceToSurface":"Average distance to surface from each voxel in the objects",
+		"AvgDistanceToCellCOM":"Average distance to cell COM from each voxel in the objects"}
+
+		self.headers = ["Object","Position","Dist.to surface (COM)","Dist.to surface (Voxels)","Dist.to Cell COM (COM)","Dist.to Cell COM (Voxels)","# of voxels inside", "# of voxels outside","COM Inside surface"]
+		self.aggregateHeaders = ["COMs outside", "COMs inside","Avg.COM dist.to surface","Avg.COM dist.to Cell COM","# of voxels inside", "# of voxels outside","Avg. % of voxels inside", "Avg. of all-voxel-distance to surface","Avg. of all-voxel-distance to Cell COM"]
+		
+		
+		
 	def getParameters(self):
 		"""
 		Returns the parameters for GUI.
@@ -89,6 +104,14 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			return GUI.GUIBuilder.FILENAME
 		if parameter in ["DistanceToSurface","InsideSurface"]:
 			return types.BooleanType
+			
+	def getInputName(self, n):
+		"""
+		Return the name of the input #n
+		"""			 
+		if n == 1: return "Polydata image"
+		return "Segmented objects" 
+
 			
 			
 	def getDefaultValue(self, parameter):
@@ -123,22 +146,26 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		if not self.objectsBox:
 			self.objectsBox = GUI.CSVListView.CSVListView(self.gui)
+			self.aggregateBox = GUI.CSVListView.CSVListView(self.gui)
 			lib.messenger.connect(self.objectsBox, "item_activated", self.onActivateItem)
 			if self.delayedData:
-				self.objectsBox.setContents(self.delayedData)
+				data, aggrData = self.delayedData
+				self.objectsBox.setContents(data)
+				self.aggregateBox.setContents(aggrData)
 				self.delayedData = None
 			else:
 				self.objectsBox.setContents([self.headers])
 			sizer = wx.BoxSizer(wx.VERTICAL)
 
 			sizer.Add(self.objectsBox, 1)
+			sizer.Add(self.aggregateBox, 1)
 			box = wx.BoxSizer(wx.HORIZONTAL)
 
 			sizer.Add(box)
 			pos = (0, 0)
 			item = gui.sizer.FindItemAtPosition(pos)
 			if item.IsWindow():
-				win = item.GetWindow()
+				win = item.GetWindow()  
 			elif item.IsSizer():
 				win = item.GetSizer()
 			elif item.IsSpacer():
@@ -185,12 +212,17 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		a method to set the dataunit used by this filter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
-		sourceUnits = dataUnit.getSourceDataUnits()
+		self.determineDataSources()
+		
+	def determineDataSources(self):
+		if self.polyDataSource: return
+		
+		sourceUnits = self.dataUnit.getSourceDataUnits()
 		tracksFile = None
 		for unit in sourceUnits:
-			print "Checking",unit
+			print "Checking",unit, unit.getSettings()
 			tracksFileTmp = unit.getSettings().get("StatisticsFile")
-			print "Tracksf ile=",tracksFileTmp
+			print "Tracks File=",tracksFileTmp
 		
 			if unit.getPolyDataAtTimepoint(0) != None:
 				print "Poly data unit=",unit
@@ -201,6 +233,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				tracksFile = tracksFileTmp
 				
 		if tracksFile and os.path.exists(tracksFile):
+			print "Setting objectsfile to",tracksFile
 			self.set("ObjectsFile", tracksFile)
 			self.defaultObjectsFile = tracksFile
 
@@ -210,23 +243,31 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		return 0,999
 		
-	def calculateDistancesToSurface(self, timepoint, objects):
+	def calculateDistancesToSurface(self, timepoint, objects, surfaceCOM):
 		"""
 		Calculate the distance to surface for the given set of objects
 		"""
 	
 		if not self.polyDataSource:
-			return []
+			raise "No polydata source"
+			return [], []
 		polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
 		imgdata = self.polyDataSource.getTimepoint(timepoint)
 		if not polydata:
-			return []
+			print "Failed to read polydata"
+			return [], []
 		locator = vtk.vtkPointLocator()
 		locator.SetDataSet(polydata)
 		locator.BuildLocator()
 		distances = []
-		for object in objects:
-			x, y,z  = object.getCenterOfMass()
+		comDistances = []
+		cx, cy, cz = surfaceCOM
+		voxelSizes = self.segmentedSource.getVoxelSize()
+		voxelSizes = [x*10000000 for x in voxelSizes]
+		
+		for obj in objects:
+			x, y,z  = obj.getCenterOfMass()
+			comDistances.append(obj.distance3D(x,y,z, cx, cy, cz))
 			xs, ys, zs = imgdata.GetSpacing()
 			x*=xs
 			y*=ys
@@ -234,38 +275,66 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			dist = 0 
 			objid = locator.FindClosestPoint(x,y,z)
 			x2,y2,z2 = polydata.GetPoint(objid)
-			dist = object.distance3D(x,y,z,x2,y2,z2)
+			x/=xs
+			y/=ys
+			z/=zs
+			x2/=xs
+			y2/=ys
+			z2/=zs
+			pos1 = x,y,z
+			pos2 = x2,y2,z2
+			x, y, z = [pos1[i]*voxelSizes[i] for i in range(0,3)]
+			x2, y2, z2 = [pos2[i]*voxelSizes[i] for i in range(0,3)]
+			
+			dist = obj.distance3D(x,y,z,x2,y2,z2)
 			distances.append(dist)
-		return distances
+		return distances, comDistances
 
-	def calculateAverageDistancesToSurface(self, timepoint, objects):
+	def calculateAverageDistancesToSurface(self, timepoint, objects, centerOfMass):
 		"""
 		Calculate the distance to surface for the given set of objects
 		"""
-	
+		
 		if not self.polyDataSource:
-			return []
+			raise "No polydata source"
+			return [], []
+
 		polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
 		imgdata = self.segmentedSource.getTimepoint(timepoint)
 		print "Getting imgdata from",self.segmentedSource
 		if not polydata:
-			return []
+			return [], []
+		locator = vtk.vtkOBBTree()
+		locator.SetDataSet(polydata)
+		locator.BuildLocator()
 		voxelSizes = self.segmentedSource.getVoxelSize()
 		voxelSizes = [x*10000000 for x in voxelSizes]
 		print "Setting voxel sizes",voxelSizes
 		distanceCalc = vtkbxd.vtkImageLabelDistanceToSurface()
 		distanceCalc.SetVoxelSize(voxelSizes)
+		distanceCalc.SetMeasurePoint(centerOfMass)
 		distanceCalc.SetInputConnection(0, imgdata.GetProducerPort())
 		distanceCalc.SetInputConnection(1, polydata.GetProducerPort())
+		distanceCalc.SetSurfaceLocator(locator)
 		print "Calculating average distances"
 
 		distanceCalc.Update()
 		distArray = distanceCalc.GetAverageDistanceToSurfaceArray();
 		distances = []
+		comDistances = []
+		inOut=[]
 		for i in range(1, distArray.GetSize()):
 			value = distArray.GetValue(i)
 			distances.append(value)
-		return distances
+		
+		distArray = distanceCalc.GetAverageDistanceToPointArray();
+		insideArray = distanceCalc.GetInsideCountArray();
+		outsideArray = distanceCalc.GetOutsideCountArray();
+		for i in range(1, distArray.GetSize()):
+			value = distArray.GetValue(i)
+			comDistances.append(value)
+			inOut.append((insideArray.GetValue(i), outsideArray.GetValue(i)))
+		return comDistances, distances, inOut
 		
 	def calculateIsInside(self, timepoint, objects):
 		"""
@@ -291,11 +360,11 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			z*=zs
 			inside = locator.InsideOrOutside([x,y,z])
 			if inside == -1:
-				distances.append("Yes")
+				distances.append(True)
 			elif inside == 1:
-				distances.append("No")
+				distances.append(False)
 			else:
-				distances.append("n/a")
+				distances.append(None)
 	
 		return distances		
 	def execute(self, inputs, update = 0, last = 0):
@@ -304,48 +373,136 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
-
+		self.determineDataSources()
+		timepoint = self.getCurrentTimepoint()
+		if not self.polyDataSource or not self.segmentedSource:
+			self.polyDataSource = self.getInputDataUnit(1)
+			self.segmentedSource = self.getInputDataUnit(2)
 		inputImage = self.getInput(1)
+		print "Calculating cell COM"
+		cellImage = self.polyDataSource.getTimepoint(timepoint)
+		cellImage = self.convertVTKtoITK(cellImage)
+		labelShape = itk.LabelShapeImageFilter[cellImage].New()
+		labelShape.SetInput(cellImage)
+		labelShape.Update()
+		
+		centerOfMassObj = labelShape.GetCenterOfGravity(255)
+		centerOfMass = [centerOfMassObj.GetElement(i) for i in range(0,3)]
+		print "Center of mass=",centerOfMass
 		
 		reader = lib.Particle.ParticleReader(self.parameters["ObjectsFile"], 0)
 		objects = reader.read()
 		
-		timepoint = self.getCurrentTimepoint()
 		distances = []
 		insides = []
 		if self.parameters["DistanceToSurface"]:
-			distances = self.calculateDistancesToSurface(timepoint, objects[timepoint])
-			avgDistances = self.calculateAverageDistancesToSurface(timepoint, objects[timepoint])
+			objComDistToSurf, objComToSurfComDistances = self.calculateDistancesToSurface(timepoint, objects[timepoint], centerOfMass)
+			avgDistToCom, avgDistToSurf,objInsideCount = self.calculateAverageDistancesToSurface(timepoint, objects[timepoint], centerOfMass)
 		if self.parameters["InsideSurface"]:
 			insides = self.calculateIsInside(timepoint, objects[timepoint])
 			
+		# Calculated statistics:
+		# 1"Object"						The Object number
+		# 2"Position"					The object COM
+		# 3"Dist.to surface (COM)"		The distance from object COM to surface
+		# 4"Dist.to surface (Voxels)"	The average distance from object voxels to surface
+		# 5"Dist.to Cell COM (COM)"		The distance from object COM to cell surface COM
+		# 6"Dist.to Cell COM (Voxels)"	The avg. distance from each voxel in the object to the cell surface COM
+		# 7"# of voxels inside"			Number of voxels in obj that are inside the cell surface
+		# 8"# of voxels outside"			Number of voxels in obj that are outside the cell surface
+		# 9"COM Inside surface"			Yes/No the object's center of mass is inside the surface
+		
+		self.headers = ["Obj#","Pos", "Dist.(COM-surface)","Avg.Dist.(voxels-surface)","Dist.(Obj COM-Cell COM)", "Avg.Dist.(Voxels-Cell COM)","Vox.count(inside)", "Vox.count(outside)","COM inside surface"]
+
+		# "COMs outside"				Number of objects with center of mass outside the surface
+		# "COMs inside"					Number of objects with center of mass inside the surface
+		# "Avg.COM dist.to surface"		Average distance from object COM to the surface
+		# "Avg.COM dist.to Cell COM"	Average distance from object COM to Cell COM
+		# "# of voxels inside"			Number of voxels inside the surface in total
+		# "# of voxels outside"			Number of voxels outside the surface in total
+		# "Avg. % of voxels inside"		Average of the percentages of object voxels that are inside
+		# "Avg. of all-voxel-distance to surface",		Average of the average distances from each object's each voxel to the cell surface
+		# "Avg. of all-voxel-distance to Cell COM"		Average of the average distances from each object's each voxel to the cell COM
+
+		self.aggregateHeaders = ["COMs outside", "COMs inside","Avg.Dist.(COM-surface)","Avg.Dist.(COM-Cell COM)","# of voxels inside", "# of voxels outside","Avg. % of voxels inside", "Avg. of all-voxel-distance to surface","Avg. of all-voxel-distance to Cell COM"]
+		
+		
+		print "# of objs=", len(objects[timepoint])
+		print "# of dists=",len(objComDistToSurf), len(avgDistToSurf), len(objComToSurfComDistances), len(avgDistToCom)
 		data = [self.headers]
-		self.setResultVariable("DistanceList", distances)
+#		self.setResultVariable("DistanceList", distances)
+		insideCount = 0
+		outsideCount = 0
+		insideCountVox = 0
+		outsideCountVox = 0
+		percInside = 0
+		percInsideCount = 0
 		if timepoint not in self.timepointData:
 			for i, object in enumerate(objects[timepoint]):
 				x,y,z = object.getCenterOfMass()
 				entry = []
-				entry.append("#%d"%object.objectNumber())
-				entry.append("%d,%d,%d"%(int(x),int(y),int(z)))
-				if distances:
-					entry.append("%.2f"%distances[i])
-				else:
-					entry.append("")
-				if avgDistances:
-					entry.append("%.2f"%avgDistances[i])
-				else:
-					entry.append("")
+				entry.append("#%d"%object.objectNumber()) # 1
+				entry.append("%d,%d,%d"%(int(x),int(y),int(z))) # 2
+				entry.append("%.2f"%objComDistToSurf[i]) # 3
+				entry.append("%.2f"%avgDistToSurf[i]) # 4
+				entry.append("%.2f"%objComToSurfComDistances[i]) # 5
+				entry.append("%.2f"%avgDistToCom[i]) # 6
+				entry.append("%d"%objInsideCount[i][0])
+				entry.append("%d"%objInsideCount[i][1])
+				
+				percInside += objInsideCount[i][0]/float(objInsideCount[i][0]+objInsideCount[i][1])
+				percInsideCount += 1
+				
+				insideCountVox += objInsideCount[i][0]
+				outsideCountVox += objInsideCount[i][1]
+				
 				if insides:
-					entry.append(insides[i])
+					isIn="n/a"
+					if insides[i]==True: 
+						isIn="Yes"
+						insideCount += 1
+					elif insides[i]==False: 
+						isIn="No"
+						outsideCount += 1
+					entry.append(isIn)
 				else:
 					entry.append("")
 				data.append(entry)
-			self.timepointData[timepoint] = data
+			
+			percInside /= percInsideCount
+			aggrData = [self.aggregateHeaders]
+			entry = []
+			avgDistanceComToSurf = lib.Math.averageValue(objComDistToSurf)
+			avgDistanceComToCOM = lib.Math.averageValue(objComToSurfComDistances)
+			avgDistToSurface = lib.Math.averageValue(avgDistToSurf)
+			avgDistToCellCOM = lib.Math.averageValue(avgDistToCom)
+			entry.append("%d"%outsideCount)
+			entry.append("%d"%insideCount)
+			entry.append("%.2f"%avgDistanceComToSurf)
+			entry.append("%.2f"%avgDistanceComToCOM)
+			entry.append("%d"%insideCountVox)
+			entry.append("%d"%outsideCountVox)
+			entry.append("%.2f%%"%(percInside*100))
+			entry.append("%.2f"%avgDistToSurf)
+			entry.append("%.2f"%avgDistToCellCOM)
+			aggrData.append(entry)
+			self.setResultVariable("NumObjsOutside", outsideCount)
+			self.setResultVariable("NumObjsInside", insideCount)
+			self.setResultVariable("AvgDistanceCOMtoSurface", avgDistanceComToSurf)
+			self.setResultVariable("AvgDistanceCOMtoCellCOM", avgDistanceComToCOM)
+			self.setResultVariable("NumVoxelsInside", insideCountVox)
+			self.setResultVariable("NumVoxelsOutside", outsideCountVox)
+			self.setResultVariable("PercentageVoxelsInside", percInside)
+			self.setResultVariable("AvgDistanceToSurface", avgDistToSurface)
+			self.setResultVariaable("AvgDistanceToCellCOM", avgDistToCellCOM)
+			self.timepointData[timepoint] = data, aggrData
+			
 		else:
-			data = self.timepointData[timepoint]
+			data, aggrData = self.timepointData[timepoint]
 		if self.objectsBox:
 			self.objectsBox.setContents(data)
+			self.aggregateBox.setContents(aggrData)
 		else:
-			self.delayedData = data
+			self.delayedData = data, aggrData
 			
 		return inputImage

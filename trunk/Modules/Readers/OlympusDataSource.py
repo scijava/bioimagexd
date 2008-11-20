@@ -217,6 +217,8 @@ class OlympusDataSource(DataSource):
 			self.reader.SetDataExtent(0, xDimension - 1, 0, yDimension - 1, 0, zDimension - 1)
 			
 			spacing = self.getSpacing()
+			if spacing[2] == 0:
+				spacing[2] = 1.0
 			self.reader.SetDataSpacing(*spacing)
 		
 		zpat = ""

@@ -58,7 +58,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
 		self.itkFlag = 1
-		self.descs = {"X": "X:", "Y": "Y:", "StatisticsType": "Statistics type:"}
+		self.descs = {"X": "X:", "Y": "Y:", "StatisticsType": "Statistics type:", "Threshold": "Threshold over statistics"}
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
@@ -74,7 +74,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Returns the parameters for GUI.
 		"""
-		return [["",("StatisticsType",)],["Neighborhood (only odd values)",("X","Y")]]
+		return [["",("StatisticsType",)],["Neighborhood (only odd values)",("X","Y")],["",("Threshold",)]]
 
 	def getType(self, param):
 		"""
@@ -96,14 +96,14 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			return self.neighborhood[0]
 		elif param == "Y":
 			return self.neighborhood[1]
+		elif param == "Threshold":
+			return 0
 
 	def getParameterLevel(self, param):
 		"""
 		Returns the level of knowledge for using parameter
 		@param param Parameter name
 		"""
-		if param in ["X","Y","StatisticsType"]:
-			return scripting.COLOR_INTERMEDIATE
 		return scripting.COLOR_BEGINNER
 
 	def getRange(self, param):
@@ -129,6 +129,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.filter = dynamicThresholdFilter
 		dynamicThresholdFilter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
 		dynamicThresholdFilter.SetNeighborhood(self.parameters["X"],self.parameters["Y"])
+		dynamicThresholdFilter.SetThreshold(self.parameters["Threshold"])
 		if self.parameters["StatisticsType"] == MEAN:
 			dynamicThresholdFilter.SetStatisticsTypeMean()
 		else:

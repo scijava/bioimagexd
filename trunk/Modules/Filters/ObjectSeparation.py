@@ -33,9 +33,10 @@ __date__ = "$Date$"
 import lib.ProcessingFilter
 import lib.FilterTypes
 import scripting
-import time
 import types
 import itk
+import time
+import os.path
 
 class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -48,15 +49,11 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.descs = {"Level": "Segmentation Level", "Threshold": "Remove objects with less voxels than:"}
+		self.descs = {"Level": "Segmentation level", "ImageSpacing": "Use image spacing", "Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
 
 		self.ctf = None
 		self.origCTF = None
-		self.distance = None
-		self.mws = None
-		self.mask = None
-		self.relabel = None
 		self.ignoreObjects = 1
 
 	def getDefaultValue(self, parameter):
@@ -64,6 +61,8 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if parameter == "Level":
 			return 1
+		if parameter == "ImageSpacing":
+			return False
 		return 0
 
 	def getType(self, parameter):
@@ -71,12 +70,14 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if parameter == "Threshold":
 			return types.IntType
+		if parameter == "ImageSpacing":
+			return types.BooleanType
 		return types.FloatType
 
 	def getParameters(self):
 		"""
 		"""
-		return [["", ("Level",)], ["Minimum object size (in voxels)", ("Threshold",)]]
+		return [["", ("Level",)], ["", ("ImageSpacing",)], ["Minimum object size (in voxels)", ("Threshold",)]]
 
 	def onRemove(self):
 		"""
@@ -99,65 +100,58 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		ul = eval(typestr)
 		self.eventDesc = "Performing object separation procedure"
 
+		starttime = time.time()
 		# Create new filters
 		invert = itk.InvertIntensityImageFilter[image,image].New()
 		distance = itk.DanielssonDistanceMapImageFilter[image,image].New()
-		#self.distance = itk.DanielssonDistanceMapImageFilter[image,image].New()
 		invdistance = itk.InvertIntensityImageFilter[image,image].New()
-		mws = itk.MorphologicalWatershedImageFilter[image,ul].New()
-		#self.mws = itk.MorphologicalWatershedImageFilter[image,ul].New()
-
-		# Set parameters
-		mws.SetLevel(self.parameters["Level"])
-		#self.mws.SetLevel(self.parameters["Level"])
 
 		# Setup pipeline
 		invert.SetInput(image)
-		#self.distance.SetInput(invert.GetOutput())
 		distance.SetInput(invert.GetOutput())
-		#invdistance.SetInput(self.distance.GetOutput())
+		distance.SetUseImageSpacing(self.parameters["ImageSpacing"])
 		invdistance.SetInput(distance.GetOutput())
-		mws.SetInput(invdistance.GetOutput())
-		#self.mws.SetInput(invdistance.GetOutput())
+		# Take inverted distance result and remove earlier filter for saving
+		# some memory
+		data = invdistance.GetOutput()
+		data.Update()
+		del invert
+		del distance
+		del invdistance
+
+		mws = itk.MorphologicalWatershedImageFilter[data,ul].New()
+		mws.SetLevel(self.parameters["Level"])
+		mws.SetInput(data)
 		data = mws.GetOutput()
-		#data = self.mws.GetOutput()
 
 		# Execute object separation
-		starttime = time.time()
 		data.Update()
 		endtime = time.time()
 		print "Object separation took", endtime - starttime, "seconds"
+		del mws
 
 		# Mask and relabel objects
 		self.eventDesc = "Relabeling objects"
 		mask = itk.MaskImageFilter[data,image,data].New()
 		relabel = itk.RelabelComponentImageFilter[data,data].New()
 		relabel.SetMinimumObjectSize(self.parameters["Threshold"])
-		
+
 		mask.SetInput1(data)
 		mask.SetInput2(image)
 		relabel.SetInput(mask.GetOutput())
 		data = relabel.GetOutput()
-		#self.mask = itk.MaskImageFilter[data,image,data].New()
-		#self.relabel = itk.RelabelComponentImageFilter[data,data].New()
-		#self.relabel.SetMinimumObjectSize(self.parameters["Threshold"])
-		
-		#self.mask.SetInput1(data)
-		#self.mask.SetInput2(image)
-		#self.relabel.SetInput(self.mask.GetOutput())
-		#data = self.relabel.GetOutput()		
 		data.Update()
 
 		# Create ctf for objects
 		self.eventDesc = "Create CTF for objects"
 		n = relabel.GetNumberOfObjects()
-		#n = self.relabel.GetNumberOfObjects()
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 		if not self.ctf or not ncolors or ncolors < n:
-			self.ctf = lib.ImageOperations.watershedPalette(1, n)
-			
-		self.origCTF = self.dataUnit.getColorTransferFunction()
+			filename = os.path.join(scripting.get_preview_dir(),"palette.bxdlut")
+			self.ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1, filename = filename)
+			self.origCTF = self.dataUnit.getColorTransferFunction()
+
 		settings.set("ColorTransferFunction", self.ctf)
 		settings.set("PaletteColors", n)
 

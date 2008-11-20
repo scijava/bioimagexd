@@ -52,19 +52,44 @@ class CannyEdgeFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 		self.itkfilter = None
 		self.eventDesc = "Performing edge detection (canny edge)"
+		self.descs = {"LowerThreshold":"Lower threshold", "UpperThreshold":"Upper threshold","VarianceX":"X","VarianceY":"Y","VarianceZ":"Z",
+		"MaxErrorX":"X", "MaxErrorY":"Y", "MaxErrorZ":"Z",
+		"Rescale":"Rescale data to unsigned char (0-255)"}
 		
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
 		return scripting.COLOR_EXPERIENCED
+
+	def getType(self, parameter):
+		"""
+		Returns the types of parameters for GUI.
+		"""
+		if parameter in [ "LowerThreshold", "UpperThreshold","VarianceX", "VarianceY","VarianceZ","MaxErrorX","MaxErrorY","MaxErrorZ"]:
+			return types.FloatType
+		if parameter == "Rescale":
+			return types.BooleanType
 		
+
+	def getDefaultValue(self, parameter):
+		"""
+		Returns the default value for a parameter
+		"""
+		if parameter == "LowerThreshold":
+			return 0.5
+		if parameter == "UpperThreshold":
+			return 2
+		if parameter in ["VarianceX","VarianceY","VarianceZ"]:
+			return 0
+		if parameter == "Rescale": return True
+		return 0.01
+			
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return []		 
-
+		return [["Threshold",("LowerThreshold","UpperThreshold")],["Output", ("Rescale",)],["Variance",("VarianceX","VarianceY","VarianceZ")],["Maximum Error",("MaxErrorX","MaxErrorY","MaxErrorZ")]]
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
@@ -73,21 +98,25 @@ class CannyEdgeFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 		
 		image = self.getInput(1)
-		image = self.convertVTKtoITK(image,types.FloatType)
+		image = self.convertVTKtoITK(image, types.FloatType)
 		if not self.itkfilter:
 			self.itkfilter = itk.CannyEdgeDetectionImageFilter[image, image].New()
 
 		self.itkfilter.SetInput(image)
+		self.itkfilter.SetVariance((self.parameters["VarianceX"],self.parameters["VarianceY"],self.parameters["VarianceZ"]))
+		self.itkfilter.SetMaximumError((self.parameters["MaxErrorX"],self.parameters["MaxErrorY"],self.parameters["MaxErrorZ"]))
+		self.itkfilter.SetLowerThreshold(self.parameters["LowerThreshold"])
+		self.itkfilter.SetUpperThreshold(self.parameters["UpperThreshold"])
 
-		# Output data is 0.0 or 1.0, rescale this
-		rescale = itk.RescaleIntensityImageFilter.IF3IUC3.New()
-		rescale.SetOutputMinimum(0)
-		rescale.SetOutputMaximum(255)
-		rescale.SetInput(self.itkfilter.GetOutput())
-		data = rescale.GetOutput()
+		data = self.itkfilter.GetOutput()
+		if self.parameters["Rescale"]:
+			# Output data is 0.0 or 1.0, rescale this
+			rescale = itk.RescaleIntensityImageFilter.IF3IUC3.New()
+			rescale.SetOutputMinimum(0)
+			rescale.SetOutputMaximum(255)
+			rescale.SetInput(self.itkfilter.GetOutput())
+			data = rescale.GetOutput()
 		# Update filter everytime
 		data.Update()
-		print "Got data=",data
-
 		
 		return data

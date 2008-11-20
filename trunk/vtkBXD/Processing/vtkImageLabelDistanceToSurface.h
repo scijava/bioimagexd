@@ -36,12 +36,14 @@
 #define __vtkImageLabelDistanceToSurface_h
 
 #include "vtkBXDProcessingWin32Header.h"
+#include "vtkOBBTree.h"
 
 #include "vtkImageData.h"
 #include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
 #include "vtkThreadedImageAlgorithm.h"
 #include "vtkDoubleArray.h"
+#include "vtkUnsignedIntArray.h"
 
 class VTK_BXD_PROCESSING_EXPORT vtkImageLabelDistanceToSurface : public vtkThreadedImageAlgorithm
 {
@@ -57,7 +59,14 @@ public:
 
   vtkDoubleArray* GetAverageDistanceToSurfaceArray() { return DistanceToSurfaceArray; }  
   vtkDoubleArray* GetAverageDistanceToPointArray() { return DistanceToPointArray; }  
+  
+  vtkUnsignedIntArray* GetOutsideCountArray() { return OutsideCountArray; }
+  vtkUnsignedIntArray* GetInsideCountArray() { return InsideCountArray; }
 
+  // Description:
+  // The locator for determining whether a voxel position is inside or outside the surface
+  vtkGetObjectMacro(SurfaceLocator, vtkOBBTree);
+  vtkSetObjectMacro(SurfaceLocator, vtkOBBTree);
 
   int SplitExtent(int splitExt[6], 
                                                 int startExt[6], 
@@ -82,10 +91,7 @@ public:
   vtkSetVectorMacro(VoxelSize,double,3);
   
   // Description:
-  // Set the center of mass of the surface
-  vtkGetVectorMacro(SurfaceCOM,double,3);
-  vtkSetVectorMacro(SurfaceCOM,double,3);
-  
+  // The number of voxels inside 
 
 protected:
   vtkImageLabelDistanceToSurface();
@@ -106,9 +112,12 @@ protected:
 private:
   vtkDoubleArray* DistanceToSurfaceArray;
   vtkDoubleArray* DistanceToPointArray;
+  vtkUnsignedIntArray* InsideCountArray;
+  vtkUnsignedIntArray* OutsideCountArray;
+  vtkOBBTree* SurfaceLocator;
   double MeasurePoint[3];
   double VoxelSize[3];
-  double SurfaceCOM[3];
+  int VoxelsInside;
   int BackgroundLevel;
   vtkImageLabelDistanceToSurface(const vtkImageLabelDistanceToSurface&);  // Not implemented.
   void operator=(const vtkImageLabelDistanceToSurface&);  // Not implemented.

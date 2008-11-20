@@ -78,7 +78,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter == "MarkWatershedLine":
 			return types.BooleanType
-		return types.IntType
+		return types.FloatType
 			 
 		
 	def getParameters(self):
@@ -122,7 +122,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		t = time.time()
 		self.eventDesc = "Performing morphological watershed segmentation"
 		self.itkfilter.SetInput(image)
-		Logging.info("Using watershed level %d"%self.parameters["Level"])
+		Logging.info("Using watershed level %.3f"%self.parameters["Level"])
 		self.itkfilter.SetLevel(self.parameters["Level"])
 				
 		self.setImageType("UL%d"%dim)
@@ -130,6 +130,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Morphological watershed took", time.time() - t, "seconds"
 		t = time.time()
 		data = self.itkfilter.GetOutput()
+
 		self.eventDesc = "Relabeling segmented image"
 		
 		if not self.relabelFilter:
@@ -141,8 +142,8 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.relabelFilter.SetMinimumObjectSize(th)
 	
 		data = self.relabelFilter.GetOutput()
-				
-		self.relabelFilter.Update()
+		data.Update()
+
 		print "Relabeling took", time.time()-t
 		t = time.time()
 		n = self.relabelFilter.GetNumberOfObjects()
@@ -166,4 +167,5 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 			if self.segCtf:
 				self.dataUnit.getSettings().set("ColorTransferFunction", self.segCtf)	 
 		print "Creating palette took",time.time()-t,"seconds"
+
 		return data

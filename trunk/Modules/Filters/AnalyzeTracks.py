@@ -33,6 +33,10 @@ import lib.ProcessingFilter
 import lib.FilterTypes
 import GUI.GUIBuilder
 import GUI.CSVListView
+import types
+import os
+import wx
+
 import os
 import wx
 
@@ -54,7 +58,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.fileUpdated = 0
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 
-		self.descs = {"ResultsFile": "Tracking results file:"}
+		self.descs = {"MinLength":"Minimum length of tracks","ResultsFile": "Tracking results file:"}
 		self.numberOfPoints = None
 		self.particleFile = ""
 
@@ -71,7 +75,8 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )]]
+		return [["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
+				["Track parameters", ("MinLength",)]]
 
 	def getLongDesc(self, parameter):
 		"""
@@ -83,6 +88,8 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""
+		if parameter == "MinLength":
+			return types.IntType
 		return GUI.GUIBuilder.FILENAME
 
 	def getRange(self, parameter):
@@ -98,6 +105,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		if parameter == "ResultsFile":
 			return "track_results.csv"
+		if parameter == "MinLength": return 3
 
 	def getGUI(self, parent, taskPanel):
 		"""
@@ -107,9 +115,11 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		if not self.trackListBox:
 			self.trackListBox = GUI.CSVListView.CSVListView(self.gui)
+			self.aggregateBox = GUI.CSVListView.CSVListView(self.gui)
 			sizer = wx.BoxSizer(wx.VERTICAL)
 
 			sizer.Add(self.trackListBox, 1)
+			sizer.Add(self.aggregateBox, 1)
 			box = wx.BoxSizer(wx.HORIZONTAL)
 
 			self.readTracksBtn = wx.Button(self.gui, -1, "Read tracks")
@@ -157,7 +167,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			return
 		self.track = lib.Track.TrackReader()
 		self.track.readFromFile(filename)
-		self.tracks = self.track.getTracks(0)
+		self.tracks = self.track.getTracks(3)
 		self.showTracks(self.tracks)
 
 	def showTracks(self, tracks):
@@ -169,15 +179,30 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 #		speed
 #		angle (avg of changes)
 
-		rows = [["Length", "Avg. speed", "Directional persistence", "Avg. angle"]]
+		rows = [["# of tps","Length", "Avg. speed", "Directional persistence", "Avg. angle"]]
 		globalmin = 9999999999
 		globalmax = 0
+		lengths = []
+		dps = []
+		speeds = []
+		tpCount = []
+		dpsPerTp={}
 		for i, track in enumerate(tracks):
-			length = track.getNumberOfTimepoints()
+			tps = track.getNumberOfTimepoints()
+			#if tps < self.parameters["MinLength"]:
+			#	continue
+			length = track.getLength()
 			speed = track.getSpeed()
 			dp = track.getDirectionalPersistence()
+			if tps not in dpsPerTp:
+				dpsPerTp[tps]=[]
+			dpsPerTp[tps].append(dp)
+			lengths.append(length)
+			speeds.append(speed)
+			tpCount.append(tps)
+			dps.append(dp)
 			avgang = track.getAverageAngle()
-			row = [length, speed, dp, avgang]
+			row = [tps, length, speed, dp, avgang]
 			mintp, maxtp = track.getTimeRange()
 			if mintp < globalmin:
 				globalmin = mintp
@@ -188,13 +213,23 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 					row.append("")
 					continue
 				val, pos = track.getObjectAtTime(tp)
-				print "    value at tp ", tp, "(pos ", pos, ") is ", val
 				# Set the value at row i, column tp+1 (because there is the column for enabling
 				# this track)
 				row.append(pos)
 			rows.append(row)
 
+		dpkeys = dpsPerTp.keys()
+		dpkeys.sort()
+		for k in dpkeys:
+			print "Avg. dp for tracks of len %d = %.3f"%(k, lib.Math.averageValue(dpsPerTp[k]))
+		
 		for i in range(0, globalmax):
 			rows[0].append("T%d" % i)
 
 		self.trackListBox.setContents(rows)
+		
+		totalRows=[["# of tracks", "Avg tps","Avg. length", "Avg. speed (px/tp)", "Avg. DP"]]
+		avgs=[len(tracks), lib.Math.averageValue(tpCount), lib.Math.averageValue(lengths), lib.Math.averageValue(speeds), lib.Math.averageValue(dps)]
+		totalRows.append(avgs)
+		self.aggregateBox.setContents(totalRows)
+		

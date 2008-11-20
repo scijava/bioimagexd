@@ -47,6 +47,8 @@ vtkImageLabelCount::vtkImageLabelCount()
     BackgroundLevel = 1;
    BackgroundToObjectCountArray = vtkUnsignedLongArray::New();
    ForegroundToBackgroundArray = vtkUnsignedLongArray::New();
+   BgOverlapArray = vtkUnsignedLongArray::New();
+   BgObjectSizeArray = vtkUnsignedLongArray::New();
    ObjectOverlapArray = vtkUnsignedLongArray::New();
    ObjectSizeArray = vtkUnsignedLongArray::New();
 }
@@ -85,6 +87,8 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
   vtkUnsignedLongArray* fgToBgArray = self->GetForegroundToBackgroundArray();
   vtkUnsignedLongArray* ObjectOverlapArray = self->GetObjectOverlapArray();
   vtkUnsignedLongArray* ObjectSizeArray = self->GetObjectSizeArray();
+  vtkUnsignedLongArray* BgSizeArray = self->GetBackgroundObjectSizeArray();
+  vtkUnsignedLongArray* BgOverlapArray = self->GetBackgroundOverlapArray();
   int bgLevel = self->GetBackgroundLevel();
   T fgScalar, bgScalar;
   
@@ -108,8 +112,13 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
   double range[2]; 
   inData[0]->GetScalarRange(range);
   bgToCountArray -> SetNumberOfValues((unsigned long)range[1]+1);
+  BgSizeArray->SetNumberOfValues((unsigned long)range[1]+1);
+  BgOverlapArray->SetNumberOfValues((unsigned long)range[1]+1);
+
   for(int i=0;i<range[1]+1;i++) {
       bgToCountArray->SetValue(i, 0);
+      BgSizeArray->SetValue(i, 0);
+      BgOverlapArray->SetValue(i, 0);
   }  
   inData[1]->GetScalarRange(range);
   fgToBgArray -> SetNumberOfValues((unsigned long)range[1]+1);
@@ -151,8 +160,10 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
             std::list <unsigned long>::iterator result;
             result = std::find(bgintlist->begin(), bgintlist->end(), bgScalar);
             ObjectSizeArray->SetValue(fgScalar, ObjectSizeArray->GetValue(fgScalar)+1);
+            BgSizeArray->SetValue(bgScalar, BgSizeArray->GetValue(bgScalar)+1);
             if(bgScalar && fgScalar) {
             	ObjectOverlapArray->SetValue(fgScalar, ObjectOverlapArray->GetValue(fgScalar)+1);
+            	BgOverlapArray->SetValue(bgScalar, BgOverlapArray->GetValue(bgScalar)+1);
             }
             
             
@@ -160,7 +171,7 @@ void vtkImageLabelCountExecute(vtkImageLabelCount *self, int id,int NumberOfInpu
             {
             	bgintlist->push_back(bgScalar);
             	bgToCountArray->SetValue(bgScalar, bgToCountArray->GetValue(bgScalar)+1);
-   	        	fgToBgArray->SetValue(fgScalar, bgScalar);
+            	fgToBgArray->SetValue(fgScalar, bgScalar);
    	        	printf("Foreground object %d is in background object %d\n", fgScalar, bgScalar);
             } 
             

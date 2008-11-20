@@ -201,7 +201,7 @@ class LIFDataSource(DataSource):
 		if not self.spacing:
 			x, y, z = self.getVoxelSize()
 			if x != 0:
-				self.spacing = [1, y / x, z / x]
+				self.spacing = [1.0, y / x, z / x]
 			else:
 				self.spacing = [0,0,0]
 		return self.spacing

@@ -279,6 +279,7 @@ class OpeningByReconstruction(MorphologicalFilter):
 		self.filter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
 		self.filter.SetKernel(strel)
 		self.filter.SetInput(image)
+
 		output = self.filter.GetOutput()
 		output.Update()
 

@@ -45,15 +45,7 @@ import math
 import codecs
 import csv
 
-def meanstdev(x): 
-	n, mean, std = len(x), 0, 0 
-	for a in x: 
-		mean = mean + a
-	mean = mean / float(n)
-	for a in x: 
-		std = std + (a - mean)**2 
-	std = math.sqrt(std / float(n-1))
-	return mean, std 
+import lib.Math
 
 class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -82,8 +74,11 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.objects = None
 		self.countCounts = {}
 		self.tracksFile = None
-		self.headers = ["Background object","# of objects inside"]
-		self.aggregateHeaders = ["Bg#","Fg#","Coloc % (bg)","Coloc % (fg)",u"Mean \u00B1 SD (fg objs in bg)", "Mode (fg objs in bg)"]
+		self.resultVariables = {"ObjectCount":"Number of background objects","ColocCount":"Number of colocalizing (foreground) objects",
+								"FgToBgColoc":"Percent of colocalizing objects that are colocalized","BgToFgColoc":"Percent of background objects that are colocalized",
+								"PercentOfObjectVoxelsColocalized":"Percentage of voxels in foreground objects that are colocalized with background"}
+		self.headers = ["Background object","# of objects inside", "% of voxels colocalized"]
+		self.aggregateHeaders = ["Bg#","Fg#","Coloc % of fg voxels","Coloc % (bg)","Coloc % (fg)",u"Mean \u00B1 SD (fg objs in bg)", "Mode (fg objs in bg)"]
 		
 	def getParameters(self):
 		"""
@@ -264,6 +259,10 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		data = [self.headers[:]]
 		countArray = labelcount.GetBackgroundToObjectCountArray()
 		fgToBgArray = labelcount.GetForegroundToBackgroundArray()
+		bgObjSizeArray = labelcount.GetBackgroundObjectSizeArray()
+		fgObjSizeArray = labelcount.GetObjectSizeArray()
+		bgOverlapArray = labelcount.GetBackgroundOverlapArray()
+		overlapArray = labelcount.GetObjectOverlapArray()
 
 		fgCount = fgToBgArray.GetSize()
 		bgCount = countArray.GetSize()
@@ -282,35 +281,56 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		fgObjCounts = []
 		self.countCounts = {}
 		
-		for i in range(0, bgCount+1):
+		for i in range(1, bgCount):
 			entry = []
 			entry.append("#%d"%i)
+			bgSize = bgObjSizeArray.GetValue(i)
+			bgOverlap = bgOverlapArray.GetValue(i)
 			objcount = countArray.GetValue(i)
 			self.countCounts[objcount] = self.countCounts.get(objcount,0)+1
 			fgObjCounts.append(objcount)
 			if objcount:
 				bgColocCount+=1
 			entry.append("%d objects"%objcount)
+			entry.append("%.2f%%"%(100*bgOverlap/float(bgSize)))
 			totalCount += objcount
 			data.append(entry)
-			dataentry = [i, objcount]
+			dataentry = [i, objcount, bgOverlap/float(bgSize)]
 			self.items[i] = dataentry
+			
+		fgColocVoxCount = 0
+		fgTotalVoxCount = 0
+		for i in range(1, fgCount):
+			fgOverlap = overlapArray.GetValue(i)
+			fgSize = fgObjSizeArray.GetValue(i)
+			fgColocVoxCount += fgOverlap
+			fgTotalVoxCount += fgSize
+		fgVoxColoc = fgColocVoxCount/float(fgTotalVoxCount)
+			
+		print "Total nuber of voxels=", fgTotalVoxCount
+		print "Number of voxels that overlap background=", fgColocVoxCount
+		print "Percent of coloc=", 100*fgColocVoxCount /float(fgTotalVoxCount)
 		
 		
 		agg = []
 		agg.append(bgCount)
 		agg.append(fgCount)
+		agg.append("%.2f%%"%(100*fgVoxColoc))
 		agg.append("%.2f%%"%((float(bgColocCount) / bgCount)*100))
 		agg.append("%.2f%%"%((float(fgColocCount) / fgCount)*100))
-		mean, sd = meanstdev(fgObjCounts)
+		mean, sd = lib.Math.meanstdev(fgObjCounts)
 		largest = 0
 		for count in self.countCounts.keys():
 			if self.countCounts[count] > largest:
 				largest = count
 		agg.append(u"%.2f \u00B1 %.2f"%(mean,sd))
 		agg.append("%d"%largest)
-		
-		self.aggregateData = [bgCount, fgCount, float(bgColocCount) / bgCount, float(fgColocCount) / fgCount, mean, sd, largest]
+		self.setResultVariable("ObjectCount", bgCount)
+		self.setResultVariable("ColocCount", fgCount)
+		self.setResultVariable("FgToBgColoc", float(bgColocCount) / bgCount)
+		self.setResultVariable("BgToFgColoc", float(fgColocCount)/fgCount)
+		self.setResultVariable("PercentOfObjectVoxelsColocalized", fgVoxColoc)
+		self.aggregateData = [bgCount, fgCount, fgVoxColoc, float(bgColocCount) / bgCount, float(fgColocCount) / fgCount, mean, sd, largest]
 
 		aggregateData.append(agg)
 		if self.objectsBox:

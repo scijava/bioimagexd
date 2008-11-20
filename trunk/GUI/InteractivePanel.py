@@ -37,6 +37,7 @@ import math
 import wx.lib.ogl as ogl
 import platform
 import wx
+import bxdevents
 
 import GUI.PainterHelpers
 import GUI.OGLAnnotations
@@ -173,8 +174,10 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp)
 		lib.messenger.connect(None, "update_helpers", self.onUpdateHelpers)
-		lib.messenger.connect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
+		lib.messenger.connect(None, bxdevents.DATA_DIMENSIONS_CHANGED, self.onUpdateDataDimensions)
 		lib.messenger.connect(None, "mask_changed", self.onMaskSelectionChanged)
+		lib.messenger.connect(None, bxdevents.TRANSLATE_DATA, self.onApplyTranslation)
+			
 
 	def deregister(self):
 		"""
@@ -182,7 +185,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		try:
 			lib.messenger.disconnect(None, "update_helpers", self.onUpdateHelpers)
-			lib.messenger.disconnect(None, "data_dimensions_changed", self.onUpdateDataDimensions)
+			lib.messenger.disconnect(None, bxdevents.DATA_DIMENSIONS_CHANGED, self.onUpdateDataDimensions)
 		except:
 			pass
 
@@ -303,7 +306,18 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if self.interpolation != interpolation:
 			self.interpolation = interpolation
 			self.updatePreview()
-	
+	def onApplyTranslation(self, obj, event, translation):
+		"""
+		Apply a translation to the annotations
+		"""
+		dx,dy,dz = translation
+		print "\nApplying a translation of ",dx,dy
+		shapelist = self.diagram.GetShapeList()
+		for shape in shapelist:
+			sx, sy = shape.GetX(), shape.GetY()
+			shape.SetX(sx+dx)
+			shape.SetY(sy+dy)
+		self.repaintHelpers()
 	
 	def setOffset(self, x, y):
 		"""
