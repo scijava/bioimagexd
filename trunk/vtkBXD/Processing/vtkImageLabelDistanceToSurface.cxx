@@ -50,12 +50,16 @@ vtkStandardNewMacro(vtkImageLabelDistanceToSurface);
 // Construct object to extract all of the input data.
 vtkImageLabelDistanceToSurface::vtkImageLabelDistanceToSurface()
 {
-    BackgroundLevel = 1;
-    DistanceToSurfaceArray = vtkDoubleArray::New();
-    DistanceToPointArray = vtkDoubleArray::New();
-    InsideCountArray = vtkUnsignedIntArray::New();
-    OutsideCountArray = vtkUnsignedIntArray::New();
-    MeasurePoint[0] = MeasurePoint[1] = MeasurePoint[2] = 0;
+  BackgroundLevel = 1;
+  this->DistanceToSurfaceArray = vtkDoubleArray::New();
+  this->DistanceToPointArray = vtkDoubleArray::New();
+  this->InsideCountArray = vtkUnsignedIntArray::New();
+  this->OutsideCountArray = vtkUnsignedIntArray::New();
+  this->MeasurePoint[0] = this->MeasurePoint[1] = this->MeasurePoint[2] = 0;
+  this->SurfaceLocator = 0;
+  this->VoxelSize[0] = this->VoxelSize[1] = this->VoxelSize[2] = 0.0;
+  this->VoxelsInside = 0;
+  this->BackgroundLevel = 0;
   this->SetNumberOfInputPorts(2);
 }
 
@@ -79,18 +83,15 @@ template <class T>
 void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self, int id,int NumberOfInputs,
                            vtkImageData **inData,vtkImageData*outData,vtkPolyData* surface, int outExt[6],
                             T*)
-{    
-  int uExtent[6];
+{
   vtkIdType inIncX,inIncY,inIncZ;
-  vtkIdType maskIncX,maskIncY,maskIncZ;
   int maxX,maxY,maxZ,maxC;
   int idxX,idxY,idxZ,idxC;
   T *fgPtr;
   
   int inside = 0;
   unsigned long count = 0;
-  unsigned long target;       
-
+  unsigned long target;
 
   double*MeasurePoint = self->GetMeasurePoint();
   vtkDoubleArray* distanceToSurfaceArray = self->GetAverageDistanceToSurfaceArray();
@@ -106,7 +107,6 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
   
   fgPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
   
-  int wext[6];
   double Spacing[3];
   double Point[3], Point2[3];
   printf("Calculating average distance...\n");
@@ -114,7 +114,6 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
   inData[0]->GetSpacing(Spacing);
   printf("Spacing = %f, %f, %f\n", Spacing[0], Spacing[1], Spacing[2]);
   outData->DeepCopy(inData[0]);
-
   
   inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
   maxX = outExt[1] - outExt[0];
@@ -123,7 +122,6 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
   maxC = inData[0]->GetNumberOfScalarComponents();
 
   unsigned long n = 0,  numberOfValues = 0;
-  double avg;
 
   double range[2]; 
 
@@ -148,8 +146,7 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
   
   vtkPointLocator *locator = vtkPointLocator::New();
   locator->SetDataSet(surface);
-  locator->BuildLocator();
-  
+  locator->BuildLocator();  
   
   target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
   target++;
@@ -213,8 +210,6 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
 				distance = sqrt(vtkMath::Distance2BetweenPoints(Point, Point2));
 				
 				distanceToPointArray->SetValue(fgScalar, distanceToPointArray->GetValue(fgScalar)+distance);
-
-
 	         }
           }
           fgPtr+=inIncX;

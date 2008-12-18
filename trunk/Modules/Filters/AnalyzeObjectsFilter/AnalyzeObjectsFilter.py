@@ -4,6 +4,7 @@ import scripting
 
 import GUI.GUIBuilder
 import itk
+import vtk
 import vtkbxd
 import WatershedStatisticsList
 import wx
@@ -69,10 +70,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""	   
-		if not self.dataUnit:
-			return "statistics.csv"
-		else:
-			return self.dataUnit.getName() + ".csv"
+		#if not self.dataUnit:
+		return "statistics.csv"
+		#else:
+		#	return self.dataUnit.getName() + ".csv"
 		
 	def getType(self, parameter):
 		"""
@@ -200,6 +201,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
+
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
 		print "Input for label shape=",self.getInputDataUnit(1)

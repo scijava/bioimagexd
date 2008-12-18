@@ -119,8 +119,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 		if not self.origCtf or not ncolors or ncolors < n:
-			filename = os.path.join(scripting.get_preview_dir(),"palette.bxdlut")
-			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1, filename = filename)
+			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
 			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)

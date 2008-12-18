@@ -146,13 +146,13 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		imagedata = self.getInput(1)
 		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
 		imagedata.Update()
-		print "Imagedata=",imagedata
+		#print "Imagedata=",imagedata
 		self.vtkfilter.SetInput(imagedata)
 		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
 		data = self.vtkfilter.GetOutput()
 		translate = vtk.vtkImageTranslateExtent()
 		translate.SetInput(data)
-		print "input data=",data
+		#print "input data=",data
 		translation = [0,0,0]
 		if minz > 0:
 			translation[2] = -minz
@@ -161,14 +161,14 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		if miny > 0:
 			translation[1] = -miny
 		newTranslation = translation[:]
-		if self.translation:
-			dx = self.translation[0]-minx
-			dy = self.translation[1]-miny
-			dz = self.translation[2]-minz
-			newTranslation = [dx,dy,dz]
+		#if self.translation:
+		#	dx = self.translation[0]-minx
+		#	dy = self.translation[1]-miny
+		#	dz = self.translation[2]-minz
+		#	newTranslation = [dx,dy,dz]
 		self.translation = newTranslation
 		
-		lib.messenger.send(None, bxdevents.TRANSLATE_DATA, tuple(self.translation))
+		#lib.messenger.send(None, bxdevents.TRANSLATE_DATA, tuple(self.translation))
 		if translation != [0,0,0]:
 			translate.SetTranslation(tuple(translation))
 			#translate.SetOutputOrigin(0,0,0)

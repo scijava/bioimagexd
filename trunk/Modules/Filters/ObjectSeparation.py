@@ -145,11 +145,11 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		# Create ctf for objects
 		self.eventDesc = "Create CTF for objects"
 		n = relabel.GetNumberOfObjects()
+		print "Number of objects",n
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 		if not self.ctf or not ncolors or ncolors < n:
-			filename = os.path.join(scripting.get_preview_dir(),"palette.bxdlut")
-			self.ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1, filename = filename)
+			self.ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
 			self.origCTF = self.dataUnit.getColorTransferFunction()
 
 		settings.set("ColorTransferFunction", self.ctf)

@@ -83,8 +83,6 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.headers = ["Object","Position","Dist.to surface (COM)","Dist.to surface (Voxels)","Dist.to Cell COM (COM)","Dist.to Cell COM (Voxels)","# of voxels inside", "# of voxels outside","COM Inside surface"]
 		self.aggregateHeaders = ["COMs outside", "COMs inside","Avg.COM dist.to surface","Avg.COM dist.to Cell COM","# of voxels inside", "# of voxels outside","Avg. % of voxels inside", "Avg. of all-voxel-distance to surface","Avg. of all-voxel-distance to Cell COM"]
 		
-		
-		
 	def getParameters(self):
 		"""
 		Returns the parameters for GUI.
@@ -112,8 +110,6 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if n == 1: return "Polydata image"
 		return "Segmented objects" 
 
-			
-			
 	def getDefaultValue(self, parameter):
 		"""
 		Description:
@@ -203,7 +199,6 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		w.writerow(["Surface data analysis for",self.dataUnit.getName(), "source channels:"]+names+[ "timepoint",self.getCurrentTimepoint()])
 		w.writerow([])
 		
-
 		self.objectsBox.writeOut(w, [self.headers])
 		f.close()
 		
@@ -212,30 +207,40 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		a method to set the dataunit used by this filter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
-		self.determineDataSources()
-		
-	def determineDataSources(self):
-		if self.polyDataSource: return
-		
+		# Bugi BXC-tiedostosta luetuissa tiedoissa, katso vaikka seuraava
+		# tulostus
 		sourceUnits = self.dataUnit.getSourceDataUnits()
-		tracksFile = None
 		for unit in sourceUnits:
 			print "Checking",unit, unit.getSettings()
 			tracksFileTmp = unit.getSettings().get("StatisticsFile")
 			print "Tracks File=",tracksFileTmp
+
+		#self.determineDataSources()
 		
-			if unit.getPolyDataAtTimepoint(0) != None:
-				print "Poly data unit=",unit
-				self.polyDataSource = unit
-			elif tracksFileTmp:
-				self.segmentedSource = unit
-				print "Segmented source = ",unit
-				tracksFile = tracksFileTmp
-				
-		if tracksFile and os.path.exists(tracksFile):
-			print "Setting objectsfile to",tracksFile
-			self.set("ObjectsFile", tracksFile)
-			self.defaultObjectsFile = tracksFile
+	#def determineDataSources(self):
+	#	"""
+	#	"""
+	#	if self.polyDataSource: return
+
+	#	sourceUnits = self.dataUnit.getSourceDataUnits()
+	#	tracksFile = None
+	#	for unit in sourceUnits:
+	#		print "Checking",unit, unit.getSettings()
+	#		tracksFileTmp = unit.getSettings().get("StatisticsFile")
+	#		print "Tracks File=",tracksFileTmp
+		
+	#		if unit.getPolyDataAtTimepoint(0) != None:
+	#			print "Poly data unit=",unit
+	#			self.polyDataSource = unit
+	#		elif tracksFileTmp:
+	#			self.segmentedSource = unit
+	#			print "Segmented source = ",unit
+	#			tracksFile = tracksFileTmp
+
+		#if tracksFile and os.path.exists(tracksFile):
+		#	print "Setting objectsfile to",tracksFile
+		#	self.set("ObjectsFile", tracksFile)
+		#	self.defaultObjectsFile = tracksFile
 
 	def getRange(self, param):
 		"""
@@ -243,16 +248,15 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		return 0,999
 		
-	def calculateDistancesToSurface(self, timepoint, objects, surfaceCOM):
+	def calculateDistancesToSurface(self, polydata, imgdata, objects, surfaceCOM):
 		"""
 		Calculate the distance to surface for the given set of objects
-		"""
-	
-		if not self.polyDataSource:
-			raise "No polydata source"
-			return [], []
-		polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
-		imgdata = self.polyDataSource.getTimepoint(timepoint)
+		"""	
+		#if not self.polyDataSource:
+		#	raise "No polydata source"
+		#	return [], []
+		#polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
+		#imgdata = self.polyDataSource.getTimepoint(timepoint)
 		if not polydata:
 			print "Failed to read polydata"
 			return [], []
@@ -288,20 +292,20 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 			dist = obj.distance3D(x,y,z,x2,y2,z2)
 			distances.append(dist)
+			
 		return distances, comDistances
 
-	def calculateAverageDistancesToSurface(self, timepoint, objects, centerOfMass):
+	def calculateAverageDistancesToSurface(self, polydata, imgdata, objects, centerOfMass):
 		"""
 		Calculate the distance to surface for the given set of objects
 		"""
-		
-		if not self.polyDataSource:
-			raise "No polydata source"
-			return [], []
+		#if not self.polyDataSource:
+		#	raise "No polydata source"
+		#	return [], []
 
-		polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
-		imgdata = self.segmentedSource.getTimepoint(timepoint)
-		print "Getting imgdata from",self.segmentedSource
+		#polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
+		#imgdata = self.segmentedSource.getTimepoint(timepoint)
+		#print "Getting imgdata from",self.segmentedSource
 		if not polydata:
 			return [], []
 		locator = vtk.vtkOBBTree()
@@ -334,17 +338,17 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			value = distArray.GetValue(i)
 			comDistances.append(value)
 			inOut.append((insideArray.GetValue(i), outsideArray.GetValue(i)))
+			
 		return comDistances, distances, inOut
 		
-	def calculateIsInside(self, timepoint, objects):
+	def calculateIsInside(self, polydata, imgdata, objects):
 		"""
 		Calculate whether the objects are on the inside of the surface
 		"""
-	
-		if not self.polyDataSource:
-			return []
-		polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
-		imgdata = self.polyDataSource.getTimepoint(timepoint)
+		#if not self.polyDataSource:
+		#	return []
+		#polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
+		#imgdata = self.polyDataSource.getTimepoint(timepoint)
 		if not polydata:
 			return []
 		locator = vtk.vtkOBBTree()
@@ -366,22 +370,31 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			else:
 				distances.append(None)
 	
-		return distances		
+		return distances
+	
+
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute filter in input image and return output image
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
-		self.determineDataSources()
+		
+		#self.determineDataSources()
 		timepoint = self.getCurrentTimepoint()
-		if not self.polyDataSource or not self.segmentedSource:
-			self.polyDataSource = self.getInputDataUnit(1)
-			self.segmentedSource = self.getInputDataUnit(2)
+		#if not self.polyDataSource or not self.segmentedSource:
+		self.polyDataSource = self.getInputDataUnit(1)
+		self.segmentedSource = self.getInputDataUnit(2)
 		inputImage = self.getInput(1)
 		print "Calculating cell COM"
-		cellImage = self.polyDataSource.getTimepoint(timepoint)
-		cellImage = self.convertVTKtoITK(cellImage)
+
+		if self.polyDataSource.dataSource:
+			imgdata = self.polyDataSource.getTimepoint(timepoint)
+			polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
+		else: # If from pipeline
+			imgdata = inputImage
+			polydata = self.getPolyDataInput(1)
+		cellImage = self.convertVTKtoITK(imgdata)
 		labelShape = itk.LabelShapeImageFilter[cellImage].New()
 		labelShape.SetInput(cellImage)
 		labelShape.Update()
@@ -389,17 +402,30 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		centerOfMassObj = labelShape.GetCenterOfGravity(255)
 		centerOfMass = [centerOfMassObj.GetElement(i) for i in range(0,3)]
 		print "Center of mass=",centerOfMass
-		
-		reader = lib.Particle.ParticleReader(self.parameters["ObjectsFile"], 0)
-		objects = reader.read()
+
+		# Read objects first from users input file, then from polydata objects
+		# StatisticsFile, then from csv found in polydata file's directory,
+		# and finally create again from polydata
+		particleFile = ""
+		objectsFile = self.parameters["ObjectsFile"]
+		if os.path.exists(objectsFile):
+			particleFile = objectsFile
+		else:
+			particleFile = self.segmentedSource.getSettings().get("StatisticsFile")
+
+		if particleFile != "":
+			reader = lib.Particle.ParticleReader(particleFile, 0)
+			objects = reader.read()
+		else:
+			pass # This need to be implemented
 		
 		distances = []
 		insides = []
 		if self.parameters["DistanceToSurface"]:
-			objComDistToSurf, objComToSurfComDistances = self.calculateDistancesToSurface(timepoint, objects[timepoint], centerOfMass)
-			avgDistToCom, avgDistToSurf,objInsideCount = self.calculateAverageDistancesToSurface(timepoint, objects[timepoint], centerOfMass)
+			objComDistToSurf, objComToSurfComDistances = self.calculateDistancesToSurface(polydata, imgdata, objects[timepoint], centerOfMass)
+			avgDistToCom, avgDistToSurf,objInsideCount = self.calculateAverageDistancesToSurface(polydata, self.segmentedSource.getTimepoint(timepoint), objects[timepoint], centerOfMass)
 		if self.parameters["InsideSurface"]:
-			insides = self.calculateIsInside(timepoint, objects[timepoint])
+			insides = self.calculateIsInside(polydata, imgdata, objects[timepoint])
 			
 		# Calculated statistics:
 		# 1"Object"						The Object number
@@ -430,6 +456,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "# of objs=", len(objects[timepoint])
 		print "# of dists=",len(objComDistToSurf), len(avgDistToSurf), len(objComToSurfComDistances), len(avgDistToCom)
 		data = [self.headers]
+		aggrData = [self.aggregateHeaders]
 #		self.setResultVariable("DistanceList", distances)
 		insideCount = 0
 		outsideCount = 0
@@ -437,7 +464,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		outsideCountVox = 0
 		percInside = 0
 		percInsideCount = 0
-		if timepoint not in self.timepointData:
+		if timepoint not in self.timepointData or True: # Fixed to work in BBA
 			for i, object in enumerate(objects[timepoint]):
 				x,y,z = object.getCenterOfMass()
 				entry = []
@@ -470,7 +497,6 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				data.append(entry)
 			
 			percInside /= percInsideCount
-			aggrData = [self.aggregateHeaders]
 			entry = []
 			avgDistanceComToSurf = lib.Math.averageValue(objComDistToSurf)
 			avgDistanceComToCOM = lib.Math.averageValue(objComToSurfComDistances)
@@ -483,7 +509,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			entry.append("%d"%insideCountVox)
 			entry.append("%d"%outsideCountVox)
 			entry.append("%.2f%%"%(percInside*100))
-			entry.append("%.2f"%avgDistToSurf)
+			entry.append("%.2f"%avgDistToSurface)
 			entry.append("%.2f"%avgDistToCellCOM)
 			aggrData.append(entry)
 			self.setResultVariable("NumObjsOutside", outsideCount)
@@ -494,7 +520,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.setResultVariable("NumVoxelsOutside", outsideCountVox)
 			self.setResultVariable("PercentageVoxelsInside", percInside)
 			self.setResultVariable("AvgDistanceToSurface", avgDistToSurface)
-			self.setResultVariaable("AvgDistanceToCellCOM", avgDistToCellCOM)
+			self.setResultVariable("AvgDistanceToCellCOM", avgDistToCellCOM)
 			self.timepointData[timepoint] = data, aggrData
 			
 		else:

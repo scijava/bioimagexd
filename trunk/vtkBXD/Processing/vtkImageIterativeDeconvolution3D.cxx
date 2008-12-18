@@ -129,7 +129,7 @@ void vtkImageIterativeDeconvolution3DExecute(vtkImageIterativeDeconvolution3D *s
     
     T scalar = 0, currScalar = 0;
     int maxval = 0, n = 0;
-    maxval=int(pow(2,8*sizeof(T)))-1;
+    maxval=int(pow(2.0,8.0*sizeof(T)))-1;
     T val;
     
     inData[0][0]->GetDimensions(dims);

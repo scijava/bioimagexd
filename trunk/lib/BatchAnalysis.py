@@ -35,7 +35,6 @@ import lib.FilterBasedModule
 import codecs
 import csv
 import ConfigParser
-import zipfile
 import os
 import re
 import scripting

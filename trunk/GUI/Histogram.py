@@ -461,11 +461,12 @@ class Histogram(wx.Panel):
 		g = int(g)
 		b = int(b)
 
-		overlayWidth = int((upper1 - lower1) / self.scale)
+		overlayWidth = abs(int((upper1 - lower1) / self.scale))
+
 		borders = lib.ImageOperations.getOverlayBorders(overlayWidth, 150, (r, g, b), 80)
 		borders = borders.ConvertToBitmap()
 		dc.DrawBitmap(borders, self.xoffset + int(lower1 / self.scale), 0, 1)
-		
+
 		overlay = lib.ImageOperations.getOverlay(overlayWidth, 150, (r, g, b), 32)
 		overlay = overlay.ConvertToBitmap()
 		dc.DrawBitmap(overlay, self.xoffset + int(lower1 / self.scale), 0, 1)

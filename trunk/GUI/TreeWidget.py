@@ -136,6 +136,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.groupedDataUnit = None
 		self.unmarkItems(self.groupedItems, "}")
 		self.groupedItems = []
+
 	def onGroupDataset(self, event):
 		"""
 		Add the selected dataunit into a grouping
@@ -188,7 +189,12 @@ class TreeWidget(wx.SashLayoutWindow):
 		if obj in self.dataUnitToPath:
 			del self.dataUnitToPath[obj]
 		self.removeParents = []
-		if self.items[unit] <= 0:            
+		if self.items[unit] <= 0:
+			conf = Configuration.getConfiguration()
+			lst = self.items.keys()
+			lst.remove(unit)
+			conf.setConfigItem("FileList", "General", lst)
+			conf.writeSettings()
 			del self.items[unit]
 			parent = self.tree.GetItemParent(item)
 			#self.tree.Delete(parent)
@@ -233,8 +239,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.removeParents = removeParents
 			wx.CallAfter(self.removeEmptyParents)
 		else:
-			self.removeParents = []
-			
+			self.removeParents = []			
 		
 					
 	def onCloseDataset(self, event):
@@ -257,8 +262,7 @@ class TreeWidget(wx.SashLayoutWindow):
 					cobj = self.tree.GetPyData(citem)
 					self.closeItem(citem, cobj)
 					citem = nitem
-					del cobj
-					
+					del cobj					
 				
 			if obj != "1":
 				lib.messenger.send(None, "delete_dataset", obj)
@@ -539,7 +543,7 @@ class TreeWidget(wx.SashLayoutWindow):
 	def getSelectedDataUnits(self):
 		"""
 		Returns the selected dataunits
-		"""            
+		"""
 		if self.groupedDataUnit:
 			return [self.groupedDataUnit]
 		items = self.tree.GetSelections()
@@ -618,7 +622,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 	def onSelectionChanged(self, event = None):
 		"""
-		A event handler called when user selects and item.
+		A event handler called when user selects an item.
 		"""      
 		item = event.GetItem()
 		self.lastSelection = item

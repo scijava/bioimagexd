@@ -60,13 +60,6 @@ class PluginLoader:
 		return a plugin module of a given type with the given name
 		"""
 		return self.getPluginItem(variety, name, 2)
-
-	def getPluginModule(self, variety, name):
-		"""
-		return a plugin module of a given type with the given name
-		"""
-		return self.getPluginItem(variety, name, 2)
-
 		
 	def getPluginClass(self, variety, name):
 		"""
