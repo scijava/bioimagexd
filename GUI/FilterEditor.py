@@ -406,7 +406,9 @@ class FilterEditor(wx.Panel):
 			self.presetMenu.AppendSeparator()
 			self.Bind(wx.EVT_MENU, self.onSavePreset, id = addId)
 			
-			files = glob.glob("Presets/*.bxp")
+			presetDir = scripting.get_preset_dir()
+			presetFiles = os.path.join(presetDir,"*.bxp")
+			files = glob.glob(presetFiles)
 			for file in files:
 				name = ".".join(os.path.basename(file).split(".")[:-1])
 				fileId = wx.NewId()
@@ -442,7 +444,10 @@ class FilterEditor(wx.Panel):
 		"""
 		save the procedure list as preset
 		"""
-		filename = os.path.join("Presets", name + ".bxp")
+		presetDir = scripting.get_preset_dir()
+		if not os.access(presetDir, os.F_OK):
+			os.mkdir(presetDir)
+		filename = os.path.join(presetDir, name + ".bxp")
 		parser = ConfigParser.RawConfigParser()
 		parser.optionxform = str
 		self.filterList.writeOut(parser)

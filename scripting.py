@@ -334,3 +334,11 @@ def get_module_dir():
 	else:
 		return "Modules"
 
+def get_preset_dir():
+	"""
+	Returns the path where presets are located
+	"""
+	configDir = get_config_dir()
+	presetDir = os.path.join(configDir,"Presets")
+	return presetDir
+	

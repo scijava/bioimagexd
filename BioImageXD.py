@@ -61,17 +61,20 @@ if todir:
 
 if not todir:
 	todir = os.getcwd()
+	
 if platform.system()=="Windows":
 	itkpkg = os.path.join(todir, "ITK-pkg")
 	if os.path.exists(itkpkg):
 		itklibdir = os.path.join(itkpkg, "lib")
+		itklibdir = os.path.join(itklibdir, "Release")
 		itkpydir = os.path.join(itkpkg, "Python")
+		itkpydir = os.path.join(itkpydir, "Release")
 		sys.path.insert(0, itklibdir)
-		sys.path.insert(0,itkpydir)
+		sys.path.insert(0, itkpydir)
 		path = os.getenv("PATH")
 		path = path + os.path.pathsep + itklibdir
 		os.putenv("PATH", path)
-		
+
 if scripting.main_is_frozen() and platform.system()=="Darwin":
 	import site
 	site.addsitedir(os.environ["RESOURCEPATH"]+"/InsightToolkit/WrapITK/Python")

@@ -286,8 +286,8 @@ class BXCDataSource(DataSource):
 		# resume data processing. First, we return the DataUnit to the caller,
 		# so it can set a reference to it:
 		dataunit = DataUnit()
-		
 		settings = DataUnitSettings()
+		settings.setType("")
 		settings = settings.readFrom(self.parser)
 		self.originalDimensions = eval(settings.get("Dimensions"))
 		self.settings = settings

@@ -531,7 +531,7 @@ class ProcessingFilter:
 			self.dataUnit = scripting.combinedDataUnit
 		# By default, asking for say, input number 1 gives you 
 		# the first (0th actually) input mapping
-		# these can be thought of as being specified in the GUI where you have as many 
+		# these can be thought of as being specified in the GUI where you have as many
 		# selections of input data as the filter defines (with the variable numberOfInputs)
 		if mapIndex not in self.inputMapping:
 			self.setInputChannel(mapIndex, mapIndex-1)

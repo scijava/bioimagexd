@@ -273,6 +273,8 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Execute the filter with given inputs and return the output
 		"""
+		import pdb
+		pdb.set_trace()
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		images = [self.getInput(x) for x in range(1,3)]
@@ -313,16 +315,16 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.colocAutoThreshold.SetUpperThresholdCh1(self.parameters["UpperThresholdCh1"])
 		self.colocAutoThreshold.SetUpperThresholdCh2(self.parameters["UpperThresholdCh2"])
 	
-		if self.oldThresholds != (ch1Lower, ch1Upper, ch2Lower, ch2Upper):
-			Logging.info("Calculating statistics")
-			self.colocAutoThreshold.Update()
+		#if self.oldThresholds != (ch1Lower, ch1Upper, ch2Lower, ch2Upper):
+		#	Logging.info("Calculating statistics")
+		#	self.colocAutoThreshold.Update()
 
-			for variable in self.resultVariables.keys():
-				if hasattr(self.colocAutoThreshold, "Get%s"%variable):
-					self.setResultVariable(variable, eval("self.colocAutoThreshold.Get%s()"%variable))
+		#	for variable in self.resultVariables.keys():
+		#		if hasattr(self.colocAutoThreshold, "Get%s"%variable):
+		#			self.setResultVariable(variable, eval("self.colocAutoThreshold.Get%s()"%variable))
 
 
-			self.oldThresholds = self.parameters["LowerThresholdCh1"], self.parameters["UpperThresholdCh1"], self.parameters["LowerThresholdCh2"], self.parameters["UpperThresholdCh2"]
+		#	self.oldThresholds = self.parameters["LowerThresholdCh1"], self.parameters["UpperThresholdCh1"], self.parameters["LowerThresholdCh2"], self.parameters["UpperThresholdCh2"]
 		
 		# This is used if one bit colocalization is selected
 		self.colocFilter.SetOutputScalarValue(self.parameters["ColocValue"])

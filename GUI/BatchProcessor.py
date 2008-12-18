@@ -664,7 +664,7 @@ class BatchProcessor(wx.Frame):
 	def onClose(self, evt):
 		"""
 		Close the batch processor
-		"""	  
+		"""
 		scripting.unregisterDialog("BatchProcessor")
 		scripting.visualizer.enable(1)
 		self.Destroy()

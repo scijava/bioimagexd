@@ -175,6 +175,8 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		"""
 		sources = dataUnit.getSourceDataUnits()
 		for s in sources:
+			if "FilterList" not in s.getSettings().registered:
+				s.getSettings().register("FilterList")
 			s.getSettings().set("FilterList", self.filterList)
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.setCombinedDataUnit(self, dataUnit)
 		self.filterEditor.setDataUnit(dataUnit)

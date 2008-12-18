@@ -26,6 +26,7 @@
 #include "vtkObjectFactory.h"
 #include "vtkUnsignedCharArray.h"
 #include <cstdlib>
+#include <ctime>
 
 vtkStandardNewMacro(vtkHandleColorTransferFunction);
 

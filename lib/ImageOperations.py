@@ -273,7 +273,7 @@ def loadBXDLutFromString(lut, ctf):
 	handle = vtkbxd.vtkHandleColorTransferFunction()
 	handle.SetInputString(lut,len(lut))
 	handle.LoadColorTransferFunctionFromString(ctf, start, end)
-	
+
 	#k = ( len(lut) / 3 ) - 1
 	#reds = lut[0: k + 1]
 	#greens = lut[k + 1: 2 * k + 2]
@@ -613,19 +613,6 @@ def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2, filename = 
 	if ctf.GetSize() > ctfUpperBound:
 		for i in xrange(ctfUpperBound, ctf.GetSize()-1):
 			ctf.RemovePoint(i)
-
-	if ctfFileSize + ignoreColors < ctf.GetSize():
-		for i in range(0, ignoreColors):
-			color = ctf.GetColor(ctf.GetSize()-1)
-			ctf.AddRGBPoint(i,color[0],color[1],color[2])
-			ctf.RemovePoint(ctf.GetSize()-1)
-
-		saveLUT(ctf,filename)
-		
-		for i in range(0, ignoreColors):
-			color = ctf.GetColor(i)
-			ctf.AddRGBPoint(ctf.GetSize(),color[0],color[1],color[2])
-			ctf.AddRGBPoint(i,0,0,0)
 
 	return ctf
 

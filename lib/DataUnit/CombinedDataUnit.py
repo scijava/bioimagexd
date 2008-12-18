@@ -299,14 +299,17 @@ class CombinedDataUnit(DataUnit):
 		self.currentDimensions = dataUnit.getDimensions()
 		# The DataUnit to be added must have a different name than the
 		# previously added, or the dictionary won't work:
-		
+
 		count = len(self.sourceunits)
 		self.sourceunits.append(dataUnit)
 
 		# Create a settings object of correct type for dataunit
 		# using the count as the index
 		setting = self.getSettingsClass()(count)
+		dataUnitSettings = dataUnit.getSettings()
+		setting.__setstate__(dataUnitSettings.__getstate__())
 		dataUnit.setSettings(setting)
+		print setting
 		# Fetch correct settings for the dataunit from the datasource
 		dataUnit.updateSettings()
 
