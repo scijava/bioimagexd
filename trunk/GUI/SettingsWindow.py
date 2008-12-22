@@ -270,7 +270,6 @@ class PerformanceSettings(wx.Panel):
 		resampleGrid.Add(self.resampleToX, (1, 1))
 		resampleGrid.Add(x2, (1, 2))
 		resampleGrid.Add(self.resampleToY, (1, 3)) 
-
 		
 		try:
 			rx, ry, rz = eval(conf.getConfigItem("ResampleToFitDims", "Performance"))
@@ -338,7 +337,6 @@ class PerformanceSettings(wx.Panel):
 		self.numberOfDivisions = wx.TextCtrl(self, -1, "%d" % numberOfDivisions)
 		
 		
-		
 		try:
 			limitval = eval(conf.getConfigItem("LimitTo", "Performance"))
 		except:
@@ -402,7 +400,16 @@ class PerformanceSettings(wx.Panel):
 		else:
 			val = 0
 		self.rescaleCheckbox.SetValue(val)
-	
+
+		self.autoRescaleCheckBox = wx.CheckBox(self, -1, "Automatic rescale mapping")
+		self.rescaleBoxSizer.Add(self.autoRescaleCheckBox)
+		val = conf.getConfigItem("AutoRescaleMapping", "Performance")
+		if val:
+			val = eval(val)
+		else:
+			val = 0
+		self.autoRescaleCheckBox.SetValue(val)
+		
 		self.sizer.Add(self.rescaleBoxSizer, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.sizer.Add(self.memoryBoxSizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 		self.sizer.Add(self.resampleBoxSizer, (2, 0), flag = wx.EXPAND | wx.ALL)
@@ -483,6 +490,8 @@ class PerformanceSettings(wx.Panel):
 		
 		rescaleOnLoad = self.rescaleCheckbox.GetValue()
 		conf.setConfigItem("RescaleOnLoading", "Performance", str(rescaleOnLoad))
+		autoRescaleMapping = self.autoRescaleCheckBox.GetValue()
+		conf.setConfigItem("AutoRescaleMapping", "Performance", str(autoRescaleMapping))
 		limitMem = self.limitMemoryCheckbox.GetValue()
 		limitTo = self.memoryLimit.GetValue()
 		noLimits = self.noLimitsCheckbox.GetValue()

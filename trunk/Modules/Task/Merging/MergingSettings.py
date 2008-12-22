@@ -49,7 +49,8 @@ class MergingSettings(DataUnitSettings):
 		Constructor
 		"""
 		DataUnitSettings.__init__(self, n)
-		#self.registerCounted("MergingColorTransferFunction",1)       
+		#self.registerCounted("MergingColorTransferFunction",1)
+
 		self.set("Type", "Merging")
 		self.registerCounted("IntensityTransferFunction", 1)
 		self.register("AlphaTransferFunction", 1)

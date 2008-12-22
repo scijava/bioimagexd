@@ -307,9 +307,12 @@ class CombinedDataUnit(DataUnit):
 		# using the count as the index
 		setting = self.getSettingsClass()(count)
 		dataUnitSettings = dataUnit.getSettings()
-		setting.__setstate__(dataUnitSettings.__getstate__())
+		parser = dataUnit.getDataSource().getParser()
+		if parser:
+			setting.readFrom(parser)
+
 		dataUnit.setSettings(setting)
-		print setting
+		#print setting
 		# Fetch correct settings for the dataunit from the datasource
 		dataUnit.updateSettings()
 

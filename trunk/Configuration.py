@@ -129,6 +129,7 @@ class Configuration:
 		self.readConfigItem("TipNumber", "General")
 		self.readConfigItem("AskOnQuit", "General")
 		self.readConfigItem("RescaleOnLoading", "Performance")
+		self.readConfigItem("AutoRescaleMapping", "Performance")
 		self.readConfigItem("RestoreFiles", "General")
 		self.readConfigItem("ReportCrash", "General")
 		self.readConfigItem("CleanExit", "General")

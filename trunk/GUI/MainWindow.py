@@ -67,7 +67,7 @@ import UIElements
 import UndoListBox
 from Visualizer.Visualizer import Visualizer
 import wx
-
+import lib.ImageOperations
 
 
 class MainWindow(wx.Frame):
@@ -1119,12 +1119,21 @@ class MainWindow(wx.Frame):
 		selectedFiles, items = self.tree.getSelectionContainer()
 		if not selectedFiles:
 			return
-			
-		dlg = RescaleDialog.RescaleDialog(self)
-		dlg.setDataUnits(selectedFiles)
-		wid = dlg.ShowModal()
-		dlg.zoomToFit()
-		dlg.Destroy()
+
+		conf = Configuration.getConfiguration()
+		autoRescale = conf.getConfigItem("AutoRescaleMapping", "Performance")
+		if autoRescale:
+			autoRescale = eval(autoRescale)
+
+		if autoRescale:
+			lib.ImageOperations.rescaleDataUnits(selectedFiles,0,255)
+			wid = wx.ID_OK
+		else:
+			dlg = RescaleDialog.RescaleDialog(self)
+			dlg.setDataUnits(selectedFiles)
+			wid = dlg.ShowModal()
+			dlg.zoomToFit()
+			dlg.Destroy()
 		
 		if wid == wx.ID_OK:
 			self.tree.markBlue(items, "#")
@@ -1557,23 +1566,30 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		else:
 			# If we got data, add corresponding nodes to tree
 			#Logging.info("Adding to tree ", name, path, ext, dataunits, kw = "io")
+			bitness = max([x.getSingleComponentBitDepth() for x in dataunits])
+			
 			conf = Configuration.getConfiguration()
 			wantToRescale = conf.getConfigItem("RescaleOnLoading", "Performance")
-			bitness = max([x.getSingleComponentBitDepth() for x in dataunits])
 			if wantToRescale:
 				wantToRescale = eval(wantToRescale)
-
+			autoRescale = conf.getConfigItem("AutoRescaleMapping", "Performance")
+			if autoRescale:
+				autoRescale = eval(autoRescale)
 			
 			if wantToRescale and bitness > 8:
-				dlg = RescaleDialog.RescaleDialog(self)
-				dlg.setDataUnits(dataunits)
-				wid = dlg.ShowModal()
-				dlg.zoomToFit()
-				if wid != wx.ID_OK:
-					del dataunits
+				if autoRescale:
+					ImageOperations.rescaleDataUnits(dataunits, 0, 255)
+				else:
+					dlg = RescaleDialog.RescaleDialog(self)
+					dlg.setDataUnits(dataunits)
+					wid = dlg.ShowModal()
+					dlg.zoomToFit()
+					if wid != wx.ID_OK:
+						del dataunits
+						dlg.Destroy()
+						return
 					dlg.Destroy()
-					return
-				dlg.Destroy()
+					
 			self.tree.addToTree(name, path, ext, dataunits)
 		self.visualizer.enable(1)
 
