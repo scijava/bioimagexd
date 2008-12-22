@@ -413,7 +413,7 @@ class DataUnitSettings:
 		self.channels = channels
 		self.timepoints = timepoints
 		self.dataunit = dataunit
-		
+
 	def __getstate__(self):
 		ret = {}
 		ret["counted"] = self.counted

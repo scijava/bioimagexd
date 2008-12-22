@@ -1154,3 +1154,22 @@ def castImagesToLargestDataType(images):
 		returnValues.append(image)
 	
 	return returnValues
+
+def rescaleDataUnits(dataunits, min, max):
+	"""
+	Rescales dataunits to some range
+	@param dataunits list of dataunits to be rescaled
+	@param min Minimum value of the range wanted
+	@param max Maximum value of the range wanted
+	"""
+	for dataunit in dataunits:
+		ds = dataunit.getDataSource()
+		minval, maxval = ds.getOriginalScalarRange()
+		rangeOrig = maxval - minval
+		range = max - min
+		shift = (rangeOrig / range) * min - minval
+		scale = range / rangeOrig
+		
+		ds.setIntensityScale(shift, scale)
+		ds.resetColorTransferFunction()
+		dataunit.resetColorTransferFunction()

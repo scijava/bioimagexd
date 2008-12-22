@@ -284,12 +284,12 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         }
         outPtr += outIncZ;      
     }
-    printf("Processing done\n");
+    //printf("Processing done\n");
     for(int i = 0; i < NumberOfInputs; i++) {        
         if(ctfs[i])
             delete[] ctfs[i];
     }
-    printf("Deleting itfs[]\n");
+    //printf("Deleting itfs[]\n");
     delete[]itfs;
     //delete modctfs;
     //printf("deleting ctfs\n");
