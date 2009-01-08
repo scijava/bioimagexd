@@ -944,19 +944,23 @@ def equalize(imagedata, ctf):
 def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = True, logarithmic = True):
 	"""
 	Create scatterplot
-	"""		  
+	"""
 	imagedata1.SetUpdateExtent(imagedata1.GetWholeExtent())
 	imagedata2.SetUpdateExtent(imagedata1.GetWholeExtent())
 		
 	imagedata1.Update()
 	imagedata2.Update()
 	x0, x1 = imagedata1.GetScalarRange()
-	d = 255.0 / x1
+	#d = 255.0 / x1
 	sc1max = x1
 
 	x0, x1 = imagedata2.GetScalarRange()
-	d = 255.0 / x1
+	#d = 255.0 / x1
 	sc2max = x1
+	
+	n = 255
+	#n = min(max(sc1max,sc2max),255)
+	d = n / max(sc1max,sc2max)
 	
 	app = vtk.vtkImageAppendComponents()
 	app.AddInput(imagedata1)
@@ -968,9 +972,6 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	shiftscale.SetInputConnection(app.GetOutputPort())
 	
 	acc = vtk.vtkImageAccumulate()
-	
-	n = 255
-	#n = min(max(sc1max,sc2max),255)
 	acc.SetComponentExtent(0, n, 0, n, 0, 0)
 	acc.SetInputConnection(shiftscale.GetOutputPort())
 	acc.Update()

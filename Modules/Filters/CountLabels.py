@@ -180,7 +180,7 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Write the statistics to the given file
 		"""
-		f = codecs.open(filename, "awb", "utf-8")
+		f = codecs.open(filename, "ab", "utf-8")
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
 		sources = self.dataUnit.getSourceDataUnits()
 		
