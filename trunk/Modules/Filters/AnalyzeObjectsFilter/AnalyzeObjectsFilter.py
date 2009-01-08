@@ -109,7 +109,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		f = codecs.open(filename, "awb", "latin1")
+		f = codecs.open(filename, "ab", "latin1")
 		Logging.info("Saving statistics to file %s"%filename, kw="processing")
 		
 		w = csv.writer(f, dialect = "excel", delimiter = ";")

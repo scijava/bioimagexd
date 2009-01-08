@@ -71,7 +71,6 @@ class BXCDataSource(DataSource):
 		# path to the .du-file and .vti-file(s)
 		self.path = ""
 		self.reader = None
-		self.shift = None
 		# Number of datasets added to this datasource
 		self.counter = 0
 		self.parser = None

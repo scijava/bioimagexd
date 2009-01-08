@@ -191,7 +191,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Write the statistics to the given file
 		"""
-		f = codecs.open(filename, "awb", "utf-8")
+		f = codecs.open(filename, "ab", "utf-8")
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
 		sources = self.dataUnit.getSourceDataUnits()
 		
@@ -387,7 +387,6 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.segmentedSource = self.getInputDataUnit(2)
 		inputImage = self.getInput(1)
 		print "Calculating cell COM"
-
 		if self.polyDataSource.dataSource:
 			imgdata = self.polyDataSource.getTimepoint(timepoint)
 			polydata = self.polyDataSource.getPolyDataAtTimepoint(timepoint)
@@ -403,9 +402,9 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		centerOfMass = [centerOfMassObj.GetElement(i) for i in range(0,3)]
 		print "Center of mass=",centerOfMass
 
-		# Read objects first from users input file, then from polydata objects
-		# StatisticsFile, then from csv found in polydata file's directory,
-		# and finally create again from polydata
+		# Read objects first from users input file, then from objects
+		# StatisticsFile, then from object csv found in file's directory,
+		# and finally create again from file
 		particleFile = ""
 		objectsFile = self.parameters["ObjectsFile"]
 		if os.path.exists(objectsFile):
@@ -413,11 +412,17 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			particleFile = self.segmentedSource.getSettings().get("StatisticsFile")
 
-		if particleFile != "":
+		if not os.path.exists(particleFile):
+			path = self.segmentedSource.getDataSource().path
+			for fileName in os.listdir(path):
+				if ".csv" in fileName:
+					particleFile = os.path.join(path,fileName)
+
+		if os.path.exists(particleFile):
 			reader = lib.Particle.ParticleReader(particleFile, 0)
 			objects = reader.read()
-		else:
-			pass # This need to be implemented
+		else: # Do AnalyzeObjects
+			pass
 		
 		distances = []
 		insides = []

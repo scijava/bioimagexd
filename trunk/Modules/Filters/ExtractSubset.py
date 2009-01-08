@@ -146,7 +146,17 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 		imagedata = self.getInput(1)
 		imagedata.SetUpdateExtent(imagedata.GetWholeExtent())
 		imagedata.Update()
-		#print "Imagedata=",imagedata
+
+		# Mask original image
+		if self.parameters["UseROI"]:
+			mask = lib.ImageOperations.getMaskFromPoints(pts, maxx+1, maxy+1, maxz+1)
+			maskFilter = vtk.vtkImageMask()
+			maskFilter.SetImageInput(imagedata)
+			maskFilter.SetMaskInput(mask)
+			imagedata = maskFilter.GetOutput()
+			imagedata.Update()
+		
+		# Extract VOI of original data
 		self.vtkfilter.SetInput(imagedata)
 		self.vtkfilter.SetVOI(minx, maxx, miny, maxy, minz, maxz)
 		data = self.vtkfilter.GetOutput()

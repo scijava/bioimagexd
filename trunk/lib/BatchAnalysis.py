@@ -38,6 +38,7 @@ import ConfigParser
 import os
 import re
 import scripting
+import time
 
 PROCESS_SEPARATELY = 0
 PROCESS_TOGETHER = 1
@@ -236,6 +237,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		"""
 		execute the analysis
 		"""
+		stime = time.time()
 		# Create a CSV file writer
 		csvfp = codecs.open(csvfile, "wb", "latin-1")
 		csvwriter = csv.writer(csvfp, dialect = "excel", delimiter = ";")
@@ -315,6 +317,8 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			
 		csvfp.close()
 		scripting.combinedDataUnit = None
+		ftime = time.time()
+		print "BBA took %f secs"%(ftime - stime)
 				
 	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders):
 		"""
