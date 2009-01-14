@@ -85,7 +85,7 @@ def build():
 	incl_modules.extend(get_files("Visualizer", asmodule=1))
 	incl_modules.extend(get_files("lib", asmodule=1))
 	incl_modules.extend(["wx.lib.mixins.listctrl"])
-	incl_modules.extend(["wx.grid", "email","Image","TiffImagePlugin"])
+	incl_modules.extend(["wx.grid", "email","Image"])
 	print "Included modules=", incl_modules
 	modules = get_files("Modules")
 	iconFiles = os.path.join("Icons","*.*")
@@ -153,16 +153,35 @@ def build():
 		# importing py2exe causes the windows specific magic to take place
 		import py2exe
 
-
+		filename = os.curdir
+		filename = os.path.join(filename,"bin")
+		filename = os.path.join(filename,"BioImageXD.exe.manifest")
+		manhdl = open(filename,"r")
+		manifest = manhdl.read()
+		manhdl.close()
 		# use windows=[{... to not show the console
 		# use console=[{ to show the console
 		setup(name="BioImageXD",
 			   windows=[{"script":"BioImageXD.py",
 			   #console=[{"script":"BioImageXD.py",
-						 "icon_resources": [(1, "Icons\\logo.ico")]} ],
+						 "icon_resources": [(1, "Icons\\logo.ico")],
+						 "other_resources": [(24,1,manifest)]
+						 } ],
 			   data_files = dataFiles,
 			   options = {"py2exe":
 						 { "excludes": excludeList,
 						   "includes": incl_modules,
 						   "packages": ["encodings"]}},
 			   zipfile = "python_libs.zip")
+		removeWinFiles()
+		
+def removeWinFiles():
+	"""
+	Removes unneeded Windows system dll's 
+	"""
+	path = os.curdir
+	path = os.path.join(path,"dist")
+	removes = ["AVICAP32.dll", "AVIFIL32.dll", "MSACM32.dll", "MSVFW32.dll"]
+	for filename in removes:
+		rmfile = os.path.join(path,filename)
+		os.remove(rmfile)

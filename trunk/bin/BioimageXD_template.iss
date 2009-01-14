@@ -5,18 +5,17 @@
 AppName=BioImageXD
 AppVerName=BioImageXD beta
 AppPublisher=BioImageXD development team
-AppPublisherURL=http://www.bioimagexd.org/
-AppSupportURL=http://www.bioimagexd.org/
-AppUpdatesURL=http://www.bioimagexd.org/
+AppPublisherURL=http://www.bioimagexd.net/
+AppSupportURL=http://www.bioimagexd.net/
+AppUpdatesURL=http://www.bioimagexd.net/
 DefaultDirName={pf}\BioImageXD
 DefaultGroupName=BioImageXD
 SourceDir=C:\BioImageXD
 AllowNoIcons=yes
-LicenseFile=C:\BioImageXD\GPL.txt
+LicenseFile=C:\BioImageXD\trunk\Licensing\GPL
 OutputDir=C:\temp
 OutputBaseFilename=setup
 SetupIconFile=C:\BioImageXD\trunk\Icons\logo.ico
-;Compression=lzma/max
 Compression=lzma/max
 SolidCompression=yes
 
@@ -27,8 +26,10 @@ Name: "eng"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\BioImageXD\msvcp71.dll"; DestDir: {app}; Flags: ignoreversion
-Source: "C:\BioImageXD\msvcr71.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\msvcp90.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\msvcr90.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\msvcm90.dll"; DestDir: {app}; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\bin\Microsoft.VC90.CRT.manifest"; DestDir: {app}; Flags: ignoreversion
 
 __FILES__
 
@@ -62,13 +63,13 @@ end;
 
 
 [INI]
-Filename: "{app}\BioImageXD.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://www.bioimagexd.org/"
+Filename: "{app}\BioImageXD.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://www.bioimagexd.net/"
 
 [Icons]
-Name: "{group}\BioImageXD"; Filename: "{app}\BioImageXD.exe";
+Name: "{group}\BioImageXD"; Filename: "{app}\BioImageXD.exe"; IconFilename: "{app}\Icons\logo.ico"
 Name: "{group}\{cm:ProgramOnTheWeb,BioImageXD}"; Filename: "{app}\BioImageXD.url"
-Name: "{group}\{cm:UninstallProgram,BioImageXD}"; Filename: "{uninstallexe}"
-Name: "{userdesktop}\BioImageXD"; Filename: "{app}\BioImageXD.exe"; Tasks: desktopicon;
+Name: "{group}\{cm:UninstallProgram,BioImageXD}"; Filename: "{uninstallexe}"; IconFilename: "{app}\Icons\logo.ico"
+Name: "{userdesktop}\BioImageXD"; Filename: "{app}\BioImageXD.exe"; IconFilename: "{app}\Icons\logo.ico"; Tasks: desktopicon;
 
 [Run]
 Filename: "{app}\BioImageXD.exe"; Description: "{cm:LaunchProgram,BioImageXD}"; Flags: nowait postinstall skipifsilent
