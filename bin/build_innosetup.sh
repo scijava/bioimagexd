@@ -1,5 +1,5 @@
 #! /bin/sh
-FROMDIR='C:\\BioImageXD\\trunk\\dist'
+FROMDIR='C:\\BioImageXD\\bioimagexd\\dist'
 cd dist
 
 function add_files {
@@ -28,9 +28,9 @@ function add_itk_files {
 FILES=`find .`
 add_files $FILES|tr / '\\\\'|sed s/'Source: ".'/"Source: \"$FROMDIR"/g
 cd ..
-cd ITK-pkg
-
 FROMDIR='C:\\BioImageXD\\trunk\\ITK-pkg'
+cd "$FROMDIR"
+
 FILES=`find .`
 add_itk_files  $FILES|tr / '\\\\'|sed s/'Source: ".'/"Source: \"$FROMDIR"/g
 

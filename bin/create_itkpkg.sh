@@ -6,10 +6,14 @@ fi
 mkdir "ITK-pkg"
 cd ITK-pkg
 mkdir lib
+mkdir lib/Release
 mkdir Python
+mkdir Python/Release
+mkdir Python/Configuration
+mkdir Python/Release/itkExtras
 
 echo "Created ITK-pkg directory"
-for i in /cygdrive/c/BioImageXD/InsightToolkit/bin/*.dll
+for i in /cygdrive/c/BioImageXD/InsightToolkit/bin/Release/*.dll
 do
 	TGT="`basename $i | sed s/dll/pyd/g`"
 	if [ "$TGT" = "ITKCommon.pyd" ]; then
@@ -18,45 +22,62 @@ do
 	if [ "$TGT" = "SwigRuntimePython.pyd" ]; then
 	  	TGT="SwigRuntimePython.dll"
 	fi
-    cp $i lib/$TGT
-
-done
-for i in /cygdrive/c/BioImageXD/InsightToolkit/bin/*.py
-do
-	cp $i Python
+    cp $i lib/Release/$TGT
 done
 
-cp /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/*.py Python
+cp /cygdrive/c/BioImageXD/InsightToolkit/bin/Release/*.pyd lib/Release
+#cp /cygdrive/c/BioImageXD/InsightToolkit/lib/Release/*.pyd lib
 
-cp -fr /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/itkExtras Python
+
+cp /cygdrive/c/BioImageXD/InsightToolkit/bin/Release/*.py Python/Release
+cp /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/Release/*.py Python/Release
+
+cp /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/itkExtras/__init__.py Python/Release/itkExtras
 cp -fr /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/Configuration Python
+
+#cp /cygdrive/c/BioImageXD/InsightToolkit/lib/Release/*.py Python
+#cp /cygdrive/c/BioImageXD/InsightToolkit/Python/Release/*.py Python
+#cp /cygdrive/c/BioImageXD/InsightToolkit/Python/Configuration/*.py Python
 
 for extproj in ItkVtkGlue labelShape
 do
-	BASE="/cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/ExternalProjects/${extproj}"
-	cp $BASE/lib/*.py Python
-	for i in $BASE/lib/*.dll
-	do
-		TGT="`basename $i | sed s/dll/pyd/g`"
-		cp $i lib/$TGT
-	done
-
+	BASE="/cygdrive/c/BioImageXD/InsightToolkit-3.10.0/Wrapping/WrapITK/ExternalProjects/${extproj}"
+	cp $BASE/lib/Release/*.py Python/Release
+	cp $BASE/lib/Release/*.pyd lib/Release
+	#for i in $BASE/lib/Release/*.dll
+	#do
+	#	TGT="`basename $i | sed s/dll/pyd/g`"
+	#	cp $BASE/lib/Release/$TGT lib/Release/$TGT
+	#done
 
 	cp -fr $BASE/Python/Configuration/ Python
-	cp $BASE/Python/*.py Python
+	cp $BASE/Python/Release/*.py Python/Release
 done
 
 for extproj in itkBXD
 do
 	BASE="/cygdrive/c/BioImageXD/trunk/${extproj}"
-	cp $BASE/lib/*.py Python
-	for i in $BASE/lib/*.dll
-	do
-		TGT="`basename $i | sed s/dll/pyd/g`"
-		cp $i lib/$TGT
-	done
-
+	cp $BASE/lib/Release/*.py Python/Release
+	cp $BASE/lib/Release/*.pyd lib/Release
+	#for i in $BASE/lib/Release/*.dll
+	#do
+	#	TGT="`basename $i | sed s/dll/pyd/g`"
+	#	cp $BASE/lib/Release/$TGT lib/Release/$TGT
+	#done
 
 	cp -fr $BASE/Python/Configuration/ Python
-	cp $BASE/Python/*.py Python
+	cp $BASE/Python/Release/*.py Python/Release
 done
+
+chmod 644 lib/*
+chmod 755 lib/Release/*
+chmod 644 Python/*
+chmod 644 Python/Release/*
+chmod 644 Python/Configuration/*
+chmod 644 Python/Release/itkExtras/*
+chmod 755 lib
+chmod 755 lib/Release
+chmod 755 Python
+chmod 755 Python/Release
+chmod 755 Python/Configuration
+chmod 755 Python/Release/itkExtras
