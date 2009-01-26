@@ -1578,7 +1578,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			
 			if wantToRescale and bitness > 8:
 				if autoRescale:
-					ImageOperations.rescaleDataUnits(dataunits, 0, 255)
+					lib.ImageOperations.rescaleDataUnits(dataunits, 0, 255)
 				else:
 					dlg = RescaleDialog.RescaleDialog(self)
 					dlg.setDataUnits(dataunits)
