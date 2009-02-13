@@ -6,7 +6,7 @@
  Created: 10.12.2007, LP
  Description:
 
- A module that contains dynamic threshold filter for the processing task.
+ A module that contains dynamic threshold 3D filter for the processing task.
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -41,7 +41,7 @@ MEDIAN = 1
 
 class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	A dynamic threshold filter. Uses itkBXD.DynamicThresholdImageFilter.
+	A dynamic threshold filter. Uses itkBXD DynamicThreshold3DImageFilter.
 	"""
 	name = "Dynamic threshold"
 	category = lib.FilterTypes.SEGMENTATION
@@ -52,13 +52,13 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""
 		self.statisticsType = MEAN
-		self.neighborhood = (5,5)
+		self.radius = (2,2,2)
 		self.insideValue = 255
 		self.outsideValue = 0
 		
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
 		self.itkFlag = 1
-		self.descs = {"X": "X:", "Y": "Y:", "StatisticsType": "Statistics type:", "Threshold": "Threshold over statistics"}
+		self.descs = {"X": "X:", "Y": "Y:", "Z": "Z", "StatisticsType": "Statistics type:", "Threshold": "Threshold over statistics", "UseImageSpacing": "Use image spacing"}
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
@@ -74,7 +74,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Returns the parameters for GUI.
 		"""
-		return [["",("StatisticsType",)],["Neighborhood (only odd values)",("X","Y")],["",("Threshold",)]]
+		return [["",("StatisticsType",)],["Radius",("X","Y","Z")],["",("Threshold",)],["",("UseImageSpacing",)]]
 
 	def getType(self, param):
 		"""
@@ -83,6 +83,8 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if param == "StatisticsType":
 			return GUI.GUIBuilder.CHOICE
+		if param == "UseImageSpacing":
+			return types.BooleanType
 		return types.IntType
 
 	def getDefaultValue(self, param):
@@ -93,11 +95,15 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		if param == "StatisticsType":
 			return self.statisticsType
 		elif param == "X":
-			return self.neighborhood[0]
+			return self.radius[0]
 		elif param == "Y":
-			return self.neighborhood[1]
+			return self.radius[1]
+		elif param == "Z":
+			return self.radius[2]
 		elif param == "Threshold":
 			return 0
+		elif param == "UseImageSpacing":
+			return True
 
 	def getParameterLevel(self, param):
 		"""
@@ -125,15 +131,20 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		inputImage = self.getInput(1)
 		inputImage = self.convertVTKtoITK(inputImage)
 
-		dynamicThresholdFilter = itk.DynamicThresholdImageFilter[inputImage,inputImage].New()
+		dynamicThresholdFilter = itk.DynamicThreshold3DImageFilter[inputImage,inputImage].New()
 		self.filter = dynamicThresholdFilter
+
 		dynamicThresholdFilter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
-		dynamicThresholdFilter.SetNeighborhood(self.parameters["X"],self.parameters["Y"])
+		dynamicThresholdFilter.SetRadius(self.parameters["X"],self.parameters["Y"],self.parameters["Z"])
 		dynamicThresholdFilter.SetThreshold(self.parameters["Threshold"])
 		if self.parameters["StatisticsType"] == MEAN:
 			dynamicThresholdFilter.SetStatisticsTypeMean()
 		else:
 			dynamicThresholdFilter.SetStatisticsTypeMedian()
+		if self.parameters["UseImageSpacing"]:
+			dynamicThresholdFilter.SetUseImageSpacingOn()
+		else:
+			dynamicThresholdFilter.SetUseImageSpacingOff()
 		dynamicThresholdFilter.SetInput(inputImage)
 
 		outputImage = dynamicThresholdFilter.GetOutput()
