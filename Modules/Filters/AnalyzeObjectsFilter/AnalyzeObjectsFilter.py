@@ -32,25 +32,29 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {}		 
 		self.values = None
 		self.centersofmass = None
-		self.avgintCalc = None
 		self.umcentersofmass = None
 		self.avgIntList = None
+		self.objAreasUm = None
 		self.descs = {"StatisticsFile": "Results file:"}
-		
+		self.reportGUI = None		
 		
 		self.resultVariables = {"NumberOfObjects":		"Number of discrete objects in the image",
-								"ObjAvgSizeInPixels":	"Average object size, in pixels",
-								"ObjAvgSizeInUm":		"Average object size, in micrometers",
+								"ObjAvgVolInVoxels":	"Average object volume, in voxels",
+								"ObjAvgVolInVoxelsStdErr": "Standard error of average object volume in voxels",
+								"ObjAvgVolInUm":		"Average object volume, in micrometers",
+								"ObjAvgVolInUmStdErr":  "Standard error of average object volume in micrometers",
 								"ObjAvgIntensity":		"Average intensity of objects",
+								"ObjAvgIntensityStdErr": "Standard error of object average intensity",
 								"AvgIntOutsideObjs":    "Average intensity of voxels outside the objects",
+								"AvgIntOutsideObjsStdErr": "Standard error of average intensity outside objects",
 								"AvgIntInsideObjs":		"Average intensity of voxels inside the objects",
+								"AvgIntInsideObjsStdErr": "Standard error of average intensity inside objects",
 								"NonZeroVoxels":		"The number of non-zero voxels", 
 								"AverageDistance":		"Average distance between two objects",
-								"AvgDistanceStdDev":		"Standard deviation of the average distance between two objects"
+								"AvgDistanceStdErr":	"Standard error of the average distance between two objects",
+								"ObjAvgAreaInUm":       "Average area of objects, in square micrometers",
+								"ObjAvgAreaInUmStdErr": "Standard error of average area of objects in square micrometers"
 								}
-		
-		self.reportGUI = None
-		self.itkfilter = None
 		
 	def getInputName(self, n):
 		"""
@@ -87,7 +91,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["Measurement results",
-		(("StatisticsFile", "Select the file to which the statistics will be writen", "*.csv"), )]]
+		(("StatisticsFile", "Select the file to which the statistics will be written", "*.csv"), )]]
 		
 	def writeOutput(self, dataUnit, timepoint):
 		"""
@@ -109,7 +113,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		f = codecs.open(filename, "ab", "latin1")
+		f = codecs.open(filename, "wb", "latin1")
 		Logging.info("Saving statistics to file %s"%filename, kw="processing")
 		
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
@@ -117,15 +121,18 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
 		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Volume (micrometers)", "Volume (pixels)", "Center of Mass X", \
+		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
 					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
-					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity",  "Avg. distance to objects"])
+					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
 		for i, (volume, volumeum) in enumerate(self.values):
 			cog = self.centersofmass[i]
 			umcog = self.umcentersofmass[i]
 			avgint = self.avgIntList[i]
+			avgintstderr = self.avgIntStdErrList[i]
 			avgdist = self.avgDistList[i]
-			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgdist)])
+			avgdiststderr = self.avgDistStdErrList[i]
+			areaUm = self.objAreasUm[i]
+			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm)])
 		f.close()
 
 	def getGUI(self, parent, taskPanel):
@@ -141,22 +148,22 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			
 			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
 			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
+			
 			if self.values:
-	
 				n = len(self.values)
-				avgints = float(lib.Math.averageValue(self.avgIntList))
+				avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
 				ums = [x[1] for x in self.values]
-				
-				# Remove the objects 0 and 1 because hey will distort the values
-				avgums = float(lib.Math.averageValue(ums))
+				avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
 				pxs = [x[0] for x in self.values]
-				avgpxs = float(lib.Math.averageValue(pxs))
+				avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
+				avgareaums, avgareaumsstd, avgareaumsstderr = lib.Math.meanstdeverr(self.objAreasUm)
 				
-				self.totalGUI.setStats([n, avgums, avgpxs, avgints, self.avgIntOutsideObjs, self.distMean, self.distSd])
+				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr])
 				self.reportGUI.setVolumes(self.values)
+				self.reportGUI.setAreasUm(self.objAreasUm)
 				self.reportGUI.setCentersOfMass(self.centersofmass)
-				self.reportGUI.setAverageIntensities(self.avgIntList)
-				self.reportGUI.setAverageDistances(self.avgDistList)
+				self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
+				self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
 
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.reportGUI, 1, wx.EXPAND)
@@ -206,9 +213,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		image = self.convertVTKtoITK(image)
 		print "Input for label shape=",self.getInputDataUnit(1)
 		print "Orig. dataunit = ",self.getInputDataUnit(2)
-		self.itkfilter = itk.LabelShapeImageFilter[image].New()
-		self.itkfilter.SetInput(image)
-		data = self.itkfilter.GetOutput()
+		labelShape = itk.LabelShapeImageFilter[image].New()
+		labelShape.SetInput(image)
+		data = labelShape.GetOutput()
 		data.Update()
 			
 		x, y, z = self.dataUnit.getVoxelSize()
@@ -218,33 +225,46 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		vol = x * y * z
 		
 		voxelSizes = [x, y, z]
-		n = self.itkfilter.GetNumberOfLabels()
 		values = []
 		centersofmass = []
 		umcentersofmass = []
 		avgints = []
+		avgintsstderrs = []
 		avgDists = []
-		vtkimage = self.convertITKtoVTK(image, force = 1)
+		avgDistsStdErrs = []
+		objAreasUm = []
 		origInput = self.getInput(2)
 		origInput.Update()
-		
-		if self.avgintCalc:
-			del self.avgintCalc
-		self.avgintCalc = avgintCalc = vtkbxd.vtkImageLabelAverage()
+		origRange = origInput.GetScalarRange()
+		origInput = self.convertVTKtoITK(origInput)
 
-		# We require unsigned long input data
-		if vtkimage.GetScalarType() != 9:
-			cast = vtk.vtkImageCast()
-			cast.SetInput(vtkimage)
-			cast.SetOutputScalarTypeToUnsignedLong()
-			cast.Update()
-			vtkimage = cast.GetOutput()
-			n = int(vtkimage.GetScalarRange()[1])
-			
-		avgintCalc.AddInput(origInput)
-		avgintCalc.AddInput(vtkimage)
-
+		avgintCalc = itk.LabelStatisticsImageFilter[origInput,image].New()
+		avgintCalc.SetInput(origInput)
+		avgintCalc.SetLabelInput(image)
 		avgintCalc.Update()
+
+		# Area calculation pipeline
+		areaImage = self.convertITKtoVTK(image)
+		areaImage.Update()
+		areaSpacing = areaImage.GetSpacing()
+		objectThreshold = vtk.vtkImageThreshold()
+		objectThreshold.SetOutputScalarTypeToUnsignedChar()
+		objectThreshold.SetInValue(255)
+		marchingCubes = vtk.vtkMarchingCubes()
+		marchingCubes.SetValue(0,255)
+		decimate = vtk.vtkDecimatePro()
+		decimate.SetPreserveTopology(0)
+		decimate.SplittingOn()
+		decimate.BoundaryVertexDeletionOn()
+		decimate.SetTargetReduction(0.65)
+		massProperties = vtk.vtkMassProperties()
+		objectThreshold.SetInput(areaImage)
+		marchingCubes.SetInput(objectThreshold.GetOutput())
+		decimate.SetInput(marchingCubes.GetOutput())
+		massProperties.SetInput(decimate.GetOutput())
+		areaDiv = (areaSpacing[0] / x)**2
+		voxelArea = x*y*2 + x*z*2 + y*z*2
+
 		ignoreLargest = 0
 		currFilter = self
 		while currFilter:
@@ -254,87 +274,137 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
-		self.avgintCalc.SetBackgroundLevel(startIntensity)
 			
 		tott=0
-		for i in range(startIntensity, n+1):
-			if not self.itkfilter.HasLabel(i):
+		numberOfLabels = labelShape.GetNumberOfLabels()
+		voxelSize = voxelSizes[0] * voxelSizes[1] * voxelSizes[2]
+		for i in range(startIntensity, numberOfLabels+1):
+			if not labelShape.HasLabel(i):
 				pass
-				#centersofmass.append((0, 0, 0))
-				#values.append((0, 0))
-				#avgints.append(0.0)
-				#umcentersofmass.append((0, 0, 0))
 			else:
-				volume = self.itkfilter.GetVolume(i)
-				centerOfMass = self.itkfilter.GetCenterOfGravity(i)
-				avgInt = avgintCalc.GetAverage(i)
+				volume = labelShape.GetVolume(i)
+				centerOfMass = labelShape.GetCenterOfGravity(i)
+				avgInt = avgintCalc.GetMean(i)
+				avgIntStdErr = math.sqrt(avgintCalc.GetVariance(i)) / math.sqrt(volume)
 				c = []
 				c2 = []
 				for k in range(0, 3):
 					v = centerOfMass.GetElement(k)
 					c.append(v)
 					c2.append(v * voxelSizes[k])
-					
-				totDist = 0
-				distCount = 0
+
+				# Get area of object
+				areaInUm = 0
+				objectThreshold.ThresholdBetween(i,i)
+				polydata = marchingCubes.GetOutput()
+				polydata.Update()
+				if polydata.GetNumberOfPolys() > 0:
+					massProperties.Update()
+					areaInUm = massProperties.GetSurfaceArea() / areaDiv
+				else:
+					areaInUm = voxelArea
+				
 				centersofmass.append(tuple(c))
 				umcentersofmass.append(tuple(c2))
 				values.append((volume, volume * vol))
 				avgints.append(avgInt)
+				avgintsstderrs.append(avgIntStdErr)
+				objAreasUm.append(areaInUm)
 
-		t0=time.time()
-		for i, cm in enumerate(centersofmass):
-			totDist =0
-			distCount = 0
-			for j, cm2 in enumerate(centersofmass):
-				if i==j: continue
-				dx = cm[0]-cm2[0]
-				dy = cm[1]-cm2[1]
-				dz = cm[2]-cm2[2]
+
+		t0 = time.time()
+		for i, cm in enumerate(umcentersofmass):
+			distList = []
+			for j, cm2 in enumerate(umcentersofmass):
+				if i == j: continue
+				dx = cm[0] - cm2[0]
+				dy = cm[1] - cm2[1]
+				dz = cm[2] - cm2[2]
 				dist = math.sqrt(dx*dx+dy*dy+dz*dz)
-				totDist += dist
-				distCount+=1
-			avgDist = totDist / distCount
+				distList.append(dist)
+			avgDist, avgDistStd, avgDistStdErr = lib.Math.meanstdeverr(distList)
 			avgDists.append(avgDist)
+			avgDistsStdErrs.append(avgDistStdErr)
 		print "Distance calculations took", time.time()-t0
+		
 		self.values = values
 		self.centersofmass = centersofmass
 		self.umcentersofmass = umcentersofmass
 		self.avgIntList = avgints
+		self.avgIntStdErrList = avgintsstderrs
 		self.avgDistList = avgDists
+		self.avgDistStdErrList = avgDistsStdErrs
+		self.objAreasUm = objAreasUm
 
 		n = len(self.values)
-		avgints = lib.Math.averageValue(self.avgIntList)
+		avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
 		ums = [x[1] for x in values]
-		avgums = lib.Math.averageValue(ums)
+		avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
 		pxs = [x[0] for x in values]
-		avgpxs = lib.Math.averageValue(pxs)
+		avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
 		
-		avgIntOutsideObjs = self.avgintCalc.GetAverageOutsideLabels()
-		avgIntInsideObjs = self.avgintCalc.GetAverageInsideLabels()
-		nonZeroVoxels = self.avgintCalc.GetNonZeroVoxels()
+		avgIntOutsideObjs = 0.0
+		variances = 0.0
+		allVoxels = 0
+		for i in range(0,startIntensity):
+			voxelAmount = labelShape.GetVolume(i)
+			avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
+			variances += voxelAmount * avgintCalc.GetVariance(i)
+			allVoxels += voxelAmount
+		avgIntOutsideObjs /= allVoxels
+		avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
 		
-		distMean, distSd = lib.Math.meanstdev(self.avgDistList)
+		avgIntInsideObjs = 0.0
+		variances = 0.0
+		allVoxels = 0
+		for i in range(startIntensity, numberOfLabels):
+			voxelAmount = labelShape.GetVolume(i)
+			avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
+			variances += voxelAmount * avgintCalc.GetVariance(i)
+			allVoxels += voxelAmount
+		avgIntInsideObjs /= allVoxels
+		avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+
+		labelShape = itk.LabelShapeImageFilter[origInput].New()
+		labelShape.SetInput(origInput)
+		labelShape.Update()
+		nonZeroVoxels = 0
+		for i in range(1, int(origRange[1]) + 1):
+			if labelShape.HasLabel(i):
+				nonZeroVoxels += labelShape.GetVolume(i)
+		
+		distMean, distStd, distStdErr = lib.Math.meanstdeverr(self.avgDistList)
 		
 		self.avgIntOutsideObjs = avgIntOutsideObjs
+		self.avgIntOutsideObjsStdErr = avgIntOutsideObjsStdErr
 		self.distMean = distMean
-		self.distSd = distSd
-			
+		self.distStdErr = distStdErr
+
+		avgAreaUm, avgAreaUmStd, avgAreaUmStdErr = lib.Math.meanstdeverr(objAreasUm)
+
 		self.setResultVariable("NumberOfObjects",len(values))
-		self.setResultVariable("ObjAvgSizeInPixels",avgpxs)
-		self.setResultVariable("ObjAvgSizeInUm",avgums)
+		self.setResultVariable("ObjAvgVolInVoxels",avgpxs)
+		self.setResultVariable("ObjAvgVolInUm",avgums)
+		self.setResultVariable("ObjAvgAreaInUm",avgAreaUm)
 		self.setResultVariable("ObjAvgIntensity",avgints)
 		self.setResultVariable("AvgIntOutsideObjs", avgIntOutsideObjs)
 		self.setResultVariable("AvgIntInsideObjs", avgIntInsideObjs)
 		self.setResultVariable("NonZeroVoxels", nonZeroVoxels)
 		self.setResultVariable("AverageDistance", distMean)
-		self.setResultVariable("AvgDistanceStdDev", distSd)
+		self.setResultVariable("AvgDistanceStdErr", distStdErr)
+		self.setResultVariable("ObjAvgVolInVoxelsStdErr",avgpxsstderr)
+		self.setResultVariable("ObjAvgVolInUmStdErr",avgumsstderr)
+		self.setResultVariable("ObjAvgAreaInUmStdErr",avgAreaUmStdErr)
+		self.setResultVariable("ObjAvgIntensityStdErr",avgintsstderr)
+		self.setResultVariable("AvgIntOutsideObjsStdErr",avgIntOutsideObjsStdErr)
+		self.setResultVariable("AvgIntInsideObjsStdErr",avgIntInsideObjsStdErr)
 		if self.reportGUI:
 			self.reportGUI.DeleteAllItems()
 			self.reportGUI.setVolumes(values)
 			self.reportGUI.setCentersOfMass(centersofmass)
-			self.reportGUI.setAverageIntensities(self.avgIntList)
-			self.reportGUI.setAverageDistances(self.avgDistList)
-			self.totalGUI.setStats([n, avgums, avgpxs, avgints, avgIntOutsideObjs, distMean, distSd])
+			self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
+			self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
+			self.reportGUI.setAreasUm(objAreasUm)
+			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr])
 			
 		return self.getInput(1)

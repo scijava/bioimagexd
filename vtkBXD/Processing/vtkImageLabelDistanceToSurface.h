@@ -58,7 +58,9 @@ public:
   //virtual void ComputeInputUpdateExtent(int inExt[6], int outExt[6]);
 
   vtkDoubleArray* GetAverageDistanceToSurfaceArray() { return DistanceToSurfaceArray; }  
-  vtkDoubleArray* GetAverageDistanceToPointArray() { return DistanceToPointArray; }  
+  vtkDoubleArray* GetAverageDistanceToPointArray() { return DistanceToPointArray; }
+  vtkDoubleArray* GetAverageDistanceToSurfaceStdErrArray() { return DistanceToSurfaceStdErrArray; }
+  vtkDoubleArray* GetAverageDistanceToPointStdErrArray() { return DistanceToPointStdErrArray; }
   
   vtkUnsignedIntArray* GetOutsideCountArray() { return OutsideCountArray; }
   vtkUnsignedIntArray* GetInsideCountArray() { return InsideCountArray; }
@@ -69,8 +71,8 @@ public:
   vtkSetObjectMacro(SurfaceLocator, vtkOBBTree);
 
   int SplitExtent(int splitExt[6], 
-                                                int startExt[6], 
-                                                int num, int total);
+                  int startExt[6], 
+                  int num, int total);
 
 
   // Description:
@@ -112,6 +114,8 @@ protected:
 private:
   vtkDoubleArray* DistanceToSurfaceArray;
   vtkDoubleArray* DistanceToPointArray;
+  vtkDoubleArray* DistanceToSurfaceStdErrArray;
+  vtkDoubleArray* DistanceToPointStdErrArray;
   vtkUnsignedIntArray* InsideCountArray;
   vtkUnsignedIntArray* OutsideCountArray;
   vtkOBBTree* SurfaceLocator;
@@ -124,5 +128,3 @@ private:
 };
 
 #endif
-
-

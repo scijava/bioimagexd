@@ -52,8 +52,8 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {"Level": "Segmentation level", "ImageSpacing": "Use image spacing", "Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
 
-		self.ctf = None
-		self.origCTF = None
+		self.origCtf = None
+		self.data = None
 		self.ignoreObjects = 1
 
 	def getDefaultValue(self, parameter):
@@ -81,11 +81,24 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def onRemove(self):
 		"""
+		Callback for when filter is removed
 		"""
-		if self.origCTF:
-			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCTF)
-			self.ctf = None
+		self.restoreCtf()
 
+	def onDisable(self):
+		"""
+		Callback for when filter is disabled
+		"""
+		self.restoreCtf()
+
+	def restoreCtf(self):
+		"""
+		Restore palette to the state before using this module
+		"""
+		if self.origCtf:
+			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
+		self.origCtf = None
+		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute filter using the input and return the output
@@ -148,11 +161,12 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Number of objects",n
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
-		if not self.ctf or not ncolors or ncolors < n:
-			self.ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
-			self.origCTF = self.dataUnit.getColorTransferFunction()
-
-		settings.set("ColorTransferFunction", self.ctf)
-		settings.set("PaletteColors", n)
+		if not self.origCtf or not ncolors or ncolors != n or not self.data or self.data != data:
+			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
+			if not self.origCtf:
+				self.origCtf = self.dataUnit.getColorTransferFunction()
+			self.data = data
+			settings.set("ColorTransferFunction", ctf)
+			settings.set("PaletteColors", n)
 
 		return data

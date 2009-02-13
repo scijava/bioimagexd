@@ -34,7 +34,7 @@ class WatershedTotalsList(wx.ListCtrl):
 		"""
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
-			size = (400, 60),
+			size = (645, 60),
 			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,
 			
 			)
@@ -42,18 +42,19 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.InsertColumn(0, "# of objects")
 		self.InsertColumn(1, u"Avg. Volume (px)")
 		self.InsertColumn(2, u"Avg. Volume (\u03BCm)")
-		self.InsertColumn(3, "Avg. intensity (obj)")
-		self.InsertColumn(4, "Avg. intensity (outside objs)")
-		self.InsertColumn(5, "Avg. distance to other objs (px)")
+		self.InsertColumn(3, u"Avg. Area (\u03BCm)")
+		self.InsertColumn(4, "Avg. intensity (obj)")
+		self.InsertColumn(5, "Avg. intensity (outside objs)")
+		self.InsertColumn(6, u"Avg. distance to other objs (\u03BCm)")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 105)
 		self.SetColumnWidth(3, 105)
 		self.SetColumnWidth(4, 105)
 		self.SetColumnWidth(5, 105)
+		self.SetColumnWidth(6, 105)
 		self.stats = []
 	
-
 		self.SetItemCount(1)
 
 		self.attr1 = wx.ListItemAttr()
@@ -83,15 +84,17 @@ class WatershedTotalsList(wx.ListCtrl):
 		if col == 0:
 			return "%d" % self.stats[0]
 		elif col == 2:
-			return u"%.3f \u03BCm" % self.stats[1]
+			return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[1],self.stats[2])
 		elif col == 1:
-			return "%.3f px" % self.stats[2]
+			return u"%.3f\u00B1%.3f px"%(self.stats[3],self.stats[4])
 		elif col == 3:
-			return "%.3f" % self.stats[3]
+			return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[5],self.stats[6])
 		elif col == 4:
-			return "%.3f" % self.stats[4]
+			return u"%.3f\u00B1%.3f"%(self.stats[7],self.stats[8])
 		elif col == 5:
-			return u"%.1f\u00B1%.1f"%(self.stats[5], self.stats[6])
+			return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
+		elif col == 6:
+			return u"%.2f\u00B1%.2f"%(self.stats[11],self.stats[12])
  
 	def OnGetItemImage(self, item):
 		return -1
@@ -109,7 +112,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 	A list control object that is used to display a list of the results of
 				 a watershed segmentation or a connected components analysis
 	"""
-	def __init__(self, parent, wid, gsize = (350, 250)):
+	def __init__(self, parent, wid, gsize = (470, 250)):
 		wx.ListCtrl.__init__(
 			self, parent, wid, 
 			size = gsize,
@@ -119,17 +122,17 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.InsertColumn(0, "Object #")
 		self.InsertColumn(1, u"Volume (px)")
 		self.InsertColumn(2, u"Volume (\u03BCm)")
-		
-		self.InsertColumn(3, "Center Of Mass")
-		self.InsertColumn(4, "Avg. intensity")
-		self.InsertColumn(5, "Avg. dist to other objs")
-		#self.InsertColumn(2, "")
+		self.InsertColumn(3, u"Area (\u03BCm)")
+		self.InsertColumn(4, "Center Of Mass")
+		self.InsertColumn(5, "Avg. intensity")
+		self.InsertColumn(6, u"Avg. dist to other objs (\u03BCm)")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 70)
 		self.SetColumnWidth(3, 70)
 		self.SetColumnWidth(4, 70)
 		self.SetColumnWidth(5, 70)
+		self.SetColumnWidth(6, 70)
 
 		self.highlightSelected = 1
 		#self.SetItemCount(1000)
@@ -143,6 +146,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.volumeList = []
 		self.centersOfMassList = []
 		self.avgIntList = []
+		self.areaUmList = []
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
 		self.Bind(wx.EVT_LIST_ITEM_FOCUSED, self.OnItemFocused)
@@ -156,21 +160,23 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.highlightSelected = flag
 	
 	def setCentersOfMass(self, centersofmassList):
+		"""
+		"""
 		self.centersOfMassList = centersofmassList
 		self.Freeze()
 		for i, cog in enumerate(centersofmassList):
 			if self.GetItemCount() < i:
 				self.InsertStringItem(i, "")
-			#print "cog=",cog,type(cog), type(cog[0])
-			self.SetStringItem(i, 3, "(%d,%d,%d)" % (cog))
+			self.SetStringItem(i, 4, "(%d,%d,%d)" % (cog))
 		self.Thaw()
 		self.Refresh()
 		
 	def setVolumes(self, volumeList):
+		"""
+		"""
 		self.volumeList = volumeList
 		self.Freeze()
 		for i, (vol, volum) in enumerate(volumeList):
-			#print "vol=",vol,"volum=",volum
 			if self.GetItemCount() <= i:
 				self.InsertStringItem(i, "")
 			self.SetStringItem(i, 0, "#%d" % (i+1))
@@ -178,8 +184,18 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			self.SetStringItem(i, 2, u"%.3f \u03BCm" % (volum))	  
 		self.Thaw()
 		self.Refresh()
+
+	def setAreasUm(self, areaList):
+		self.areaUmList = areaList
+		self.Freeze()
+		for i, area in enumerate(areaList):
+			if self.GetItemCount() <= i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 3, u"%.3f \u03BCm" % (area))	  
+		self.Thaw()
+		self.Refresh()
 		
-	def setAverageDistances(self, avgDistList):
+	def setAverageDistances(self, avgDistList, avgDistStdErrs):
 		"""
 		Set the list of average distances to be shown
 		"""
@@ -187,10 +203,10 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		for i, avgDist in enumerate(avgDistList):
 			if self.GetItemCount() < i:
 				self.InsertStringItem(i, "")
-			self.SetStringItem(i, 5,"%.3f"%avgDist)
+			self.SetStringItem(i, 6, u"%.3f\u00B1%.3f \u03BCm"%(avgDist,avgDistStdErrs[i]))
 		self.Refresh()
 		
-	def setAverageIntensities(self, avgIntList):
+	def setAverageIntensities(self, avgIntList, avgIntStdErrs):
 		"""
 		Set the list of average intensities that is displayed
 		"""
@@ -198,7 +214,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		for i, avgint in enumerate(avgIntList):
 			if self.GetItemCount() < i:
 				self.InsertStringItem(i, "")		
-			self.SetStringItem(i, 4, "%.3f" % (avgint))
+			self.SetStringItem(i, 5, u"%.3f\u00B1%.3f" %(avgint,avgIntStdErrs[i]))
 		self.Refresh()
 		
 	def OnItemFocused(self, event):
@@ -217,7 +233,6 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		"""
 		Send an event that will highlight the selected objects
 		"""
-		
 		self.counter -= 1
 		if self.counter <= 0:
 			lib.messenger.send(None, "selected_objects", self.getSelection())
@@ -237,7 +252,6 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 	def OnItemDeselected(self, evt):
 		print ("OnItemDeselected: %s" % evt.m_itemIndex)
 
-	
 	def OnGetItemImage(self, item):
 		return - 1
 

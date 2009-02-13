@@ -46,15 +46,16 @@ class ParticleReader:
 	A class for reading all particle definitions from .CSV files created by the
 	segmentation code
 	"""
-	def __init__(self, filename, filterObjectSize = 2):
+	def __init__(self, filename, filterObjectVolume = 2):
 		"""
 		Initialize the reader and necessary information for the reader
 		"""
 		self.rdr = csv.reader(open(filename), dialect = "excel", delimiter = ";")
 		print "Reading file",filename
-		self.filterObjectSize = filterObjectSize
+		self.filterObjectVolume = filterObjectVolume
 		self.timepoint = -1  
 		self.volumes = []
+		self.areas = []
 		self.cogs = []
 		self.avgints = []
 		self.objects = []
@@ -81,13 +82,18 @@ class ParticleReader:
 		"""
 		return a list of the avereage intensities of the objects (sorted)
 		"""
-		return self.avgints		
+		return self.avgints
+
+	def getAreas(self):
+		"""
+		Return a list of the areas of the objects (sorted)
+		"""
+		return self.areas
 		
-	def read(self, statsTimepoint  = 0):
+	def read(self, statsTimepoint = 0):
 		"""
 		Read the particles from the filename and create corresponding instances of Particle class
 		"""
-		
 		ret = []
 		skipNext = 0
 		curr = []
@@ -105,24 +111,29 @@ class ParticleReader:
 				skipNext = 1
 				continue
 			else:
-				obj, sizemicro, size, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line[0:10]
+				try:
+					obj, volumemicro, volume, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint, avgintstderr, avgdist, avgdiststderr, areamicro = line[0:14]
+				except:
+					obj, volumemicro, volume, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line[0:10] # Works with old data too
+					areamicro = 0.0
 			try:
-				size = int(size)
-				sizemicro = float(sizemicro)
+				volume = int(volume)
+				volumemicro = float(volumemicro)
 			except ValueError:
 				continue
 			obj = int(obj)
 			cog = map(int, [float(cogX), float(cogY), float(cogZ)])
 			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
-			avgint = float(avgint)  
-			if size >= self.filterObjectSize and obj != 0: 
-				particle = Particle(umcog, cog, self.timepoint, size, avgint, obj)
+			avgint = float(avgint)
+			if volume >= self.filterObjectVolume and obj != 0: 
+				particle = Particle(umcog, cog, self.timepoint, volume, avgint, obj)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
 				self.objects.append(obj)
 				self.cogs.append(cog)
-				self.volumes.append((size, sizemicro))
+				self.volumes.append((volume, volumemicro))
 				self.avgints.append(avgint)
+				self.areas.append(areamicro)
 		if curr:
 			ret.append(curr)
 		return ret
@@ -135,11 +146,11 @@ class Particle:
 	Pre: Valid coordinates
 	Notes: A compare - method could be implemented to make testing straightforward
 	"""
-	def __init__(self, pos = (0, 0, 0), intpos = (0, 0, 0), timePoint = 0, size = 1, avgint = 20, obj = -1):
+	def __init__(self, pos = (0, 0, 0), intpos = (0, 0, 0), timePoint = 0, volume = 1, avgint = 20, obj = -1):
 		self.pos = pos
 		self.intval = obj
 		self.timePoint = timePoint
-		self.size = size
+		self.volume = volume
 		self.averageIntensity = avgint
 		self.inTrack = False
 		self.flag = 0
@@ -189,7 +200,7 @@ class Particle:
 		Pre: Valid properties in particle p
 		Post: Particle self has valid properties
 		"""
-		self.size = particle.size
+		self.volume = particle.volume
 		self.pos = particle.pos
 		self.averageIntensity = particle.averageIntensity
 		self.posInPixels = particle.posInPixels

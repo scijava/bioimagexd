@@ -62,7 +62,6 @@ class ProcessingFilter:
 		self.initialization = True
 		self.numberOfInputs = numberOfInputs
 		self.descs = {}
-		self.dataUnit = None 
 		self.initDone = 0
 		self.recordedParameters = {} # We keep another dictionary for recorded values
 									 # so we can determine if we need to record a change or not
@@ -78,6 +77,8 @@ class ProcessingFilter:
 			self.modCallback = changeCallback
 		self.updateDefaultValues()
 
+		self.itkToVtk = None
+		self.vtkToItk = None
 		self.noop = 0
 		self.parameters = {}
 		self.gui = None
@@ -96,8 +97,6 @@ class ProcessingFilter:
 		chmin, chmax = numberOfInputs
 		for i in range(1, chmax+1):
 			self.setInputChannel(i, i-1)
-		self.vtkToItk = None
-		self.itkToVtk = None
 		self.executive = None
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
@@ -192,6 +191,18 @@ class ProcessingFilter:
 	def onRemove(self):
 		"""
 		Callback for when the filter is removed
+		"""
+		pass
+
+	def onEnable(self):
+		"""
+		Callback for when the filter is set enabled
+		"""
+		pass
+
+	def onDisable(self):
+		"""
+		Callback for when the filter is disabled
 		"""
 		pass
 
@@ -298,7 +309,7 @@ class ProcessingFilter:
 		elif not cast:
 			scalarType = image.GetScalarTypeAsString()
 
-			if scalarType in ["unsigned int", "unsigned long"]:
+			if scalarType in ["unsigned int", "unsigned long", "unsigned long long"]:
 				conv = vtk.vtkImageCast()
 				conv.SetInput(image)
 				typestr = "itk.VTKImageToImageFilter.IUL%d"%dim
@@ -343,8 +354,6 @@ class ProcessingFilter:
 		if image.__class__ == vtk.vtkImageData:
 			return image
 
-		del self.itkToVtk
-		
 		try:
 			import itk
 		except ImportError:

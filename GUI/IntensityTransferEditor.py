@@ -233,9 +233,7 @@ class IntensityTransferEditor(wx.Panel):
 		self.contrastEdit = wx.TextCtrl(self, -1, "1.00", size = (50, -1))
 		self.contrastBox.Add(self.contrastLbl)
 		self.contrastBox.Add(self.contrastEdit)
-		
 		self.contrastBox.Add(self.contrastSlider, 1, wx.TOP | wx.BOTTOM, 0)
-
 
 		self.brightnessEdit = wx.TextCtrl(self, -1, "0.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
 		self.gammaEdit = wx.TextCtrl(self, -1, "1.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
@@ -245,7 +243,6 @@ class IntensityTransferEditor(wx.Panel):
 		self.brightnessSlider.setSnapPoint(0.0, 0.1)
 		self.brightnessSlider.setScaledValue(0.1)
 		self.Bind(wx.EVT_COMMAND_SCROLL, self.setBrightness, self.brightnessSlider)
-
 
 		self.gammaSlider = RangedSlider.RangedSlider(self, -1, 10000, size = (260, -1), style = wx.SL_HORIZONTAL)
 		self.gammaSlider.setRange(0, 50, 0.0001, 1.0)
@@ -260,7 +257,6 @@ class IntensityTransferEditor(wx.Panel):
 		self.brightnessBox.Add(self.brightnessSlider)
 		self.brightnessBox.Add(self.brightnessEdit, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
-
 		self.minValueLbl = wx.StaticText(self, wx.NewId(), "Min value:")
 		self.maxValueLbl = wx.StaticText(self, wx.NewId(), "Max value:")
 
@@ -268,9 +264,8 @@ class IntensityTransferEditor(wx.Panel):
 		self.maxValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
 
 		fieldsizer = wx.GridBagSizer(0, 5)
-
-
 		valuesizer = wx.BoxSizer(wx.HORIZONTAL)
+		
 		fieldsizer.Add(self.minValueLbl, (0, 0))
 		fieldsizer.Add(self.minValue, (0, 1))
 		fieldsizer.Add(self.maxValueLbl, (0, 2))
@@ -321,7 +316,6 @@ class IntensityTransferEditor(wx.Panel):
 		self.segammaSlider.setSnapPoint(1.0, 0.1)
 		self.Bind(wx.EVT_COMMAND_SCROLL, self.setSEGamma, self.segammaSlider)
 
-
 		self.seThreshold.Bind(wx.EVT_KILL_FOCUS, self.updateSE)
 		self.seThreshold.Bind(wx.EVT_TEXT_ENTER, self.updateSE)
 		self.ssThreshold.Bind(wx.EVT_KILL_FOCUS, self.updateSS)
@@ -349,14 +343,12 @@ class IntensityTransferEditor(wx.Panel):
 		self.maxthreshold.Bind(wx.EVT_KILL_FOCUS, self.updateMaximumThreshold)
 		self.maxthreshold.Bind(wx.EVT_TEXT_ENTER, self.updateMaximumThreshold)
 
-		
 		self.setMinimumThreshold(0)
 		self.setMaximumThreshold(255)
 
 		self.setMinimumValue(0)
 		self.setMaximumValue(255)
 
-		
 		self.mainsizer.Add(self.canvasBox)
 
 		self.gammaLbl = wx.StaticText(self, -1, "Gamma")
@@ -522,7 +514,6 @@ class IntensityTransferEditor(wx.Panel):
 		self.updateGraph()
 		event.Skip()
 
-
 	def updateMaximumThreshold(self, event):
 		"""
 		A callback used to update the maximum threshold
@@ -660,7 +651,7 @@ class IntensityTransferEditor(wx.Panel):
 
 		if self.doyield:
 			self.doyield = 0
-#			wx.Yield()
+			#wx.Yield()
 			self.doyield = 1
 
 		lib.messenger.send(None, "itf_update")
@@ -678,7 +669,6 @@ class IntensityTransferEditor(wx.Panel):
 		"""
 		self.iTF = TF
 
-		
 		maxval = TF.GetRangeMax()
 		
 		self.brightnessSlider.reset()

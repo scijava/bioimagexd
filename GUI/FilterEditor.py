@@ -295,7 +295,7 @@ class FilterEditor(wx.Panel):
 		
 	def setFilter(self, status, index = -1, name = ""):
 		"""
-		Set the status of a given filter by either it's index, or
+		Set the status of a given filter by either it's index or
 					 if index is not given, it's name
 		"""        
 		if index == -1:
@@ -362,20 +362,19 @@ class FilterEditor(wx.Panel):
 		"""
 		Delete a filter by either it's index, or
 					 if index is not given, it's name
-		"""           
+		"""
 		if index == -1:
 			index = self.filterList.getIndexForName(name)
-		if index == -1:
-			return False
-			
+			if index == -1:
+				return False
+		
 		self.filterListbox.Delete(index)
 		self.filterList.removeFilter(index)
 		self.currentSelected = -1
 		self.removeGUI()
 		self.currentGUI = None
-		
-			
-		
+
+
 	def addFilter(self, event, filterclass):
 		"""
 		Add a filter to the stack

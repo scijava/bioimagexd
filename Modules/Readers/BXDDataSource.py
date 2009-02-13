@@ -33,6 +33,7 @@ import BXCDataSource
 from lib.DataSource.DataSource import DataSource
 import os.path
 import Logging
+import scripting
 
 def getExtensions(): 
 	return ["bxd"]
@@ -77,11 +78,21 @@ class BXDDataSource(DataSource):
 		f.close()
 		
 		dataunits = []
-		
+
 		for i, line in enumerate(lines):
 			# We create a datasource with specific channel number that
 			#  we can associate with the dataunit
-			bxcfile = os.path.join(filepath, line.strip())
+			line = line.strip()
+			linepath = ""
+			if scripting.platform.system() == "Windows":
+				for x in line.split("/"):
+					linepath = os.path.join(linepath,x)
+				line = linepath
+			else:
+				for x in line.split("\\"):
+					linepath = os.path.join(linepath,x)
+				line = linepath
+			bxcfile = os.path.join(filepath, line)
 			Logging.info("Reading file %s" % bxcfile, kw = "lsmreader")
 			datasource = BXCDataSource.BXCDataSource()
 			datasource.setBaseFileName(filename)

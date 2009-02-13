@@ -13,7 +13,7 @@ vtkImageColocalizationFilter.cxx
 vtkImageColocalizationTest.cxx
 vtkIntensityTransferFunction.cxx
 vtkImageColorMerge.cxx
-vtkImageLabelAverage.cxx
+#vtkImageLabelAverage.cxx
 vtkImageMapToIntensities.cxx
 vtkImageSimpleMIP.cxx
 vtkImageSolitaryFilter.cxx
@@ -25,6 +25,7 @@ vtkImageIterativeDeconvolution3D.cxx
 vtkImageDiffractionPSF3D.cxx
 vtkImageLabelDistanceToSurface.cxx
 vtkHandleColorTransferFunction.cxx
+vtkTestMemory.cxx
 )
 
 # --------------------------------------------------------------------------

@@ -315,14 +315,13 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 	
 		#if self.oldThresholds != (ch1Lower, ch1Upper, ch2Lower, ch2Upper):
 		#	Logging.info("Calculating statistics")
-		#	self.colocAutoThreshold.Update()
+		self.colocAutoThreshold.Update()
 
-		#	for variable in self.resultVariables.keys():
-		#		if hasattr(self.colocAutoThreshold, "Get%s"%variable):
-		#			self.setResultVariable(variable, eval("self.colocAutoThreshold.Get%s()"%variable))
+		for variable in self.resultVariables.keys():
+			if hasattr(self.colocAutoThreshold, "Get%s"%variable):
+				self.setResultVariable(variable, eval("self.colocAutoThreshold.Get%s()"%variable))
 
-
-		#	self.oldThresholds = self.parameters["LowerThresholdCh1"], self.parameters["UpperThresholdCh1"], self.parameters["LowerThresholdCh2"], self.parameters["UpperThresholdCh2"]
+		self.oldThresholds = self.parameters["LowerThresholdCh1"], self.parameters["UpperThresholdCh1"], self.parameters["LowerThresholdCh2"], self.parameters["UpperThresholdCh2"]
 		
 		# This is used if one bit colocalization is selected
 		self.colocFilter.SetOutputScalarValue(self.parameters["ColocValue"])
