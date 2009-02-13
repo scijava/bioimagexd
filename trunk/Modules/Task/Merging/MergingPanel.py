@@ -37,7 +37,6 @@ import lib.messenger
 import Logging
 from GUI import TaskPanel
 from GUI import ColorTransferEditor
-#import vtk
 import vtkbxd
 import wx
 
@@ -58,7 +57,6 @@ class MergingPanel(TaskPanel.TaskPanel):
 		self.createItemSelection = 1
 		TaskPanel.TaskPanel.__init__(self, parent, tb)
 
-		
 		self.oldBg = self.GetBackgroundColour()
 		
 		self.mainsizer.Layout()
@@ -98,7 +96,6 @@ class MergingPanel(TaskPanel.TaskPanel):
 		self.restoreBtn.Bind(wx.EVT_BUTTON, self.intensityTransferEditor.restoreDefaults)
 		self.box.Add(self.restoreBtn)        
 		
-
 		# The alpha function doesn't need to be edited
 		# Code left if futher need shows ups
 		

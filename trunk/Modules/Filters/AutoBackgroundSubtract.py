@@ -79,13 +79,15 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
-		"""		
-		return 1
+		"""
+		if parameter == "MostCommon":
+			return 1
+		return 0
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""			   
+		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
@@ -116,7 +118,7 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 				if value > count: 
 					commonest = i
 					count = value
-			print "Commonest value = %d count = %d"%(commonest, count)
+			print "The most common value = %d count = %d"%(commonest, count)
 			shift = -commonest
 
 		self.vtkfilter.SetShift(shift)

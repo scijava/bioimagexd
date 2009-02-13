@@ -63,8 +63,8 @@ class AdjustPanel(TaskPanel):
 		lib.messenger.connect(None, "timepoint_changed", self.updateTimepoint)
 		self.Show()
 
-		self.mainsizer.Layout()
 		self.mainsizer.Fit(self)
+		self.mainsizer.Layout()
 
 	def createIntensityInterpolationPanel(self):
 		"""
@@ -122,7 +122,6 @@ class AdjustPanel(TaskPanel):
 		self.interpolationBox.Add(self.interpolateBtn)
 		self.interpolationSizer.Add(self.interpolationBox, (last + 1, 0))
 
-
 		#self.mainsizer.Add(self.interpolationPanel,(1,0))
 		#self.panel.Layout()
 		#self.mainsizer.Fit(self.panel)
@@ -136,7 +135,7 @@ class AdjustPanel(TaskPanel):
 		self.editIntensitySizer = wx.GridBagSizer()
 
 		self.iTFEditor = IntensityTransferEditor(self.editIntensityPanel)
-		self.editIntensitySizer.Add(self.iTFEditor, (0, 0))#,span=(1,2))
+		self.editIntensitySizer.Add(self.iTFEditor, (0, 0)) #,span=(1,2))
 
 		self.box = wx.BoxSizer(wx.HORIZONTAL)
 		self.editIntensitySizer.Add(self.box, (2, 0))
@@ -203,7 +202,6 @@ class AdjustPanel(TaskPanel):
 					 Preview and Close
 		"""
 		TaskPanel.createButtonBox(self)
-
 		#self.processButton.SetLabel("Process Dataset Series")
 		#self.processButton.Bind(wx.EVT_BUTTON,self.doProcessingCallback)
 		lib.messenger.connect(None, "process_dataset", self.doProcessingCallback)
@@ -250,6 +248,9 @@ class AdjustPanel(TaskPanel):
 		for i in range(l):
 			minval = min([a.getScalarRange()[0] for a in sources])
 			maxval = max([a.getScalarRange()[1] for a in sources])
+			bitdepth = sources[0].getBitDepth()
+			minval = min(0,minval)
+			maxval = max(2**bitdepth-1, maxval)
 			itf = vtkbxd.vtkIntensityTransferFunction()
 			itf.SetRangeMax(maxval)
 			

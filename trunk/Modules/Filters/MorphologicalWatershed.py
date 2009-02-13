@@ -48,12 +48,11 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
 		self.origCtf = None
-		self.segCtf = None
-		self.noPalette = 1
 		self.n = 0
 		self.ignoreObjects = 2
 		self.relabelFilter	= None
 		self.itkfilter = None
+		self.data = None
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -89,11 +88,23 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def onRemove(self):
 		"""
-		Restore palette upon filter removal
+		Callback for when filter is removed
+		"""
+		self.restoreCtf()
+
+	def onDisable(self):
+		"""
+		Callback for when filter is disabled
+		"""
+		self.restoreCtf()
+
+	def restoreCtf(self):
+		"""
+		Restore palette to the state before using this module
 		"""
 		if self.origCtf:
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
-			self.replcementColorTransferFunction = None
+		self.origCtf = None		
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -124,7 +135,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.itkfilter.SetInput(image)
 		Logging.info("Using watershed level %.3f"%self.parameters["Level"])
 		self.itkfilter.SetLevel(self.parameters["Level"])
-				
+		
 		self.setImageType("UL%d"%dim)
 		self.itkfilter.Update()
 		print "Morphological watershed took", time.time() - t, "seconds"
@@ -149,23 +160,20 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		n = self.relabelFilter.GetNumberOfObjects()
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
-		if self.noPalette or not ncolors or ncolors < n:
+		
+		if not self.origCtf or not ncolors or ncolors != n or not self.data or self.data != data:
+			self.data = data
 			ctf = lib.ImageOperations.watershedPalette(2, n)
-			self.noPalette = 0
-			self.segCtf = ctf
 			if markWatershedLine:
 				ctf.AddRGBPoint(0, 1.0, 1.0, 1.0)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)
-			self.replcementColorTransferFunction = ctf
+			settings.set("ColorTransferFunction", ctf)
 			val = [0, 0, 0]
 			ctf.GetColor(1, val)
 			print "ctf value at 1 =", val, "n colors =", n
 			settings.set("PaletteColors", n)
-		else:
-			if self.segCtf:
-				self.dataUnit.getSettings().set("ColorTransferFunction", self.segCtf)	 
+
 		print "Creating palette took",time.time()-t,"seconds"
 
 		return data

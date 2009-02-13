@@ -151,10 +151,6 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()			   
 
-		
-
-		
-
 
 class GradientFilter(ProcessingFilter.ProcessingFilter):
 	"""
@@ -304,8 +300,6 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		if update:
 			self.itkfilter.Update()
 		return self.itkfilter.GetOutput()			 
-
-
 
 
 class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):

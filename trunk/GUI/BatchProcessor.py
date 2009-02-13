@@ -463,7 +463,6 @@ class ProcedurePanel(wx.ScrolledWindow):
 		"""
 		change the name of the current procedure list
 		"""
-
 		self.analysis.renameList(self.analysis.getSelectedProcedureList(), evt.GetLabel())
 		
 		
@@ -484,7 +483,6 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 	def onCheckGroupByProcList(self, evt):
 		"""
-		
 		"""
 		self.analysis.setChannelGroupingByProcedureList(evt.IsChecked())
 		
@@ -624,7 +622,7 @@ class BatchProcessor(wx.Frame):
 		self.filterEditor = self.procedurePane.filterEditor
 		
 		self.splitter.SetMinimumPaneSize(20)
-		self.splitter.SplitVertically(self.procedurePane, self.grid, 400)
+		self.splitter.SplitVertically(self.procedurePane, self.grid, 650)
 
 		self.createMenubar()
 		

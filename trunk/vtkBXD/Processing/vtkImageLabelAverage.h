@@ -3,6 +3,8 @@
   Program:   BioImageXD
   Module:    $RCSfile: vtkImageLabelAverage.h,v $
 
+ This module is not used anymore in BioImageXD
+
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
 
@@ -58,37 +60,54 @@ public:
 
   int GetNumberOfLabels() { return NumberOfItems; }
   double GetAverage(int label) { return AverageArray->GetValue(label); }
-  void SetAverage(int label, int value) { AverageArray->SetValue(label, value); }
   vtkDoubleArray* GetAverageArray() { return AverageArray; }
   
   int SplitExtent(int splitExt[6], 
-                                                int startExt[6], 
-                                                int num, int total);
+				  int startExt[6],
+				  int num, int total);
   // Description:
-  // Set / Get the total average of non-zero voxels inside and outside
+  // Get the total average of non-zero voxels inside and outside
   // the labels.
   vtkGetMacro(AverageInsideLabels,double);
-  vtkSetMacro(AverageInsideLabels,double);                                                    
   vtkGetMacro(AverageOutsideLabels,double);
-  vtkSetMacro(AverageOutsideLabels,double);       
 
   // Description:
-  // Set the background level (number of objects in the label image to ignore in calculating the
-  // inside and outside totals)
+  // Get the total voxels inside and outside the labels.
+  vtkGetMacro(VoxelsInsideLabels, unsigned int);
+  vtkGetMacro(VoxelsOutsideLabels, unsigned int);
+
+  // Description:
+  // Get the standard deviation of average inside / outside labels
+  vtkGetMacro(InsideLabelsStdDev, double);
+  vtkGetMacro(OutsideLabelsStdDev, double);
+
+  // Description:
+  // Set / Get the background level (number of objects in the label image to
+  // ignore in calculating the inside and outside totals)
   vtkGetMacro(BackgroundLevel,int);
   vtkSetMacro(BackgroundLevel,int);   
   
   // Description:
-  // The number of non-zero voxels
+  // Get the number of non-zero voxels
   vtkGetMacro(NonZeroVoxels, unsigned int);
+
+  void SetAverage(int label, int value) { AverageArray->SetValue(label,value); }
+  vtkSetMacro(VoxelsInsideLabels, unsigned int);
+  vtkSetMacro(VoxelsOutsideLabels, unsigned int);
+  vtkSetMacro(InsideLabelsStdDev, double);
+  vtkSetMacro(OutsideLabelsStdDev, double);
+  vtkSetMacro(AverageInsideLabels,double);
+  vtkSetMacro(AverageOutsideLabels,double);
   vtkSetMacro(NonZeroVoxels, unsigned int);
+
 protected:
   vtkImageLabelAverage();
   ~vtkImageLabelAverage() {};
 
-  
-  // Method that can be called by multiple threads that is given the input data and an input extent
-  // and is responsible for producing the matching output data.
+
+  // Method that can be called by multiple threads that is given the input data
+  // and an input extent and is responsible for producing the matching output
+  // data.
   void ThreadedRequestData (vtkInformation* request,
                             vtkInformationVector** inputVector,
                             vtkInformationVector* outputVector,
@@ -103,9 +122,13 @@ private:
   vtkDoubleArray* AverageArray;
   double AverageInsideLabels;
   double AverageOutsideLabels;
+  double InsideLabelsStdDev;
+  double OutsideLabelsStdDev;
   int BackgroundLevel;
   int NumberOfItems;
   unsigned int NonZeroVoxels;
+  unsigned int VoxelsInsideLabels;
+  unsigned int VoxelsOutsideLabels;
   vtkImageLabelAverage(const vtkImageLabelAverage&);  // Not implemented.
   void operator=(const vtkImageLabelAverage&);  // Not implemented.
 };

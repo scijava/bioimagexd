@@ -315,7 +315,7 @@ class SurfaceModule(VisualizationModule):
 			n = self.contour.GetNumberOfContours()
 			for i in range(0, n):
 				self.contour.SetValue(i, int(self.contour.GetValue(i)))
-			print self.contour
+			#print self.contour
 
 		#TODO: should decimateLevel and preserveTopology be instance variables?
 		decimateLevel = self.parameters["Simplify"] 

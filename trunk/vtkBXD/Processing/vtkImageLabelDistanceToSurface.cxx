@@ -20,7 +20,6 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-
 =========================================================================*/
 #include "vtkImageLabelDistanceToSurface.h"
 
@@ -35,8 +34,6 @@
 #include "vtkDoubleArray.h"
 #include "vtkPolyData.h"
 #include "vtkPointLocator.h"
-
-
 #include "vtkMath.h"
 
 #include <vtkstd/map>
@@ -53,6 +50,8 @@ vtkImageLabelDistanceToSurface::vtkImageLabelDistanceToSurface()
   BackgroundLevel = 1;
   this->DistanceToSurfaceArray = vtkDoubleArray::New();
   this->DistanceToPointArray = vtkDoubleArray::New();
+  this->DistanceToSurfaceStdErrArray = vtkDoubleArray::New();
+  this->DistanceToPointStdErrArray = vtkDoubleArray::New();
   this->InsideCountArray = vtkUnsignedIntArray::New();
   this->OutsideCountArray = vtkUnsignedIntArray::New();
   this->MeasurePoint[0] = this->MeasurePoint[1] = this->MeasurePoint[2] = 0;
@@ -73,7 +72,6 @@ int vtkImageLabelDistanceToSurface::FillInputPortInformation(
 	  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
   } else {
 	  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
-  
   }
   return 1;
 }
@@ -81,8 +79,7 @@ int vtkImageLabelDistanceToSurface::FillInputPortInformation(
 // This templated function executes the filter for any type of data.
 template <class T>
 void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self, int id,int NumberOfInputs,
-                           vtkImageData **inData,vtkImageData*outData,vtkPolyData* surface, int outExt[6],
-                            T*)
+                           vtkImageData **inData,vtkImageData*outData,vtkPolyData* surface, int outExt[6], T*)
 {
   vtkIdType inIncX,inIncY,inIncZ;
   int maxX,maxY,maxZ,maxC;
@@ -93,12 +90,19 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
   unsigned long count = 0;
   unsigned long target;
 
-  double*MeasurePoint = self->GetMeasurePoint();
-  vtkDoubleArray* distanceToSurfaceArray = self->GetAverageDistanceToSurfaceArray();
-  vtkDoubleArray* distanceToPointArray = self->GetAverageDistanceToPointArray();
-  vtkOBBTree* insideLocator = self->GetSurfaceLocator();
   double VoxelSize[3];
   self->GetVoxelSize(VoxelSize);
+  double* MeasurePoint = self->GetMeasurePoint();
+  for (int i = 0; i < 3; ++i)
+	{
+	  MeasurePoint[i] *= VoxelSize[i];
+	}
+
+  vtkDoubleArray* distanceToSurfaceArray = self->GetAverageDistanceToSurfaceArray();
+  vtkDoubleArray* distanceToSurfaceStdErrArray = self->GetAverageDistanceToSurfaceStdErrArray();
+  vtkDoubleArray* distanceToPointArray = self->GetAverageDistanceToPointArray();
+  vtkDoubleArray* distanceToPointStdErrArray = self->GetAverageDistanceToPointStdErrArray();
+  vtkOBBTree* insideLocator = self->GetSurfaceLocator();
   vtkUnsignedLongArray* ObjectSizeArray =  vtkUnsignedLongArray::New();
   vtkUnsignedIntArray *inCount = self->GetInsideCountArray();
   vtkUnsignedIntArray* outCount = self->GetOutsideCountArray();
@@ -130,6 +134,8 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
   ObjectSizeArray->SetNumberOfValues((unsigned long)range[1]+1);
   distanceToSurfaceArray->SetNumberOfValues((unsigned long)range[1]+1);
   distanceToPointArray->SetNumberOfValues((unsigned long)range[1]+1);
+  distanceToSurfaceStdErrArray->SetNumberOfValues((unsigned long)range[1]+1);
+  distanceToPointStdErrArray->SetNumberOfValues((unsigned long)range[1]+1);
   outCount->SetNumberOfValues((unsigned long)range[1]+1);
   inCount->SetNumberOfValues((unsigned long)range[1]+1);
 	
@@ -137,9 +143,11 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
 
 
   for(int i=0;i<range[1]+1;i++) {
-     ObjectSizeArray->SetValue(i, 1);
+     ObjectSizeArray->SetValue(i, 0);
      distanceToSurfaceArray->SetValue(i, 0);
      distanceToPointArray->SetValue(i, 0);
+     distanceToSurfaceStdErrArray->SetValue(i, 0);
+     distanceToPointStdErrArray->SetValue(i, 0);
      inCount->SetValue(i, 0);
      outCount->SetValue(i, 0);
   }
@@ -173,25 +181,25 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
 				double x = idxX*Spacing[0], y = idxY*Spacing[1], z = idxZ*Spacing[2];
 				
 				double currPos[3];
-				currPos[0] = x;currPos[1] = y; currPos[2] = z;
+				currPos[0] = x; currPos[1] = y; currPos[2] = z;
 				inside = insideLocator->InsideOrOutside(currPos);
-				if(inside==-1)  inCount->SetValue(fgScalar, inCount->GetValue(fgScalar)+1);
+				if(inside==-1) inCount->SetValue(fgScalar, inCount->GetValue(fgScalar)+1);
 				else outCount->SetValue(fgScalar, outCount->GetValue(fgScalar)+1);
 
 				// Locate the nearest point on the given surface 
 				vtkIdType objId = locator->FindClosestPoint(x,y,z);
-				 surface->GetPoint(objId, Point);
+				surface->GetPoint(objId, Point);
 				 //printf("Point = %f, %f, %f\n", Point[0], Point[1], Point[2]);
 
 				 // descale it from the VTK spacing
-				 Point[0] /= Spacing[0];
-				 Point[1] /= Spacing[1];
-				 Point[2] /= Spacing[2];
+				Point[0] /= Spacing[0];
+				Point[1] /= Spacing[1];
+				Point[2] /= Spacing[2];
 				 // and rescale it using the voxel sizes
 				 //printf("Voxel size = %f, %f, %f\n", VoxelSize[0], VoxelSize[1], VoxelSize[2]);
-				 Point[0] *= VoxelSize[0];
-				 Point[1] *= VoxelSize[1];
-				 Point[2] *= VoxelSize[2];
+				Point[0] *= VoxelSize[0];
+				Point[1] *= VoxelSize[1];
+				Point[2] *= VoxelSize[2];
 				 
 				 // finally scale the current voxel pos using voxel sizes
 				Point2[0] = idxX*VoxelSize[0];
@@ -200,35 +208,49 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
 				
 	
 				// calculate the resulting distance and add it to the array
-				double distance =   sqrt(vtkMath::Distance2BetweenPoints(Point, Point2));
-				 distanceToSurfaceArray->SetValue(fgScalar, distanceToSurfaceArray->GetValue(fgScalar)+distance);
-				//printf("x, y, z = %f, %f, %f, distance = %f\n", x,y,z, distance);
+				double distancepow = vtkMath::Distance2BetweenPoints(Point, Point2);
+				double distance = sqrt(distancepow);
+				distanceToSurfaceArray->SetValue(fgScalar, distanceToSurfaceArray->GetValue(fgScalar)+distance);
+				distanceToSurfaceStdErrArray->SetValue(fgScalar, distanceToSurfaceStdErrArray->GetValue(fgScalar)+distancepow);
 
-				Point[0] = MeasurePoint[0] * VoxelSize[0];
-				Point[1] = MeasurePoint[1] * VoxelSize[1];
-				Point[2] = MeasurePoint[2] * VoxelSize[2];
-				distance = sqrt(vtkMath::Distance2BetweenPoints(Point, Point2));
+				distancepow = vtkMath::Distance2BetweenPoints(MeasurePoint, Point2);
+				distance = sqrt(distancepow);
 				
 				distanceToPointArray->SetValue(fgScalar, distanceToPointArray->GetValue(fgScalar)+distance);
+				distanceToPointStdErrArray->SetValue(fgScalar, distanceToPointStdErrArray->GetValue(fgScalar)+distancepow);
 	         }
           }
           fgPtr+=inIncX;
       }
       fgPtr += inIncY;
-    }  
+    }
     fgPtr += inIncZ;
   }
   
-  for(int i=0;i<range[1]+1;i++) {
-     double newValue = distanceToSurfaceArray->GetValue(i) / ObjectSizeArray->GetValue(i);
+  for(int i = 0; i < range[1] + 1; i++) {
+	double numberOfValues = ObjectSizeArray->GetValue(i);
+	double newValue = distanceToSurfaceArray->GetValue(i);
+	if (numberOfValues > 0) newValue /= numberOfValues;
      //printf("Dividing %d sum %f by %d = %f\n", i,  distanceToSurfaceArray->GetValue(i), ObjectSizeArray->GetValue(i), newValue);
-     distanceToSurfaceArray->SetValue(i, newValue);
-     
-     newValue = distanceToPointArray->GetValue(i) / ObjectSizeArray->GetValue(i);	     
-     distanceToPointArray->SetValue(i, newValue);
-     
+	distanceToSurfaceArray->SetValue(i, newValue);
+	double distanceStdErr = distanceToSurfaceStdErrArray->GetValue(i);
+	if (numberOfValues > 0) distanceStdErr /= numberOfValues;
+	distanceStdErr -= pow(newValue,2);
+	distanceStdErr = sqrt(fabs(distanceStdErr)); // fabs here just in case we have a rounding error when only one voxel is in object
+	if (numberOfValues > 0) distanceStdErr /= sqrt(numberOfValues);
+	distanceToSurfaceStdErrArray->SetValue(i, distanceStdErr);
 
-  }  
+	newValue = distanceToPointArray->GetValue(i);
+	if (numberOfValues > 0) newValue /= numberOfValues;
+	distanceToPointArray->SetValue(i, newValue);
+	distanceStdErr = distanceToPointStdErrArray->GetValue(i);
+	if (numberOfValues > 0) distanceStdErr /= numberOfValues;
+	distanceStdErr -= pow(newValue,2);
+	distanceStdErr = sqrt(fabs(distanceStdErr));
+	if (numberOfValues > 0) distanceStdErr /= numberOfValues;
+	distanceToPointStdErrArray->SetValue(i, distanceStdErr);
+  }
+
   ObjectSizeArray->Delete();
 }
 

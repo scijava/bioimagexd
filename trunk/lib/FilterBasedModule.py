@@ -230,7 +230,7 @@ class FilterList:
 		self.filters[index].onRemove()
 		del self.filters[index]
 		self.setModified(1)
-			
+		
 	def setModified(self, status):
 		"""
 		set a status flag indicating whether the list has been modified
@@ -318,6 +318,10 @@ class FilterList:
 		"""
 		set the status of a given filter
 		"""
+		if status:
+			self.filters[index].onEnable()
+		else:
+			self.filters[index].onDisable()
 		self.filters[index].setEnabled(status)
 		self.setModified(1)
 		
@@ -470,7 +474,7 @@ class FilterBasedModule(lib.Module.Module):
 			else:
 				currfilter.setNextFilter(None)
 			Logging.info("Executing %s"%currfilter.name,kw="pipeline")
-			
+
 			data = currfilter.execute(data, update=0, last=flag)
 			polydata = currfilter.getPolyDataOutput()
 			

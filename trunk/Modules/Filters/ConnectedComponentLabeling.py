@@ -50,6 +50,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.origCtf = None
 		self.relabelFilter = None
 		self.itkfilter = None
+		self.data = None
 		
 	def getParameterLevel(self, parameter):
 		"""
@@ -72,16 +73,28 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""			   
-		#return [["",("Level",)]]
+		"""
 		return [["Minimum object size (in pixels)", ("Threshold", )]]
 
 	def onRemove(self):
 		"""
-		Restore palette upon filter removal
-		"""		   
+		Callback for when filter is removed
+		"""
+		self.restoreCtf()
+
+	def onDisable(self):
+		"""
+		Callback for when filter is disabled
+		"""
+		self.restoreCtf()
+
+	def restoreCtf(self):
+		"""
+		Restore palette to the state before using this module
+		"""
 		if self.origCtf:
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
+		self.origCtf = None		
 	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -115,13 +128,16 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Relabeling segmented image"
 		self.relabelFilter.Update()
 		n = self.relabelFilter.GetNumberOfObjects()
-	
+
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
-		if not self.origCtf or not ncolors or ncolors < n:
-			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
+
+		if not self.origCtf or not ncolors or ncolors != n or not self.data or self.data != data:
 			if not self.origCtf:
-				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)
+				self.origCtf = settings.get("ColorTransferFunction")
+			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
+			self.data = data
+			settings.set("ColorTransferFunction", ctf)
 			settings.set("PaletteColors", n)
+			
 		return data

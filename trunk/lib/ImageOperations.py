@@ -599,7 +599,7 @@ def watershedPalette(ctfLowerBound, ctfUpperBound, ignoreColors = 2, filename = 
 		ctfLowerBound = ctf.GetSize()
 
 	handle = vtkbxd.vtkHandleColorTransferFunction()
-	handle.CreateRandomColorTransferFunction(ctf, ctfLowerBound, ctfUpperBound - 1, 1.5)
+	handle.CreateRandomColorTransferFunction(ctf, ctfLowerBound, ctfUpperBound, 1.5)
 	#for i in range(int(ctfLowerBound), int(ctfUpperBound)):
 	#	red = 0
 	#	green = 0

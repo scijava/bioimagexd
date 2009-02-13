@@ -74,8 +74,13 @@ class AdjustSettings(DataUnitSettings):
 
 		if hasattr(dataunit, "getScalarRange"):
 			minval, maxval = dataunit.getScalarRange()
+			bitdepth = dataunit.getBitDepth()
 		else:
 			minval, maxval = dataunit.getSourceDataUnits()[0].getScalarRange()
+			bitdepth = dataunit.getSourceDataUnits()[0].getBitDepth()
+
+		minval = min(0,minval)
+		maxval = max(2**bitdepth-1, maxval)
 
 		for i in range(timepoints):
 			

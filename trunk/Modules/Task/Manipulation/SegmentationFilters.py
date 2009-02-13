@@ -128,9 +128,6 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		return self.vtkfilter.GetOutput()
 
 
-
-
-
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for labeling all separate objects in an image
@@ -142,12 +139,9 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Initialization
 		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		
-		
+		ProcessingFilter.ProcessingFilter.__init__(self, inputs)		
 		self.descs = {"MinSize": "Minimum object size in pixels"}
 		self.itkFlag = 1
-		
 		self.itkfilter = None
 
 	def getParameterLevel(self, parameter):
@@ -213,11 +207,8 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		
-		
 		self.descs = {"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
-
 		self.itkfilter = None
 		
 	def getParameterLevel(self, parameter):

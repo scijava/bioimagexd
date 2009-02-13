@@ -80,22 +80,23 @@ class BXDDataWriter(DataWriter):
 		else:
 			bxcFile = bxdFile[:-4] + ".bxc"
 		return os.path.join(self.getPath(), bxcFile)
+		
 	def getPath(self):
 		"""
-		return the actual (created) path where the files should be written
+		Return the actual (created) path where the files should be written
 		"""
 		return self.filedir
 		
 	def getFilename(self):
 		"""
-		Descriptio: return the filename
+		Return the filename
 		"""
 		return self.filename
+		
 	def write(self):
 		"""
 		Writes the given datasets and their information to a du file
 		"""
-   
 		try:
 			fp = open(self.filename, "w")
 		except IOError, ex:

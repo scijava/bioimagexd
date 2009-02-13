@@ -177,7 +177,7 @@ def build():
 		
 def removeWinFiles():
 	"""
-	Removes unneeded Windows system dll's 
+	Removes unneeded dll's from Windows/System32 directory
 	"""
 	path = os.curdir
 	path = os.path.join(path,"dist")

@@ -90,6 +90,7 @@ class TaskPanel(ScrolledPanel):
 		self.commonSettingsSizer = wx.GridBagSizer()
 		self.mainsizer.Add(self.commonSettingsSizer, (n, 0), flag = wx.EXPAND | wx.ALL)
 		n += 1
+
 		self.mainsizer.Add(self.settingsSizer, (n, 0), flag = wx.EXPAND | wx.ALL)
 		n += 1
 		if wantNotebook:
@@ -100,18 +101,18 @@ class TaskPanel(ScrolledPanel):
 			self.settingsNotebook.SetFont(font)
 
 		#self.staticLine=wx.StaticLine(self)
-		#self.mainsizer.Add(self.staticLine,(2,0),span=(1,1),flag=wx.EXPAND)
-		self.mainsizer.Add(self.buttonPanel, (n, 0), span = (1, 1))#, flag = wx.EXPAND)
+		#self.mainsizer.Add(self.staticLine,(n,0),span=(1,1),flag=wx.EXPAND)
+		self.mainsizer.Add(self.buttonPanel, (n, 0), flag = wx.ALL | wx.EXPAND)
 
 		n += 1
 		self.filePath = None
 		self.dataUnit = None
 		self.settings = None
 		self.settingsIndex = -1
-
+		
 		self.createButtonBox()
 		self.createOptionsFrame()
-
+		
 		self.SetSizer(self.mainsizer)
 		self.SetAutoLayout(True)
 		
@@ -279,8 +280,8 @@ class TaskPanel(ScrolledPanel):
 		self.previewButton = wx.Button(self.buttonPanel, -1, "Apply")
 		self.previewButton.Bind(wx.EVT_BUTTON, self.doPreviewCallback)
 		#self.buttonSizer.AddSpacer((5,5))
-		self.buttonSizer.Add(self.previewButton, 1, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
-		self.buttonSizer.AddSpacer((5,5))
+		self.buttonSizer.Add(self.previewButton, 0, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
+		#self.buttonSizer.AddSpacer((5,5))
 
 	def onHelp(self, evt):
 		"""
@@ -293,7 +294,6 @@ class TaskPanel(ScrolledPanel):
 		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
-
 		if self.wantNotebook:
 			self.settingsSizer.Add(self.settingsNotebook, (1, 0), flag = wx.EXPAND | wx.ALL)
 

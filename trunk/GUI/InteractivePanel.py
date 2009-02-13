@@ -93,6 +93,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.zoomToFitFlag = False
 		
 		self.dataUnit = None
+		self.dataDimX = self.dataDimY = self.dataDimZ = 0
 		self.listeners = {}
 		self.annotationClass = None
 		
@@ -940,13 +941,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 	def setDataUnit(self, dataUnit):
 		"""
 		Sets the data unit that is displayed
-		"""	   
+		"""
 		self.dataUnit = dataUnit
-		if dataUnit and self.enabled:
+		if dataUnit:
 			self.voxelSize = dataUnit.getVoxelSize()
 			x, y, z = self.dataUnit.getDimensions()
-			self.buffer = wx.EmptyBitmap(x, y)
 			self.dataDimX, self.dataDimY, self.dataDimZ = x,y,z
+		if dataUnit and self.enabled:
+			self.buffer = wx.EmptyBitmap(x, y)
 			wx.CallAfter(self.readAnnotationsFromCache)
 
 	def enable(self, flag):

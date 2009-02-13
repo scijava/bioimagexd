@@ -86,6 +86,7 @@ class BatchAnalysis:
 			raise Logging.GUIError("Could not rename procedure list",
 			"""Failed to rename the procedure list. No list with
 the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedureLists.keys())))
+
 	def getFileName(self):
 		"""
 		return the filename as which the analysis is being saved
@@ -197,10 +198,10 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 					 This is used when the option to process each channel separately is selected,
 					 instead of having all channels as input
 		"""
-		bxdFile = procListName+"_"+"_".join([x.getName() for x in dataUnits])+".bxd"
+		bxdFile = procListName+"_"+os.path.basename(dataUnits[0].getFileName())+"_"+"_".join([x.getName().split("_")[-1] for x in dataUnits])+".bxd"
 		f = open(os.path.join(directory, bxdFile), "w")
 		for dataUnit in dataUnits:
-			fileBase = procListName+"_"+os.path.basename(dataUnit.getFileName())+"_"+dataUnit.getName()
+			fileBase = procListName+"_"+os.path.basename(dataUnit.getFileName())+"_"+dataUnit.getName().split("_")[-1]
 			bxcFile = os.path.join(fileBase, fileBase+".bxc")
 			f.write("%s\n"%bxcFile)
 		f.close()
@@ -288,7 +289,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 					nameBase = procListName+"_"+os.path.basename(dataUnits[0].getFileName())
 
 				else:				
-					filenames = "_".join([x.getName() for x in dataUnits])
+					filenames = "_".join([x.getName().split("_")[-1] for x in dataUnits])
 					nameBase = procListName+"_"+os.path.basename(dataUnits[0].getFileName())+"_"+filenames
 
 				self.dataUnit.getSettings().set("Name",nameBase)
@@ -305,7 +306,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 				writtenOutDataunits.append((dataUnits[0].getFileName(), filename))
 		
 				# padding is the filename and channel information
-				padding = [", ".join([os.path.basename(x.getFileName()) for x in dataUnits]), ", ".join(x.getName() for x in dataUnits)]
+				padding = [", ".join([os.path.basename(x.getFileName()) for x in dataUnits]), ", ".join(x.getName().split("_")[-1] for x in dataUnits)]
 				self.writeResults(padding, csvwriter, procListName, procList, varHeaders)
 
 		# If the channels are processed so that all the channels of a file are given as input
