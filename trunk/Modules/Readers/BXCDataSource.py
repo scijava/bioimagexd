@@ -203,10 +203,9 @@ class BXCDataSource(DataSource):
 				Logging.error("Cannot read file",
 				"Cannot read XML Image Data File %s"%filename)
 			self.reader.SetFileName(filepath)
-			self.reader.Update()
 			self.updateProgress(None, None)
-		self.reader.Update()
-		return self.reader.GetOutput()
+		data = self.reader.GetOutput()
+		return data
 
 	def loadBxdFile(self, filename):
 		"""
