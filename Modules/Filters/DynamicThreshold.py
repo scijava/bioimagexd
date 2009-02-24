@@ -44,7 +44,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	A dynamic threshold filter. Uses itkBXD DynamicThreshold3DImageFilter.
 	"""
 	name = "Dynamic threshold"
-	category = lib.FilterTypes.SEGMENTATION
+	category = lib.FilterTypes.THRESHOLDING
 	level = scripting.COLOR_INTERMEDIATE
 
 	def __init__(self, inputs = (1,1)):

@@ -104,6 +104,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.dataUnitItems = []
 		self.groupedDataUnit = None
 		self.groupedItems = []
+		self.removeParents = []
 		
 		self.itemColor = (0, 0, 0)
 		
@@ -188,7 +189,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		
 		if obj in self.dataUnitToPath:
 			del self.dataUnitToPath[obj]
-		self.removeParents = []
+
 		if self.items[unit] <= 0:
 			conf = Configuration.getConfiguration()
 			lst = self.items.keys()
@@ -607,6 +608,7 @@ class TreeWidget(wx.SashLayoutWindow):
 				citem = self.tree.GetNextSibling(citem)                                
 			event.Veto()
 			self.ignore = 0
+		
 	def onKeyDown(self, event):
 		"""
 		Akey event handler
@@ -623,7 +625,10 @@ class TreeWidget(wx.SashLayoutWindow):
 	def onSelectionChanged(self, event = None):
 		"""
 		A event handler called when user selects an item.
-		"""      
+		"""
+		if self.ignore:
+			event.Skip()
+			return
 		item = event.GetItem()
 		self.lastSelection = item
 		if not item.IsOk():
@@ -686,3 +691,28 @@ class TreeWidget(wx.SashLayoutWindow):
 				ret.append(obj)
 		self.programmatic = 0        
 		return ret
+
+	def closeAll(self):
+		"""
+		Close all open datasets
+		"""
+		self.ignore = 1
+		self.selectAll(self.tree.GetRootItem())
+		self.ignore = 0
+		self.onCloseDataset("")
+	
+	def selectAll(self,parent):
+		"""
+		Selects all items from the tree
+		"""
+		if parent.IsOk() and self.tree.ItemHasChildren(parent):
+			child, cookie = self.tree.GetFirstChild(parent)
+			while child:
+				obj = self.tree.GetPyData(child)
+				select = obj != "1" and obj != "2"
+				if child not in self.tree.GetSelections() and select:
+					self.tree.SelectItem(child)
+				if self.tree.ItemHasChildren(child):
+					self.selectAll(child)
+				child = self.tree.GetNextSibling(child)
+

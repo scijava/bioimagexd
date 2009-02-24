@@ -32,7 +32,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from bxdversion import VERSION
 
-import GUI.AboutDialog
+import AboutDialog
 import BatchProcessor
 
 import BugDialog
@@ -68,6 +68,8 @@ import UndoListBox
 from Visualizer.Visualizer import Visualizer
 import wx
 import lib.ImageOperations
+import QuitDialog
+import Urmas.UrmasWindow
 
 
 class MainWindow(wx.Frame):
@@ -191,7 +193,7 @@ class MainWindow(wx.Frame):
 		self.treeBtnWin.SetSashVisible(wx.SASH_TOP, False)
 		self.treeBtnWin.SetDefaultSize((160, 32))
 		
-		self.switchBtn = wx.Button(self.treeBtnWin, -1, "Switch dataset")
+		self.switchBtn = wx.Button(self.treeBtnWin, -1, "Apply change")
 		self.switchBtn.Bind(wx.EVT_BUTTON, self.onSwitchDataset)
 		self.switchBtn.Enable(0)
 	
@@ -651,6 +653,7 @@ class MainWindow(wx.Frame):
 		self.colorLbl.setColor(fg, bg)
 		wx.GetApp().Yield(1)
 		#wx.SafeYield()
+		
 	def sortModes(self, x, y):
 		return cmp(x[2].getToolbarPos(), y[2].getToolbarPos())
 		
@@ -692,8 +695,6 @@ class MainWindow(wx.Frame):
 						shortHelp = "Show file management tree")
 		wx.EVT_TOOL(self, MenuManager.ID_SHOW_TREE, self.onMenuShowTree)
 		
-
-
 		modules = self.taskPanels.values()
 		modules.sort(self.sortModes)
 
@@ -709,8 +710,7 @@ class MainWindow(wx.Frame):
 			self.taskIds.append(tid)
 			
 		tb.AddSeparator()
-		
-		
+				
 		modes = self.visualizationModes.values()
 		modes.sort(self.sortModes)
 
@@ -838,103 +838,67 @@ class MainWindow(wx.Frame):
 		mgr = self.menuManager
 		self.SetMenuBar(self.menu)
 		mgr.setMenuBar(self.menu)
+
 		# We create the menu objects
 		self.fmenu = mgr.createMenu("file", "&File")
 		self.filehistory.UseMenu(self.fmenu)
 
 		mgr.createMenu("edit", "&Edit")
-		mgr.createMenu("settings", "&Settings")
+		mgr.createMenu("view", "V&iew")
+		#mgr.createMenu("settings", "&Settings")
 		mgr.createMenu("processing", "&Tasks")
 		mgr.createMenu("visualization", "&Visualization")
-		mgr.createMenu("view", "V&iew")
+		mgr.createMenu("animation", "&Animation")
+		mgr.createMenu("annotations", "&Annotations")
 		mgr.createMenu("help", "&Help")
+
 		
-		mgr.addMenuItem("edit", MenuManager.ID_UNDO, "&Undo\tCtrl-Z", self.onMenuUndo)
-		mgr.addMenuItem("edit", MenuManager.ID_REDO, "&Redo\tShift-Ctrl-Z", self.onMenuRedo)
-		mgr.addSeparator("edit")
-		mgr.addMenuItem("edit", MenuManager.ID_COMMAND_HISTORY, "Command history", self.onShowCommandHistory)
+		##### File menu #####
+		mgr.addMenuItem("file", MenuManager.ID_OPEN, "&Open dataset\tCtrl-O", self.onMenuOpen)
+		mgr.addMenuItem("file", MenuManager.ID_SAVE_DATASET, "&Save dataset\tCtrl-S", self.onSaveDataset)
+
+		mgr.addMenuItem("file", MenuManager.ID_OPEN_SETTINGS, "&Open settings", self.onMenuOpenSettings)
+		mgr.addMenuItem("file", MenuManager.ID_SAVE_SETTINGS, "&Save settings", self.onMenuSaveSettings)
+
+		mgr.addMenuItem("file", MenuManager.ID_SAVE_SNAPSHOT, "&Save snapshot image", self.onSnapshot)
 		
-		mgr.disable(MenuManager.ID_REDO)
-	  
-		if platform.system() == "Darwin":
-			keyCombo = "\tCtrl-, "
-		else:
-			keyCombo = "\tCtrl-P"
-		mgr.addMenuItem("settings", wx.ID_PREFERENCES, "&Preferences..." + keyCombo, self.onMenuPreferences)
-	
+		mgr.addSeparator("file")
+		mgr.addMenuItem("file", MenuManager.ID_IMPORT_IMAGES, "&Import images\tCtrl-I", self.onMenuImport)
+
 		mgr.createMenu("export", "&Export", place = 0)
-		
-   
+		mgr.addSubMenu("file", "export", "&Export images", MenuManager.ID_EXPORT)
 		mgr.addMenuItem("export", MenuManager.ID_EXPORT_VTIFILES, "&VTK dataset series\tCtrl-E", self.onMenuExport)
 		mgr.addMenuItem("export", MenuManager.ID_EXPORT_IMAGES, "&Stack of images\tShift-Ctrl-E", self.onMenuExport)
 
-		mgr.addMenuItem("file", MenuManager.ID_OPEN, "&Open...\tCtrl-O", self.onMenuOpen)
+		mgr.addSeparator("file")
+		#mgr.addMenuItem("file", MenuManager.ID_CLOSE_TASKWIN, "&Close task panel\tCtrl-W", \
+		#				"Close the task panel", self.onCloseTaskPanel)
+		#mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
 
-		mgr.addMenuItem("file", MenuManager.ID_OPEN_SETTINGS, "&Load settings", self.onMenuOpenSettings)
-		mgr.addMenuItem("file", MenuManager.ID_SAVE_SETTINGS, "&Save settings", self.onMenuSaveSettings)
+		mgr.addMenuItem("file",	MenuManager.ID_VIEW_TREE, "&View file tree", "Show or hide the file tree", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("file", MenuManager.ID_CLOSE_ALL, "&Close all", self.onCloseAll)
 		
-		mgr.addSeparator("file")
-		mgr.addMenuItem("file", MenuManager.ID_IMPORT_IMAGES, "&Import image stack\tCtrl-I", self.onMenuImport)
-
-		mgr.addSubMenu("file", "export", "&Export", MenuManager.ID_EXPORT)
-		mgr.addSeparator("file")
-		mgr.addMenuItem("file", MenuManager.ID_CLOSE_TASKWIN, "&Close task panel\tCtrl-W", \
-						"Close the task panel", self.onCloseTaskPanel)
-		mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
 		mgr.addSeparator("file")
 		mgr.addMenuItem("file", wx.ID_EXIT, "&Exit", "Quit BioImageXD", self.quitApp)
 
 
-		modules = self.taskPanels.values()
-		modules.sort(self.sortModes)
+		##### Edit menu #####
+		mgr.addMenuItem("edit", MenuManager.ID_UNDO, "&Undo\tCtrl-Z", self.onMenuUndo)
+		mgr.addMenuItem("edit", MenuManager.ID_REDO, "&Redo\tShift-Ctrl-Z", self.onMenuRedo)
+		mgr.addMenuItem("edit", MenuManager.ID_COMMAND_HISTORY, "Command history", self.onShowCommandHistory)
+		mgr.addSeparator("edit")
+		mgr.disable(MenuManager.ID_REDO)
 
-		
-		for (moduletype, windowtype, mod) in modules:
-			name = mod.getName()
-			desc = mod.getDesc()
-			tid = self.taskToId[name]
-			#tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = name)
-			mgr.addMenuItem("processing", tid, "&" + name, desc, self.onMenuShowTaskWindow)
-			#wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
-			
-		mgr.addSeparator("processing")
-		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...\tCtrl-R", \
-						"Resample data to a different resolution", self.onMenuResampleData)
-		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...\tCtrl-Shift-R", \
-						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
-		
-		
-		mgr.addMenuItem("processing", MenuManager.ID_BATCHPROCESSOR, "&Batch processor\tCtrl-B",
-						"Open batch processing tool",self.onMenuBatchProcessor)
-		modes = self.visualizationModes.values()
-		modes.sort(self.sortModes)
+		if platform.system() == "Darwin":
+			keyCombo = "\tCtrl-, "
+		else:
+			keyCombo = "\tCtrl-P"
+		mgr.addMenuItem("edit", wx.ID_PREFERENCES, "&Preferences" + keyCombo, self.onMenuPreferences)
 
-		for (mod, settingclass, module) in modes:
-			name = module.getName()
-			vid = self.visToId[name] 
-			sdesc = module.getShortDesc()
-			desc = module.getDesc()
-			# Visualization modes that do not wish to be in the menu can return None as the desc
-			if not desc:
-				continue
-			mgr.addMenuItem("visualization", vid, "&" + sdesc, desc)
+		mgr.addMenuItem("edit", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor", "Show the script editor", self.onMenuShowScriptEditor)
 
 
-		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...\tCtrl-L", "Configure lightning")
-		mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
-
-		
-		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate updating", \
-						"Toggle immediate updating of rendering \
-							(when settings that affect the visualization change) on or off.", \
-						self.onMenuImmediateRender, check = 1, checked = 1)
-		mgr.addMenuItem("visualization", MenuManager.ID_NO_RENDER, "&No updating", \
-						"Toggle rendering on or off.", self.onMenuNoRender, check = 1, checked = 0)
-		mgr.disable(MenuManager.ID_LIGHTS)
-		mgr.disable(MenuManager.ID_RENDERWIN)
-
+		##### View menu #####
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_TREE, "&File tree", "Show or hide the file tree", \
 						self.onMenuToggleVisibility, check = 1, checked = 1)
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_CONFIG, "&Configuration panel", \
@@ -954,8 +918,6 @@ class MainWindow(wx.Frame):
 						"Show a python interpreter", self.onMenuToggleVisibility, check = 1, checked = 0)
 		mgr.addSeparator("view")
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor", \
-						"Show the script editor", self.onMenuShowScriptEditor)
 
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", \
 						"Show mask selection dialog", self.onMenuToggleVisibility)
@@ -967,13 +929,144 @@ class MainWindow(wx.Frame):
 		mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
 		mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
 
+
+		##### Task menu #####
+		modules = self.taskPanels.values()
+		modules.sort(self.sortModes)
+		
+		for (moduletype, windowtype, mod) in modules:
+			name = mod.getName()
+			desc = mod.getDesc()
+			tid = self.taskToId[name]
+			#tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = name)
+			mgr.addMenuItem("processing", tid, "&" + name, desc, self.onMenuShowTaskWindow)
+			#wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
+			
+		mgr.addSeparator("processing")
+		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...\tCtrl-R", \
+						"Resample data to a different resolution", self.onMenuResampleData)
+		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...\tCtrl-Shift-R", \
+						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
+		
+		mgr.addMenuItem("processing", MenuManager.ID_BATCHPROCESSOR, "&Batch processor\tCtrl-B",
+						"Open batch processing tool",self.onMenuBatchProcessor)
+		
+		
+		##### Visualization menu #####
+		modes = self.visualizationModes.values()
+		modes.sort(self.sortModes)
+
+		for (mod, settingclass, module) in modes:
+			name = module.getName()
+			vid = self.visToId[name] 
+			sdesc = module.getShortDesc()
+			desc = module.getDesc()
+			# Visualization modes that do not wish to be in the menu can return None as the desc
+			if not desc:
+				continue
+			mgr.addMenuItem("visualization", vid, "&" + sdesc, desc)
+
+		mgr.addSeparator("visualization")
+		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...\tCtrl-L", "Configure lightning")
+		mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
+		
+		mgr.addSeparator("visualization")
+		mgr.addMenuItem("visualization", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate updating", \
+						"Toggle immediate updating of rendering \
+							(when settings that affect the visualization change) on or off.", \
+						self.onMenuImmediateRender, check = 1, checked = 1)
+		mgr.addMenuItem("visualization", MenuManager.ID_NO_RENDER, "&No updating", \
+						"Toggle rendering on or off.", self.onMenuNoRender, check = 1, checked = 0)
+		mgr.disable(MenuManager.ID_LIGHTS)
+		mgr.disable(MenuManager.ID_RENDERWIN)
+
+
+		##### Animation menu #####
+		#mgr.createMenu("track", "&Track", before = "help")
+		#mgr.createMenu("rendering","&Rendering",before="help")
+		#mgr.createMenu("camera","&Camera",before="help")
+
+		#mgr.addMenuItem("animation", MenuManager.ID)
+		mgr.addSeparator("animation")
+		mgr.addMenuItem("animation", MenuManager.ID_OPEN_PROJECT, "Open project...", "Open a BioImageXD Animator Project", Urmas.UrmasWindow.UrmasWindow.onMenuOpenProject)
+		mgr.addMenuItem("animation", MenuManager.ID_SAVE_PROJECT, "Save project as...", "Save current BioImageXD Animator Project", Urmas.UrmasWindow.UrmasWindow.onMenuSaveProject)
+		mgr.addMenuItem("animation", MenuManager.ID_CLOSE_PROJECT, "Close project", "Close this Animator Project", Urmas.UrmasWindow.UrmasWindow.onMenuCloseProject)
+		mgr.addSeparator("animation")
+		
+		mgr.addMenuItem("animation", MenuManager.ID_ADD_TIMEPOINT, "Timepoint track", "Add a timepoint track to the timeline", Urmas.UrmasWindow.UrmasWindow.onMenuAddTimepointTrack)
+		#mgr.addMenuItem("animation", MenuManager.ID_ADD_SPLINE, "Camera path track", "Add a camera path track to the timeline", self.onMenuAddSplineTrack)
+		#mgr.addMenuItem("addtrack", MenuManager.ID_ADD_KEYFRAME, "Keyframe track", "Add a keyframe track to the timeline", self.onMenuAddKeyframeTrack)		   
+		#mgr.addSubMenu("track", "addtrack", "&Add track", MenuManager.ID_ADD_TRACK)
+		
+		mgr.createMenu("sizetrack", "&Item sizes", place = 0)
+		mgr.addSubMenu("animation", "sizetrack", "&Item sizes", MenuManager.ID_ITEM_SIZES)
+		
+		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK, "Expand to maximum", "Expand the track to encompass the whole timeline", Urmas.UrmasWindow.UrmasWindow.onMaxTrack)
+		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK_RATIO, "Expand to track length (keep ratio)", "Expand the track to encompass the whole timeline while retainining the relative sizes of each item.", Urmas.UrmasWindow.UrmasWindow.onMaxTrackRatio)
+		mgr.addMenuItem("sizetrack", MenuManager.ID_MIN_TRACK, "Shrink to minimum", "Shrink the track to as small as possible", Urmas.UrmasWindow.UrmasWindow.onMinTrack)
+		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK, "Set item size", "Set each item on this track to be of given size", Urmas.UrmasWindow.UrmasWindow.onSetTrack)
+		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_TOTAL, "Set total length", "Set total length of items on this track", Urmas.UrmasWindow.UrmasWindow.onSetTrackTotal)
+		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_RELATIVE, "Set to physical length", "Set the length of items on this track to be relative to their physical length", Urmas.UrmasWindow.UrmasWindow.onSetTrackRelative)
+
+		mgr.createMenu("shuffle", "&Shift items", place = 0)
+		mgr.addSubMenu("animation", "shuffle", "Shift items", MenuManager.ID_ITEM_ORDER)
+		mgr.addMenuItem("shuffle", MenuManager.ID_ITEM_ROTATE_CW, "&Left", Urmas.UrmasWindow.UrmasWindow.onShiftClockwise)
+		mgr.addMenuItem("shuffle", MenuManager.ID_ITEM_ROTATE_CCW, "&Right", Urmas.UrmasWindow.UrmasWindow.onShiftCounterClockwise)
+
+		mgr.addSeparator("animation")
+		mgr.addMenuItem("animation", MenuManager.ID_DELETE_TRACK, "&Remove track", "Remove the track from timeline", Urmas.UrmasWindow.UrmasWindow.onMenuRemoveTrack)
+		mgr.addMenuItem("animation", MenuManager.ID_DELETE_ITEM, "&Remove item", "Remove the selected track item", Urmas.UrmasWindow.UrmasWindow.onMenuRemoveTrackItem)
+	
+		mgr.addSeparator("animation")
+		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_SET_BEGIN, "&Begin at the end of previous path", "Set this camera path to begin where the previous path ends", Urmas.UrmasWindow.UrmasWindow.onMenuSetBegin)
+		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_SET_END, "&End at the beginning of next path", "Set this camera path to end where the next path starts", Urmas.UrmasWindow.UrmasWindow.onMenuSetEnd)
+
+		mgr.addSeparator("animation")
+		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_CLOSED, "&Closed path", "Set the camera path to open / closed.", Urmas.UrmasWindow.UrmasWindow.onMenuClosedSpline, check = 1)
+		mgr.addMenuItem("animation", MenuManager.ID_MAINTAIN_UP, "&Maintain up direction", Urmas.UrmasWindow.UrmasWindow.onMenuSetMaintainUp, check = 1)
+
+		mgr.disable(MenuManager.ID_OPEN_PROJECT)
+		mgr.disable(MenuManager.ID_SAVE_PROJECT)
+		mgr.disable(MenuManager.ID_CLOSE_PROJECT)
+		mgr.disable(MenuManager.ID_ADD_TIMEPOINT)
+		mgr.disable(MenuManager.ID_FIT_TRACK)
+		mgr.disable(MenuManager.ID_FIT_TRACK_RATIO)
+		mgr.disable(MenuManager.ID_MIN_TRACK)
+		mgr.disable(MenuManager.ID_SET_TRACK)
+		mgr.disable(MenuManager.ID_SET_TRACK_TOTAL)
+		mgr.disable(MenuManager.ID_SET_TRACK_RELATIVE)
+		mgr.disable(MenuManager.ID_ITEM_ROTATE_CW)
+		mgr.disable(MenuManager.ID_ITEM_ROTATE_CCW)
+		mgr.disable(MenuManager.ID_DELETE_TRACK)
+		mgr.disable(MenuManager.ID_DELETE_ITEM)
+		mgr.disable(MenuManager.ID_SPLINE_SET_BEGIN)
+		mgr.disable(MenuManager.ID_SPLINE_SET_END)
+		mgr.disable(MenuManager.ID_SPLINE_CLOSED)
+		mgr.disable(MenuManager.ID_MAINTAIN_UP)
+		
+
+		##### Annotations menu #####
+		mgr.addMenuItem("annotations", MenuManager.ID_ROI_CIRCLE, "Draw &circle ROI", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_ROI_RECTANGLE, "Draw &rectangle ROI", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_ROI_POLYGON, "Draw &polygon ROI", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_ADD_SCALE, "Draw &scale bar", "", self.onMenuHelp)
+
+		mgr.addSeparator("annotations")
+		mgr.addMenuItem("annotations", MenuManager.ID_DEL_ANNOTATION, "&Delete annotation\t Del", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_ANNOTATION_WIN, "Change &annotation color", "", self.onMenuHelp)
+
+		mgr.addSeparator("annotations")
+		mgr.addMenuItem("annotations", MenuManager.ID_ROI_TO_MASK, "Convert ROI &to mask", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", "", self.onMenuHelp)
+
+		##### Help menu #####
 		mgr.addMenuItem("help", wx.ID_ABOUT, "&About", "About BioImageXD", self.onMenuAbout)
-		mgr.addSeparator("help")
-		mgr.addMenuItem("help", MenuManager.ID_REPORT_BUG, "&Report bug", "Send a bug report", self.onMenuBugReport)
-		mgr.addSeparator("help")
-		mgr.addMenuItem("help", MenuManager.ID_CONTEXT_HELP, "&Context help\tF1", \
-						"Show help on current task or visualization mode", self.onToolbarHelp)
+		#mgr.addSeparator("help")
 		mgr.addMenuItem("help", wx.ID_HELP, "&Help", "Online Help", self.onMenuHelp)
+		mgr.addMenuItem("help", MenuManager.ID_REPORT_BUG, "&Report bug", "Send a bug report", self.onMenuBugReport)
+		#mgr.addSeparator("help")
+		#mgr.addMenuItem("help", MenuManager.ID_CONTEXT_HELP, "&Context help\tF1", \
+		#				"Show help on current task or visualization mode", self.onToolbarHelp)
 	
 #        if platform.system() =="Darwin":
 #            wx.App_SetMacHelpMenuTitleName("&Help")
@@ -1240,7 +1333,7 @@ class MainWindow(wx.Frame):
 		self.visualizer.enable(1)
 		
 		self.switchBtn.Enable(0)
-		self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)
+		#self.menuManager.disable(MenuManager.ID_CLOSE_TASKWIN)
 		self.taskWin.SetDefaultSize((0, 0))
 		
 		tb = self.GetToolBar()
@@ -1740,7 +1833,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		lib.messenger.send(None, "update_progress", 0.9, "Loading task %s..." % action)
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		self.visWin.Refresh()
-		self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
+		#self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
 		self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
 		lib.messenger.send(None, "update_progress", 1.0, "Loading task %s... done" % action)
 					
@@ -1783,7 +1876,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.visualizer.setProcessedMode(processed)
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
-		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.visualizer.onSnapshot)
+		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.onSnapshot)
 		shouldReload = kws.get("reload", 0)
 		
 		self.visualizer.setVisualizationMode(mode, shouldReload = shouldReload)
@@ -1872,28 +1965,26 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		Possibly queries the user before quitting, then quits
 		"""
-		
 		conf = Configuration.getConfiguration()
 		
 		askOnQuit = conf.getConfigItem("AskOnQuit", "General")
 		if askOnQuit and eval(askOnQuit):
-			dlg = wx.MessageDialog(self, 'Are you sure you wish to quit BioImageXD?',
-							   'Do you really want to quit',
-							   wx.OK | wx.CANCEL | wx.ICON_QUESTION
-							   #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
-							   )
+			dlg = QuitDialog.QuitDialog(self, "Do you really want to quit",
+											"Do you want to save file tree for later use?")
+
 			answer = dlg.ShowModal()
 			dlg.Destroy()
-			if answer != wx.ID_OK:
+
+			if answer != wx.ID_YES and answer != wx.ID_NO:
 				return
 			
 		self.saveWindowSizes()
 			
-		self.visualizer.enable(0)
-		
+		self.visualizer.enable(0)		
 		self.visualizer.closeVisualizer()
 		conf = Configuration.getConfiguration()
-		conf.setConfigItem("FileList", "General", "[]")
+		if answer == wx.ID_NO:
+			conf.setConfigItem("FileList", "General", "[]")
 		conf.setConfigItem("CleanExit", "General", "True")
 		history = []
 		for i in range(0, self.filehistory.GetCount()):
@@ -1906,4 +1997,16 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.Destroy()
 		sys.exit(0)
 
-# 
+	def onSnapshot(self,event):
+		"""
+		Save snapshot event handler
+		"""
+		if self.visualizer:
+			self.visualizer.onSnapshot(event)
+
+	def onCloseAll(self,event):
+		"""
+		Close all files from the file tree
+		"""
+		self.tree.closeAll()
+		

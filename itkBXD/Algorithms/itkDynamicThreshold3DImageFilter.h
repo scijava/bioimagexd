@@ -83,7 +83,7 @@ public:
   void SetUseImageSpacing(int);
   void SetUseImageSpacingOn();
   void SetUseImageSpacingOff();
-  int SetRadius(unsigned int, unsigned int, unsigned int);
+  int SetRadius(unsigned int x, unsigned int y, unsigned int z = 0);
 
 protected:
   DynamicThreshold3DImageFilter();

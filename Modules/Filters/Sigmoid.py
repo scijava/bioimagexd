@@ -32,8 +32,8 @@ class SigmoidFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
     A class for mapping an image data thru sigmoid image filter
 	"""		
-	name = "Sigmoid filter (ITK)" 
-	category = lib.FilterTypes.FILTERING
+	name = "Sigmoid filter" 
+	category = lib.FilterTypes.MISCFILTERING
 	
 	def __init__(self, inputs = (1, 1)):
 		"""

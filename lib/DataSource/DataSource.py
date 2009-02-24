@@ -547,6 +547,7 @@ class DataSource:
 				raise "Bad LSM bit depth, %d, %s" % (scalartype, data.GetScalarTypeAsString())
 			self.singleBitDepth = self.bitdepth
 			self.bitdepth *= data.GetNumberOfScalarComponents()
+
 		return self.bitdepth
 	
 	def getSingleComponentBitDepth(self):

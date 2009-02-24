@@ -32,9 +32,8 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import lib.ProcessingFilter
 import vtk
+from lib.FilterTypes import *
 
-MATH = "Image arithmetic"
-LOGIC = "Logical operations"
 
 class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""

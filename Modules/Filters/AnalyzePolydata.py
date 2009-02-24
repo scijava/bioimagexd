@@ -51,7 +51,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for analyzing polydata
 	"""
 	name = "Analyze polydata"
-	category = lib.FilterTypes.POLYDATA
+	category = lib.FilterTypes.SEGMENTATIONANALYSE
 	level = scripting.COLOR_INTERMEDIATE
 
 	def __init__(self):

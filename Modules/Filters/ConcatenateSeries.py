@@ -35,7 +35,7 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 	Concatenate several datasets into one
 	"""		
 	name = "Concatenate time series"
-	category = lib.FilterTypes.FILTERING
+	category = lib.FilterTypes.CONVERSION
 	
 	def __init__(self):
 		"""

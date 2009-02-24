@@ -38,7 +38,7 @@ class OtsuThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	A class for thresholding the image using the Otsu thresholding
 	"""		
 	name = "Otsu threshold"
-	category = lib.FilterTypes.SEGMENTATION
+	category = lib.FilterTypes.THRESHOLDING
 	
 	def __init__(self, inputs = (1, 1)):
 		"""

@@ -61,7 +61,8 @@ def getFilters():
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [GaussianSmoothFilter, 
-			GradientFilter, GradientMagnitudeFilter,
+			#GradientFilter,
+			GradientMagnitudeFilter,
 			ITKAnisotropicDiffusionFilter, 
 			ITKLocalMaximumFilter]
 
@@ -152,41 +153,41 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		return self.vtkfilter.GetOutput()			   
 
 
-class GradientFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Description: A class for calculating the gradient of the image
-	"""		
-	name = "Gradient"
-	category = MATH
-	
-	def __init__(self, inputs = (1, 1)):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.vtkfilter = vtk.vtkImageGradient()
-		self.vtkfilter.SetDimensionality(3)
-		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
-		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
-	
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""			   
-		return []
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""			   
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		
-		self.vtkfilter.SetInput(self.getInput(1))
-			
-		if update:
-			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()			 
+#class GradientFilter(ProcessingFilter.ProcessingFilter):
+#	"""
+#	Description: A class for calculating the gradient of the image
+#	"""		
+#	name = "Gradient"
+#	category = MATH
+#	
+#	def __init__(self, inputs = (1, 1)):
+#		"""
+#		Initialization
+#		"""		   
+#		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
+#		self.vtkfilter = vtk.vtkImageGradient()
+#		self.vtkfilter.SetDimensionality(3)
+#		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
+#		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
+#	
+#	def getParameters(self):
+#		"""
+#		Return the list of parameters needed for configuring this GUI
+#		"""			   
+#		return []
+#
+#	def execute(self, inputs, update = 0, last = 0):
+#		"""
+#		Execute the filter with given inputs and return the output
+#		"""			   
+#		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+#			return None
+#		
+#		self.vtkfilter.SetInput(self.getInput(1))
+#			
+#		if update:
+#			self.vtkfilter.Update()
+#		return self.vtkfilter.GetOutput()			 
 
 
 class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
@@ -232,7 +233,7 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	Description: A class for doing anisotropic diffusion on ITK
 	"""		
-	name = "Gradient anisotropic diffusion (ITK)"
+	name = "Gradient anisotropic diffusion"
 	category = FILTERING
 	
 	def __init__(self, inputs = (1, 1)):

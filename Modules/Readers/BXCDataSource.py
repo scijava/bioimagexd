@@ -318,7 +318,6 @@ class BXCDataSource(DataSource):
 					 operates on
 		"""
 		Logging.info("Getting colortransferfunction from settings", kw = "ctf")
-
 		
 		if not self.ctf:
 			ctf = self.settings.get("ColorTransferFunction")
@@ -340,3 +339,27 @@ class BXCDataSource(DataSource):
 				pass
 			self.ctf = ctf
 		return self.ctf
+
+	def getScalarRange(self):
+		"""
+		Returns pair that contains range of data values
+		"""
+		if not self.scalarRange:
+			self.getBitDepth()
+			min = 0
+			max = 2**self.singleBitDepth - 1
+			self.scalarRange = (int(min),int(max))
+		return self.scalarRange
+
+	def getBitDepth(self):
+		"""
+		Return the bit depth of data
+		"""
+		if not self.bitdepth:
+			self.singleBitDepth = int(self.settings.get("BitDepth"))
+			data = self.getDataSet(0, raw = 1)
+			data.UpdateInformation()
+			self.bitdepth = self.singleBitDepth * data.GetNumberOfScalarComponents()
+		return self.bitdepth
+		
+		

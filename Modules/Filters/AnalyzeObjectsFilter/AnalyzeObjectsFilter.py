@@ -20,8 +20,8 @@ import lib.Math
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	"""		
-	name = "Analyze objects"
-	category = lib.FilterTypes.MEASUREMENT
+	name = "Analyze segmented objects"
+	category = lib.FilterTypes.SEGMENTATIONANALYSE
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (2, 2)):
 		"""

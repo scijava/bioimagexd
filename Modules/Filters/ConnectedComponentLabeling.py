@@ -36,7 +36,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for labeling all separate objects in an image
 	"""
 	name = "Connected component labeling"
-	category = lib.FilterTypes.SEGMENTATION
+	category = lib.FilterTypes.OBJECT
 	
 	def __init__(self, inputs = (1, 1)):
 		"""

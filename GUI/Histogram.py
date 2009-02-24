@@ -154,8 +154,7 @@ class Histogram(wx.Panel):
 		"""
 		Sets the flag indicating that the threshold selectors need to be
 					 activated even if the dataset is not colocalization dataset
-		"""	   
-
+		"""
 		self.thresholdMode = flag
 		self.actionstart = (self.lowerThreshold, 0)
 
@@ -282,7 +281,6 @@ class Histogram(wx.Panel):
 		self.actionstart = None
 		
 		 
-		
 	def onRightClick(self, event):
 		"""
 		Method that is called when the right mouse button is

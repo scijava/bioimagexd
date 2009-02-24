@@ -41,8 +41,8 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for automatically subtracting the background from an image
 	"""		
-	name = "Subtract Background"
-	category = lib.FilterTypes.MATH
+	name = "Automatic background subtraction"
+	category = lib.FilterTypes.SUBTRACT
 	
 	def __init__(self):
 		"""

@@ -38,7 +38,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	Description: A thresholding filter
 	"""		
 	name = "Threshold"
-	category = lib.FilterTypes.SEGMENTATION
+	category = lib.FilterTypes.THRESHOLDING
 	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
@@ -159,13 +159,10 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Execute the filter with given inputs and return the output
 		"""
-		
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
 		self.eventDesc="Thresholding image"
-
-			
 			
 		if not self.parameters["Demonstrate"]:
 			if self.origCtf:

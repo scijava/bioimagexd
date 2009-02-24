@@ -245,7 +245,7 @@ class ColocalizationPanel(TaskPanel):
 		n += 1
 		self.colocalizationSizer.Add(self.upperthreshold, (n, 0))
 		n += 1
-		sbox = wx.StaticBox(self.colocalizationPanel, -1, "2D histogram")
+		sbox = wx.StaticBox(self.colocalizationPanel, -1, "2D histogram (right-click for more options)")
 		box = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 		self.scatterPlot = Scatterplot(self.colocalizationPanel, drawLegend = 1)
 		lib.messenger.connect(self.scatterPlot, "scatterplot_thresholds", self.onUpdateScatterplotThresholds)
@@ -253,15 +253,26 @@ class ColocalizationPanel(TaskPanel):
 		self.colocalizationSizer.Add(box, (n, 0))
 		n += 1
 		
-		sbox = wx.StaticBox(self.colocalizationPanel, -1, "Automatic threshold")
+		sbox = wx.StaticBox(self.colocalizationPanel, -1, "Colocalization quantification")
 		box = wx.StaticBoxSizer(sbox, wx.VERTICAL)
 		self.automaticThresholdStaticBox = sbox
 		self.automaticThresholdSizer = box
+		#self.pvaluebox = wx.StaticBox(self.colocalizationPanel, -1, "Calculate P-Value")
 		self.radiobox = wx.RadioBox(self.colocalizationPanel, -1, "Calculate P-Value",
 		choices = ["None", "Costes", "Fay", "van Steensel"], majorDimension = 2,
 		style = wx.RA_SPECIFY_COLS
 		)
-		self.radiobox.Bind(wx.EVT_RADIOBOX, self.onSetTestMethod)
+		#self.radiobox.Bind(wx.EVT_RADIOBOX, self.onSetTestMethod)
+		#self.pvalueNone = wx.RadioButton(self.colocalizationPanel, -1, "None", name="pvalue")
+		#self.pvalueNone.SetValue(True)
+		#self.pvalueNone.Bind(wx.EVT_RADIOBUTTON, self.onSetNone)
+		#self.pvalueCostes = wx.RadioButton(self.colocalizationPanel, -1, "Costes", name="pvalue")
+		#self.pvalueCostes.SetValue(False)
+		#self.pvalueCostes
+		#self.pvalueFay = wx.RadioButton(self.colocalizationPanel, -1, "Fay", name="pvalue")
+		#self.pvalueFay.SetValue(False)
+		#self.pvaluevanSteensel = wx.RadioButton(self.colocalizationPanel, -1, "van Steensel", name="pvalue")
+		#self.pvaluevanSteensel.SetValue(False)
 		box.Add(self.radiobox)
 		self.iterLbl = wx.StaticText(self.colocalizationPanel, -1, "Iterations:")
 		self.iterations = wx.SpinCtrl(self.colocalizationPanel, -1, "100", min = 2, \
@@ -285,6 +296,7 @@ class ColocalizationPanel(TaskPanel):
 		self.Ch2Lambda = wx.TextCtrl(self.colocalizationPanel, -1, "520")
 		costesgrid.Add(Ch2LambdaLbl, (3, 0))
 		costesgrid.Add(self.Ch2Lambda, (3, 1))
+		#pvaluebox.Add(costesgrid)
 		
 		self.NA.Bind(wx.EVT_TEXT, self.onUpdatePSF)
 		self.Ch2Lambda.Bind(wx.EVT_TEXT, self.onUpdatePSF)
@@ -298,10 +310,10 @@ class ColocalizationPanel(TaskPanel):
 		box.Add(costesgrid)
 		
 		box2 = wx.BoxSizer(wx.HORIZONTAL)
-		self.statsButton = wx.Button(self.colocalizationPanel, -1, "Statistics")
+		self.statsButton = wx.Button(self.colocalizationPanel, -1, "Calculate statistics")
 		self.statsButton.Bind(wx.EVT_BUTTON, self.getStatistics)
 		box2.Add(self.statsButton)		  
-		self.thresholdButton = wx.Button(self.colocalizationPanel, -1, "Auto-Threshold")
+		self.thresholdButton = wx.Button(self.colocalizationPanel, -1, "Calculate thresholds")
 		self.thresholdButton.Bind(wx.EVT_BUTTON, self.getAutoThreshold)
 		box2.Add(self.thresholdButton) 
 		self.statsButtonSizer = box2

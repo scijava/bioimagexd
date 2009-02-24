@@ -122,8 +122,8 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
 	  radius[0] = this->m_Radius[0];
 	  if (this->m_UseImageSpacing)
 		{
-		  radius[1] = static_cast<InputPixelType>(round(this->m_Radius[1] * (spacing[0] / spacing[1])));
-		  if (ImageDimension == 3) radius[2] = static_cast<InputPixelType>(round(this->m_Radius[2] * (spacing[0] / spacing[2])));
+		  radius[1] = static_cast<unsigned long>(this->m_Radius[1] * (spacing[0] / spacing[1]) + 0.5);
+		  if (ImageDimension == 3) radius[2] = static_cast<unsigned long>(this->m_Radius[2] * (spacing[0] / spacing[2]) + 0.5);
 		}
 	  else
 		{
@@ -233,7 +233,7 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
 
 template<class TInputImage, class TOutputImage>
 int DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
-::SetRadius(unsigned int x, unsigned int y, unsigned int z = 0)
+::SetRadius(unsigned int x, unsigned int y, unsigned int z)
 {
   if (x >= 0 && y >= 0 && z >= 0 && (x != this->m_Radius[0] || y != this->m_Radius[1] || z != this->m_Radius[2]))
 	{
