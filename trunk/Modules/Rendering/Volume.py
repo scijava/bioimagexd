@@ -200,6 +200,7 @@ class VolumeModule(VisualizationModule):
 		if parameter == "QualityValue":
 			return self.qualityRange
 		return - 1, -1
+
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter

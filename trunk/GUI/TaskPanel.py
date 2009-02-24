@@ -277,7 +277,7 @@ class TaskPanel(ScrolledPanel):
 		self.buttonPanel.SetSizer(self.buttonSizer)
 		#self.buttonPanel.SetAutoLayout(1)		
 		#self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
-		self.previewButton = wx.Button(self.buttonPanel, -1, "Apply")
+		self.previewButton = wx.Button(self.buttonPanel, -1, "View result")
 		self.previewButton.Bind(wx.EVT_BUTTON, self.doPreviewCallback)
 		#self.buttonSizer.AddSpacer((5,5))
 		self.buttonSizer.Add(self.previewButton, 0, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)

@@ -44,8 +44,8 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for analyzing the results of tracking
 	"""
-	name = "Analyze tracks"
-	category = lib.FilterTypes.TRACKING
+	name = "Analyze motion tracks"
+	category = lib.FilterTypes.SEGMENTATIONANALYSE
 
 	def __init__(self):
 		"""

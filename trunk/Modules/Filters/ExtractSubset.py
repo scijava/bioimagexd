@@ -37,7 +37,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for cutting the data to a smaller size
 	"""     
 	name = "Extract a subset"
-	category = lib.FilterTypes.FILTERING
+	category = lib.FilterTypes.ROI
 	
 	def __init__(self):
 		"""

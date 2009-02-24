@@ -36,8 +36,8 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for calculating the volume, total and average intensity of a ROI
 	"""		
-	name = "Analyze ROIs"
-	category = lib.FilterTypes.MEASUREMENT
+	name = "Analyze ROI"
+	category = lib.FilterTypes.VOXELANALYSE
 	
 	def __init__(self):
 		"""

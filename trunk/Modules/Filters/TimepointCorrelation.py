@@ -37,7 +37,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for calculating the correlation between two timepoints
 	"""		
 	name = "Timepoint correlation"
-	category = lib.FilterTypes.MEASUREMENT
+	category = lib.FilterTypes.VOXELANALYSE
 	
 	def __init__(self):
 		"""

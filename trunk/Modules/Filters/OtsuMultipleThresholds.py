@@ -38,7 +38,7 @@ class OtsuMultipleThresholdsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	"""
 	name = "Otsu multiple thresholds"
-	category = lib.FilterTypes.SEGMENTATION
+	category = lib.FilterTypes.THRESHOLDING
 
 	def __init__(self, inputs = (1,1)):
 		"""

@@ -61,7 +61,7 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 	Description: A base class for image mathematics filters
 	"""		
 	name = "Mask"
-	category = SEGMENTATION
+	category = MASK
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (2, 2)):
 		"""
@@ -133,7 +133,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	A filter for labeling all separate objects in an image
 	"""		
 	name = "Threshold for maximum object number"
-	category = SEGMENTATION
+	category = THRESHOLDING
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -200,7 +200,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	Description: Re-label an image produced by watershed segmentation
 	"""		
 	name = "Re-label image"
-	category = WATERSHED
+	category = OBJECT
 	level = scripting.COLOR_BEGINNER
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -264,7 +264,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	Description: Invert the intensity of the image
 	"""		
 	name = "Invert intensity"
-	category = WATERSHED
+	category = MISCFILTERING
 	
 	def __init__(self, inputs = (1, 1)):
 		"""

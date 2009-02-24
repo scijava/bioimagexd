@@ -43,7 +43,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for controlling the visualization of the tracking results
 	"""     
-	name = "View tracks"
+	name = "View motion tracks"
 	category = lib.FilterTypes.TRACKING
 	
 	def __init__(self):

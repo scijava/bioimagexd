@@ -247,7 +247,6 @@ class LsmDataSource(DataSource):
 
 		self.reader.SetFileName(self.convertFileName(filename))
 
-
 		#self.reader.Update()
 		self.reader.UpdateInformation()
 

@@ -42,8 +42,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for generating test data
 	"""		
 	name = "Test data generation"
-	category = lib.FilterTypes.FILTERING
-	
+	category = lib.FilterTypes.SIMULATION
+
 	def __init__(self):
 		"""
 		Initialization

@@ -133,38 +133,46 @@ class FilterEditor(wx.Panel):
 		self.addFilteringBtn = wx.Button(self, -1, u"Filtering \u00BB")
 		self.addArithmeticsBtn = wx.Button(self, -1, u"Arithmetics \u00BB")
 		self.addSegmentationBtn = wx.Button(self, -1, u"Segmentation \u00BB")
-		self.addTrackingBtn = wx.Button(self, -1, u"Tracking \u00BB")
-		
+		self.addAnalyzeBtn = wx.Button(self, -1, u"Analyze \u00BB")
+		#self.addTrackingBtn = wx.Button(self, -1, u"Tracking \u00BB")
+		self.addMiscBtn = wx.Button(self, -1, u"Misc \u00BB")
 		self.presetBtn = wx.Button(self, -1, u"Presets \u00BB")
 
 		MP = self.filtersModule
 		f = lambda evt, btn = self.addFilteringBtn, \
-					cats = (lib.FilterTypes.FILTERING, lib.FilterTypes.FEATUREDETECTION, lib.FilterTypes.MORPHOLOGICAL): \
+					cats = (lib.FilterTypes.FILTERING, lib.FilterTypes.DECONVOLUTION, lib.FilterTypes.FEATUREDETECTION, lib.FilterTypes.MORPHOLOGICAL, lib.FilterTypes.MISCFILTERING): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
 		f = lambda evt, btn = self.addArithmeticsBtn, \
-					cats = (lib.FilterTypes.MATH, lib.FilterTypes.LOGIC): \
+					cats = (lib.FilterTypes.MATH, lib.FilterTypes.LOGIC, lib.FilterTypes.SUBTRACT): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addArithmeticsBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
 		f = lambda evt, btn = self.addSegmentationBtn, \
-					cats = (lib.FilterTypes.SEGMENTATION, lib.FilterTypes.REGION_GROWING, \
-							lib.FilterTypes.WATERSHED, lib.FilterTypes.MEASUREMENT, \
-							lib.FilterTypes.REGISTRATION, lib.FilterTypes.COLOCALIZATION, lib.FilterTypes.POLYDATA): \
+					cats = (lib.FilterTypes.THRESHOLDING, lib.FilterTypes.WATERSHED, \
+							lib.FilterTypes.REGION_GROWING, lib.FilterTypes.POLYDATA, \
+							lib.FilterTypes.MASK, lib.FilterTypes.OBJECT): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN, f)
+
+		f = lambda evt, btn = self.addAnalyzeBtn, \
+			cats = (lib.FilterTypes.SEGMENTATIONANALYSE, lib.FilterTypes.VOXELANALYSE, lib.FilterTypes.COLOCALIZATION): \
+			self.onShowAddMenu(evt, btn, cats)
+		self.addAnalyzeBtn.Bind(wx.EVT_LEFT_DOWN, f)
+
+		f = lambda evt, btn = self.addMiscBtn, \
+			cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+			self.onShowAddMenu(evt, btn, cats)
+		self.addMiscBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
-		f = lambda evt, btn = self.addTrackingBtn, cats = (lib.FilterTypes.TRACKING, ): \
-					self.onShowAddMenu(evt, btn, cats)        
-		self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN, f)
+		#f = lambda evt, btn = self.addTrackingBtn, cats = (lib.FilterTypes.TRACKING, ): \
+		#			self.onShowAddMenu(evt, btn, cats)        
+		#self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
 		self.presetBtn.Bind(wx.EVT_LEFT_DOWN, self.onShowPresetsMenu)
-		
-		
+				
 		vertbtnBox = wx.BoxSizer(wx.VERTICAL)
-		
-
 		bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))        
 		self.remove = wx.BitmapButton(self, -1, bmp)
 		self.remove.Bind(wx.EVT_BUTTON, self.onRemoveFilter)
@@ -185,11 +193,13 @@ class FilterEditor(wx.Panel):
 		btnBox.Add(self.addArithmeticsBtn)
 		btnBox.AddSpacer((4, 4))
 		btnBox.Add(self.addSegmentationBtn)
-		btnBox2.Add(self.addTrackingBtn)
+		#btnBox2.Add(self.addTrackingBtn)
+		btnBox2.Add(self.addAnalyzeBtn)
+		btnBox2.AddSpacer((4, 4))
+		btnBox2.Add(self.addMiscBtn)
 		btnBox2.AddSpacer((4, 4))
 		btnBox2.Add(self.presetBtn)
 
-	
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		box.Add(self.filterListbox)
 		box.Add(vertbtnBox)

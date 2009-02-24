@@ -117,7 +117,7 @@ class Configuration:
 			vtkpath = self.getPath(["C:\\VTK-build"])
 		else:
 			vtkpath = "/home/kalpaha/BioImageXD/VTK-current"
-		self.setConfigItem("ShowTip", "General", "True", 0)
+		self.setConfigItem("ShowTip", "General", "False", 0)
 		self.setConfigItem("AskOnQuit", "General", "True", 0)
 		self.setConfigItem("TipNumber", "General", 0, 0)
 		self.setConfigItem("RestoreFiles", "General", "True", 0)

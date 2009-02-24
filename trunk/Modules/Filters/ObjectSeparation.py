@@ -42,7 +42,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	"""
 	name = "Object separation"
-	category = lib.FilterTypes.WATERSHED
+	category = lib.FilterTypes.OBJECT
 	level = scripting.COLOR_BEGINNER
 
 	def __init__(self, inputs = (1,1)):

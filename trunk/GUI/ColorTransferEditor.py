@@ -150,7 +150,6 @@ class CTFPaintPanel(wx.Panel):
 		self.dc = None
 		self.Bind(wx.EVT_PAINT, self.onPaint)
 		
-
 		
 	def toGraphCoords(self, x, y, maxval):
 		"""
@@ -501,7 +500,7 @@ class ColorTransferEditor(wx.Panel):
 		self.openBtn = wx.BitmapButton(self, -1, openGif, size = (32, 32))
 		self.saveBtn = wx.BitmapButton(self, -1, saveGif, size = (32, 32))
 		
-		self.maxNodes = wx.SpinCtrl(self, -1, "4096", min = 2, max = 9999, size = (54, -1), style = wx.TE_PROCESS_ENTER)
+		self.maxNodes = wx.SpinCtrl(self, -1, "20", min = 2, max = 9999, size = (54, -1), style = wx.TE_PROCESS_ENTER)
 		self.maxNodes.SetToolTip(wx.ToolTip("Set the maximum number of nodes in the graph."))
 		self.maxNodes.SetHelpText("Use this control to set the maximum number of nodes in the graph. This is useful if you have a hand drawn palette that you wish to edit by dragging the nodes.")
 		self.maxNodes.Bind(wx.EVT_SPINCTRL, self.onSetMaxNodes)
@@ -687,7 +686,7 @@ class ColorTransferEditor(wx.Panel):
 	def onEditFunction(self, event):
 		"""
 		Edit the function
-		"""	   
+		"""
 		x, y = event.GetPosition()
 		x, y = self.canvas.toGraphCoords(x, y, self.maxval)
 		if self.freeMode:
@@ -709,8 +708,8 @@ class ColorTransferEditor(wx.Panel):
 	def dist(self, p1, p2):
 		"""
 		Return the distance between points p1 and p2
-		"""		   
-		return math.sqrt( (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+		"""
+		return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 	
 	def drawFreeMode(self, event):
 		"""
@@ -743,19 +742,18 @@ class ColorTransferEditor(wx.Panel):
 						self.funcs[self.color][i] = ny
 						update = 1
 		
-		
 		val = self.funcs[self.color][x]
 		if val != y:
 			self.funcs[self.color][x] = y
-			
 			update = 1
+			
 		if update:
 			self.updateGraph()	   
 			self.upToDate = 0
 			
 		self.pos = (x, y)
 		if not self.upToDate:
-			wx.FutureCall(250	, self.updateCTFFromPoints)
+			wx.FutureCall(250, self.updateCTFFromPoints)
 		
 	def modifyPoint(self, oldPoint, newPoint):
 		"""
@@ -784,7 +782,7 @@ class ColorTransferEditor(wx.Panel):
 	def onDrawFunction(self, event):
 		"""
 		Draw the function
-		"""		   
+		"""
 		if event.Dragging():
 			if self.freeMode:
 				self.drawFreeMode(event)
@@ -796,7 +794,6 @@ class ColorTransferEditor(wx.Panel):
 					self.modifyPoint(self.selectedPoint, (x, y))
 					self.upToDate = 0
 					self.updateGraph()
-				return
    
 	def updatePreview(self):
 		"""
@@ -816,11 +813,11 @@ class ColorTransferEditor(wx.Panel):
 			self.updateCTFFromPoints()
 			self.updateGraph()
 			self.freeMode = 1
-			
 			self.setFromColorTransferFunction(self.ctf, self.otf)
 			
 		if was:
 			self.updateCTFFromPoints()
+			
 		self.freeMode = event.GetIsDown()
 		if not self.freeMode and was and self.hasPainted:
 			Logging.info("Analyzing free mode for points", kw = "ctf")
@@ -989,7 +986,6 @@ class ColorTransferEditor(wx.Panel):
 		"""
 		Sets the colors of this graph
 		"""
-		
 		self.minval, self.maxval = TF.GetRange()
 		self.background = None
 		
@@ -1022,6 +1018,7 @@ class ColorTransferEditor(wx.Panel):
 				a = otf.GetValue(i)
 				self.alphafunc[i] = int(a * 255)
 		self.updateCTFView()
+
 	@staticmethod
 	def slope(x0, y0, x1, y1):
 		return float((y1 - y0)) / float((x1 - x0))
@@ -1078,7 +1075,6 @@ class ColorTransferEditor(wx.Panel):
 				if self.alpha:
 					self.alphapoints.append((x, a))
 			elif x > 1:
-				
 				k = ColorTransferEditor.slope(xr0, r0, x, r)
 				if abs(k - kr) > self.ptThreshold and x > xr0 + 1 and r != r0:
 					self.redpoints.append((x, r))
@@ -1107,9 +1103,7 @@ class ColorTransferEditor(wx.Panel):
 						xa0 = x
 						a0 = a				  
 	   
-
 		coeff = 255.0 / self.maxval
-		
 		
 		self.redpoints = [(x, coeff * y) for (x, y) in self.redpoints]
 		self.greenpoints = [(x, coeff * y) for (x, y) in self.greenpoints]

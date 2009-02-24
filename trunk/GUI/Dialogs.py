@@ -146,3 +146,4 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 			filename += ".%s" % ext
 	
 	return filename
+

@@ -42,7 +42,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for casting the image to a different datatype
 	"""		
 	name = "Convert data type"
-	category = lib.FilterTypes.FILTERING
+	category = lib.FilterTypes.CONVERSION
 	
 	def __init__(self):
 		"""
