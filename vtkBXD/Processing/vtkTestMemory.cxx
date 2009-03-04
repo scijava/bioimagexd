@@ -49,12 +49,12 @@ void vtkTestMemory::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os,indent);
 }
 
-long long vtkTestMemory::CheckMemory()
+long vtkTestMemory::CheckMemory()
 {
-	long long alloc = START_ALLOC;
-	long long maxAlloc = MAX_ALLOC;
-	long long minAlloc = 0;
-	long long step = START_STEP;
+	long alloc = START_ALLOC;
+	long maxAlloc = MAX_ALLOC;
+	long minAlloc = 0;
+	long step = START_STEP;
 	while(maxAlloc - minAlloc > START_ALLOC) {
 		std::cout << "Allocating " << alloc << " bytes of memory." << std::endl;
 		try {
