@@ -30,7 +30,7 @@
 #include "vtkUnsignedCharArray.h"
 
 #define START_ALLOC 1024
-#define MAX_ALLOC 4294967296
+#define MAX_ALLOC 2000000000
 #define START_STEP 536870912
 
 vtkStandardNewMacro(vtkTestMemory);
