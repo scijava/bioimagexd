@@ -163,7 +163,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 		image = self.getInput(1)
 		self.eventDesc="Thresholding image"
-			
+
 		if not self.parameters["Demonstrate"]:
 			if self.origCtf:
 				self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
@@ -172,9 +172,9 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 					self.gui.histograms[0].updatePreview(renew = 1)
 			self.vtkfilter.SetInput(image)
 			
-			self.vtkfilter.ThresholdByLower(self.parameters["UpperThreshold"])
-			self.vtkfilter.ThresholdByUpper(self.parameters["LowerThreshold"])
-		
+			#self.vtkfilter.ThresholdByLower(self.parameters["UpperThreshold"])
+			#self.vtkfilter.ThresholdByUpper(self.parameters["LowerThreshold"])
+			self.vtkfilter.ThresholdBetween(self.parameters["LowerThreshold"],self.parameters["UpperThreshold"])
 		
 			self.vtkfilter.SetReplaceIn(self.parameters["ReplaceIn"])
 			if self.parameters["ReplaceIn"]:

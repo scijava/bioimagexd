@@ -33,7 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 #import UIElements
 
 import wx.lib.buttons as buttons
-import	wx.lib.colourselect as	csel
+import wx.lib.colourselect as csel
 import lib.messenger
 import Logging
 import MaskTray
@@ -41,7 +41,7 @@ import MenuManager
 import os
 import scripting
 import vtk
-import	wx
+import wx
 
 class AnnotationToolbar(wx.Window):
 	"""
@@ -104,7 +104,6 @@ class AnnotationToolbar(wx.Window):
 		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "scale.gif", "Draw a scale bar on the image")
 		self.sizer.Add(self.scaleBtn, (1, 1))
 
-
 		self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		self.sizer.Add(self.textBtn, (2, 0))
 
@@ -128,15 +127,15 @@ class AnnotationToolbar(wx.Window):
 		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65, -1))
 		self.sizer.Add(self.colorSelect, (5, 0), span = (1, 2))
 		
-		self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", \
-										"Enable or disable the resampling of image data")
-		self.resamplingBtn.SetToggle(1)
+		#self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", \
+		#								"Enable or disable the resampling of image data")
+		#self.resamplingBtn.SetToggle(1)
 		
-		self.resampleToFitBtn = createBtn(MenuManager.ID_RESAMPLE_TO_FIT, "resample_tofit.gif", \
-											"Enable or disable the resampling of image data")
+		#self.resampleToFitBtn = createBtn(MenuManager.ID_RESAMPLE_TO_FIT, "resample_tofit.gif", \
+		#									"Enable or disable the resampling of image data")
 		
-		self.sizer.Add(self.resamplingBtn, (6, 0))
-		self.sizer.Add(self.resampleToFitBtn, (6, 1))
+		#self.sizer.Add(self.resamplingBtn, (6, 0))
+		#self.sizer.Add(self.resampleToFitBtn, (6, 1))
 		
 #		 self.recordBtn = buttons.GenToggleButton(self, MenuManager.ID_RECORD_EVENTS, "Record", size=(64,-1))
 #		 self.sizer.Add(self.recordBtn, (7,0), span=(1,2))
@@ -175,9 +174,9 @@ class AnnotationToolbar(wx.Window):
 #		self.dimInfo = UIElements.DimensionInfo(self,-1, size=(120,50))
 #		self.sizer.Add(self.dimInfo, (6,0), span=(1,2))
 	
-		self.sizerCount = 8
-		self.resamplingBtn.Bind(wx.EVT_BUTTON, self.onResampleData)
-		self.resampleToFitBtn.Bind(wx.EVT_BUTTON, self.onResampleToFit)
+		self.sizerCount = 6
+		#self.resamplingBtn.Bind(wx.EVT_BUTTON, self.onResampleData)
+		#self.resampleToFitBtn.Bind(wx.EVT_BUTTON, self.onResampleToFit)
 		self.circleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
@@ -209,6 +208,7 @@ class AnnotationToolbar(wx.Window):
 		play a recorded event sequence
 		"""
 		self.eventRecorder.Play()
+		
 	def onStopPlaying(self, evt):
 		"""
 		stop playing a recorded event sequence
@@ -226,14 +226,14 @@ class AnnotationToolbar(wx.Window):
 		self.visualizer.updateRendering()		   
 
 
-	def onResampleData(self, evt):
-		"""
-		Toggle the resampling on / off
-		"""
-		flag = evt.GetIsDown()
-		scripting.resamplingDisabled = not flag
-
-		lib.messenger.send(None,"data_dimensions_changed")
+#	def onResampleData(self, evt):
+#		"""
+#		Toggle the resampling on / off
+#		"""
+#		flag = evt.GetIsDown()
+#		scripting.resamplingDisabled = not flag
+#
+#		lib.messenger.send(None,"data_dimensions_changed")
 		
 	def clearChannelItems(self):
 		"""
@@ -277,6 +277,7 @@ class AnnotationToolbar(wx.Window):
 		"""
 		if not self.visualizer.getCurrentMode():
 			return
+
 		annclass = None
 		eid = event.GetId()
 		multiple = 0

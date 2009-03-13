@@ -77,7 +77,7 @@ def getShortDesc():
 	"""
 	return a short description (used as menu items etc.) of this visualization mode
 	"""
-	return "Maximum Intensity Projection"
+	return "Maximum Intensity Projection mode"
 
 def getDesc():
 	"""

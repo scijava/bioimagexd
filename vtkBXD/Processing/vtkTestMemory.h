@@ -39,13 +39,13 @@ class VTK_BXD_PROCESSING_EXPORT vtkTestMemory: public vtkObject
   vtkTypeMacro(vtkTestMemory,vtkObject);
   static vtkTestMemory *New();
   virtual void PrintSelf(ostream&, vtkIndent);
-  long CheckMemory();
-  vtkGetMacro(MaxMemory, long);
+  long long CheckMemory();
+  vtkGetMacro(MaxMemory, long long);
 
  protected:
   vtkTestMemory();
   ~vtkTestMemory();
-  long MaxMemory;
+  long long MaxMemory;
 
  private: // Only define operator= and copy constructor to prevent illegal use
   void operator=(const vtkTestMemory&);

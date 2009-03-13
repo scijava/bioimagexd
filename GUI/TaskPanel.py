@@ -43,6 +43,7 @@ from wx.lib.scrolledpanel import ScrolledPanel
 import vtk
 import vtkbxd
 import wx
+import bxdevents
 
 TOOL_W = 50
 TOOL_H = 50
@@ -140,10 +141,9 @@ class TaskPanel(ScrolledPanel):
 		Restore settings for the dataunit and source dataunits from a cache entry
 		"""
 		# Load the cached settings
-		
 		if not cachedSettings:
 			if self.cacheKey:
-				cachedSettings, cacheParser = scripting.getSettingsFromCache(self.cacheKey)
+				cachedSettings, cacheParser = scripting.getSettingsFromCache(self.cacheKey, self.dataUnit.__module__)
 			
 		if not cachedSettings:
 			Logging.info("No settings found in cache", kw = "caching")
@@ -190,7 +190,7 @@ class TaskPanel(ScrolledPanel):
 		"""
 		try:
 			self.dataUnit.switchSourceDataUnits(args)
-			lib.messenger.send(None,"data_dimensions_changed")
+			lib.messenger.send(None,bxdevents.DATA_DIMENSIONS_CHANGED)
 			if self.dataUnit.__module__ == 'Manipulation.ManipulationDataUnit':
 				self.dataUnit.switchDatasets()
 			if self.dataUnit.__module__ == 'Adjust.AdjustDataUnit':
