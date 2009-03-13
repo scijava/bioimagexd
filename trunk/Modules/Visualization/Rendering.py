@@ -86,7 +86,7 @@ def getShortDesc():
 	"""
 	return a short description (used as menu items etc.) of this visualization mode
 	"""
-	return "3D view"
+	return "3D mode"
 
 def getDesc():
 	"""

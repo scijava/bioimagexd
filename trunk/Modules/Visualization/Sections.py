@@ -78,7 +78,7 @@ def getShortDesc():
 	"""
 	return a short description (used as menu items etc.) of this visualization mode
 	"""
-	return "Orthographic view"
+	return "Orthographic mode"
 
 def getDesc():
 	"""

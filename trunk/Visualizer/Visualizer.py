@@ -47,8 +47,8 @@ import Configuration
 import scripting
 import GUI.Toolbar
 import GUI.UIElements
-
 import wx.lib.buttons
+import bxdevents
 visualizerInstance = None
 
 def getVisualizer():
@@ -143,16 +143,15 @@ class Visualizer:
 		self.toolWin.SetDefaultSize((500, 44))
 		self.toolWin.origSize = (500, 44)
 
-		self.annotateBarWin = wx.SashLayoutWindow(self.parent, \
+		self.annotateToolbarWin = wx.SashLayoutWindow(self.parent, \
 												GUI.MenuManager.ID_ANNOTATION_WIN, \
 												style = wx.NO_BORDER)
-		self.annotateBarWin.SetOrientation(wx.LAYOUT_VERTICAL)
-		self.annotateBarWin.SetAlignment(wx.LAYOUT_RIGHT)
+		self.annotateToolbarWin.SetOrientation(wx.LAYOUT_VERTICAL)
+		self.annotateToolbarWin.SetAlignment(wx.LAYOUT_RIGHT)
+		self.annotateToolbarWin.SetDefaultSize((70, 768))
+		self.annotateToolbarWin.origSize = (70, 768)
 
-		self.annotateBarWin.SetDefaultSize((70, 768))
-		self.annotateBarWin.origSize = (70, 768)
-
-		self.annotateBar = GUI.AnnotationToolbar.AnnotationToolbar(self.annotateBarWin, self)
+		self.annotateToolbar = GUI.AnnotationToolbar.AnnotationToolbar(self.annotateToolbarWin, self)
 		self.histogramWin = wx.SashLayoutWindow(self.parent, \
 												GUI.MenuManager.ID_HISTOGRAM_WIN, \
 												style = wx.NO_BORDER)
@@ -368,7 +367,11 @@ class Visualizer:
 			if not height:
 				height = 220
 			self.sizes["histogram"] = width, height
-		elif arg == "config": obj = self.sidebarWin
+		elif arg == "config":
+			obj = self.sidebarWin
+		elif arg == "annotation":
+			obj = self.annotateToolbarWin
+		
 		if evt == "hide":
 			Logging.info("Hiding ", arg, " = ", obj, kw = "visualizer")
 			if arg not in self.sizes:
@@ -380,6 +383,7 @@ class Visualizer:
 			if arg in self.sizes:
 				obj.SetDefaultSize(self.sizes[arg])
 			del self.sizes[arg]
+			
 		if evt == "show" and arg == "histogram":
 			if not self.histogramIsShowing:
 				self.createHistogram()
@@ -572,6 +576,14 @@ class Visualizer:
 
 		self.dimInfo = GUI.UIElements.DimensionInfo(self.tb, -1, size = (160, 50))
 		self.tb.AddControl(self.dimInfo)
+		
+		resampleBmp = wx.Image(os.path.join(icondir, "resample.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		self.resamplingBtn = wx.lib.buttons.GenBitmapToggleButton(self.tb, GUI.MenuManager.ID_RESAMPLING, resampleBmp)
+		self.resamplingBtn.SetBestSize((32, 32))
+		self.resamplingBtn.SetToolTipString("Enable or disable the resampling of image data")
+		self.resamplingBtn.SetToggle(0)
+		self.resamplingBtn.Bind(wx.EVT_BUTTON, self.onResampleData)
+		self.tb.AddControl(self.resamplingBtn)
 
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_IN, self.zoomIn)
 		wx.EVT_TOOL(self.parent, GUI.MenuManager.ID_ZOOM_OUT, self.zoomOut)
@@ -755,7 +767,7 @@ class Visualizer:
 		self.zsliderPanel.SetSize((x, y))
 
 		visSize = self.visWin.GetClientSize()
-		self.annotateBar.Layout()
+		self.annotateToolbar.Layout()
 		newsize = visSize[0]
 
 		if self.currentWindow:
@@ -817,7 +829,6 @@ class Visualizer:
 	def __del__(self):
 		global visualizerInstance
 		visualizerInstance = None
-
 
 
 	def setProcessedMode(self, mode):
@@ -927,11 +938,11 @@ class Visualizer:
 
 		if not module.showZoomToolbar():
 			self.toolWin.SetDefaultSize((500, 0))
-			self.annotateBarWin.SetDefaultSize((0, -1))
+			self.annotateToolbarWin.SetDefaultSize((0, -1))
 
 		else:
 			self.toolWin.SetDefaultSize((500, 44))
-			self.annotateBarWin.SetDefaultSize((70, -1))
+			self.annotateToolbarWin.SetDefaultSize((70, -1))
 
 		# dataunit might have been changed so set it every time a
 		# mode is loaded
@@ -1495,3 +1506,18 @@ class Visualizer:
 		if mask >= 0 and mask < len(self.masks):
 			self.masks.pop(mask)
 			
+	def onResampleData(self, evt):
+		"""
+		Event handler of resample button
+		"""
+		flag = evt.GetIsDown()
+		self.menuManager.check(GUI.MenuManager.ID_MENU_RESAMPLING, flag)
+		self.resampleData(flag)
+
+	def resampleData(self, flag):
+		"""
+		Toggle the resampling on / off
+		"""
+		scripting.resamplingDisabled = not flag
+		lib.messenger.send(None, bxdevents.DATA_DIMENSIONS_CHANGED)
+		self.updateRendering()

@@ -34,7 +34,7 @@ class WatershedTotalsList(wx.ListCtrl):
 		"""
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
-			size = (645, 60),
+			size = (785, 60),
 			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,
 			
 			)
@@ -42,17 +42,21 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.InsertColumn(0, "# of objects")
 		self.InsertColumn(1, u"Avg. Volume (px)")
 		self.InsertColumn(2, u"Avg. Volume (\u03BCm)")
-		self.InsertColumn(3, u"Avg. Area (\u03BCm)")
-		self.InsertColumn(4, "Avg. intensity (obj)")
-		self.InsertColumn(5, "Avg. intensity (outside objs)")
-		self.InsertColumn(6, u"Avg. distance to other objs (\u03BCm)")
+		self.InsertColumn(3, u"Sum of Volumes (\u03BCm)")
+		self.InsertColumn(4, u"Avg. Area (\u03BCm)")
+		self.InsertColumn(5, u"Sum of Areas (\u03BCm)")
+		self.InsertColumn(6, "Avg. intensity (obj)")
+		self.InsertColumn(7, "Avg. intensity (outside objs)")
+		self.InsertColumn(8, u"Avg. distance to other objs (\u03BCm)")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 105)
-		self.SetColumnWidth(3, 105)
+		self.SetColumnWidth(3, 70)
 		self.SetColumnWidth(4, 105)
-		self.SetColumnWidth(5, 105)
+		self.SetColumnWidth(5, 70)
 		self.SetColumnWidth(6, 105)
+		self.SetColumnWidth(7, 105)
+		self.SetColumnWidth(8, 105)
 		self.stats = []
 	
 		self.SetItemCount(1)
@@ -88,12 +92,16 @@ class WatershedTotalsList(wx.ListCtrl):
 		elif col == 1:
 			return u"%.3f\u00B1%.3f px"%(self.stats[3],self.stats[4])
 		elif col == 3:
-			return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[5],self.stats[6])
+			return u"%.3f"%(self.stats[13])
 		elif col == 4:
-			return u"%.3f\u00B1%.3f"%(self.stats[7],self.stats[8])
+			return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[5],self.stats[6])
 		elif col == 5:
-			return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
+			return u"%.3f"%(self.stats[14])
 		elif col == 6:
+			return u"%.3f\u00B1%.3f"%(self.stats[7],self.stats[8])
+		elif col == 7:
+			return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
+		elif col == 8:
 			return u"%.2f\u00B1%.2f"%(self.stats[11],self.stats[12])
  
 	def OnGetItemImage(self, item):

@@ -454,6 +454,7 @@ class FilterBasedModule(lib.Module.Module):
 		wantWhole = False
 		polydata = None
 		x = 1.0/(1+len(enabledFilters))
+
 		for i, currfilter in enumerate(enabledFilters):
 			if currfilter.requireWholeDataset:
 				wantWhole = True

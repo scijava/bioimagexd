@@ -31,6 +31,7 @@ __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 from lib.DataUnit.DataUnitSetting import DataUnitSettings
+from Modules.Task.Merging.MergingSettings import MergingSettings
 import sys
 import os
 import os.path
@@ -94,7 +95,7 @@ def getCacheKey(paths, names, taskname):
 	keyList.extend(names)
 	return tuple(keyList)
 
-def getSettingsFromCache(key):
+def getSettingsFromCache(key, unit = "DataUnit"):
 	"""
 	Return the settings stored under a given key in the cache
 	"""
@@ -109,7 +110,10 @@ def getSettingsFromCache(key):
 				continue
 			print "n=",n,"configParser=",configParser
 			print configParser.sections()
-			settings = DataUnitSettings(n)
+			if "MergingDataUnit" in unit:
+				settings = MergingSettings(n)
+			else:
+				settings = DataUnitSettings(n)
 			settings.set("Type", None)
 			settings = settings.readFrom(configParser)
 			value.append(settings)

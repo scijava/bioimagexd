@@ -47,7 +47,7 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 	"""
 	TranslationRegistrationFilter class
 	"""
-	name = "Translation 3D Registration"
+	name = "Translation Registration 3D"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 
@@ -110,8 +110,8 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		icast.SetOutputScalarTypeToFloat()
 		icast.SetInput(movingImage)
 		vtkToItk.SetInput(icast.GetOutput())
-		vtkToItk.Update()
 		movingImage = vtkToItk.GetOutput()
+		movingImage.Update()
 
 		fixedImage = self.dataUnit.getSourceDataUnits()[0].getTimepoint(fixedtp)
 		fixedImage.SetUpdateExtent(fixedImage.GetWholeExtent())
@@ -123,8 +123,8 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		icast2.SetOutputScalarTypeToFloat()
 		icast2.SetInput(fixedImage)
 		vtkToItk2.SetInput(icast2.GetOutput())
-		vtkToItk2.Update()
 		fixedImage = vtkToItk2.GetOutput()
+		fixedImage.Update()
 
 		# Use last transform parameters as initialization to this registration
 		if self.transform and not usePrevious:
@@ -146,12 +146,27 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.registration.SetMetric(self.metric.GetPointer())
 		self.registration.SetFixedImage(fixedImage)
 		self.registration.SetMovingImage(movingImage)
+		#fixedSize = fixedImage.GetLargestPossibleRegion().GetSize()
+		#region = itk.ImageRegion._3()
+		#size = itk.Size._3()
+		#index = itk.Index._3()
+		#index.SetElement(0, -fixedSize.GetElement(0))
+		#index.SetElement(1, -fixedSize.GetElement(1))
+		#index.SetElement(2, -fixedSize.GetElement(2))
+		#size.SetElement(0, 3*fixedSize.GetElement(0))
+		#size.SetElement(1, 3*fixedSize.GetElement(1))
+		#size.SetElement(2, 3*fixedSize.GetElement(2))
+		#region.SetIndex(index)
+		#region.SetSize(size)
+		
 		self.registration.SetFixedImageRegion(fixedImage.GetBufferedRegion())
+		#self.registration.SetFixedImageRegion(region)
 
 		# Use last transform parameters as initialization to this registration
 		if not initialParameters:
 			self.transform.SetIdentity()
 			initialParameters = self.transform.GetParameters()
+		
 		self.registration.SetInitialTransformParameters(initialParameters)
 		self.optimizer.SetMaximumStepLength(maxStepLength)
 		self.optimizer.SetMinimumStepLength(minStepLength)
@@ -176,17 +191,27 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 				self.totalTranslation.SetElement(i,self.totalTranslation.GetElement(i) + finalParameters.GetElement(i))
 			finalParameters = self.totalTranslation
 
+		# del filters to free memory
+		del self.metric
+		del self.optimizer
+		del self.interpolator
+		del self.registration
+		
+		Logging.info("Use transform parameters")
+		Logging.info("Translation X = %f"%(finalParameters.GetElement(0)))
+		Logging.info("Translation Y = %f"%(finalParameters.GetElement(1)))
+		Logging.info("Translation Z = %f"%(finalParameters.GetElement(2)))
 		# Translate input image using results from the registration
-		self.resampler = itk.ResampleImageFilter.IF3IF3.New()
+		resampler = itk.ResampleImageFilter.IF3IF3.New()
 		self.transform.SetParameters(finalParameters)
-		self.resampler.SetTransform(self.transform.GetPointer())
-		self.resampler.SetInput(movingImage)
+		resampler.SetTransform(self.transform.GetPointer())
+		resampler.SetInput(movingImage)
 		region = movingImage.GetLargestPossibleRegion()
-		self.resampler.SetSize(region.GetSize())
-		self.resampler.SetOutputSpacing(movingImage.GetSpacing())
-		self.resampler.SetOutputOrigin(movingImage.GetOrigin())
-		self.resampler.SetDefaultPixelValue(backgroundValue)
-		data = self.resampler.GetOutput()
+		resampler.SetSize(region.GetSize())
+		resampler.SetOutputSpacing(movingImage.GetSpacing())
+		resampler.SetOutputOrigin(movingImage.GetOrigin())
+		resampler.SetDefaultPixelValue(backgroundValue)
+		data = resampler.GetOutput()
 		data.Update()
 
 		data = self.convertITKtoVTK(data, cast = "UC3")

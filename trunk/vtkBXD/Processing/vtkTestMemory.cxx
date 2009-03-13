@@ -30,7 +30,7 @@
 #include "vtkUnsignedCharArray.h"
 
 #define START_ALLOC 1024
-#define MAX_ALLOC 2000000000
+#define MAX_ALLOC 4294967296
 #define START_STEP 536870912
 
 vtkStandardNewMacro(vtkTestMemory);
@@ -49,12 +49,12 @@ void vtkTestMemory::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os,indent);
 }
 
-long vtkTestMemory::CheckMemory()
+long long vtkTestMemory::CheckMemory()
 {
-	long alloc = START_ALLOC;
-	long maxAlloc = MAX_ALLOC;
-	long minAlloc = 0;
-	long step = START_STEP;
+	long long alloc = START_ALLOC;
+	long long maxAlloc = MAX_ALLOC;
+	long long minAlloc = 0;
+	long long step = START_STEP;
 	while(maxAlloc - minAlloc > START_ALLOC) {
 		std::cout << "Allocating " << alloc << " bytes of memory." << std::endl;
 		try {

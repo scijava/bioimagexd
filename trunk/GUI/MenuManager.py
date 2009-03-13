@@ -204,6 +204,22 @@ ID_SAVE_ANALYSIS		= 31239
 
 ID_CLOSE_BATCHPROCESSOR	= 31240
 ID_CLOSE_ALL            = 31241
+ID_FILE_VIEW_TREE       = 31242
+
+ID_MENU_ROI_CIRCLE      = 31243
+ID_MENU_ROI_RECTANGLE   = 31244
+ID_MENU_ROI_POLYGON     = 31245
+ID_MENU_ADD_SCALE       = 31246
+ID_MENU_DEL_ANNOTATION  = 31247
+ID_MENU_CHANGE_COLOR    = 31248
+ID_MENU_ROI_TO_MASK     = 31249
+
+ID_SELECT_ALL           = 31250
+ID_VIEW_ANNOPANEL       = 31251
+ID_VIEW_MAIN_TOOLBAR    = 31252
+ID_MAIN_TOOLBAR         = 31253
+ID_MENU_RESAMPLING      = 31254
+
 
 class MenuManager:
 	"""
@@ -381,7 +397,7 @@ class MenuManager:
 		"""
 		Clear items bar
 		"""
-		self.visualizer.annotateBar.clearChannelItems()
+		self.visualizer.annotateToolbar.clearChannelItems()
 		#if not self.itemBar:return
 		#for i in self.toolIds:
 		#	self.itemBar.DeleteTool(i)
@@ -402,7 +418,7 @@ class MenuManager:
 		#self.itemBar.DoAddTool(toolid,name,bitmap,kind=wx.ITEM_CHECK)
 		
 		#self.itemBar.Realize()
-		self.visualizer.annotateBar.addChannelItem(name, bitmap, toolid, func)
+		self.visualizer.annotateToolbar.addChannelItem(name, bitmap, toolid, func)
 		
 	
 	def toggleTool(self, toolid, flag):
@@ -410,7 +426,7 @@ class MenuManager:
 		Toggle a toolbar item
 		"""
 		if toolid in self.channelIds:
-			self.visualizer.annotateBar.toggleChannelItem(toolid, flag)
+			self.visualizer.annotateToolbar.toggleChannelItem(toolid, flag)
 			return
 		self.visualizer.tb.ToggleTool(toolid, flag)
 

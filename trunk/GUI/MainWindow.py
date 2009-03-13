@@ -70,6 +70,7 @@ import wx
 import lib.ImageOperations
 import QuitDialog
 import Urmas.UrmasWindow
+import AnnotationToolbar
 
 
 class MainWindow(wx.Frame):
@@ -489,7 +490,6 @@ class MainWindow(wx.Frame):
 		"""
 		A method for updating the title of this window
 		"""
-		
 		if evt == "current_task":
 			self.currentTask = data
 		elif evt == "current_file":
@@ -662,7 +662,7 @@ class MainWindow(wx.Frame):
 		Creates a tool bar for the window
 		"""
 		iconpath = scripting.get_icon_dir()
-		self.CreateToolBar( wx.TB_HORIZONTAL)
+		self.CreateToolBar(wx.TB_HORIZONTAL, MenuManager.ID_MAIN_TOOLBAR)
 		tb = self.GetToolBar()
 		tb.SetMargins((5,5))
 		tb.SetToolBitmapSize((32, 32))
@@ -747,7 +747,7 @@ class MainWindow(wx.Frame):
 						shortHelp = "Get help for current task / visualization")
 		wx.EVT_TOOL(self, MenuManager.ID_TOOLBAR_HELP, self.onToolbarHelp)
 		
-		self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
+		#self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
 		tb.Realize()
 		self.menuManager.setMainToolbar(tb)
 
@@ -875,7 +875,8 @@ class MainWindow(wx.Frame):
 		#				"Close the task panel", self.onCloseTaskPanel)
 		#mgr.disable(MenuManager.ID_CLOSE_TASKWIN)
 
-		mgr.addMenuItem("file",	MenuManager.ID_VIEW_TREE, "&View file tree", "Show or hide the file tree", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("file",	MenuManager.ID_FILE_VIEW_TREE, "&View file tree", "Show or hide the file tree", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("file", MenuManager.ID_SELECT_ALL, "Select &all\tCtrl-A", self.onSelectAll)
 		mgr.addMenuItem("file", MenuManager.ID_CLOSE_ALL, "&Close all", self.onCloseAll)
 		
 		mgr.addSeparator("file")
@@ -894,37 +895,50 @@ class MainWindow(wx.Frame):
 		else:
 			keyCombo = "\tCtrl-P"
 		mgr.addMenuItem("edit", wx.ID_PREFERENCES, "&Preferences" + keyCombo, self.onMenuPreferences)
-
 		mgr.addMenuItem("edit", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor", "Show the script editor", self.onMenuShowScriptEditor)
+		mgr.addSeparator("edit")
+
+		mgr.addMenuItem("edit", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate view panel updating", \
+						"Toggle immediate updating of view panel \
+							(when settings that affect the visualization change) on or off.", \
+						self.onMenuImmediateRender, check = 1, checked = 1)
+		mgr.addMenuItem("edit", MenuManager.ID_NO_RENDER, "&No view panel updating", \
+						"Toggle view panel updating on or off.", self.onMenuNoRender, check = 1, checked = 0)
+		mgr.addMenuItem("edit", MenuManager.ID_MENU_RESAMPLING, "Use &resampled image", self.onResampleData, check = 1, checked = 0)
 
 
 		##### View menu #####
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_TREE, "&File tree", "Show or hide the file tree", \
 						self.onMenuToggleVisibility, check = 1, checked = 1)
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_CONFIG, "&Configuration panel", \
-						"Show or hide the configuration panel", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_INFO, "&Dataset info", \
+						"Show or hide information about the dataset", self.onMenuToggleVisibility, check = 1, checked = 1)
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_TASKPANEL, "&Task panel", \
 						"Show or hide task panel", self.onMenuToggleVisibility, check = 1, checked = 1)
 		mgr.disable(MenuManager.ID_VIEW_TASKPANEL)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_CONFIG, "View panel &configuration", \
+						"Show or hide the configuration panel", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addSeparator("view")
+		
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_MAIN_TOOLBAR, "View main toolbar", "Show or hide main toolbar", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_TOOLBAR, "View panel top toolbar", \
+						"Show or hide view panel toolbar", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addMenuItem("view", MenuManager.ID_VIEW_ANNOPANEL, "View panel side toolbar", "Show or hide annotation panel", self.onMenuToggleVisibility, check = 1, checked = 1)
+		mgr.addSeparator("view")
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_TOOLBAR, "T&oolbar", \
-						"Show or hide toolbar", self.onMenuToggleVisibility, check = 1, checked = 1)
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_HISTOGRAM, "&Histograms\tAlt-Ctrl-H", \
 						"Show or hide channel histograms", self.onMenuToggleVisibility, check = 1, checked = 0)
 		
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_INFO, "&Dataset info", \
-						"Show or hide information about the dataset", self.onMenuToggleVisibility, check = 1, checked = 1)
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_SHELL, "Python &shell", \
 						"Show a python interpreter", self.onMenuToggleVisibility, check = 1, checked = 0)
 		mgr.addSeparator("view")
 
 
-		mgr.addMenuItem("view", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", \
-						"Show mask selection dialog", self.onMenuToggleVisibility)
-		mgr.addSeparator("view")
+		#mgr.addMenuItem("view", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", \
+		#				"Show mask selection dialog", self.onMenuToggleVisibility)
+		#mgr.addSeparator("view")
 
-		mgr.addMenuItem("view", MenuManager.ID_HIDE_INFO, "&Hide info windows\tAlt-Enter", \
-						"Hide all info windows, giving visualizer maximum screen space", self.onMenuHideInfo)
+		mgr.addMenuItem("view", MenuManager.ID_HIDE_INFO, "Maximize view panel\tAlt-Enter", \
+						"Hide all panels, giving visualizer maximum screen space", self.onMaximizeViewPanel)
 
 		mgr.disable(MenuManager.ID_VIEW_TOOLBAR)
 		mgr.disable(MenuManager.ID_VIEW_HISTOGRAM)
@@ -939,44 +953,43 @@ class MainWindow(wx.Frame):
 			desc = mod.getDesc()
 			tid = self.taskToId[name]
 			#tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = name)
-			mgr.addMenuItem("processing", tid, "&" + name, desc, self.onMenuShowTaskWindow)
+			if name == "Process":
+				name = "Procedure list"
+			mgr.addMenuItem("processing", tid, "&" + name, desc, self.onMenuShowTaskWindow, check = 1, checked = 0)
 			#wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
 			
 		mgr.addSeparator("processing")
-		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&sample dataset...\tCtrl-R", \
-						"Resample data to a different resolution", self.onMenuResampleData)
-		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Res&cale dataset...\tCtrl-Shift-R", \
-						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
-		
 		mgr.addMenuItem("processing", MenuManager.ID_BATCHPROCESSOR, "&Batch processor\tCtrl-B",
 						"Open batch processing tool",self.onMenuBatchProcessor)
+
+		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&size dataset\tCtrl-R", \
+						"Resample data to a different resolution", self.onMenuResampleData)
+		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Change bit &depth\tCtrl-Shift-R", \
+						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
 		
 		
 		##### Visualization menu #####
 		modes = self.visualizationModes.values()
 		modes.sort(self.sortModes)
 
+		animMod = None
 		for (mod, settingclass, module) in modes:
 			name = module.getName()
+			if name == "animator":
+				animMod = module
+				continue
 			vid = self.visToId[name] 
 			sdesc = module.getShortDesc()
 			desc = module.getDesc()
 			# Visualization modes that do not wish to be in the menu can return None as the desc
 			if not desc:
 				continue
-			mgr.addMenuItem("visualization", vid, "&" + sdesc, desc)
+			mgr.addMenuItem("visualization", vid, "&" + sdesc, desc, check = 1, checked = 0)
 
 		mgr.addSeparator("visualization")
 		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...\tCtrl-L", "Configure lightning")
 		mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
 		
-		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate updating", \
-						"Toggle immediate updating of rendering \
-							(when settings that affect the visualization change) on or off.", \
-						self.onMenuImmediateRender, check = 1, checked = 1)
-		mgr.addMenuItem("visualization", MenuManager.ID_NO_RENDER, "&No updating", \
-						"Toggle rendering on or off.", self.onMenuNoRender, check = 1, checked = 0)
 		mgr.disable(MenuManager.ID_LIGHTS)
 		mgr.disable(MenuManager.ID_RENDERWIN)
 
@@ -986,49 +999,53 @@ class MainWindow(wx.Frame):
 		#mgr.createMenu("rendering","&Rendering",before="help")
 		#mgr.createMenu("camera","&Camera",before="help")
 
-		#mgr.addMenuItem("animation", MenuManager.ID)
-		mgr.addSeparator("animation")
-		mgr.addMenuItem("animation", MenuManager.ID_OPEN_PROJECT, "Open project...", "Open a BioImageXD Animator Project", Urmas.UrmasWindow.UrmasWindow.onMenuOpenProject)
-		mgr.addMenuItem("animation", MenuManager.ID_SAVE_PROJECT, "Save project as...", "Save current BioImageXD Animator Project", Urmas.UrmasWindow.UrmasWindow.onMenuSaveProject)
-		mgr.addMenuItem("animation", MenuManager.ID_CLOSE_PROJECT, "Close project", "Close this Animator Project", Urmas.UrmasWindow.UrmasWindow.onMenuCloseProject)
+		mgr.addMenuItem("animation", self.visToId["animator"], "&Animator mode", check = 1, checked = 0)
 		mgr.addSeparator("animation")
 		
-		mgr.addMenuItem("animation", MenuManager.ID_ADD_TIMEPOINT, "Timepoint track", "Add a timepoint track to the timeline", Urmas.UrmasWindow.UrmasWindow.onMenuAddTimepointTrack)
-		#mgr.addMenuItem("animation", MenuManager.ID_ADD_SPLINE, "Camera path track", "Add a camera path track to the timeline", self.onMenuAddSplineTrack)
-		#mgr.addMenuItem("addtrack", MenuManager.ID_ADD_KEYFRAME, "Keyframe track", "Add a keyframe track to the timeline", self.onMenuAddKeyframeTrack)		   
-		#mgr.addSubMenu("track", "addtrack", "&Add track", MenuManager.ID_ADD_TRACK)
+		mgr.addMenuItem("animation", MenuManager.ID_OPEN_PROJECT, "Open project", "Open a BioImageXD Animator Project")
+		mgr.addMenuItem("animation", MenuManager.ID_SAVE_PROJECT, "Save project", "Save current BioImageXD Animator Project")
+		mgr.addMenuItem("animation", MenuManager.ID_CLOSE_PROJECT, "Close project", "Close this Animator Project")
+		mgr.addSeparator("animation")
+
+		mgr.createMenu("addtrack", "&Add track", place = 0)
+		mgr.addSubMenu("animation", "addtrack", "&Add track", MenuManager.ID_ADD_TRACK)
+		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_TIMEPOINT, "Timepoint track", "Add a timepoint track to the timeline")
+		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_SPLINE, "Camera path track", "Add a camera path track to the timeline")
+		mgr.addMenuItem("addtrack", MenuManager.ID_ADD_KEYFRAME, "Keyframe track", "Add a keyframe track to the timeline")
 		
 		mgr.createMenu("sizetrack", "&Item sizes", place = 0)
 		mgr.addSubMenu("animation", "sizetrack", "&Item sizes", MenuManager.ID_ITEM_SIZES)
 		
-		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK, "Expand to maximum", "Expand the track to encompass the whole timeline", Urmas.UrmasWindow.UrmasWindow.onMaxTrack)
-		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK_RATIO, "Expand to track length (keep ratio)", "Expand the track to encompass the whole timeline while retainining the relative sizes of each item.", Urmas.UrmasWindow.UrmasWindow.onMaxTrackRatio)
-		mgr.addMenuItem("sizetrack", MenuManager.ID_MIN_TRACK, "Shrink to minimum", "Shrink the track to as small as possible", Urmas.UrmasWindow.UrmasWindow.onMinTrack)
-		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK, "Set item size", "Set each item on this track to be of given size", Urmas.UrmasWindow.UrmasWindow.onSetTrack)
-		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_TOTAL, "Set total length", "Set total length of items on this track", Urmas.UrmasWindow.UrmasWindow.onSetTrackTotal)
-		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_RELATIVE, "Set to physical length", "Set the length of items on this track to be relative to their physical length", Urmas.UrmasWindow.UrmasWindow.onSetTrackRelative)
+		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK, "Expand to maximum", "Expand the track to encompass the whole timeline")
+		mgr.addMenuItem("sizetrack", MenuManager.ID_FIT_TRACK_RATIO, "Expand to track length (keep ratio)", "Expand the track to encompass the whole timeline while retainining the relative sizes of each item.")
+		mgr.addMenuItem("sizetrack", MenuManager.ID_MIN_TRACK, "Shrink to minimum", "Shrink the track to as small as possible")
+		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK, "Set item size", "Set each item on this track to be of given size")
+		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_TOTAL, "Set total length", "Set total length of items on this track")
+		mgr.addMenuItem("sizetrack", MenuManager.ID_SET_TRACK_RELATIVE, "Set to physical length", "Set the length of items on this track to be relative to their physical length")
 
 		mgr.createMenu("shuffle", "&Shift items", place = 0)
 		mgr.addSubMenu("animation", "shuffle", "Shift items", MenuManager.ID_ITEM_ORDER)
-		mgr.addMenuItem("shuffle", MenuManager.ID_ITEM_ROTATE_CW, "&Left", Urmas.UrmasWindow.UrmasWindow.onShiftClockwise)
-		mgr.addMenuItem("shuffle", MenuManager.ID_ITEM_ROTATE_CCW, "&Right", Urmas.UrmasWindow.UrmasWindow.onShiftCounterClockwise)
+		mgr.addMenuItem("shuffle", MenuManager.ID_ITEM_ROTATE_CW, "&Left")
+		mgr.addMenuItem("shuffle", MenuManager.ID_ITEM_ROTATE_CCW, "&Right")
 
 		mgr.addSeparator("animation")
-		mgr.addMenuItem("animation", MenuManager.ID_DELETE_TRACK, "&Remove track", "Remove the track from timeline", Urmas.UrmasWindow.UrmasWindow.onMenuRemoveTrack)
-		mgr.addMenuItem("animation", MenuManager.ID_DELETE_ITEM, "&Remove item", "Remove the selected track item", Urmas.UrmasWindow.UrmasWindow.onMenuRemoveTrackItem)
+		mgr.addMenuItem("animation", MenuManager.ID_DELETE_TRACK, "&Remove track", "Remove the track from timeline")
+		mgr.addMenuItem("animation", MenuManager.ID_DELETE_ITEM, "&Remove item", "Remove the selected track item")
 	
 		mgr.addSeparator("animation")
-		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_SET_BEGIN, "&Begin at the end of previous path", "Set this camera path to begin where the previous path ends", Urmas.UrmasWindow.UrmasWindow.onMenuSetBegin)
-		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_SET_END, "&End at the beginning of next path", "Set this camera path to end where the next path starts", Urmas.UrmasWindow.UrmasWindow.onMenuSetEnd)
+		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_SET_BEGIN, "&Begin at the end of previous path", "Set this camera path to begin where the previous path ends")
+		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_SET_END, "&End at the beginning of next path", "Set this camera path to end where the next path starts")
 
 		mgr.addSeparator("animation")
-		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_CLOSED, "&Closed path", "Set the camera path to open / closed.", Urmas.UrmasWindow.UrmasWindow.onMenuClosedSpline, check = 1)
-		mgr.addMenuItem("animation", MenuManager.ID_MAINTAIN_UP, "&Maintain up direction", Urmas.UrmasWindow.UrmasWindow.onMenuSetMaintainUp, check = 1)
+		mgr.addMenuItem("animation", MenuManager.ID_SPLINE_CLOSED, "&Closed path", "Set the camera path to open / closed.", check = 1)
+		mgr.addMenuItem("animation", MenuManager.ID_MAINTAIN_UP, "&Maintain up direction", check = 1)
 
 		mgr.disable(MenuManager.ID_OPEN_PROJECT)
 		mgr.disable(MenuManager.ID_SAVE_PROJECT)
 		mgr.disable(MenuManager.ID_CLOSE_PROJECT)
 		mgr.disable(MenuManager.ID_ADD_TIMEPOINT)
+		mgr.disable(MenuManager.ID_ADD_SPLINE)
+		mgr.disable(MenuManager.ID_ADD_KEYFRAME)
 		mgr.disable(MenuManager.ID_FIT_TRACK)
 		mgr.disable(MenuManager.ID_FIT_TRACK_RATIO)
 		mgr.disable(MenuManager.ID_MIN_TRACK)
@@ -1046,18 +1063,18 @@ class MainWindow(wx.Frame):
 		
 
 		##### Annotations menu #####
-		mgr.addMenuItem("annotations", MenuManager.ID_ROI_CIRCLE, "Draw &circle ROI", "", self.onMenuHelp)
-		mgr.addMenuItem("annotations", MenuManager.ID_ROI_RECTANGLE, "Draw &rectangle ROI", "", self.onMenuHelp)
-		mgr.addMenuItem("annotations", MenuManager.ID_ROI_POLYGON, "Draw &polygon ROI", "", self.onMenuHelp)
-		mgr.addMenuItem("annotations", MenuManager.ID_ADD_SCALE, "Draw &scale bar", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_ROI_CIRCLE, "Draw &circle ROI", "", self.onAddAnnotation)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_ROI_RECTANGLE, "Draw &rectangle ROI", "", self.onAddAnnotation)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_ROI_POLYGON, "Draw &polygon ROI", "", self.onAddAnnotation)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_ADD_SCALE, "Draw &scale bar", "", self.onAddAnnotation)
 
 		mgr.addSeparator("annotations")
-		mgr.addMenuItem("annotations", MenuManager.ID_DEL_ANNOTATION, "&Delete annotation\t Del", "", self.onMenuHelp)
-		mgr.addMenuItem("annotations", MenuManager.ID_ANNOTATION_WIN, "Change &annotation color", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_DEL_ANNOTATION, "&Delete annotation\t Del", "", self.onDeleteAnnotation)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_CHANGE_COLOR, "Change &annotation color", "", self.onMenuHelp)
 
 		mgr.addSeparator("annotations")
-		mgr.addMenuItem("annotations", MenuManager.ID_ROI_TO_MASK, "Convert ROI &to mask", "", self.onMenuHelp)
-		mgr.addMenuItem("annotations", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", "", self.onMenuHelp)
+		mgr.addMenuItem("annotations", MenuManager.ID_MENU_ROI_TO_MASK, "Convert ROI &to mask", "", self.onRoiToMask)
+		mgr.addMenuItem("annotations", MenuManager.ID_VIEW_MASKSEL, "&Mask selection", "Show mask selection dialog", self.onMenuToggleVisibility)
 
 		##### Help menu #####
 		mgr.addMenuItem("help", wx.ID_ABOUT, "&About", "About BioImageXD", self.onMenuAbout)
@@ -1155,6 +1172,10 @@ class MainWindow(wx.Frame):
 		Toggle immediate render updates on or off
 		"""
 		flag = evt.IsChecked()
+		if flag:
+			self.menuManager.disable(MenuManager.ID_IMMEDIATE_RENDER)
+		else:
+			self.menuManager.enable(MenuManager.ID_IMMEDIATE_RENDER)
 		self.visualizer.setNoRendering(flag)
 		
 	def onMenuShowScriptEditor(self, evt):
@@ -1177,12 +1198,35 @@ class MainWindow(wx.Frame):
 
 		self.GetToolBar().ToggleTool(MenuManager.ID_SHOW_TREE, status)
 		self.menuManager.check(MenuManager.ID_VIEW_INFO, status)
+		
 		if not status:
 			self.infoWin.SetDefaultSize((0, 0))
 		else:
 			self.infoWin.SetDefaultSize(self.infoWin.origSize)
 
 		self.onMenuShowTree(status)
+
+	def onMaximizeViewPanel(self, evt):
+		"""
+		Maximize view panel
+		"""
+		mgr = self.menuManager
+		self.toggleVisibility(MenuManager.ID_VIEW_TREE, False)
+		mgr.check(MenuManager.ID_VIEW_TREE, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_INFO, False)
+		mgr.check(MenuManager.ID_VIEW_INFO, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_CONFIG, False)
+		mgr.check(MenuManager.ID_VIEW_CONFIG, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_TASKPANEL, False)
+		mgr.check(MenuManager.ID_VIEW_TASKPANEL, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_SHELL, False)
+		mgr.check(MenuManager.ID_VIEW_SHELL, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_HISTOGRAM, False)
+		mgr.check(MenuManager.ID_VIEW_HISTOGRAM, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_ANNOPANEL, False)
+		mgr.check(MenuManager.ID_VIEW_ANNOPANEL, False)
+		self.toggleVisibility(MenuManager.ID_VIEW_TOOLBAR, False)
+		mgr.check(MenuManager.ID_VIEW_TOOLBAR, False)
 
 	def onMenuResampleData(self, evt):
 		"""
@@ -1202,8 +1246,10 @@ class MainWindow(wx.Frame):
 			self.loadVisualizer(mode, dataunit = unit)
 			tb = self.GetToolBar()
 			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)
-			
+			self.visualizer.resamplingBtn.SetToggle(True)
+			self.menuManager.check(MenuManager.ID_MENU_RESAMPLING, True)
 			self.infoWidget.updateInfo(None, None, None)
+			self.visualizer.updateRendering()
 		
 	def onMenuRescaleData(self, evt):
 		"""
@@ -1237,18 +1283,26 @@ class MainWindow(wx.Frame):
 			self.loadVisualizer(mode, dataunit = unit)
 			self.infoWidget.showInfo(selectedFiles[0])
 
+	
 	def onMenuToggleVisibility(self, evt):
 		"""
 		A callback function for toggling the visibility of different UI elements
 		"""
 		eid = evt.GetId()
 		flag = evt.IsChecked()
+		self.toggleVisibility(eid,flag)
+
+	def toggleVisibility(self,eid,flag):
+		"""
+		Toggle visibility of different UI elements
+		"""
 		cmd = "hide"
 		if flag:
 			cmd = "show"
+		
 		if eid == MenuManager.ID_VIEW_CONFIG:
 			obj = "config"
-		elif eid == MenuManager.ID_VIEW_TREE:
+		elif eid == MenuManager.ID_VIEW_TREE or eid == MenuManager.ID_FILE_VIEW_TREE:
 			self.onMenuShowTree(show = flag)
 			return
 		elif eid == MenuManager.ID_VIEW_MASKSEL:
@@ -1265,14 +1319,17 @@ class MainWindow(wx.Frame):
 		elif eid == MenuManager.ID_VIEW_HISTOGRAM:
 			obj = "histogram"
 		elif eid in [MenuManager.ID_VIEW_INFO, MenuManager.ID_VIEW_TASKPANEL]:
-			win = self.taskWin
 			if eid == MenuManager.ID_VIEW_INFO:
 				win = self.infoWin
+			else:
+				win = self.taskWin
+			
 			if cmd == "hide":
 				win.origSize = win.GetSize()
 				win.SetDefaultSize((0, 0))
 			else:
 				win.SetDefaultSize(win.origSize)
+
 			self.OnSize(None)
 			self.visualizer.OnSize(None)
 			return
@@ -1285,6 +1342,19 @@ class MainWindow(wx.Frame):
 					intro = 'BioImageXD interactive interpreter v0.1'
 					self.shell = py.shell.Shell(self.shellWin, -1, introText = intro)
 				self.shellWin.SetDefaultSize(self.shellWin.origSize)
+			self.OnSize(None)
+			self.visualizer.OnSize(None)
+			return
+		elif eid == MenuManager.ID_VIEW_ANNOPANEL:
+			obj = "annotation"
+		elif eid == MenuManager.ID_VIEW_MAIN_TOOLBAR:
+			tb = self.GetToolBar()
+			if cmd == "hide":
+				tb.Destroy()
+				self.taskIds = []
+				self.visIds = []
+			else:
+				self.createToolBar()
 			self.OnSize(None)
 			self.visualizer.OnSize(None)
 			return
@@ -1431,6 +1501,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.infoWin.SetDefaultSize(self.infoWin.origSize)
 			self.loadVisualizer(self.defaultModeName, dataunit = unit)
 			return
+
 		scripting.currentVisualizationMode = mode
 		lib.messenger.send(None, "update_progress", 0.1, "Loading %s view..." % mode)
 
@@ -1451,7 +1522,9 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			Dialogs.showerror(self, "You need to select a dataset to load in the visualizer.", \
 								"Please select a dataset")
 			return
+
 		self.setButtonSelection(eid)
+		self.setVisualizerMenuSelection(eid)
 		dataunit = selectedFiles[0]
 		if self.visualizer:
 			hasDataunit = bool(self.visualizer.dataUnit)
@@ -1468,9 +1541,9 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.visualizer.enable(True)
 #			if not didSetDataUnit:
 #				self.visualizer.setDataUnit(dataunit)
-			if hasDataunit:
-				Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
-				self.visualizer.updateRendering()
+			#if hasDataunit:
+			#	Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
+			#	self.visualizer.updateRendering()
 			lib.messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode, 0)
 			return
 		if len(selectedFiles) > 1:
@@ -1706,6 +1779,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			Logging.info("Task", taskname, "already showing, will close", kw = "task")
 			tb.ToggleTool(eid, 0)
 			self.onCloseTaskPanel(None)
+			self.menuManager.check(self.taskToId[taskname], False)
 			return
 		
 		do_cmd = 'mainWindow.loadTask("%s")' % (taskname)
@@ -1716,6 +1790,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		cmd = lib.Command.Command(lib.Command.TASK_CMD, None, None, do_cmd, undo_cmd, \
 									desc = "Load task %s" % taskname)
 		cmd.run()
+
+		# Set mark on right menu item
+		for name, taskid in self.taskToId.items():
+			if name == taskname:
+				self.menuManager.check(taskid, True)
+			else:
+				self.menuManager.check(taskid, False)
 		
 	def closeTask(self):
 		"""
@@ -1847,6 +1928,9 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			show = tb.GetToolState(MenuManager.ID_SHOW_TREE)
 		else:
 			tb.ToggleTool(MenuManager.ID_SHOW_TREE, show)
+
+		self.menuManager.check(MenuManager.ID_VIEW_TREE, show)
+		self.menuManager.check(MenuManager.ID_FILE_VIEW_TREE, show)
 		
 		if not show:
 			w, h = self.treeWin.GetSize()
@@ -1866,6 +1950,9 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		print "\n\nLOADVISUALIZER",mode,dataunit
 		scripting.currentVisualizationMode = mode
+		eid = self.visToId[mode]
+		self.setButtonSelection(eid)
+		self.setVisualizerMenuSelection(eid)
 
 		if not self.visualizer:
 			self.visPanel = wx.SashLayoutWindow(self.visWin, -1)
@@ -1874,6 +1961,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			lib.Command.visualizer = self.visualizer
 			self.menuManager.setVisualizer(self.visualizer)
 			self.visualizer.setProcessedMode(processed)
+
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.6, "Loading %s view..." % mode)
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SNAPSHOT, self.onSnapshot)
@@ -2009,4 +2097,63 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Close all files from the file tree
 		"""
 		self.tree.closeAll()
+
+	def onSelectAll(self,event):
+		"""
+		Select all files from the file tree
+		"""
+		self.tree.onSelectAll(event)
 		
+	def onAddAnnotation(self,event):
+		"""
+		Add annotation to the visualizer
+		"""
+		if not self.visualizer.getCurrentMode():
+			return
+		
+		annoclass = None
+		eid = event.GetId()
+		multiple = 0
+
+		if eid == MenuManager.ID_MENU_ADD_SCALE:
+			annoclass = "SCALEBAR"
+		elif eid == MenuManager.ID_MENU_ROI_CIRCLE:
+			annoclass = "CIRCLE"
+		elif eid == MenuManager.ID_MENU_ROI_RECTANGLE:
+			annoclass = "RECTANGLE"
+		elif eid == MenuManager.ID_MENU_ROI_POLYGON:
+			annoclass = "POLYGON"
+			multiple = 1
+		else:
+			Logging.info("BOGUS ANNOTATION SELECTED!", kw = "visualizer")
+
+		self.visualizer.getCurrentMode().annotate(annoclass, multiple = multiple)
+
+	def onDeleteAnnotation(self,event):
+		"""
+		Delete selected annotation
+		"""
+		if self.visualizer.getCurrentMode():
+			self.visualizer.getCurrentMode().deleteAnnotation()
+
+	def onRoiToMask(self, evt):
+		"""
+		Convert the selected ROI to mask
+		"""
+		self.visualizer.annotateToolbar.roiToMask(evt)
+
+	def setVisualizerMenuSelection(self, eid):
+		"""
+		Select only the selected button
+		"""
+		for i in self.visIds:
+			flag = (i == eid)
+			self.menuManager.check(i, flag)
+
+	def onResampleData(self, evt):
+		"""
+		Toggle the resampling on / off
+		"""
+		flag = evt.IsChecked()
+		self.visualizer.resamplingBtn.SetToggle(flag)
+		self.visualizer.resampleData(flag)

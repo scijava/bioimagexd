@@ -53,7 +53,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"AverageDistance":		"Average distance between two objects",
 								"AvgDistanceStdErr":	"Standard error of the average distance between two objects",
 								"ObjAvgAreaInUm":       "Average area of objects, in square micrometers",
-								"ObjAvgAreaInUmStdErr": "Standard error of average area of objects in square micrometers"
+								"ObjAvgAreaInUmStdErr": "Standard error of average area of objects in square micrometers",
+								"ObjVolSumInUm":        "Sum of volumes of all objects in micrometers",
+								"ObjAreaSumInUm":       "Sum of areas of all objects in micrometers"
 								}
 		
 	def getInputName(self, n):
@@ -153,12 +155,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				n = len(self.values)
 				avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
 				ums = [x[1] for x in self.values]
+				sumums = sum(ums, 0.0)
 				avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
 				pxs = [x[0] for x in self.values]
 				avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
 				avgareaums, avgareaumsstd, avgareaumsstderr = lib.Math.meanstdeverr(self.objAreasUm)
+				sumareaums = sum(self.objAreasUm, 0.0)
 				
-				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr])
+				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums])
 				self.reportGUI.setVolumes(self.values)
 				self.reportGUI.setAreasUm(self.objAreasUm)
 				self.reportGUI.setCentersOfMass(self.centersofmass)
@@ -252,16 +256,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		objectThreshold.SetInValue(255)
 		marchingCubes = vtk.vtkMarchingCubes()
 		marchingCubes.SetValue(0,255)
-		decimate = vtk.vtkDecimatePro()
-		decimate.SetPreserveTopology(0)
-		decimate.SplittingOn()
-		decimate.BoundaryVertexDeletionOn()
-		decimate.SetTargetReduction(0.65)
 		massProperties = vtk.vtkMassProperties()
 		objectThreshold.SetInput(areaImage)
 		marchingCubes.SetInput(objectThreshold.GetOutput())
-		decimate.SetInput(marchingCubes.GetOutput())
-		massProperties.SetInput(decimate.GetOutput())
+		massProperties.SetInput(marchingCubes.GetOutput())
 		areaDiv = (areaSpacing[0] / x)**2
 		voxelArea = x*y*2 + x*z*2 + y*z*2
 
@@ -340,6 +338,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
 		ums = [x[1] for x in values]
 		avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
+		sumums = sum(ums, 0.0)
 		pxs = [x[0] for x in values]
 		avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
 		
@@ -381,11 +380,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.distStdErr = distStdErr
 
 		avgAreaUm, avgAreaUmStd, avgAreaUmStdErr = lib.Math.meanstdeverr(objAreasUm)
+		areaSumUm = sum(objAreasUm, 0.0)
 
 		self.setResultVariable("NumberOfObjects",len(values))
 		self.setResultVariable("ObjAvgVolInVoxels",avgpxs)
 		self.setResultVariable("ObjAvgVolInUm",avgums)
+		self.setResultVariable("ObjVolSumInUm",sumums)
 		self.setResultVariable("ObjAvgAreaInUm",avgAreaUm)
+		self.setResultVariable("ObjAreaSumInUm",areaSumUm)
 		self.setResultVariable("ObjAvgIntensity",avgints)
 		self.setResultVariable("AvgIntOutsideObjs", avgIntOutsideObjs)
 		self.setResultVariable("AvgIntInsideObjs", avgIntInsideObjs)
@@ -405,6 +407,6 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
 			self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
 			self.reportGUI.setAreasUm(objAreasUm)
-			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr])
+			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm])
 			
 		return self.getInput(1)

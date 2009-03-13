@@ -280,6 +280,7 @@ class DataUnitSettings:
 		"""	   
 		if not parser.has_section("Settings"):
 			parser.add_section("Settings")
+
 		for key in self.registered.keys():
 			if key in self.counted:
 				for i in range(self.counted[key] + 1):

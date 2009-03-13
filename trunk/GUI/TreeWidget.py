@@ -716,3 +716,11 @@ class TreeWidget(wx.SashLayoutWindow):
 					self.selectAll(child)
 				child = self.tree.GetNextSibling(child)
 
+
+	def onSelectAll(self, event):
+		"""
+		Select all event handler
+		"""
+		self.ignore = 1
+		self.selectAll(self.tree.GetRootItem())
+		self.ignore = 0

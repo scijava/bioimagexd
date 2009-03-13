@@ -51,7 +51,7 @@ def getShortDesc():
 	"""
 	return a short description (used as menu items etc.) of this visualization mode
 	"""
-	return "Gallery view"
+	return "Gallery mode"
 
 def getDesc():
 	"""

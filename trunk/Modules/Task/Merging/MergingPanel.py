@@ -240,7 +240,6 @@ class MergingPanel(TaskPanel.TaskPanel):
 		#print "\n\nSETTING ITF EDITOR FUNCTION"
 		self.intensityTransferEditor.setIntensityTransferFunction(tf)
 
-
 		for i in range(len(sources)):
 			self.dataUnit.setOutputChannel(i, 1)
 		if self.colorBtn:
