@@ -104,8 +104,8 @@ class AnnotationToolbar(wx.Window):
 		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "scale.gif", "Draw a scale bar on the image")
 		self.sizer.Add(self.scaleBtn, (1, 1))
 
-		self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
-		self.sizer.Add(self.textBtn, (2, 0))
+		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
+		#self.sizer.Add(self.textBtn, (2, 0))
 
 		icon = wx.Image(os.path.join(icondir, "delete_annotation.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
 		
@@ -113,19 +113,19 @@ class AnnotationToolbar(wx.Window):
 		self.deleteAnnotationBtn.SetBestSize((32,32))
 		self.deleteAnnotationBtn.SetToolTipString("Delete an annotation")
 		
-		self.sizer.Add(self.deleteAnnotationBtn, (4, 1))   
+		self.sizer.Add(self.deleteAnnotationBtn, (2, 0))   
 
-		self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
-										"Convert the selected Region of Interest to a Mask", \
-										btnclass = buttons.GenBitmapButton)
-		self.sizer.Add(self.roiToMaskBtn, (4, 0))
+		#self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
+		#								"Convert the selected Region of Interest to a Mask", \
+		#								btnclass = buttons.GenBitmapButton)
+		#self.sizer.Add(self.roiToMaskBtn, (4, 0))
 
 		#self.fontBtn = createBtn(MenuManager.ID_ANNOTATION_FONT,"fonts.gif",\
 		#							"Set the font for annotations", btnclass=buttons.GenBitmapButton)
 		#self.sizer.Add(self.fontBtn, (3,1))
 
 		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65, -1))
-		self.sizer.Add(self.colorSelect, (5, 0), span = (1, 2))
+		self.sizer.Add(self.colorSelect, (4, 0), span = (1, 2))
 		
 		#self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", \
 		#								"Enable or disable the resampling of image data")
@@ -181,7 +181,7 @@ class AnnotationToolbar(wx.Window):
 		self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
-		self.roiToMaskBtn.Bind(wx.EVT_BUTTON, self.roiToMask)
+		#self.roiToMaskBtn.Bind(wx.EVT_BUTTON, self.roiToMask)
 #		wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
 		self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON, self.deleteAnnotation)
 		

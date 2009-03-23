@@ -46,6 +46,7 @@ class ParticleReader:
 		self.volumes = []
 		self.cogs = []
 		self.avgints = []
+		self.avgintsstderr = []
 		self.objects = []
 		
 	def getObjects(self):
@@ -70,7 +71,7 @@ class ParticleReader:
 		"""
 		return a list of the avereage intensities of the objects (sorted)
 		"""
-		return self.avgints		
+		return (self.avgints, self.avgintsstderr)
 		
 	def read(self, statsTimepoint  = 0):
 		"""
@@ -93,7 +94,7 @@ class ParticleReader:
 				skipNext = 1
 				continue
 			else:
-				obj, sizemicro, size, cog, umcog, avgint = line[0:6]
+				obj, sizemicro, size, cog, umcog, avgint, avgintstderr = line[0:7]
 			try:
 				size = int(size)
 				sizemicro = float(sizemicro)
@@ -103,7 +104,8 @@ class ParticleReader:
 			cog = [float(coordinate) for coordinate in cog[1:-1].split(", ")]
 			#cog = eval(cog)
 			umcog = [float(coordinate) for coordinate in umcog[1:-1].split(", ")]
-			avgint = float(avgint)	
+			avgint = float(avgint)
+			avgintstderr = float(avgintstderr)
 			if size >= self.filterObjectSize and obj != 0: 
 				particle = Particle.Particle(umcog, cog, self.timepoint, size, avgint, obj)
 				curr.append(particle)
@@ -112,6 +114,7 @@ class ParticleReader:
 				self.cogs.append((int(cog[0]), int(cog[1]), int(cog[2])))
 				self.volumes.append((size, sizemicro))
 				self.avgints.append(avgint)
+				self.avgintsstderr.append(avgintstderr)
 		if curr:
 			ret.append(curr)
 		return ret
@@ -139,4 +142,5 @@ class ParticleWriter:
 				particleXPos, particleYPos, particleZPos = particle.posInPixels
 				writer.writerow([str(i), str(particle.intval), str(particle.timePoint), \
 				str(particleXPos), str(particleYPos), str(particleZPos)])		
-		fileToOpen.close()		
+		fileToOpen.close()
+		

@@ -248,4 +248,3 @@ class MergingPanel(TaskPanel.TaskPanel):
 		else:
 			Logging.info("No color button to set ctf to ", kw = "ctf")
 		self.restoreFromCache()
-		

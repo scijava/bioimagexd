@@ -292,7 +292,6 @@ class ParticleTracker:
 		return self.tracks
 		
 
-						
 	def setFilterObjectSize(self, filterSize):
 		"""
 		Set the minimum size (in pixels) objects must have to be
