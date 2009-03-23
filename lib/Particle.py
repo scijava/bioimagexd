@@ -59,6 +59,7 @@ class ParticleReader:
 		self.cogs = []
 		self.avgints = []
 		self.objects = []
+		self.avgintsstderr = []
 		
 	def getObjects(self):
 		"""
@@ -82,7 +83,7 @@ class ParticleReader:
 		"""
 		return a list of the avereage intensities of the objects (sorted)
 		"""
-		return self.avgints
+		return (self.avgints,self.avgintsstderr)
 
 	def getAreas(self):
 		"""
@@ -125,14 +126,16 @@ class ParticleReader:
 			cog = map(int, [float(cogX), float(cogY), float(cogZ)])
 			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
 			avgint = float(avgint)
+			avgintstderr = float(avgintstderr)
 			if volume >= self.filterObjectVolume and obj != 0: 
 				particle = Particle(umcog, cog, self.timepoint, volume, avgint, obj)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
 				self.objects.append(obj)
-				self.cogs.append(cog)
+				self.cogs.append(tuple(cog))
 				self.volumes.append((volume, volumemicro))
 				self.avgints.append(avgint)
+				self.avgintsstderr.append(avgintstderr)
 				self.areas.append(areamicro)
 		if curr:
 			ret.append(curr)
@@ -160,6 +163,7 @@ class Particle:
 		self.trackCount = 0
 		self.seedParticles = []
 		self.totalTimepoints = 1
+		self.spacing = (1.0,1.0,1.0)
 		
 	def getCenterOfMass(self):
 		"""
@@ -177,9 +181,9 @@ class Particle:
 		"""
 		@return the distance in 3D between points (x,y,z) and (x2,y2,z2)
 		"""
-		distanceX = x - x2
-		distanceY = y - y2 
-		distanceZ = z - z2
+		distanceX = (x - x2) * self.spacing[0]
+		distanceY = (y - y2) * self.spacing[1]
+		distanceZ = (z - z2) * self.spacing[2]
 		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
 		
 	def distance(self, particle):	 
@@ -209,6 +213,7 @@ class Particle:
 		self.timePoint = particle.timePoint
 		self.intval = particle.intval
 		self.matchScore = particle.matchScore
+		self.spacing = particle.spacing
 
 	def __str__(self):
 		try:
@@ -221,6 +226,12 @@ class Particle:
 	def __repr__(self):
 		return self.__str__()
 
+	def setSpacing(self,spacing):
+		"""
+		Set spacing of particle for distance calculations
+		"""
+		self.spacing = spacing
+
 
 class ParticleTracker:
 	"""
@@ -228,7 +239,6 @@ class ParticleTracker:
 				 classes to create tracks of a set of particles
 	"""
 	def __init__(self):
-
 		self.velocityWeight = 0.25
 		self.directionWeight = 0.25
 		self.sizeWeight = 0.25
@@ -240,7 +250,8 @@ class ParticleTracker:
 		self.sizeChange = None
 		self.intensityChange = None
 		self.angleChange = None
-	
+
+		self.spacing = (1.0,1.0,1.0)
 		self.filterObjectSize = 2  
 		self.minimumTrackLength = 3
 
@@ -291,8 +302,11 @@ class ParticleTracker:
 		print "Reading from file = '", filename, "'"
 
 		if os.path.exists(filename):
-			self.reader = ParticleReader(filename, filterObjectSize = self.filterObjectSize)
+			self.reader = ParticleReader(filename, filterObjectVolume = self.filterObjectSize)
 			self.particles = self.reader.read(statsTimepoint = statsTimepoint)
+			for particleList in self.particles:
+				for particle in particleList:
+					particle.setSpacing(self.spacing)
 				
 	def getParticles(self, timepoint, objs):
 		"""
@@ -363,10 +377,10 @@ class ParticleTracker:
 					maxInt = particle.averageIntensity
 				elif particle.averageIntensity < minInt:
 					minInt = particle.averageIntensity
-				if particle.size > maxSize:
-					maxSize = particle.size
-				elif particle.size < minSize:
-					minSize = particle.size
+				if particle.volume > maxSize:
+					maxSize = particle.volume
+				elif particle.volume < minSize:
+					minSize = particle.volume
 
 				for particle2 in pts:
 					if particle.intval == particle2.intval:
@@ -442,7 +456,6 @@ class ParticleTracker:
 					 a 3 - tuple (distFactor, sizeFactor, intFactor )if there's a match
 					and none otherwise	  
 		"""
-					 
 		distance = testParticle.distance(oldParticle)
 		# If a particle is within search radius +- tolerance and doesn't belong in a
 		# track yet
@@ -461,9 +474,9 @@ class ParticleTracker:
 		if distance > self.maxSpeed:
 			distFactor = self.maxSpeed / distance
 		#print "new size=",testParticle.size, "old size=",oldParticle.size
-		sizeChange = float(abs(testParticle.size - oldParticle.size))
+		sizeChange = float(abs(testParticle.volume - oldParticle.volume))
 		#print "sizeChange=",sizeChange, "old size=",oldParticle.size
-		sizeFactor = sizeChange / oldParticle.size
+		sizeFactor = sizeChange / oldParticle.volume
 		if sizeFactor > self.sizeChange:
 			#print "Size change=",self.sizeChange,"size factor=",sizeFactor
 			return None,None,None
@@ -598,6 +611,7 @@ class ParticleTracker:
 		"""
 		oldParticle = Particle()
 		currCandidate = Particle()
+		currCandidate.setSpacing(self.spacing)
 		# Make a copy of the particle 
 		oldParticle.copy(particle)
 		# if there are no seed particles (and hence, no initial tracks), then create
@@ -625,6 +639,7 @@ class ParticleTracker:
 				break
 			foundOne = False
 			currentMatch = Particle()
+			currentMatch.setSpacing(self.spacing)
 			for testParticle in self.particles[search_timePoint]:
 				# Calculate the factors between the particle that is being tested against
 				# the previous particle  (= oldParticle)
@@ -688,3 +703,8 @@ class ParticleTracker:
 			oldParticle.copy(currentMatch)
 		tracks.append(track)
 		
+	def setSpacing(self,spacing):
+		"""
+		Set spacing of voxels
+		"""
+		self.spacing = spacing

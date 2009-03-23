@@ -1131,8 +1131,7 @@ class Visualizer:
 			self.blockTpUpdate = 1
 			self.timeslider.SetValue(currT)
 			self.blockTpUpdate = oldBlock
-			
-
+		
 		x, y, z = dataunit.getDimensions()
 
 		if self.timepoint > count:
@@ -1142,7 +1141,7 @@ class Visualizer:
 		self.setUpZSliderFromDataunit(dataunit)
 		showItems = 0
 
-		if self.processedMode:
+		if self.processedMode and hasattr(dataunit, "getSourceDataUnits"):
 			scripting.combinedDataUnit = dataunit
 			numberOfDataUnits = len(dataunit.getSourceDataUnits())
 			if numberOfDataUnits > 1:

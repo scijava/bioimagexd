@@ -95,7 +95,7 @@ def getCacheKey(paths, names, taskname):
 	keyList.extend(names)
 	return tuple(keyList)
 
-def getSettingsFromCache(key, unit = "DataUnit"):
+def getSettingsFromCache(key):
 	"""
 	Return the settings stored under a given key in the cache
 	"""
@@ -110,10 +110,7 @@ def getSettingsFromCache(key, unit = "DataUnit"):
 				continue
 			print "n=",n,"configParser=",configParser
 			print configParser.sections()
-			if "MergingDataUnit" in unit:
-				settings = MergingSettings(n)
-			else:
-				settings = DataUnitSettings(n)
+			settings = DataUnitSettings(n)
 			settings.set("Type", None)
 			settings = settings.readFrom(configParser)
 			value.append(settings)
@@ -134,7 +131,6 @@ def storeSettingsToCache(key, settingsList):
 		setting.writeTo(configParser)
 		value.append((setting.getDatasetNumber(), configParser))
 	settingsCache[key] = value
-
 
 
 def registerDialog(dialogName, dialog):

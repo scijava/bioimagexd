@@ -474,12 +474,13 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		"""
 		Initialization
 		"""
-		self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
-		self.shadingBtn.SetValue(0)
-		self.shading = 0
-		self.shadingBtn.Bind(wx.EVT_CHECKBOX, self.onCheckShading)
+		pass
+		#self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
+		#self.shadingBtn.SetValue(0)
+		#self.shading = 0
+		#self.shadingBtn.Bind(wx.EVT_CHECKBOX, self.onCheckShading)
 		
-		self.lightSizer.Add(self.shadingBtn, (4, 0))
+		#self.lightSizer.Add(self.shadingBtn, (4, 0))
 		
 	def onCheckShading(self, event):
 		"""

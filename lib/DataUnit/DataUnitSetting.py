@@ -188,7 +188,7 @@ class DataUnitSettings:
 			except ConfigParser.NoSectionError:
 				pass
 			# if we can determine the settings type, then we instantiate a class corresponding
-			# to that type and read the settings using that classs
+			# to that type and read the settings using that class
 			# this is done so that all the settings will be read correctly
 			# if the type cannot be determined, then just read the settings that we know how
 			if type:
@@ -265,9 +265,16 @@ class DataUnitSettings:
 		if n != -1:
 			key = nkey
 		if self.isPrivate[okey]:
-			value = self.private[okey]
+			if (key in self.private):
+				value = self.private[key]
+			else:	
+				value = self.private[okey]
 		else:
-			value = self.settings[key]
+			if (key in self.settings):
+				value = self.settings[key]
+			else:
+				value = self.settings[okey]
+		
 		if self.serialized[okey]:
 			value = self.serialize(okey, value)
 		if not parser.has_section(okey):

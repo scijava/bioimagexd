@@ -1379,7 +1379,7 @@ class MainWindow(wx.Frame):
 
 	def closeTaskPanel(self):
 		"""
-		A method that actually clsoes the task panel
+		A method that actually closes the task panel
 		"""
 		if self.currentTaskWindow:
 			self.currentTaskWindow.cacheSettings()
@@ -1468,7 +1468,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Callback function for launching the visualizer
 		"""
 		# Hide the infowin and toggle the menu item accordingly
-
 		eid = evt.GetId()
 		mode = ""
 		for name, vid in self.visToId.items():
@@ -1497,7 +1496,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			# If the user re-clicks on the icon, then close it (same as tasks) and load slices mode
 			unit = self.visualizer.dataUnit
 			self.visualizer.closeVisualizer()
-			self.visualizer.closeVisualizer()
+			#self.visualizer.closeVisualizer()
 			self.infoWin.SetDefaultSize(self.infoWin.origSize)
 			self.loadVisualizer(self.defaultModeName, dataunit = unit)
 			return
@@ -1530,10 +1529,10 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			hasDataunit = bool(self.visualizer.dataUnit)
 			didSetDataUnit = False
 			self.visualizer.enable(False)
-			if not self.visualizer.getProcessedMode():
-				Logging.info("Setting dataunit for visualizer", kw = "main")
-				self.visualizer.setDataUnit(dataunit)
-				didSetDataUnit = True
+			#if not self.visualizer.getProcessedMode():
+			Logging.info("Setting dataunit for visualizer", kw = "main")
+			self.visualizer.setDataUnit(dataunit)
+			didSetDataUnit = True
 				
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
@@ -1546,6 +1545,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			#	self.visualizer.updateRendering()
 			lib.messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode, 0)
 			return
+		
 		if len(selectedFiles) > 1:
 			lst = [i.getName() for i in selectedFiles]
 
@@ -1555,6 +1555,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			"select only one dataset or use the Merge tool." % (", ".join(lst)),
 			"Multiple datasets selected")
 			return
+		
 		if len(selectedFiles) < 1:
 			Dialogs.showerror(self,
 			"You have not selected a dataset to be loaded to Visualizer.\nPlease "
@@ -1885,8 +1886,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		unit.setModule(module)
 		unit.setCacheKey(cacheKey)
 		
-		window.setCombinedDataUnit(unit)
-		
+		window.setCombinedDataUnit(unit)		
 
 		for name, taskid in self.taskToId.items():
 			if name == taskname:
@@ -1902,7 +1902,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			Logging.info("Loading slices view for ", unit, kw = "task")
 			self.loadVisualizer(self.defaultModeName, 1, dataunit = unit)
 			self.setButtonSelection(MenuManager.ID_VIS_SLICES)
-
 		else:
 			if not self.visualizer.getProcessedMode():
 				self.visualizer.setProcessedMode(1)

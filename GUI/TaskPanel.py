@@ -143,7 +143,7 @@ class TaskPanel(ScrolledPanel):
 		# Load the cached settings
 		if not cachedSettings:
 			if self.cacheKey:
-				cachedSettings, cacheParser = scripting.getSettingsFromCache(self.cacheKey, self.dataUnit.__module__)
+				cachedSettings, cacheParser = scripting.getSettingsFromCache(self.cacheKey)
 			
 		if not cachedSettings:
 			Logging.info("No settings found in cache", kw = "caching")
@@ -406,7 +406,7 @@ class TaskPanel(ScrolledPanel):
 					 units and they are added to the menu.
 		"""
 		lib.messenger.send(None, "current_task", self.operationName)
-				
+
 		self.dataUnit = dataUnit
 		name = dataUnit.getName()
 		Logging.info("Name of dataunit is ", name, kw = "dataunit")

@@ -67,7 +67,6 @@ class RendererConfiguration(wx.MiniFrame):
 		self.applyButton.Bind(wx.EVT_BUTTON, self.onApply)
 		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancel)
 		
-		
 		self.buttonBox.Add(self.okButton)
 		self.buttonBox.Add(self.applyButton)
 		self.buttonBox.Add(self.cancelButton)
@@ -190,7 +189,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 		self.tmpSizer = wx.GridBagSizer(5, 5)
 		
-		self.sizer = wx.GridBagSizer(5, 5) 
+		self.sizer = wx.GridBagSizer(5, 5)
 		# Unbind to not get annoying behaviour of scrolling
 		# when clicking on the panel
 		self.Unbind(wx.EVT_CHILD_FOCUS)
@@ -209,13 +208,11 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		
 		self.moduleLbl = wx.StaticText(self, -1, "3D rendering modules")
 		
-
 		modules = self.mode.mapping.keys()
 		modules.sort()
 
 		self.moduleChoice = wx.Choice(self, -1, choices = modules)
 		self.moduleChoice.SetSelection(0)
-		
 		
 		self.moduleListbox = wx.CheckListBox(self, -1, size = (250, 80))
 		
@@ -226,8 +223,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 			font.SetPointSize(font.GetPointSize() - 1)
 
 		self.moduleListbox.SetFont(font)
-
-		
 		
 		self.moduleListbox.Bind(wx.EVT_CHECKLISTBOX, self.onCheckItem)
 		self.moduleListbox.Bind(wx.EVT_LISTBOX, self.onSelectItem)
@@ -245,13 +240,52 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		n += 1
 		self.sizer.Add(self.moduleListbox, (n, 0))
 		n += 1
-	 
+
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		box.Add(self.moduleLoad)
 		box.Add(self.moduleRemove)
 		self.sizer.Add(box, (n, 0))
+		n += 1
+		
+		self.toggleBtn = wx.ToggleButton(self, -1, "Advanced >>")
+		self.toggleBtn.SetValue(0)
+		self.toggleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onMaterial)
+		self.sizer.Add(self.toggleBtn, (n, 0))
+		n += 1
+
+		self.lightBox = wx.StaticBox(self, -1, "Lighting")
+		self.lightBoxSizer = wx.StaticBoxSizer(self.lightBox, wx.VERTICAL)
+		self.lightPanel = wx.Panel(self, -1)
+		self.lightSizer = wx.GridBagSizer()
+		self.lightBoxSizer.Add(self.lightPanel)
+		self.ambientLbl = wx.StaticText(self.lightPanel, -1, "Ambient lighting:")
+		self.diffuseLbl = wx.StaticText(self.lightPanel, -1, "Diffuse lighting:")
+		self.specularLbl = wx.StaticText(self.lightPanel, -1, "Specular lighting:")
+		self.specularPowerLbl = wx.StaticText(self.lightPanel, -1, "Specular power:")
+			
+		self.ambientEdit = wx.TextCtrl(self.lightPanel, -1, "0.1")
+		self.diffuseEdit = wx.TextCtrl(self.lightPanel, -1, "0.7")
+		self.specularEdit = wx.TextCtrl(self.lightPanel, -1, "0.2")
+		self.specularPowerEdit = wx.TextCtrl(self.lightPanel, -1, "10.0")
+		
+		self.lightSizer.Add(self.ambientLbl, (0, 0))
+		self.lightSizer.Add(self.ambientEdit, (0, 1))
+		self.lightSizer.Add(self.diffuseLbl, (1, 0))
+		self.lightSizer.Add(self.diffuseEdit, (1, 1))
+		self.lightSizer.Add(self.specularLbl, (2, 0))
+		self.lightSizer.Add(self.specularEdit, (2, 1))
+		self.lightSizer.Add(self.specularPowerLbl, (3, 0))
+		self.lightSizer.Add(self.specularPowerEdit, (3, 1))
+		self.lightPanel.SetSizer(self.lightSizer)
+		self.lightSizer.Fit(self.lightPanel)
+		
+		#self.sizer.Add(self.lightPanel,(n,0))
+		self.sizer.Add(self.lightBoxSizer, (n, 0))
+		self.sizer.Show(self.lightBoxSizer, 0)
+		
+		
 		self.selected = -1
-		self.confPanel = None
+		#self.confPanel = None
 		
 		self.SetSizer(self.visSizer)
 		self.SetAutoLayout(1)
@@ -294,7 +328,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 	
 		self.currentConf = panel(self, self.visualizer, lbl)#, mode = self.mode)
 	 
-		self.sizer.Add(self.currentConf, (5, 0))
+		self.sizer.Add(self.currentConf, (6, 0))
 		self.SetupScrolling()
 				
 	def onCheckItem(self, event):
@@ -418,7 +452,20 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		if dlg.ShowModal() == wx.ID_OK:
 			filename = dlg.GetPath()		  
 		if filename:
-			p = state_pickler.dump(self.mode, open(filename, "w"))		  
+			p = state_pickler.dump(self.mode, open(filename, "w"))
+
+	def onMaterial(self, event):
+		"""
+		Toggle material configuration
+		"""		
+		val = self.toggleBtn.GetValue()
+		
+		self.sizer.Show(self.lightBoxSizer, val)
+		self.Layout()
+		self.parent.Layout()
+		self.parent.FitInside()
+		#self.parent.SetupScrolling()
+
 		
 class VisualizationFrame(wx.Frame):
 	"""

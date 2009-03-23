@@ -666,7 +666,6 @@ class PreviewFrame(InteractivePanel):
 
 		bmp = self.slice
 		Logging.info("Zoom factor for painting =", self.zoomFactor, kw = "preview")
-		
 		if self.zoomFactor != 1 or self.zoomFactor != self.oldZoomFactor:
 			self.oldZoomFactor = self.zoomFactor
 			
@@ -685,9 +684,8 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("Scaling to ", w, h, kw = "preview")
 			bmp.Rescale(w, h)
 			self.calculateBuffer()
-		
-		bmp = bmp.ConvertToBitmap()
 
+		bmp = bmp.ConvertToBitmap()
 		self.snapshot = bmp
 		bw, bh = bmp.GetWidth(), bmp.GetHeight()
 		

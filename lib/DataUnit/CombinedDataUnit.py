@@ -306,11 +306,13 @@ class CombinedDataUnit(DataUnit):
 		# Create a settings object of correct type for dataunit
 		# using the count as the index
 		setting = self.getSettingsClass()(count)
+		type = setting.get("Type")
 		dataUnitSettings = dataUnit.getSettings()
 		parser = dataUnit.getDataSource().getParser()
 		if parser:
 			setting.readFrom(parser)
 
+		setting.set("Type", type)
 		dataUnit.setSettings(setting)
 		#print setting
 		# Fetch correct settings for the dataunit from the datasource

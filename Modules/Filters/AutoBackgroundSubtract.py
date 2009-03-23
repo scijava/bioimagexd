@@ -52,7 +52,7 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter = vtk.vtkImageShiftScale()
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
-		self.eventDesc = "Applying a shift and scale to image intensity"
+		self.eventDesc = "Applying an Automatic background subtraction"
 		self.descs = {"SmallestNonZeroValue":"Use smallest non-zero value as background",
 		"FirstPeak":"First peak in histogram","MostCommon":"Most common value"}
 	

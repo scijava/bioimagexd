@@ -369,7 +369,6 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		box.Add(self.zBtn, 1)
 		self.contentSizer.Add(box, (6, 0))
 		
-			
 		self.xSlider.Bind(wx.EVT_SCROLL, self.onUpdateSlice)
 		self.ySlider.Bind(wx.EVT_SCROLL, self.onUpdateSlice)
 		self.zSlider.Bind(wx.EVT_SCROLL, self.onUpdateSlice)

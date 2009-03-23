@@ -31,6 +31,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import math
 import csv
+import os
 
 class Track:
 	"""
@@ -145,7 +146,8 @@ class TrackReader:
 		self.tracks = []
 		self.maxLength = -1
 		self.reader = None
-		self.readFromFile(filename)		   
+		if os.path.exists(filename):
+			self.readFromFile(filename)		   
 				
 	def readFromFile(self, filename):
 		"""

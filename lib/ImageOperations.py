@@ -199,13 +199,20 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 	reslice = vtk.vtkImageReslice()
 	reslice.SetOutputOrigin(0, 0, 0)
 	reslice.SetInputConnection(data.GetProducerPort())
-	
+
 	if not (xfactor or yfactor):
-		reslice.SetOutputExtent(int(xExtent0 * factor), int(xExtent1 * factor), 
-			int(yExtent0 * factor), int(yExtent1 * factor), zExtent0, zExtent1)
-	else:
-		reslice.SetOutputExtent(int(xExtent0 * xfactor), int(xExtent1 * xfactor), 
-			int(yExtent0 * yfactor), int(yExtent1 * yfactor), zExtent0, zExtent1)	
+		xfactor = factor
+		yfactor = factor
+		
+	xSize = (xExtent1 - xExtent0 + 1) * xfactor
+	xExtent0 *= xfactor
+	xExtent1 = xExtent0 + xSize - 1
+	ySize = (yExtent1 - yExtent0 + 1) * yfactor
+	yExtent0 *= yfactor
+	yExtent1 = yExtent0 + ySize - 1
+
+	reslice.SetOutputExtent(int(xExtent0), int(xExtent1), int(yExtent0), int(yExtent1), zExtent0, zExtent1)
+
 	reslice.SetResliceTransform(transform)
 	if interpolation == 0:
 		reslice.SetInterpolationModeToNearestNeighbor()
@@ -1079,7 +1086,7 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 		#startx, starty = 0, 0
 		#endx, endy = volume.GetDimensions()[0:2]
 		startx, endx, starty, endy, a,b = map(int, volume.GetExtent())
-	voi.SetVOI(startx, endx - 1, starty, endy - 1, zslice, zslice)
+	voi.SetVOI(startx, endx, starty, endy, zslice, zslice)
 	voi.Update()
 	data = voi.GetOutput()
 	return data
