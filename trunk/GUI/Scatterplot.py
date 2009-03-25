@@ -7,7 +7,7 @@ Created: 25.03.2005, KP
 Description:
 
 A module that displays a scatterplot and allows the user
-select the colocalization threshold based on the plot. Uses the vtkImageAcculat 
+select the colocalization threshold based on the plot. Uses the vtkImageAccumulate
 to calculate the scatterplot
 
 BioImageXD includes the following persons:
