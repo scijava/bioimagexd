@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import bxdexceptions
 import lib.messenger
 import wx
+import scripting
 
 class ModuleConfigurationPanel(wx.ScrolledWindow):
 	"""
@@ -84,28 +85,19 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 		if self.module:
 			self.setModule(self.module)
 
-	def onMaterial(self, event):
-		"""
-		Toggle material configuration
-		"""		
-		val = self.toggleBtn.GetValue()
-		
-		self.sizer.Show(self.advancedBoxSizer, val)
-		self.Layout()
-		self.parent.Layout()
-		self.parent.FitInside()
-		
 	def onApply(self, event):
 		"""
 		Apply the changes
-		"""		
+		"""
 		try:
-			ambient = float(self.ambientEdit.GetValue())
-			diffuse = float(self.diffuseEdit.GetValue())
-			specular = float(self.specularEdit.GetValue())
-			specularpwr = float(self.specularPowerEdit.GetValue())
+			visualizationFrame = scripting.visualizer.getCurrentMode().getSidebarWindow()
+			ambient = float(visualizationFrame.ambientEdit.GetValue())
+			diffuse = float(visualizationFrame.diffuseEdit.GetValue())
+			specular = float(visualizationFrame.specularEdit.GetValue())
+			specularpwr = float(visualizationFrame.specularPowerEdit.GetValue())
 		except:
 			return
+		
 		self.module.setProperties(ambient, diffuse, specular, specularpwr)
 		
 	def findModule(self):

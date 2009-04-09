@@ -107,7 +107,7 @@ def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars =
 	deviceContext = wx.MemoryDC()
 	deviceContext.SelectObject(bmp)
 	deviceContext.BeginDrawing()
-		
+	
 	size = width
 	if vertical: 
 		size = height
@@ -487,7 +487,7 @@ def getMIP(imageData, color):
 	if maxval > 255:
 		shiftscale = vtk.vtkImageShiftScale()
 		shiftscale.SetInputConnection(imageData.GetProducerPort())
-		shiftscale.SetScale(256.0 / maxval)
+		shiftscale.SetScale(255.0 / maxval)
 		shiftscale.SetOutputScalarTypeToUnsignedChar()	  
 		imageData = shiftscale.GetOutput()
 	
@@ -973,14 +973,15 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	app.AddInput(imagedata1)
 	app.AddInput(imagedata2)
 	
-	shiftscale = vtk.vtkImageShiftScale()
-	shiftscale.SetOutputScalarTypeToUnsignedChar()
-	shiftscale.SetScale(d)
-	shiftscale.SetInputConnection(app.GetOutputPort())
+	#shiftscale = vtk.vtkImageShiftScale()
+	#shiftscale.SetOutputScalarTypeToUnsignedChar()
+	#shiftscale.SetScale(d)
+	#shiftscale.SetInputConnection(app.GetOutputPort())
 	
 	acc = vtk.vtkImageAccumulate()
 	acc.SetComponentExtent(0, n, 0, n, 0, 0)
-	acc.SetInputConnection(shiftscale.GetOutputPort())
+	#acc.SetInputConnection(shiftscale.GetOutputPort())
+	acc.SetInputConnection(app.GetOutputPort())
 	acc.Update()
 	
 	data = acc.GetOutput()

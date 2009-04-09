@@ -49,7 +49,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	def __init__(self):
 		"""
 		Initialization
-		"""        
+		"""
 		self.tracks = []
 		self.track = None
 		self.tracker = None

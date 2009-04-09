@@ -49,7 +49,7 @@ class RendererConfiguration(wx.MiniFrame):
 	def __init__(self, parent, visualizer):
 		"""
 		Initialization
-		"""		
+		"""
 		wx.MiniFrame.__init__(self, parent, -1, "Configure Render Window")
 		self.panel = wx.Panel(self, -1)
 		self.boxSizer = wx.BoxSizer(wx.VERTICAL)
@@ -103,11 +103,10 @@ class RendererConfiguration(wx.MiniFrame):
 	def initializeGUI(self):
 		"""
 		Build up the configuration GUI
-		"""				
+		"""
 		self.colorLbl = wx.StaticText(self.panel, -1, "Background color: ")
 		self.colorBtn = csel.ColourSelect(self.panel, -1)
 		self.Bind(csel.EVT_COLOURSELECT, self.onSelectColor, id = self.colorBtn.GetId())
-
 		self.sizeLbl = wx.StaticText(self.panel, -1, "Window size: ")
 		self.sizeEdit = wx.TextCtrl(self.panel, -1, "512x512")
 
@@ -130,7 +129,7 @@ class RendererConfiguration(wx.MiniFrame):
 	def onApply(self, event):
 		"""
 		Apply the changes
-		"""			  
+		"""
 		if self.color:
 			red, green, blue = self.color
 			self.visualizer.setBackground(red, green, blue)
@@ -166,7 +165,7 @@ class RendererConfiguration(wx.MiniFrame):
 	def onSetStereoMode(self, event):
 		"""
 		Set the stereo mode
-		"""				
+		"""
 		index = event.GetSelection()
 		mode = self.modes[index]
 	
@@ -247,13 +246,13 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.sizer.Add(box, (n, 0))
 		n += 1
 		
-		self.toggleBtn = wx.ToggleButton(self, -1, "Advanced >>")
+		self.toggleBtn = wx.ToggleButton(self, -1, "Settings >>")
 		self.toggleBtn.SetValue(0)
 		self.toggleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onMaterial)
 		self.sizer.Add(self.toggleBtn, (n, 0))
 		n += 1
 
-		self.lightBox = wx.StaticBox(self, -1, "Lighting")
+		self.lightBox = wx.StaticBox(self, -1, "Settings")
 		self.lightBoxSizer = wx.StaticBoxSizer(self.lightBox, wx.VERTICAL)
 		self.lightPanel = wx.Panel(self, -1)
 		self.lightSizer = wx.GridBagSizer()
@@ -267,6 +266,9 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.diffuseEdit = wx.TextCtrl(self.lightPanel, -1, "0.7")
 		self.specularEdit = wx.TextCtrl(self.lightPanel, -1, "0.2")
 		self.specularPowerEdit = wx.TextCtrl(self.lightPanel, -1, "10.0")
+		self.colorLbl = wx.StaticText(self.lightPanel, -1, "Background color: ")
+		self.colorBtn = csel.ColourSelect(self.lightPanel, -1)
+		self.Bind(csel.EVT_COLOURSELECT, self.onSelectColor, id = self.colorBtn.GetId())
 		
 		self.lightSizer.Add(self.ambientLbl, (0, 0))
 		self.lightSizer.Add(self.ambientEdit, (0, 1))
@@ -276,13 +278,14 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.lightSizer.Add(self.specularEdit, (2, 1))
 		self.lightSizer.Add(self.specularPowerLbl, (3, 0))
 		self.lightSizer.Add(self.specularPowerEdit, (3, 1))
+		self.lightSizer.Add(self.colorLbl, (4,0))
+		self.lightSizer.Add(self.colorBtn, (4,1))
 		self.lightPanel.SetSizer(self.lightSizer)
 		self.lightSizer.Fit(self.lightPanel)
 		
 		#self.sizer.Add(self.lightPanel,(n,0))
 		self.sizer.Add(self.lightBoxSizer, (n, 0))
-		self.sizer.Show(self.lightBoxSizer, 0)
-		
+		self.sizer.Show(self.lightBoxSizer, 0)		
 		
 		self.selected = -1
 		#self.confPanel = None
@@ -457,15 +460,21 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 	def onMaterial(self, event):
 		"""
 		Toggle material configuration
-		"""		
+		"""
 		val = self.toggleBtn.GetValue()
-		
 		self.sizer.Show(self.lightBoxSizer, val)
 		self.Layout()
-		self.parent.Layout()
-		self.parent.FitInside()
+		self.FitInside()
+		#self.parent.Layout()
 		#self.parent.SetupScrolling()
 
+	def onSelectColor(self, event):
+		"""
+		Select the background color for render window
+		"""
+		color = event.GetValue()
+		self.color = (color.Red(), color.Green(), color.Blue())
+		self.visualizer.setBackground(self.color[0], self.color[1], self.color[2])
 		
 class VisualizationFrame(wx.Frame):
 	"""

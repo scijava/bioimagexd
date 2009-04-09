@@ -31,14 +31,11 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Logging
 import lib.Module
-
 import ConfigParser
-
 import Modules.DynamicLoader
 import traceback
 import vtk
 import scripting
-
 import optimize
 
 class FilterList:

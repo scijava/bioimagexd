@@ -140,21 +140,21 @@ class InteractivePanel(ogl.ShapeCanvas):
 		item = wx.MenuItem(self.menu, self.ID_CUBIC, "Cubic interpolation", kind = wx.ITEM_RADIO)
 		self.menu.AppendItem(item)
 		
-		self.subbgMenu = wx.Menu()
-		self.ID_SUB_BG = wx.NewId()
-		item = wx.MenuItem(self.subbgMenu, self.ID_SUB_BG, "Subtract background")
-		self.subbgMenu.AppendItem(item)
+		#self.subbgMenu = wx.Menu()
+		#self.ID_SUB_BG = wx.NewId()
+		#item = wx.MenuItem(self.subbgMenu, self.ID_SUB_BG, "Subtract background")
+		#self.subbgMenu.AppendItem(item)
 
-		self.ID_ZERO_BG = wx.NewId()
-		item = wx.MenuItem(self.subbgMenu, self.ID_ZERO_BG, "Set background to zero")
-		self.subbgMenu.AppendItem(item)
+		#self.ID_ZERO_BG = wx.NewId()
+		#item = wx.MenuItem(self.subbgMenu, self.ID_ZERO_BG, "Set background to zero")
+		#self.subbgMenu.AppendItem(item)
 		
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_VARY)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_NONE)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_LINEAR)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)
-		self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
-		self.Bind(wx.EVT_MENU, self.onSetBackgroundToZero, id = self.ID_ZERO_BG)
+		#self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
+		#self.Bind(wx.EVT_MENU, self.onSetBackgroundToZero, id = self.ID_ZERO_BG)
 		
 		GUI.PainterHelpers.registerHelpers(self)
 
@@ -169,7 +169,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 		self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 		self.Bind(wx.EVT_MOTION, self.onMouseMotion)
-		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
+		#self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 		self.Bind(wx.EVT_LEFT_UP, self.executeAction)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
@@ -187,6 +187,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		try:
 			lib.messenger.disconnect(None, "update_helpers", self.onUpdateHelpers)
 			lib.messenger.disconnect(None, bxdevents.DATA_DIMENSIONS_CHANGED, self.onUpdateDataDimensions)
+			lib.messenger.disconnect(None, "mask_changed", self.onMaskSelectionChanged)
+			lib.messenger.disconnect(None, bxdevents.TRANSLATE_DATA, self.onApplyTranslation)
 		except:
 			pass
 
@@ -307,6 +309,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if self.interpolation != interpolation:
 			self.interpolation = interpolation
 			self.updatePreview()
+	
 	def onApplyTranslation(self, obj, event, translation):
 		"""
 		Apply a translation to the annotations

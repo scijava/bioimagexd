@@ -72,7 +72,6 @@ import QuitDialog
 import Urmas.UrmasWindow
 import AnnotationToolbar
 
-
 class MainWindow(wx.Frame):
 	"""
 	Created: 03.11.2004, KP
@@ -396,12 +395,12 @@ class MainWindow(wx.Frame):
 		"""
 		if not undo:
 			if command.canUndo():
-				undolbl = "Undo: %s...\tCtrl-Z" % command.getDesc()
+				undolbl = "Undo: %s...*\tCtrl-Z" % command.getDesc()
 				self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, undolbl)
 		else:
-			redolbl = "Redo: %s...\tShift-Ctrl-Z" % command.getCategory()
+			redolbl = "Redo: %s...*\tShift-Ctrl-Z" % command.getCategory()
 			self.menuManager.menus["edit"].SetLabel(MenuManager.ID_REDO, redolbl)
-			self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, "Undo...\tCtrl-Z")
+			self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, "Undo...*\tCtrl-Z")
 		self.menuManager.addCommand(command)
 		
 	def onDeleteDataset(self, obj, evt, arg):
@@ -884,9 +883,9 @@ class MainWindow(wx.Frame):
 
 
 		##### Edit menu #####
-		mgr.addMenuItem("edit", MenuManager.ID_UNDO, "&Undo\tCtrl-Z", self.onMenuUndo)
-		mgr.addMenuItem("edit", MenuManager.ID_REDO, "&Redo\tShift-Ctrl-Z", self.onMenuRedo)
-		mgr.addMenuItem("edit", MenuManager.ID_COMMAND_HISTORY, "Command history", self.onShowCommandHistory)
+		mgr.addMenuItem("edit", MenuManager.ID_UNDO, "&Undo*\tCtrl-Z", self.onMenuUndo)
+		mgr.addMenuItem("edit", MenuManager.ID_REDO, "&Redo*\tShift-Ctrl-Z", self.onMenuRedo)
+		mgr.addMenuItem("edit", MenuManager.ID_COMMAND_HISTORY, "Command history*", self.onShowCommandHistory)
 		mgr.addSeparator("edit")
 		mgr.disable(MenuManager.ID_REDO)
 
@@ -895,7 +894,7 @@ class MainWindow(wx.Frame):
 		else:
 			keyCombo = "\tCtrl-P"
 		mgr.addMenuItem("edit", wx.ID_PREFERENCES, "&Preferences" + keyCombo, self.onMenuPreferences)
-		mgr.addMenuItem("edit", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor", "Show the script editor", self.onMenuShowScriptEditor)
+		mgr.addMenuItem("edit", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor*", "Show the script editor", self.onMenuShowScriptEditor)
 		mgr.addSeparator("edit")
 
 		mgr.addMenuItem("edit", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate view panel updating", \
@@ -987,11 +986,11 @@ class MainWindow(wx.Frame):
 			mgr.addMenuItem("visualization", vid, "&" + sdesc, desc, check = 1, checked = 0)
 
 		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...\tCtrl-L", "Configure lightning")
-		mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
+		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...*\tCtrl-L", "Configure lighting")
+		#mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
 		
 		mgr.disable(MenuManager.ID_LIGHTS)
-		mgr.disable(MenuManager.ID_RENDERWIN)
+		#mgr.disable(MenuManager.ID_RENDERWIN)
 
 
 		##### Animation menu #####
@@ -1388,9 +1387,10 @@ class MainWindow(wx.Frame):
 		Logging.info("Setting processed mode = 0")
 		self.visualizer.setProcessedMode(0)
 		self.menuManager.clearItemsBar()
-		
+
 		if self.currentTaskWindow:
 			Logging.info("Closing task")
+			self.currentTaskWindow.deregister()
 			self.currentTaskWindow.Show(0)
 			self.currentTaskWindow.Destroy()
 			del self.currentTaskWindow
@@ -1527,6 +1527,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		dataunit = selectedFiles[0]
 		if self.visualizer:
 			hasDataunit = bool(self.visualizer.dataUnit)
+			if hasDataunit:
+				dataunit = self.visualizer.dataUnit
 			didSetDataUnit = False
 			self.visualizer.enable(False)
 			#if not self.visualizer.getProcessedMode():
@@ -1969,7 +1971,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.visualizer.setVisualizationMode(mode, shouldReload = shouldReload)
 
 		if not "init" in kws and dataunit:
-			print "SETTIN DATAUNIT",dataunit
+			print "SETTING DATAUNIT",dataunit
 			self.visualizer.setDataUnit(dataunit)
 		else:
 			self.visualizer.toggleTimeSlider(0)

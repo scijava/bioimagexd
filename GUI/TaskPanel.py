@@ -123,6 +123,17 @@ class TaskPanel(ScrolledPanel):
 		lib.messenger.connect(None, "channel_selected", self.selectItem)
 		lib.messenger.connect(None, "switch_datasets", self.onSwitchDatasets)
 		lib.messenger.connect(None, "update_settings_gui", self.onUpdateGUI)
+
+	def deregister(self):
+		"""
+		Removes all listeners
+		"""
+		try:
+			lib.messenger.disconnect(None, "channel_selected", self.selectItem)
+			lib.messenger.disconnect(None, "switch_datasets", self.onSwitchDatasets)
+			lib.messenger.disconnect(None, "update_settings_gui", self.onUpdateGUI)
+		except:
+			pass
   
 	def setCacheKey(self, key):
 		"""

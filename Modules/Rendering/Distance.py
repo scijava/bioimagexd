@@ -216,6 +216,7 @@ class DistanceConfigurationPanel(ModuleConfigurationPanel):
 		Initialization
 		"""	 
 		pass
+	
 	def setModule(self, module):
 		"""
 		Set the module to be configured

@@ -42,13 +42,12 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 		self.beginner = wx.Colour(180, 255, 180)
 		self.intermediate = wx.Colour(255, 255, 180)
 		self.expert = wx.Colour(0, 180, 255)
-
 		self.populateListCtrl()
 		
 	def setChannelNames(self, n1, n2):
 		"""
 		Modify the headers to have the correct names
-		"""		
+		"""
 		for i, val in enumerate(self.headervals):
 			s = val[0]
 			s = s.replace("%ch1%", n1)

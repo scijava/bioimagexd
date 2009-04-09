@@ -623,7 +623,7 @@ class LightsPanel(wx.Panel):
 		self.ren.GetActiveCamera().Zoom(1.6)
 		self.connect('first')
 		
-		if platform.system()=="Windows":
+		if platform.system()=="Windows" or platform.system()=="Linux":
 			self.SetSizer(self.sizer)
 			self.SetAutoLayout(1)
 			self.sizer.Fit(self)		

@@ -95,7 +95,7 @@ class ColocalizationSettings(DataUnitSettings):
 		print "Initializing channels, maxval=", maxval
 		for i in range(channels):
 			self.setCounted("ColocalizationLowerThreshold", i, maxval / 2, 0)
-			self.setCounted("ColocalizationUpperThreshold", i, maxval, 0)    
+			self.setCounted("ColocalizationUpperThreshold", i, maxval, 0)
 			ctf = vtk.vtkColorTransferFunction()
 			ctf.AddRGBPoint(0, 0, 0, 0)
 			ctf.AddRGBPoint(maxval, 1.0, 1.0, 1.0)

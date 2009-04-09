@@ -291,6 +291,7 @@ class ProcessingFilter:
 		"""
 		if "itkImage" in str(image.__class__):
 			return image
+		
 		if not self.itkFlag:
 			lib.messenger.send(None, "show_error", "Non-ITK filter tries to convert to ITK",
 				"A non-ITK filter %s tried to convert data to ITK image data" % self.name)
@@ -343,7 +344,8 @@ class ProcessingFilter:
 		self.vtkToItk.SetInput(image)
 		output = self.vtkToItk.GetOutput()
 		output.Update()
-	
+		output.DisconnectPipeline()
+			
 		return output
 
 	def convertITKtoVTK(self, image, cast = None, force = 0):

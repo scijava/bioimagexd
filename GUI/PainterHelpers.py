@@ -83,7 +83,7 @@ class VisualizeTracksHelper(PainterHelper):
 		"""
 		Show the selected tracks
 		"""
-		if not tracks:
+		if tracks == None:
 			return
 		self.selectedTracks = tracks
 		

@@ -166,31 +166,26 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		Removes the menu items from menu
 		"""
 		mgr = self.menuManager
-		
-		#mgr.remove(MenuManager.ID_PREFERENCES)
-		#mgr.remove(MenuManager.ID_ADD_SPLINE)
-		#mgr.remove(MenuManager.ID_ADD_TIMEPOINT)
-		#mgr.remove(MenuManager.ID_ADD_TRACK)
-		#mgr.remove(MenuManager.ID_ANIMATE)
-
-		#mgr.remove(MenuManager.ID_FIT_TRACK)
-	
-		#mgr.remove(MenuManager.ID_MIN_TRACK)
-		#mgr.remove(MenuManager.ID_OPEN_PROJECT)
-		#mgr.remove(MenuManager.ID_RENDER_PROJECT)
-		#mgr.remove(MenuManager.ID_RENDER_PREVIEW)
-#		mgr.remove(MenuManager.ID_SAVE)		No ID_SAVE in GUI.MenuManager.py
-		#mgr.remove(MenuManager.ID_SET_TRACK)
-		#mgr.remove(MenuManager.ID_SET_TRACK_RELATIVE)
-		#mgr.remove(MenuManager.ID_MAINTAIN_UP)
-		#mgr.remove(MenuManager.ID_SPLINE_CLOSED)
-		#mgr.remove(MenuManager.ID_SPLINE_SET_BEGIN)
-		#mgr.remove(MenuManager.ID_SPLINE_SET_END)
-		#mgr.remove(MenuManager.ID_CLOSE_PROJECT)
-
-		#mgr.removeMenu("track")
-		#mgr.removeMenu("rendering")
-		#mgr.removeMenu("camera")
+		mgr.disable(MenuManager.ID_ADD_SPLINE)
+		mgr.disable(MenuManager.ID_ADD_TIMEPOINT)
+		mgr.disable(MenuManager.ID_ADD_KEYFRAME)
+		mgr.disable(MenuManager.ID_FIT_TRACK)
+		mgr.disable(MenuManager.ID_FIT_TRACK_RATIO)
+		mgr.disable(MenuManager.ID_MIN_TRACK)
+		mgr.disable(MenuManager.ID_OPEN_PROJECT)
+		mgr.disable(MenuManager.ID_SAVE_PROJECT)
+		mgr.disable(MenuManager.ID_SET_TRACK)
+		mgr.disable(MenuManager.ID_SET_TRACK_RELATIVE)
+		mgr.disable(MenuManager.ID_SET_TRACK_TOTAL)
+		mgr.disable(MenuManager.ID_MAINTAIN_UP)
+		mgr.disable(MenuManager.ID_SPLINE_CLOSED)
+		mgr.disable(MenuManager.ID_SPLINE_SET_BEGIN)
+		mgr.disable(MenuManager.ID_SPLINE_SET_END)
+		mgr.disable(MenuManager.ID_CLOSE_PROJECT)
+		mgr.disable(MenuManager.ID_ITEM_ROTATE_CW)
+		mgr.disable(MenuManager.ID_ITEM_ROTATE_CCW)
+		mgr.disable(MenuManager.ID_DELETE_TRACK)
+		mgr.disable(MenuManager.ID_DELETE_ITEM)
 
 	def createMenu(self, mgr):
 		"""

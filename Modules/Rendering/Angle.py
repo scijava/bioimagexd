@@ -211,22 +211,19 @@ class AngleConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Angle", **kws):
 		"""
 		Initialization
-		"""     
-
+		"""
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
 	
 	def initializeGUI(self):
 		"""
 		Initialization
-		"""  
-
+		"""
 		pass
 
 	def setModule(self, module):
 		"""
 		Set the module to be configured
-		"""  
-
+		"""
 		ModuleConfigurationPanel.setModule(self, module)
 		print "module=", module
 		self.module = module
@@ -234,6 +231,5 @@ class AngleConfigurationPanel(ModuleConfigurationPanel):
 	def onApply(self, event):
 		"""
 		Apply the changes
-		"""     
-
+		"""
 		pass

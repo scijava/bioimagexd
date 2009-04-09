@@ -132,7 +132,8 @@ class VolumeModule(VisualizationModule):
 		self.descs = {"Palette": "", "Method": "", "Interpolation": "Interpolation", \
 						"NearestNeighbor": "Nearest Neighbour", "Linear": "Linear", \
 						"Quality": "", "QualityValue": "Maximum number of planes:", \
-						"UseVolumepro": "Use VolumePro acceleration"}
+						"UseVolumepro": "Use VolumePro acceleration", \
+						"UseShading": "Use shading"	  }
 		
 		
 		self.eventDesc = "Rendering volume"
@@ -149,8 +150,7 @@ class VolumeModule(VisualizationModule):
 	def setParameter(self, parameter, value):
 		"""
 		Set a value for the parameter
-		"""	   
- 
+		""" 
 		VisualizationModule.setParameter(self, parameter, value)
 		if parameter == "Method":
 			conf = Configuration.getConfiguration()
@@ -179,11 +179,12 @@ class VolumeModule(VisualizationModule):
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""			   
+		"""
 		params = [ ["Dataset palette", ("Palette", )],
 		["Rendering method", ("Method", ) ],
 		["Interpolation", ( ("NearestNeighbor", "Linear"), ("cols", 2))],
-		["Rendering quality", ("Quality", "QualityValue")]]		  
+		["Rendering quality", ("Quality", "QualityValue")],
+		["Shading", ("UseShading",)]]
 		if self.haveVolpro:
 			params.insert(2, ["", ("UseVolumepro", )])
 		return params
@@ -192,19 +193,19 @@ class VolumeModule(VisualizationModule):
 	def getRange(self, parameter):
 		"""
 		If a parameter has a certain range of valid values, the values can be queried with this function
-		"""		
+		"""
 		if parameter == "Method":
 			return self.modes
 		if parameter == "Quality":
-			return 0, 10		
+			return 0, 10
 		if parameter == "QualityValue":
 			return self.qualityRange
-		return - 1, -1
+		return -1, -1
 
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
-		"""	  
+		"""
 		if parameter == "Method":
 			return GUI.GUIBuilder.CHOICE
 		if parameter in ["NearestNeighbor", "Linear"]:
@@ -215,7 +216,7 @@ class VolumeModule(VisualizationModule):
 			return types.FloatType
 		if parameter == "Palette":
 			return GUI.GUIBuilder.CTF
-		if parameter == "UseVolumepro":
+		if parameter in ["UseVolumepro","UseShading"]:
 			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
@@ -226,16 +227,18 @@ class VolumeModule(VisualizationModule):
 			return self.defaultMode
 		if parameter == "Quality":
 			return 10
-		if parameter == "QualityValue":
-			return 0
 		if parameter == "Linear":
 			return 0
 		if parameter == "NearestNeighbor":
 			return 1
+		if parameter == "QualityValue":
+			return 0
 		if parameter == "UseVolumepro":
 			return False
 		if parameter == "Palette":
 			return self.colorTransferFunction
+		if parameter == "UseShading":
+			return False
 		
 	def setDataUnit(self, dataunit):
 		"""
@@ -312,15 +315,14 @@ class VolumeModule(VisualizationModule):
 				inputDataUnit = self.dataUnit
 			self.colorTransferFunction = inputDataUnit.getColorTransferFunction()
 			lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
-				 
+			
 			self.volumeProperty.SetColor(self.colorTransferFunction)
 
-		
+	
 	def updateInterpolation(self):
 		"""
 		Set the interpolation method used
-		"""				
-		
+		"""
 		if self.parameters["Linear"]:
 			self.volumeProperty.SetInterpolationTypeToLinear() 
 		elif self.parameters["NearestNeighbor"]:
@@ -400,6 +402,7 @@ class VolumeModule(VisualizationModule):
 		self.updateMethod()
 		self.updateQuality()
 		self.updateInterpolation()
+		self.setShading(self.parameters["UseShading"])
 		
 		if not input:
 			input = self.getInput(1)
@@ -460,6 +463,7 @@ class VolumeModule(VisualizationModule):
 		lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
 		self.volumeProperty.SetColor(self.colorTransferFunction)
 
+
 		
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
 
@@ -475,19 +479,6 @@ class VolumeConfigurationPanel(ModuleConfigurationPanel):
 		Initialization
 		"""
 		pass
-		#self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
-		#self.shadingBtn.SetValue(0)
-		#self.shading = 0
-		#self.shadingBtn.Bind(wx.EVT_CHECKBOX, self.onCheckShading)
-		
-		#self.lightSizer.Add(self.shadingBtn, (4, 0))
-		
-	def onCheckShading(self, event):
-		"""
-		Toggle use of shading
-		"""	 
-		self.shading = event.IsChecked()		
-		self.module.setShading(self.shading)
 
 	def getLongDesc(self, parameter):
 		"""

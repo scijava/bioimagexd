@@ -51,7 +51,7 @@ class ClippingPlaneModule(VisualizationModule):
 	def __init__(self, parent, visualizer, **kws):
 		"""
 		Initialization
-		"""     
+		"""
 		self.x, self.y, self.z = -1, -1, -1
 		#self.name = "Clipping Plane"
 		self.parent = parent        
@@ -67,23 +67,20 @@ class ClippingPlaneModule(VisualizationModule):
 		self.planeWidget.NormalToXAxisOn()
 		self.renderer = self.parent.getRenderer()
 		self.plane = vtk.vtkPlane()
-		
-		
-		self.descs = {"ShowControl": "Show plane controls", \
-					"ClippedModule": "Clip the module", "AllModules": "Clip all modules"}
+
 		iactor = parent.wxrenwin.GetRenderWindow().GetInteractor()
 		self.planeWidget.SetInteractor(iactor)
-
-		VisualizationModule.__init__(self, parent, visualizer, **kws)   
+		VisualizationModule.__init__(self, parent, visualizer, **kws)
 		
+		self.descs = {"ShowControl": "Show plane controls","AllModules": "Clip all modules","ClippedModule": "Clip the module"}
 		#self.updateRendering()
 
 		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""            
-		return [ ["", ("ShowControl", "ClippedModule", "AllModules")] ]        
+		"""
+		return [["", ("ClippedModule",)], ["Bools", ("ShowControl","AllModules")]]        
 
 	def getDefaultValue(self, parameter):
 		"""
@@ -158,7 +155,7 @@ class ClippingPlaneModule(VisualizationModule):
 		Remove a clipping plane
 		"""       
 		for module in self.clippedModules:
-			if hasattr(module, "mapper") and hasattr(module.mapper, "SetClippingPlanes"):
+			if hasattr(module, "mapper") and hasattr(module.mapper, "RemoveClippingPlane") and module.mapper.GetClippingPlanes():
 				module.mapper.RemoveClippingPlane(plane)
 				self.clipped = 0
 		
@@ -176,7 +173,7 @@ class ClippingPlaneModule(VisualizationModule):
 	def clipVolumeRendering(self, object, event):
 		"""
 		Called when the plane is interacted with
-		"""       
+		"""
 		if self.currentPlane:
 			self.removeClippingPlane(self.currentPlane)
 			self.currentPlane = None
@@ -193,7 +190,7 @@ class ClippingPlaneModule(VisualizationModule):
 		modules = self.getModulesToClip()
 		self.clippedModules = modules
 		for module in modules:
-			if hasattr(module, "mapper") and hasattr(module.mapper, "SetClippingPlanes"):
+			if hasattr(module, "mapper") and hasattr(module.mapper, "AddClippingPlane"):
 				module.mapper.AddClippingPlane(self.plane)
 				self.currentPlane = self.plane
 				self.clipped = 1
@@ -254,7 +251,7 @@ class ClippingPlaneModule(VisualizationModule):
 	def disableRendering(self):
 		"""
 		Disable the Rendering of this module
-		"""          
+		"""
 		if self.currentPlane:
 			self.removeClippingPlane(self.currentPlane)        
 		self.planeWidget.Off()

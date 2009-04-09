@@ -122,7 +122,6 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		name = ".".join(name.split(".")[:-1])
 		self.dataUnit.setName(name)
 		
-		
 		if not filename:
 			return
 		self.status = wx.ID_OK
