@@ -853,10 +853,9 @@ enter the information below.""")
 		pat = self.importDirectory + os.path.sep + "*.%s" % ext
 		files = glob.glob(pat)
 		files.sort(self.sortNumerically)
-		
 		try:
-			r = re.compile("[0-9]*")
-			startfrom = min(map(int, r.findall(files[0])))
+			r = re.compile("[0-9]+")
+			startfrom = min(map(int, r.findall(os.path.basename(files[0]))))
 		except:
 			startfrom = 0
 		print "Starting from ", startfrom
