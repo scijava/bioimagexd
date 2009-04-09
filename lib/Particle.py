@@ -631,7 +631,6 @@ class ParticleTracker:
 		@param particle the particle to track
 		@param timepoint track from this timepoint on 
 		"""
-		file = open("/tmp/track_debug.txt","a")
 		oldParticle = Particle()
 		currCandidate = Particle()
 		currCandidate.setSpacing(self.spacing)
@@ -681,10 +680,6 @@ class ParticleTracker:
 				# is not in a track
 				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
-					file.write("New particle\n")
-					file.write("Particles new: (%d,%d,%d) old: (%d,%d,%d)\n"%(testParticle.posInPixels[0],testParticle.posInPixels[1],testParticle.posInPixels[2],oldParticle.posInPixels[0],oldParticle.posInPixels[1],oldParticle.posInPixels[2]))
-					file.write("dist=%f, size=%f, int=%f, angle=%f\n"%(distFactor,sizeFactor,intFactor,angleFactor))
-					file.write("Score=%f\n"%(currScore))
 					# if there's no other particle that fits the criteria
 					if not foundOne:
 						#print "Found a candidate",testParticle
@@ -728,7 +723,6 @@ class ParticleTracker:
 				searchOn = False
 			oldParticle.copy(currentMatch)
 		tracks.append(track)
-		file.close()
 		
 	def setSpacing(self,spacing):
 		"""
