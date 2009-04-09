@@ -30,6 +30,12 @@ Source: "C:\BioImageXD\trunk\msvcp90.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\msvcr90.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\msvcm90.dll"; DestDir: {app}; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\bin\Microsoft.VC90.CRT.manifest"; DestDir: {app}; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\Licensing\GPL"; DestDir: {app}\Licensing; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\Licensing\ITK-License"; DestDir: {app}\Licensing; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\Licensing\LGPL"; DestDir: {app}\Licensing; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\Licensing\Python-License"; DestDir: {app}\Licensing; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\Licensing\VTK-License"; DestDir: {app}\Licensing; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\Licensing\wxWidgets-License"; DestDir: {app}\Licensing; Flags: ignoreversion
 
 __FILES__
 
