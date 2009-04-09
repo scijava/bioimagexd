@@ -344,7 +344,6 @@ class ProcessingFilter:
 		self.vtkToItk.SetInput(image)
 		output = self.vtkToItk.GetOutput()
 		output.Update()
-		output.DisconnectPipeline()
 			
 		return output
 
