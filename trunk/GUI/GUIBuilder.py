@@ -82,7 +82,7 @@ class GUIBuilder(wx.Panel):
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		
-			
+		
 	def getSizerPosition(self):
 		"""
 		Return the position in the sizer where the user can add more stuff
@@ -100,7 +100,7 @@ class GUIBuilder(wx.Panel):
 	def buildGUI(self, currentFilter):
 		"""
 		Build the GUI for a given filter
-		""" 
+		"""
 		self.currentFilter = currentFilter
 		parameters = currentFilter.getParameters()
 		gy = 0
@@ -595,11 +595,12 @@ class GUIBuilder(wx.Panel):
 		choices = []
 		itemToDesc = {}
 		funcs = []
+
 		for i in item:
 			filterDescription = currentFilter.getDesc(i)
 			itemToDesc[i] = filterDescription
 			choices.append(filterDescription)
-			setRadioFunc = lambda obj, event, arg, box, i = i, s = self: s.onSetRadioBox(box, i, arg)
+			setRadioFunc = lambda obj, event, arg, box, s = self: s.onSetRadioBox(box, event.split("_")[1], arg)
 			funcs.append(("set_%s" % i, setRadioFunc))
 			longDesc = currentFilter.getLongDesc(i)
 		
@@ -788,7 +789,7 @@ class GUIBuilder(wx.Panel):
 	def onSetRadioBox(self, box, item, value):
 		"""
 		Set the value for the GUI item 
-		"""			
+		"""
 		selectionValue = box.itemToDesc[item]
 		if value:
 			box.SetStringSelection(selectionValue)
@@ -914,10 +915,11 @@ class GUIBuilder(wx.Panel):
 	def createSpinInput(self, parent, currentFilter, itemName, itemType, defaultValue, label = ""):
 		"""
 		Return the input for int type
-		"""		   
+		"""
 		minval, maxval = currentFilter.getRange(itemName)
 		
 		spin = wx.SpinCtrl(parent, -1, style = wx.SP_VERTICAL)
+		spin.SetRange(minval,maxval)
 		func = lambda event, its = itemName, sp = spin, f = currentFilter:self.onSetSpinValue(event, sp, its, f)
 		spin.Bind(wx.EVT_SPINCTRL, func)
 		spin.Bind(wx.EVT_TEXT, func)
@@ -1069,7 +1071,7 @@ class GUIBuilder(wx.Panel):
 	def onSelectRadioBox(self, event, items, currentFilter):
 		"""
 		Process an event from a radio box
-		"""		 
+		"""
 		selection = event.GetSelection()
 		
 		for i, item in enumerate(items):

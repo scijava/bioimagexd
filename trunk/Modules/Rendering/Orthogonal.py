@@ -57,8 +57,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		Initialization
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
-		VisualizationModule.__init__(self, parent, visualizer, **kws)   
-		#self.name = "Orthogonal Slices"
+		VisualizationModule.__init__(self, parent, visualizer, **kws)
 		self.on = 0
 		self.renew = 1
 		self.mapper = vtk.vtkPolyDataMapper()
@@ -77,7 +76,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.planeWidgetX.SetKeyPressActivationValue("x")
 		#self.planeWidgetX.UserControlledLookupTableOn()
 		self.prop1 = self.planeWidgetX.GetPlaneProperty()
-#        self.prop1.SetColor(1, 0, 0)
+		#self.prop1.SetColor(1, 0, 0)
 		self.planeWidgetX.SetResliceInterpolateToCubic()
 
 		self.planeWidgetY = vtk.vtkImagePlaneWidget()
@@ -87,7 +86,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.prop2 = self.planeWidgetY.GetPlaneProperty()
 		self.planeWidgetY.SetResliceInterpolateToCubic()
 		#self.planeWidgetY.UserControlledLookupTableOn()
-#        self.prop2.SetColor(1, 1, 0)
+		#self.prop2.SetColor(1, 1, 0)
 
 
 		# for the z-slice, turn off texture interpolation:
@@ -98,11 +97,12 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.planeWidgetZ.SetPicker(self.picker)
 		self.planeWidgetZ.SetKeyPressActivationValue("z")
 		self.prop3 = self.planeWidgetZ.GetPlaneProperty()
-#        self.prop3.SetColor(0, 0, 1)
+		#self.prop3.SetColor(1, 0, 1)
 		#self.planeWidgetZ.UserControlledLookupTableOn()
 		self.planeWidgetZ.SetResliceInterpolateToCubic()
 		self.renderer = self.parent.getRenderer()
 		self.renderer.AddActor(self.outlineActor)
+		self.useOutline = 1
 		
 		iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 		self.planeWidgetX.SetInteractor(iactor)
@@ -110,7 +110,6 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.planeWidgetZ.SetInteractor(iactor)
 		
 		lib.messenger.connect(None, "zslice_changed", self.setZ)
-		#self.updateRendering()
 		
 	   
 	def __getstate__(self):
@@ -134,8 +133,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 	def __set_pure_state__(self, state):
 		"""
 		Set the state of the light
-		"""        
-		
+		"""
 		self.setVTKState(self.planeWidgetX, state.planeWidgetX)
 		self.setVTKState(self.planeWidgetX, state.planeWidgetY)
 		self.setVTKState(self.planeWidgetX, state.planeWidgetZ)
@@ -251,11 +249,11 @@ class OrthogonalPlaneModule(VisualizationModule):
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""             
-		self.outline.SetInput(self.data)
-		self.outlineMapper.SetInput(self.outline.GetOutput())
-		
-		self.outlineMapper.Update()
+		"""
+		if self.useOutline:
+			self.outline.SetInput(self.data)
+			self.outlineMapper.SetInput(self.outline.GetOutput())
+			self.outlineMapper.Update()
 
 		if self.renew:
 			self.planeWidgetX.SetInput(self.data)
@@ -282,7 +280,8 @@ class OrthogonalPlaneModule(VisualizationModule):
 		"""
 		Disable the Rendering of this module
 		"""          
-		self.renderer.RemoveActor(self.outlineActor)
+		if self.useOutline:
+			self.renderer.RemoveActor(self.outlineActor)
 		self.planeWidgetX.Off()
 		self.planeWidgetY.Off()
 		self.planeWidgetZ.Off()
@@ -291,8 +290,9 @@ class OrthogonalPlaneModule(VisualizationModule):
 	def enableRendering(self):
 		"""
 		Enable the Rendering of this module
-		"""          
-		self.renderer.AddActor(self.outlineActor)
+		"""
+		if self.useOutline:
+			self.renderer.AddActor(self.outlineActor)
 		self.planeWidgetX.On()
 		self.planeWidgetY.On()
 		self.planeWidgetZ.On()
@@ -314,11 +314,25 @@ class OrthogonalPlaneModule(VisualizationModule):
 		Set shading on / off
 		"""          
 		for widget in [self.planeWidgetX, self.planeWidgetY, self.planeWidgetZ]:
-			property = widget.GetTexturePlaneProperty()
-			#if shading:
-			#    property.ShadeOn()
-			#else:
-			#    property.ShadeOff()        
+			property = widget.GetTextureProperty()
+			if shading:
+			    property.ShadingOn()
+			else:
+			    property.ShadingOff()
+	
+	def setUseOutline(self, outline):
+		"""
+		Set outline on / off
+		"""
+		if self.useOutline == outline:
+			return
+			
+		self.useOutline = outline
+		if self.useOutline:
+			self.renderer.AddActor(self.outlineActor)
+		else:
+			self.renderer.RemoveActor(self.outlineActor)
+			
 
 class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Orthogonal Slices", **kws):
@@ -330,8 +344,13 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 	def initializeGUI(self):
 		"""
 		Initialization
-		"""  
-		
+		"""
+		sliceBox = wx.StaticBox(self, -1, "Slices")
+		sliceBoxSizer = wx.StaticBoxSizer(sliceBox, wx.VERTICAL)		
+		self.contentSizer.Add(sliceBoxSizer, (0, 0))
+		sliceSizer = wx.GridBagSizer()
+		sliceBoxSizer.Add(sliceSizer)
+
 		self.xLbl = wx.StaticText(self, -1, "X Slice:")
 		self.xSlider = wx.Slider(self, value = 0, minValue = 0, maxValue = 10,
 		style = wx.HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS, size = (250, -1))
@@ -344,14 +363,14 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		self.zSlider = wx.Slider(self, value = 0, minValue = 0, maxValue = 10,
 		style = wx.HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS, size = (250, -1))
 		
-		self.contentSizer.Add(self.xLbl, (0, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-		self.contentSizer.Add(self.xSlider, (1, 0))
+		sliceSizer.Add(self.xLbl, (0, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		sliceSizer.Add(self.xSlider, (1, 0))
 
-		self.contentSizer.Add(self.yLbl, (2, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-		self.contentSizer.Add(self.ySlider, (3, 0))
+		sliceSizer.Add(self.yLbl, (2, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		sliceSizer.Add(self.ySlider, (3, 0))
 
-		self.contentSizer.Add(self.zLbl, (4, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
-		self.contentSizer.Add(self.zSlider, (5, 0))
+		sliceSizer.Add(self.zLbl, (4, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
+		sliceSizer.Add(self.zSlider, (5, 0))
 			
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		self.ID_X = wx.NewId()
@@ -367,41 +386,61 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		box.Add(self.xBtn, 1)
 		box.Add(self.yBtn, 1)
 		box.Add(self.zBtn, 1)
-		self.contentSizer.Add(box, (6, 0))
+		sliceSizer.Add(box, (6, 0))
 		
 		self.xSlider.Bind(wx.EVT_SCROLL, self.onUpdateSlice)
 		self.ySlider.Bind(wx.EVT_SCROLL, self.onUpdateSlice)
 		self.zSlider.Bind(wx.EVT_SCROLL, self.onUpdateSlice)
 		
-		self.shadingBtn = wx.CheckBox(self.lightPanel, -1, "Use shading")
-		self.shadingBtn.SetValue(1)
-		self.shading = 1
-		self.shadingBtn.Bind(wx.EVT_CHECKBOX, self.onCheckShading)
-		self.borderBtn = wx.CheckBox(self.lightPanel, -1, "Show borders")
+		#self.shadingBtn = wx.CheckBox(self, -1, "Use shading")
+		#self.shadingBtn.SetValue(0)
+		#self.shading = 0
+		#self.shadingBtn.Bind(wx.EVT_CHECKBOX, self.onCheckShading)
+
+		self.borderBtn = wx.CheckBox(self, -1, "Show slice borders")
 		self.borderBtn.SetValue(1)
 		self.border = 1
 		self.borderBtn.Bind(wx.EVT_CHECKBOX, self.onCheckBorder)
+		self.outlineBtn = wx.CheckBox(self, -1, "Show outline border")
+		self.outlineBtn.SetValue(1)
+		self.outline = 1
+		self.outlineBtn.Bind(wx.EVT_CHECKBOX, self.onCheckOutline)
 		
-		self.lightSizer.Add(self.shadingBtn, (4, 0))
-		self.lightSizer.Add(self.borderBtn, (5, 0))
+		#self.contentSizer.Add(self.shadingBtn, (7, 0))
+		borderBox = wx.StaticBox(self, -1, "Show borders")
+		borderBoxSizer = wx.StaticBoxSizer(borderBox, wx.VERTICAL)		
+		self.contentSizer.Add(borderBoxSizer, (1, 0))
+		borderSizer = wx.GridBagSizer()
+		borderBoxSizer.Add(borderSizer)
+		borderSizer.Add(self.borderBtn, (0,0))
+		borderSizer.Add(self.outlineBtn, (1,0))
 		
 	def onCheckShading(self, event):
 		"""
 		Toggle use of shading
 		"""  
-		self.shading = event.IsChecked()        
+		self.shading = event.IsChecked()
+		self.module.setShading(self.shading)
 
 	def onCheckBorder(self, event):
 		"""
-		Toggle use of borderds
+		Toggle use of borders
 		"""  
-		self.border = event.IsChecked()        
-		prop = self.module.planeWidgetX.GetPlaneProperty()
-		prop.SetOpacity(0.0)
+		self.border = event.IsChecked()
+		opacity = 0.0
+		if self.border:
+			opacity = 1.0
+
 		for d in ["X","Y","Z"]:
-			eval("self.module.planeWidget%s.SetPlaneProperty(prop)"%d)
-			eval("self.module.planeWidget%s.SetMarginProperty(prop)"%d)
-		
+			prop = eval("self.module.planeWidget%s.GetPlaneProperty()"%d)
+			prop.SetOpacity(opacity)
+
+	def onCheckOutline(self, event):
+		"""
+		Toggle use of outline
+		"""  
+		self.outline = event.IsChecked()
+		self.module.setUseOutline(self.outline)
 		
 	def alignCamera(self, event):
 		"""

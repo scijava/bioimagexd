@@ -36,6 +36,10 @@ import types
 from Visualizer.VisualizationModules import VisualizationModule
 from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 import vtk
+import wx
+import os.path
+import lib.Track
+import Modules.DynamicLoader
 
 def getClass():
 	return VisualizeTrackModule
@@ -57,9 +61,10 @@ class VisualizeTrackModule(VisualizationModule):
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
 		self.descs = {"TrackFile": "Select the track file", "AllTracks": "Show all tracks", \
-					"Track": "Select the track to visualize", "MinLength": "Minimum length of track", \
-					"ShowObject": "Show object using surface rendering",
-					"SameStartingPoint":"Tracks start at same point"}
+					"MinLength": "Minimum length of track",
+					"SphereRadius": "Radius of spheres",
+					"TubeRadius": "Radius of tubes"}
+					#"SameStartingPoint":"Tracks start at same point"}
 		
 		self.showTracks = []
 			
@@ -78,22 +83,29 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		visualize the tracks given as argument
 		"""
-		self.showTracks = tracks
-		print "Got tracks=", tracks
+		self.setTracks(tracks)
 		self.updateRendering()
+
+	def setTracks(self, tracks):
+		"""
+		Set tracks to visualize
+		"""
+		self.showTracks = tracks
 
 	def setParameter(self, parameter, value):
 		"""
 		Set a value for the parameter
-		"""    
+		"""
+		if parameter == "AllTracks":
+			lib.messenger.send(None, "visualize_all_tracks", value)
 		VisualizationModule.setParameter(self, parameter, value)
   
-		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""            
-		return [ ["",("SameStartingPoint",)] ]
+		"""
+		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",("AllTracks",)], ["Tracks",("MinLength",)], ["Drawing",("SphereRadius","TubeRadius")]]
+
 		
 	def getDefaultValue(self, parameter):
 		"""
@@ -101,48 +113,36 @@ class VisualizeTrackModule(VisualizationModule):
 		"""           
 		if parameter == "TrackFile":
 			return "tracks.csv"
-		if parameter == "Track":
-			return 0
 		if parameter == "MinLength":
 			return 3
 		if parameter == "AllTracks":
 			return False
-		if parameter == "ShowObject":
-			return False
+		if parameter == "SphereRadius":
+			return 2.5
+		if parameter == "TubeRadius":
+			return 1.0
 		return False
 		
 	def getRange(self, parameter):
 		"""
 		If a parameter has a certain range of valid values, the values can be queried with this function
-		"""     
-		if parameter == "Track":
-			#TODO: self.track does not exist
-			if self.track:
-				minlength = self.parameters["MinLength"]
-				return 0, self.track.getNumberOfTracks(minlength)
-				
-			else:
-				return 0, 5
-		elif parameter == "MinLength":
-			if self.track:
-				return 1, self.track.getMaximumTrackLength()
-			else:
-				return 1, 100
+		"""
+		if parameter == "MinLength":
+			return 1, 100
 		return 1, 1
 		
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
-		"""    
-
+		"""
 		if parameter == "TrackFile":
 			return GUIBuilder.FILENAME
-		if parameter == "Track":
-			return GUIBuilder.SLICE
 		if parameter == "MinLength":
 			return GUIBuilder.SLICE
 		if parameter in ["AllTracks","SameStartingPoint"]:
 			return types.BooleanType
+		if parameter in ["SphereRadius","TubeRadius"]:
+			return types.FloatType
 
 	def __getstate__(self):
 		"""
@@ -196,12 +196,18 @@ class VisualizeTrackModule(VisualizationModule):
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""             
+		"""
 		for actor in self.actors:
 			self.renderer.RemoveActor(actor)
+		self.actors = []
 		if self.showTracks:
 			edges = vtk.vtkCellArray()
 			inputUnit = self.getInputDataUnit(1)
+			timepoint = scripting.visualizer.getTimepoint()
+			timepoints = scripting.visualizer.getNumberOfTimepoints()
+
+			tubeRadius = self.parameters["TubeRadius"]
+			sphereRadius = self.parameters["SphereRadius"]
 
 			tracks = self.getPoints(self.showTracks)
 			appendLines  = vtk.vtkAppendPolyData()
@@ -229,80 +235,95 @@ class VisualizeTrackModule(VisualizationModule):
 			currentActor.SetMapper(self.currentMapper)
 			currentActor.GetProperty().SetDiffuseColor(0, 0, 1)
 			
-			self.actors.append(lineactor)
-			self.actors.append(spheresActor)
-			self.actors.append(firstActor)
-			self.actors.append(lastActor)
-			self.actors.append(currentActor)
-			for actor in self.actors:
-				self.renderer.AddActor(actor)
-
-			dataw, datay, dataz = inputUnit.getDimensions()
+			#dataw, datay, dataz = inputUnit.getDimensions()
 			for track in tracks:
-				dx, dy, dz = 0,0,0
-				if self.parameters["SameStartingPoint"]:
-					dx = -track[0][0]
-					dy = -track[0][1]
-					dz = -track[0][2]
-					dx+=dataw/2
-					dy+=datay/2
-					dz+=dataz/2
+				#dx, dy, dz = 0,0,0
+				#if self.parameters["SameStartingPoint"]:
+				#	dx = -track[0][0]
+				#	dy = -track[0][1]
+				#	dz = -track[0][2]
+				#	dx+=dataw/2
+				#	dy+=datay/2
+				#	dz+=dataz/2
 				
 				for i, (x, y, z) in enumerate(track[:-1]):
-					x+=dx
-					y+=dy
-					z+=dz
+				#	x+=dx
+				#	y+=dy
+				#	z+=dz
 					x2,y2,z2 = track[i + 1]
-					x2+=dx
-					y2+=dy
-					z2+=dz
-					linesource = vtk.vtkLineSource()
-					linesource.SetPoint1(x, y, z)
-					linesource.SetPoint2(x2, y2, z2)
-					tubeFilter = vtk.vtkTubeFilter()
-					tubeFilter.SetRadius(1.5)
-					tubeFilter.SetNumberOfSides(10)
-			
-					tubeFilter.SetInput(linesource.GetOutput())
-					appendLines.AddInput(tubeFilter.GetOutput())
-					
+				#	x2+=dx
+				#	y2+=dy
+				#	z2+=dz
+
+					if x != x2 or y != y2 or z != z2:
+						linesource = vtk.vtkLineSource()
+						linesource.SetPoint1(x, y, z)
+						linesource.SetPoint2(x2, y2, z2)
+						tubeFilter = vtk.vtkTubeFilter()
+						tubeFilter.SetRadius(tubeRadius)
+						tubeFilter.SetNumberOfSides(10)
+						tubeFilter.SetInput(linesource.GetOutput())
+						appendLines.AddInput(tubeFilter.GetOutput())
 					
 					sph = vtk.vtkSphereSource()
 					sph.SetPhiResolution(20)
 					sph.SetThetaResolution(20)
 					sph.SetCenter(x, y, z)
 
-					sph.SetRadius(3)            
-
-					if i == 0:
-						appendFirst.AddInput(sph.GetOutput())
-					elif i == scripting.visualizer.getTimepoint():
+					sph.SetRadius(sphereRadius)
+					if i == timepoint:
 						appendCurrent.AddInput(sph.GetOutput())
-					else:
+					elif i != timepoint and i != timepoints and i != 0:
 						appendSpheres.AddInput(sph.GetOutput())
-										
-				sph = vtk.vtkSphereSource()
-				sph.SetPhiResolution(20)
-				sph.SetThetaResolution(20)
-				sph.SetCenter(*track[-1])
-				sph.SetRadius(3)         
-				appendLast.AddInput(sph.GetOutput())
-				#self.lastMapper.SetInput(sph.getOutput())                
-				
-			
+
+				if timepoint != 0:
+					sph = vtk.vtkSphereSource()
+					sph.SetPhiResolution(20)
+					sph.SetThetaResolution(20)
+					sph.SetCenter(track[0])
+					sph.SetRadius(sphereRadius)
+					appendFirst.AddInput(sph.GetOutput())
+
+				if timepoint != timepoints:
+					sph = vtk.vtkSphereSource()
+					sph.SetPhiResolution(20)
+					sph.SetThetaResolution(20)
+					sph.SetCenter(track[-1])
+					sph.SetRadius(sphereRadius)         
+					appendLast.AddInput(sph.GetOutput())
+				else:
+					sph = vtk.vtkSphereSource()
+					sph.SetPhiResolution(20)
+					sph.SetThetaResolution(20)
+					sph.SetCenter(track[-1])
+					sph.SetRadius(sphereRadius)         
+					appendCurrent.AddInput(sph.GetOutput())
+
 			self.currentMapper.SetInput(appendCurrent.GetOutput())
 			self.sphereMapper.SetInput(appendSpheres.GetOutput())
 			self.lineMapper.SetInput(appendLines.GetOutput())
-			self.firstMapper.SetInput(appendFirst.GetOutput())
-			self.lastMapper.SetInput(appendLast.GetOutput())
+			if timepoint != 0:
+				self.firstMapper.SetInput(appendFirst.GetOutput())
+			if timepoint != timepoints:
+				self.lastMapper.SetInput(appendLast.GetOutput())
 
 			#self.mapper.SetInput(append.GetOutput())
-	
 			self.currentMapper.Update()
+			self.actors.append(currentActor)
 			self.lineMapper.Update()
+			self.actors.append(lineactor)
 			self.sphereMapper.Update()
-			self.firstMapper.Update()
-			self.lastMapper.Update()
+			self.actors.append(spheresActor)
+			if timepoint != 0:
+				self.firstMapper.Update()
+				self.actors.append(firstActor)
+			if timepoint != timepoints:
+				self.lastMapper.Update()
+				self.actors.append(lastActor)
+			
+			for actor in self.actors:
+				self.renderer.AddActor(actor)
+			
 			VisualizationModule.updateRendering(self)
 			self.parent.Render()    
 
@@ -312,38 +333,111 @@ class VisualizeTrackModule(VisualizationModule):
 		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
+	
 	def setShading(self, shading):
 		"""
 		Set shading on / off
 		"""          
 		pass
 
+
 class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 
 	def __init__(self, parent, visualizer, name = "VisualizeTrack", **kws):
 		"""
 		Initialization
-		"""     
+		"""
+		pluginLoader = Modules.DynamicLoader.getPluginLoader()
+		createTrackMod = pluginLoader.getPluginModule("Filters", "CreateTracksFilter")
+		self.trackingGUI = createTrackMod.getUserInterfaceModule()
 		ModuleConfigurationPanel.__init__(self, parent, visualizer, name, **kws)
+		lib.messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)
+		lib.messenger.connect(None, "visualize_all_tracks", self.visualizeAllTracks)
 	
 	def initializeGUI(self):
 		"""
 		Initialization
-		"""          
-		pass
+		"""
+		if not hasattr(self,"gui"):
+			return
+
+		box = wx.BoxSizer(wx.HORIZONTAL)
+		self.readButton = wx.Button(self.gui, -1, "Read tracks")
+		box.Add(self.readButton)
+		self.readButton.Bind(wx.EVT_BUTTON, self.onReadTracks)
+
+		# Terrible hack!!!
+		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((1,0)).GetSizer().GetItem(0).GetSizer()
+		sizer.Add(box, (1,0))
+
+		self.trackGrid = self.trackingGUI.TrackTableGrid(self.gui, self.module.dataUnit, self, canEnable = 1)
+		gridSizer = wx.BoxSizer(wx.HORIZONTAL)
+		gridSizer.Add(self.trackGrid, 1)
+		# Terrible hack!!!
+		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((2,0)).GetSizer().GetItem(0).GetSizer()
+		sizer.Add(gridSizer, (1,0))
 		
 	def setModule(self, module):
 		"""
 		Set the module to be configured
-		"""  
+		"""
 		ModuleConfigurationPanel.setModule(self, module)
 		self.module = module
 		self.gui = GUIBuilder.GUIBuilder(self, self.module)
 		self.module.sendUpdateGUI()
 		self.contentSizer.Add(self.gui, (0, 0))
+		self.initializeGUI()
+		#self.module.sendUpdateGUI()
 
 	def onApply(self, event):
 		"""
 		Apply the changes
 		"""     
 		self.module.updateRendering()
+
+	def onReadTracks(self, evt):
+		"""
+		Read tracks
+		"""
+		filename = self.module.parameters["TrackFile"]
+		if not os.path.exists(filename):
+			return
+
+		self.trackReader = lib.Track.TrackReader()
+		self.trackReader.readFromFile(filename)
+		self.tracks = self.trackReader.getTracks(self.module.parameters["MinLength"])
+		n = len(self.tracks)
+
+		table = self.trackGrid.getTable()
+		table.Clear()
+		table.AppendRows(n)
+		for i, track in enumerate(self.tracks):
+			mintp, maxtp = track.getTimeRange()
+			for tp in range(mintp, maxtp + 1):
+				val, pos = track.getObjectAtTime(tp)
+				table.SetValue(i, tp + 1, pos, override = 1)
+		self.trackGrid.SetTable(table)
+		self.trackGrid.ForceRefresh()
+		
+	def updateSelectedTracks(self, obj, evt, tracks):
+		"""
+		Show selected tracks
+		"""
+		showTracks = []
+		for i in tracks:
+			showTracks.append(self.tracks[i])
+		self.module.setTracks(showTracks)
+
+	def visualizeAllTracks(self, obj, evt, value):
+		"""
+		Handle visualize all tracks selection
+		"""
+		if value:
+			for i in range(0,self.trackGrid.GetNumberRows()):
+				self.trackGrid.table.SetValue(i,0,1)
+		else:
+			for i in range(0,self.trackGrid.GetNumberRows()):
+				self.trackGrid.table.SetValue(i,0,0)
+
+		self.trackGrid.ForceRefresh()
+		

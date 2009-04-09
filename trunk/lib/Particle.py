@@ -469,38 +469,42 @@ class ParticleTracker:
 		#print "Found a particle with matching distance",distance		
 		if distance <= self.maxSpeed and distance >= self.minSpeed:
 			distFactor = 1
-		if distance < self.minSpeed:
+		elif distance < self.minSpeed:
 			distFactor = distance / self.minSpeed
-		if distance > self.maxSpeed:
+		elif distance > self.maxSpeed:
 			distFactor = self.maxSpeed / distance
 		#print "new size=",testParticle.size, "old size=",oldParticle.size
 		sizeChange = float(abs(testParticle.volume - oldParticle.volume))
 		#print "sizeChange=",sizeChange, "old size=",oldParticle.size
 		sizeFactor = sizeChange / oldParticle.volume
+		
 		if sizeFactor > self.sizeChange:
 			#print "Size change=",self.sizeChange,"size factor=",sizeFactor
 			return None,None,None
-		intFactor =  float(abs(testParticle.averageIntensity - oldParticle.averageIntensity))
-		intFactor /= self.maxIntensity
+		sizeFactor /= self.sizeChange
+		sizeFactor = abs(sizeFactor - 1)
+		
+		intChange =  float(abs(testParticle.averageIntensity - oldParticle.averageIntensity))
+		intFactor = intChange / oldParticle.averageIntensity
 		if intFactor > self.intensityChange:
 			return None, None, None
+		intFactor /= self.intensityChange
+		intFactor = abs(intFactor - 1)
 		return (distFactor, sizeFactor, intFactor)
 				
 	@staticmethod
-	def angle(particle1, particle2):
+	def angle(vector1, vector2):
 		"""
-		Measure the "angle" between horizontal axis and the line defined
-					 by the two particles
+		Measure the angle between two unit vectors
 		"""
-		particle1X, particle1Y = particle1.posInPixels[0:2]
-		particle2X, particle2Y = particle2.posInPixels[0:2]
-		ang = math.atan2(particle2Y - particle1Y, particle2X - particle1X) * 180.0 / math.pi
-		ang2 = ang
-		if ang < 0:
-			ang2 = 180 + ang
-		return ang, ang2
+		inner = 0.0
+		for i in range(3):
+			inner += vector1[i] * vector2[i]
 		
-	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 1):	
+		ang = abs(math.acos(inner) * 180 / math.pi)
+		return ang
+		
+	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 0):
 		"""
 		Return a score that unifies the different factors into a single score
 		"""
@@ -543,6 +547,7 @@ class ParticleTracker:
 			# remove the non-seed objects from the timepoint timePoint
 			for i in toRemove:
 				particleList[timePoint].remove(i)
+			
 			for tracknum, objVal in enumerate(col):
 				if objVal not in objToParticle:
 					print "Object", objVal, "not found"
@@ -557,18 +562,35 @@ class ParticleTracker:
 		return tracks, particleList
 		
 	def calculateAngleFactor(self, testParticle, track):
-		angle, absang = self.angle(track[-2], track[-1])
-		angle2, absang2	= self.angle(track[-1], testParticle)
+		"""
+		"""
+		lenVec1 = 0.0
+		lenVec2 = 0.0
+		vector1 = []
+		vector2 = []
+		for i in range(3):
+			vector1.append((track[-1].posInPixels[i] - track[-2].posInPixels[i]) * self.spacing[i])
+			lenVec1 += vector1[i]**2
+			vector2.append((testParticle.posInPixels[i] - track[-1].posInPixels[i]) * self.spacing[i])
+			lenVec2 +=  vector2[i]**2
+		if (lenVec1 == 0 or lenVec2 == 0):
+			return 0.0
 		
-		angdiff = abs(absang - absang2)
-		# If angle*angle2 < 0 then either (but not both) of the angles 
-		# is negative, so the particle being tested is in wrong direction
-		if angle * angle2 < 0:
-			return -1
-		elif  angdiff > self.angleChange:
+		lenVec1 = math.sqrt(lenVec1)
+		lenVec2 = math.sqrt(lenVec2)
+		for i in range(3):
+			vector1[i] /= lenVec1
+			vector2[i] /= lenVec2
+		vector1 = tuple(vector1)
+		vector2 = tuple(vector2)
+		
+		angle = self.angle(vector1,vector2)
+		
+		if  angle > self.angleChange:
 			return -1
 		else: 
-			angleFactor = float(angdiff) / self.angleChange
+			angleFactor = angle / self.angleChange
+			angleFactor = abs(angleFactor - 1)
 		return angleFactor
 		
 	def track(self, fromTimepoint = 0, seedParticles = []):# TODO: Test for this
@@ -609,6 +631,7 @@ class ParticleTracker:
 		@param particle the particle to track
 		@param timepoint track from this timepoint on 
 		"""
+		file = open("/tmp/track_debug.txt","a")
 		oldParticle = Particle()
 		currCandidate = Particle()
 		currCandidate.setSpacing(self.spacing)
@@ -658,7 +681,10 @@ class ParticleTracker:
 				# is not in a track
 				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
-					#print "Score=",currScore
+					file.write("New particle\n")
+					file.write("Particles new: (%d,%d,%d) old: (%d,%d,%d)\n"%(testParticle.posInPixels[0],testParticle.posInPixels[1],testParticle.posInPixels[2],oldParticle.posInPixels[0],oldParticle.posInPixels[1],oldParticle.posInPixels[2]))
+					file.write("dist=%f, size=%f, int=%f, angle=%f\n"%(distFactor,sizeFactor,intFactor,angleFactor))
+					file.write("Score=%f\n"%(currScore))
 					# if there's no other particle that fits the criteria
 					if not foundOne:
 						#print "Found a candidate",testParticle
@@ -676,7 +702,7 @@ class ParticleTracker:
 						# Compare the distance calculated between the particle
 						# that is currently being tested, and the old candidate particle
 						
-						if currScore < currentMatch.matchScore:
+						if currScore > currentMatch.matchScore:
 #							print "Current best",currScore,"is worse than current ", currentMatch.matchScore
 							testParticle.inTrack = True
 							testParticle.trackNum = self.trackCount
@@ -702,6 +728,7 @@ class ParticleTracker:
 				searchOn = False
 			oldParticle.copy(currentMatch)
 		tracks.append(track)
+		file.close()
 		
 	def setSpacing(self,spacing):
 		"""

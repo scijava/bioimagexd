@@ -1,7 +1,6 @@
 import lib.ProcessingFilter
 import lib.FilterTypes
 import scripting
-
 import GUI.GUIBuilder
 import itk
 import vtk
@@ -14,7 +13,6 @@ import Logging
 import csv
 import math
 import time
-
 import lib.Math
 
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
@@ -221,7 +219,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		labelShape.SetInput(image)
 		data = labelShape.GetOutput()
 		data.Update()
-			
+		
 		x, y, z = self.dataUnit.getVoxelSize()
 		x *= 1000000
 		y *= 1000000
@@ -272,7 +270,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
-			
+
 		tott=0
 		numberOfLabels = labelShape.GetNumberOfLabels()
 		voxelSize = voxelSizes[0] * voxelSizes[1] * voxelSizes[2]
@@ -283,7 +281,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				volume = labelShape.GetVolume(i)
 				centerOfMass = labelShape.GetCenterOfGravity(i)
 				avgInt = avgintCalc.GetMean(i)
-				avgIntStdErr = math.sqrt(avgintCalc.GetVariance(i)) / math.sqrt(volume)
+				avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
 				c = []
 				c2 = []
 				for k in range(0, 3):
@@ -341,28 +339,32 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		sumums = sum(ums, 0.0)
 		pxs = [x[0] for x in values]
 		avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
-		
+
 		avgIntOutsideObjs = 0.0
+		avgIntOutsideObjsStdErr = 0.0
 		variances = 0.0
 		allVoxels = 0
 		for i in range(0,startIntensity):
 			voxelAmount = labelShape.GetVolume(i)
 			avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
-			variances += voxelAmount * avgintCalc.GetVariance(i)
+			variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 			allVoxels += voxelAmount
-		avgIntOutsideObjs /= allVoxels
-		avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+		if allVoxels > 0:
+			avgIntOutsideObjs /= allVoxels
+			avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
 		
 		avgIntInsideObjs = 0.0
+		avgIntInsideObjsStdErr = 0.0
 		variances = 0.0
 		allVoxels = 0
 		for i in range(startIntensity, numberOfLabels):
 			voxelAmount = labelShape.GetVolume(i)
 			avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
-			variances += voxelAmount * avgintCalc.GetVariance(i)
+			variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 			allVoxels += voxelAmount
-		avgIntInsideObjs /= allVoxels
-		avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+		if allVoxels > 0:
+			avgIntInsideObjs /= allVoxels
+			avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
 
 		labelShape = itk.LabelShapeImageFilter[origInput].New()
 		labelShape.SetInput(origInput)

@@ -48,11 +48,10 @@ import time
 import types
 import vtk
 import vtkbxd
-import wx #pylint gillar inte detta
-
+import wx
 import scripting
-
-import GUI.ColocListView			
+import GUI.ColocListView
+import bxdevents
 		
 class ColocalizationPanel(TaskPanel):
 	"""
@@ -60,7 +59,7 @@ class ColocalizationPanel(TaskPanel):
 	"""
 	def __init__(self, parent, tb):
 		self.scatterPlot = None
-		self.createItemSelection = 1
+		self.createItemSelection = 0
 		self.timePoint = 0		  
 		TaskPanel.__init__(self, parent, tb, wantNotebook = 0)
 
@@ -72,14 +71,27 @@ class ColocalizationPanel(TaskPanel):
 		lib.messenger.connect(None, "timepoint_changed", self.updateTimepoint)
 		lib.messenger.connect(None, "zslice_changed", self.updateZSlice)
 		lib.messenger.connect(None, "threshold_changed", self.updateSettings)
-		
-		
+		lib.messenger.connect(None, bxdevents.DATA_DIMENSIONS_CHANGED, self.onDataChanged)
+
+	def deregister(self):
+		"""
+		Removes all listeners
+		"""
+		TaskPanel.deregister(self)
+		try:
+			lib.messenger.disconnect(None, "timepoint_changed", self.updateTimepoint)
+			lib.messenger.disconnect(None, "zslice_changed", self.updateZSlice)
+			lib.messenger.disconnect(None, "threshold_changed", self.updateSettings)
+			lib.messenger.disconnect(None, "data_changed", self.onDataChanged)
+		except:
+			pass
 			
 	def autoThreshold(self):
 		"""
 		Use vtkAutoThresholdColocalization to determine thresholds
 					 for colocalization and calculate statistics
 		"""
+		self.clearVariables()
 		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 1)
 		self.eventDesc = "Calculating thresholds"
 		
@@ -219,31 +231,50 @@ class ColocalizationPanel(TaskPanel):
 		Creates a frame that contains the various widgets
 					 used to control the colocalization settings
 		"""
-		TaskPanel.createOptionsFrame(self)
+		#TaskPanel.createOptionsFrame(self)
 #		 self.colocalizationPanel=wx.Panel(self.settingsNotebook,-1)
 		self.colocalizationPanel = wx.Panel(self, -1)
 		self.colocalizationSizer = wx.GridBagSizer()
 		n = 0
+
+		self.lowerThresholdLbl1 = wx.StaticText(self.colocalizationPanel, -1, "Ch1 lower threshold:")
+		self.upperThresholdLbl1 = wx.StaticText(self.colocalizationPanel, -1, "Ch1 upper threshold:")
+		self.lowerThresholdLbl2 = wx.StaticText(self.colocalizationPanel, -1, "Ch2 lower threshold:")
+		self.upperThresholdLbl2 = wx.StaticText(self.colocalizationPanel, -1, "Ch2 upper threshold:")
 		
-		self.lowerThresholdLbl = wx.StaticText(self.colocalizationPanel, -1, "Lower threshold:")
-		self.upperThresholdLbl = wx.StaticText(self.colocalizationPanel, -1, "Upper threshold:")
-		
-		self.lowerthreshold = wx.Slider(self.colocalizationPanel, value = 128, minValue = 1, \
+		self.lowerthreshold1 = wx.Slider(self.colocalizationPanel, value = 128, minValue = 1, \
 											maxValue = 255, size = (300, -1),
 		style = wx.SL_HORIZONTAL | wx.SL_LABELS)
-		self.lowerthreshold.Bind(wx.EVT_SCROLL, self.updateThreshold)
-		self.upperthreshold = wx.Slider(self.colocalizationPanel, value = 128, minValue = 1, \
+		self.lowerthreshold1.Bind(wx.EVT_SCROLL, self.updateThreshold)
+		self.upperthreshold1 = wx.Slider(self.colocalizationPanel, value = 128, minValue = 1, \
 											maxValue = 255, size = (300, -1),
 		style = wx.SL_HORIZONTAL | wx.SL_LABELS)
-		self.upperthreshold.Bind(wx.EVT_SCROLL, self.updateThreshold)
+		self.upperthreshold1.Bind(wx.EVT_SCROLL, self.updateThreshold)
+
+		self.lowerthreshold2 = wx.Slider(self.colocalizationPanel, value = 128, minValue = 1, \
+											maxValue = 255, size = (300, -1),
+		style = wx.SL_HORIZONTAL | wx.SL_LABELS)
+		self.lowerthreshold2.Bind(wx.EVT_SCROLL, self.updateThreshold)
+		self.upperthreshold2 = wx.Slider(self.colocalizationPanel, value = 128, minValue = 1, \
+											maxValue = 255, size = (300, -1),
+		style = wx.SL_HORIZONTAL | wx.SL_LABELS)
+		self.upperthreshold2.Bind(wx.EVT_SCROLL, self.updateThreshold)
 		
-		self.colocalizationSizer.Add(self.lowerThresholdLbl, (n, 0))
+		self.colocalizationSizer.Add(self.lowerThresholdLbl1, (n, 0))
 		n += 1
-		self.colocalizationSizer.Add(self.lowerthreshold, (n, 0))
+		self.colocalizationSizer.Add(self.lowerthreshold1, (n, 0))
 		n += 1
-		self.colocalizationSizer.Add(self.upperThresholdLbl, (n, 0))
+		self.colocalizationSizer.Add(self.upperThresholdLbl1, (n, 0))
 		n += 1
-		self.colocalizationSizer.Add(self.upperthreshold, (n, 0))
+		self.colocalizationSizer.Add(self.upperthreshold1, (n, 0))
+		n += 1
+		self.colocalizationSizer.Add(self.lowerThresholdLbl2, (n, 0))
+		n += 1
+		self.colocalizationSizer.Add(self.lowerthreshold2, (n, 0))
+		n += 1
+		self.colocalizationSizer.Add(self.upperThresholdLbl2, (n, 0))
+		n += 1
+		self.colocalizationSizer.Add(self.upperthreshold2, (n, 0))
 		n += 1
 		sbox = wx.StaticBox(self.colocalizationPanel, -1, "2D histogram (right-click for more options)")
 		box = wx.StaticBoxSizer(sbox, wx.VERTICAL)
@@ -492,8 +523,6 @@ class ColocalizationPanel(TaskPanel):
 		del w
 		del f
 		
-
-		
 			
 	def updateZSlice(self, obj, event, zslice):
 		"""
@@ -520,13 +549,21 @@ class ColocalizationPanel(TaskPanel):
 		# We might get called before any channel has been selected.
 		# In that case, do nothing
 		if self.settings:
-			oldlthreshold = self.settings.get("ColocalizationLowerThreshold")
-			olduthreshold = self.settings.get("ColocalizationUpperThreshold")
-			newlthreshold = int(self.lowerthreshold.GetValue())
-			newuthreshold = int(self.upperthreshold.GetValue())
-			self.settings.set("ColocalizationLowerThreshold", newlthreshold)
-			self.settings.set("ColocalizationUpperThreshold", newuthreshold)
-			if (oldlthreshold != newlthreshold) or (olduthreshold != newuthreshold):
+			self.clearVariables()
+			oldlthreshold1 = self.settings.getCounted("ColocalizationLowerThreshold", 0)
+			olduthreshold1 = self.settings.getCounted("ColocalizationUpperThreshold", 0)
+			newlthreshold1 = int(self.lowerthreshold1.GetValue())
+			newuthreshold1 = int(self.upperthreshold1.GetValue())
+			self.settings.setCounted("ColocalizationLowerThreshold", 0, newlthreshold1)
+			self.settings.setCounted("ColocalizationUpperThreshold", 0, newuthreshold1)
+			
+			oldlthreshold2 = self.settings.getCounted("ColocalizationLowerThreshold", 1)
+			olduthreshold2 = self.settings.getCounted("ColocalizationUpperThreshold", 1)
+			newlthreshold2 = int(self.lowerthreshold2.GetValue())
+			newuthreshold2 = int(self.upperthreshold2.GetValue())
+			self.settings.setCounted("ColocalizationLowerThreshold", 1, newlthreshold2)
+			self.settings.setCounted("ColocalizationUpperThreshold", 1, newuthreshold2)
+			if (oldlthreshold1 != newlthreshold1) or (olduthreshold1 != newuthreshold1) or (oldlthreshold2 != newlthreshold2) or (olduthreshold2 != newuthreshold2):
 				lib.messenger.send(None, "threshold_changed")
 				self.doPreviewCallback()
 				
@@ -544,12 +581,18 @@ class ColocalizationPanel(TaskPanel):
 			self.constColocCheckbox.SetValue(format == 1)
 			self.constColocValue.SetValue("%d" % scalar)
 			
-			th = self.settings.get("ColocalizationLowerThreshold")
+			th = self.settings.getCounted("ColocalizationLowerThreshold", 0)
 			if th != None:
-				self.lowerthreshold.SetValue(th)
-			th = self.settings.get("ColocalizationUpperThreshold")
+				self.lowerthreshold1.SetValue(th)
+			th = self.settings.getCounted("ColocalizationUpperThreshold", 0)
 			if th != None:
-				self.upperthreshold.SetValue(th)
+				self.upperthreshold1.SetValue(th)
+			th = self.settings.getCounted("ColocalizationLowerThreshold", 1)
+			if th != None:
+				self.lowerthreshold2.SetValue(th)
+			th = self.settings.getCounted("ColocalizationUpperThreshold", 1)
+			if th != None:
+				self.upperthreshold2.SetValue(th)
 		
 		# If the scatterplot exists, update it's thresholds 
 		if self.scatterPlot:
@@ -602,7 +645,7 @@ class ColocalizationPanel(TaskPanel):
 			self.scatterPlot.setIntercept(self.dataUnit.getSettings().get("Intercept"))
 			self.scatterPlot.setZSlice(0)
 			self.scatterPlot.setTimepoint(self.timePoint)
-			self.scatterPlot.updatePreview()
+			self.scatterPlot.setDataUnit(self.dataUnit)
 		ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
 		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)
 		self.listctrl.updateListCtrl(self.getVariables())
@@ -614,10 +657,10 @@ class ColocalizationPanel(TaskPanel):
 		variables = {}
 		if not self.dataUnit: return {}
 		sources = self.dataUnit.getSourceDataUnits()
-		variables["LowerThresholdCh1"]  = sources[0].getSettings().get("ColocalizationLowerThreshold")
-		variables["LowerThresholdCh2"]  = sources[1].getSettings().get("ColocalizationLowerThreshold")
-		variables["UpperThresholdCh1"]  = sources[0].getSettings().get("ColocalizationUpperThreshold")
-		variables["UpperThresholdCh2"]  = sources[1].getSettings().get("ColocalizationUpperThreshold")
+		variables["LowerThresholdCh1"] = sources[0].getSettings().get("ColocalizationLowerThreshold")
+		variables["LowerThresholdCh2"] = sources[1].getSettings().get("ColocalizationLowerThreshold")
+		variables["UpperThresholdCh1"] = sources[0].getSettings().get("ColocalizationUpperThreshold")
+		variables["UpperThresholdCh2"] = sources[1].getSettings().get("ColocalizationUpperThreshold")
 		for var in ["Ch1ThresholdMax", "Ch2ThresholdMax", "PearsonImageAbove",
 						  "PearsonImageBelow", "PearsonWholeImage", "M1", "M2",
 						  "K1", "K2", "DiffStainIntCh1", "DiffStainIntCh2",
@@ -630,6 +673,24 @@ class ColocalizationPanel(TaskPanel):
 						  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh2", "OverThresholdCh1"]:
 			variables[var] = sources[0].getSettings().get(var)
 		return variables
+
+	def clearVariables(self):
+		"""
+		Clear colocalization statistics
+		"""
+		sources = self.dataUnit.getSourceDataUnits()
+		settings = sources[0].getSettings()
+		for var in ["Ch1ThresholdMax", "Ch2ThresholdMax", "PearsonImageAbove",
+						  "PearsonImageBelow", "PearsonWholeImage", "M1", "M2",
+						  "K1", "K2", "DiffStainIntCh1", "DiffStainIntCh2",
+						  "DiffStainVoxelsCh1", "DiffStainVoxelsCh2",
+						  "ThresholdM1", "ThresholdM2",
+						  "ColocAmount", "ColocPercent", "PercentageVolumeCh1",
+						  "PercentageTotalCh1", "PercentageTotalCh2",
+						  "PercentageVolumeCh2", "PercentageMaterialCh1", "PercentageMaterialCh2",
+						  "SumOverThresholdCh1", "SumOverThresholdCh2", "SumCh1", "SumCh2",
+						  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh2", "OverThresholdCh1"]:
+			settings.set(var,0)
 		
 	def setCombinedDataUnit(self, dataUnit):
 		"""
@@ -639,23 +700,23 @@ class ColocalizationPanel(TaskPanel):
 		# See if the dataunit has a stored colocalizationctf
 		# then use that.
 		sources = self.dataUnit.getSourceDataUnits()
-
-		n1 = sources[0].getName()
-		n2 = sources[1].getName()
-
+		self.updateNames()
+		
 		minval, maxval = sources[0].getScalarRange()
 		minval2, maxval2 = sources[1].getScalarRange()
 		minval = min(minval, minval2)
 		bitmax1 = (2**sources[0].getSingleComponentBitDepth())-1
 		bitmax2 = (2**sources[0].getSingleComponentBitDepth())-1
 		maxval = max(maxval, maxval2, bitmax1, bitmax2)
-		self.lowerthreshold.SetRange(minval, maxval)
-		self.lowerthreshold.SetValue((maxval - minval) / 2)
-		self.upperthreshold.SetRange(minval, maxval)
-		self.upperthreshold.SetValue(maxval)		
+		self.lowerthreshold1.SetRange(minval, maxval)
+		self.lowerthreshold1.SetValue((maxval - minval) / 2)
+		self.upperthreshold1.SetRange(minval, maxval)
+		self.upperthreshold1.SetValue(maxval)
+		self.lowerthreshold2.SetRange(minval, maxval)
+		self.lowerthreshold2.SetValue((maxval - minval) / 2)
+		self.upperthreshold2.SetRange(minval, maxval)
+		self.upperthreshold2.SetValue(maxval)
 		self.updateThreshold(None)
-
-		self.listctrl.setChannelNames(n1, n2)
 
 		na = sources[1].getNumericalAperture()
 		emission = sources[1].getEmissionWavelength()
@@ -709,8 +770,6 @@ class ColocalizationPanel(TaskPanel):
 		imagedata = maptocolor.GetOutput()
 		bmp = ImageOperations.vtkImageDataToWxImage(imagedata).ConvertToBitmap()
 		
-		
-		
 		bmp = self.getChannelItemBitmap(bmp, (255, 255, 0))
 		toolid = wx.NewId()
 		name = "Colocalization"
@@ -724,3 +783,38 @@ class ColocalizationPanel(TaskPanel):
 		self.toolIds.append(toolid)
 		self.toolMgr.toggleTool(toolid, 1)
 		self.restoreFromCache()
+
+	def updateNames(self):
+		"""
+		Updates names of channels
+		"""
+		sources = self.dataUnit.getSourceDataUnits()
+		n1 = sources[0].getName()
+		n2 = sources[1].getName()
+		self.listctrl.setChannelNames(n1,n2)
+		self.lowerThresholdLbl1.SetLabel("%s lower threshold:"%(n1))
+		self.lowerThresholdLbl2.SetLabel("%s lower threshold:"%(n2))
+		self.upperThresholdLbl1.SetLabel("%s upper threshold:"%(n1))
+		self.upperThresholdLbl2.SetLabel("%s upper threshold:"%(n2))
+
+	def onDataChanged(self, obj, event):
+		"""
+		Handler of data changed event
+		"""
+		if self.scatterPlot:
+			self.scatterPlot.setSlope(self.dataUnit.getSettings().get("Slope"))
+			self.scatterPlot.setIntercept(self.dataUnit.getSettings().get("Intercept"))
+			self.scatterPlot.setZSlice(0)
+			self.scatterPlot.setTimepoint(self.timePoint)
+			self.scatterPlot.setDataUnit(self.dataUnit)
+			del self.scatterPlot.verticalLegend
+			self.scatterPlot.verticalLegend = None
+			del self.scatterPlot.horizontalLegend
+			self.scatterPlot.horizontalLegend = None
+		ctf = self.dataUnit.getSettings().get("ColorTransferFunction")
+		self.dataUnit.getSettings().set("ColocalizationColorTransferFunction", ctf)
+		self.clearVariables()
+		self.listctrl.ClearAll()
+		self.listctrl.populateListCtrl()
+		self.updateNames()
+		

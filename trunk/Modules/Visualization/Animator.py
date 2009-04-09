@@ -237,7 +237,8 @@ class AnimatorMode(VisualizationMode):
 			self.menuManager.mainToolbar.EnableTool(MenuManager.ID_ADJUST, 1)
 			self.menuManager.mainToolbar.EnableTool(MenuManager.ID_RESTORE, 1)
 			self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLOCALIZATION, 1)
-			self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING, 1)        
+			self.menuManager.mainToolbar.EnableTool(MenuManager.ID_COLORMERGING, 1)
+		self.urmaswin.cleanMenu()
 		
 	def setDataUnit(self, dataUnit):
 		"""

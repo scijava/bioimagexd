@@ -7,7 +7,7 @@ Created: 25.03.2005, KP
 Description:
 
 A module that displays a scatterplot and allows the user
-select the colocalization threshold based on the plot. Uses the vtkImageAccumulate
+select the colocalization threshold based on the plot. Uses the vtkImageAcculat 
 to calculate the scatterplot
 
 BioImageXD includes the following persons:
@@ -404,12 +404,15 @@ class Scatterplot(wx.Panel):
 		"""
 		Sets the data unit that is displayed
 		"""
+		self.renew = 1
 		self.sources = dataUnit.getSourceDataUnits()
 		self.dataUnit = dataUnit
 #		self.scalarMax = max([sourceUnit.getScalarRange()[1] for sourceUnit in self.sources])
 		self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
 		
 		self.buffer = wx.EmptyBitmap(*self.size)
+		self.scatterBitmap = None
+		self.plotCache = {}
 		self.updatePreview()
 		
 	def setVoxelCount(self, event):
@@ -510,8 +513,8 @@ class Scatterplot(wx.Panel):
 		"""
 		if (self.timepoint, self.wholeVolume, self.logarithmic) not in self.plotCache:
 			# Red on the vertical and green on the horizontal axis
-			t1 = self.sources[1].getTimepoint(timepoint)
-			t2 = self.sources[0].getTimepoint(timepoint)
+			t1 = self.sources[0].getTimepoint(timepoint)
+			t2 = self.sources[1].getTimepoint(timepoint)
 			self.scatter, self.scatterCTF, self.scatterImage = self.generateScatterplot(t1, t2)
 			self.scatter = self.scatter.Mirror(horizontally = False)
 			self.plotCache[(self.timepoint, self.wholeVolume, self.logarithmic)] = self.scatter, self.scatterCTF, self.scatterImage
@@ -576,7 +579,6 @@ class Scatterplot(wx.Panel):
 			dc = None
 			return
 
-
 		c = 255.0 / self.scalarMax
 
 		bmp = self.scatter.ConvertToBitmap()
@@ -588,6 +590,7 @@ class Scatterplot(wx.Panel):
 			self.verticalLegend = verticalLegend
 		else:
 			verticalLegend = self.verticalLegend
+		
 		if not self.horizontalLegend:
 			horizontalLegend = lib.ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width = 256, height = self.legendWidth, paintScalars = 1)
 			self.horizontalLegend = horizontalLegend
