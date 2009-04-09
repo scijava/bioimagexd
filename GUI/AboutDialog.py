@@ -127,30 +127,31 @@ three - and four - dimensional microscopy data.</p>
 <h2 > The BioImageXD Project</h2>
 <p><b > The main development team</b></p><p>
 Pasi Kankaanp‰‰<br>
-Kalle Pahajoki < br>
-Varpu Marjom‰ki < br>
-Jyrki Heino < br>
-Daniel White < br>
+Lassi Paavolainen <br>
+Varpu Marjom‰ki <br>
+Jyrki Heino <br>
+Daniel White <br>
 </p>
 <p>
-<b > Former member of the main development team (and the developer of the Zeiss LSM file format reader and the rendering animator):</b>
+<b> Former members of the main development team:</b>
 </p><p>
+Kalle Pahajoki <br>
 Heikki Uuksulainen
 </p>
 <p>
-<b > BioImageXD is largely based on the work of the Selli project, which included the following people:</b></p><p>
-Juha Hyyti‰inen < br>
-Jaakko M‰ntymaa < br>
-Kalle Pahajoki < br>
-Jukka Varsaluoma < br>
+<b>BioImageXD is largely based on the work of the Selli project, which included the following people:</b></p><p>
+Juha Hyyti‰inen <br>
+Jaakko M‰ntymaa <br>
+Kalle Pahajoki <br>
+Jukka Varsaluoma <br>
 </p><p>
-<b > The following people, organizations and companies have significantly contributed to the development of BioImageXD:</b></p><p>
-Jorma Virtanen < br>
-Mikko Huhtala < br>
-Pekka Neittaanm‰ki < br>
-Anna - Brita ÷st < br>
+<b> The following people, organizations and companies have significantly contributed to the development of BioImageXD:</b></p><p>
+Jorma Virtanen <br>
+Mikko Huhtala <br>
+Pekka Neittaanm‰ki <br>
+Anna - Brita ÷st <br>
 </p><p>
-ISB - National Graduate School in Informational and Structural Biology < br>
+ISB - National Graduate School in Informational and Structural Biology <br>
 </p>
 </body>
 </html>
@@ -470,6 +471,7 @@ at the < i > Licensing</i > directory.</p>
 <li><a href = "#python">Python</a></li>
 <li><a href="#vtk">The Visualization Toolkit</a></li>
 <li><a href = "#itk">Insight Segmentation and Registration Toolkit</a></li>
+<li><a href="#wxwidgets">wxWidgets</a></li>
 <li><a href="#lzw">LZW code from FFMPEG</a></li>
 </ul>
 </p>
@@ -588,6 +590,71 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<br>
 =========================================================================*/
+</p>
+<p><a name="wxwidgets"><h2>wxWidgets</h2></a></p>
+<p>
+                wxWindows Library Licence, Version 3.1<br>
+                ======================================
+</p>
+<p>
+  Copyright (C) 1998-2005 Julian Smart, Robert Roebling et al
+</p>
+<p>
+  Everyone is permitted to copy and distribute verbatim copies
+  of this licence document, but changing it is not allowed.
+</p>
+<p>
+                       WXWINDOWS LIBRARY LICENCE
+     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+</p>
+<p>  
+  This library is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Library General Public Licence as published by
+  the Free Software Foundation; either version 2 of the Licence, or (at
+  your option) any later version.
+</p>
+<p>  
+  This library is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
+  General Public Licence for more details.
+</p>
+<p>
+  You should have received a copy of the GNU Library General Public Licence
+  along with this software, usually in a file named COPYING.LIB.  If not,
+  write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+  Boston, MA 02111-1307 USA.
+</p>
+<p>
+  EXCEPTION NOTICE
+</p>
+<p>
+  1. As a special exception, the copyright holders of this library give
+  permission for additional uses of the text contained in this release of
+  the library as licenced under the wxWindows Library Licence, applying
+  either version 3.1 of the Licence, or (at your option) any later version of
+  the Licence as published by the copyright holders of version
+  3.1 of the Licence document.
+</p>
+<p>
+  2. The exception is that you may use, copy, link, modify and distribute
+  under your own terms, binary object code versions of works based
+  on the Library.
+</p>
+<p>
+  3. If you copy code from files distributed under the terms of the GNU
+  General Public Licence or the GNU Library General Public Licence into a
+  copy of this library, as this licence permits, the exception does not
+  apply to the code that you add in this way.  To avoid misleading anyone as
+  to the status of such modified files, you must delete this exception
+  notice from such code and/or adjust the licensing conditions notice
+  accordingly.
+</p>
+<p>
+  4. If you write modifications of your own for this library, it is your
+  choice whether to permit this exception to apply to your modifications. 
+  If you do not wish that, you must delete the exception notice from such
+  code and/or adjust the licensing conditions notice accordingly.
 </p>
 <p><a name="lzw"><h2>LZW decompression</h2></a></p><p>
   The LZW decoder utilized in LSM reader is licensend under the LGPL and
