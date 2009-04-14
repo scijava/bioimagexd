@@ -160,7 +160,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 		self.zoomFactor = 1
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
-		self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClickROI)
+		#self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClickROI)
 		self.paintPreview()
 		
 		self.Unbind(wx.EVT_PAINT)
@@ -169,7 +169,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 		self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 		self.Bind(wx.EVT_MOTION, self.onMouseMotion)
-		#self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
+		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
 		self.Bind(wx.EVT_LEFT_UP, self.executeAction)
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
