@@ -877,7 +877,6 @@ class Visualizer:
 		self.mode = None
 
 		self.currentModeModule = None
-		self.dataUnit = None
 		self.sidebarWin.SetDefaultSize((0, 1024))
 		self.zslider.SetRange(1,1)
 		self.zslider.SetValue(1)
@@ -1250,6 +1249,7 @@ class Visualizer:
 				self.delayed = 1
 				wx.FutureCall(diff, self.updateRendering)
 				return
+			
 		Logging.info("Updating rendering", kw = "visualizer")
 		self.renderingTime = time.time()
 		self.currentMode.updateRendering()

@@ -1524,17 +1524,18 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 		self.setButtonSelection(eid)
 		self.setVisualizerMenuSelection(eid)
+
 		dataunit = selectedFiles[0]
 		if self.visualizer:
 			hasDataunit = bool(self.visualizer.dataUnit)
-			if hasDataunit:
+			if hasDataunit and dataunit.getDataUnitCount() == self.visualizer.dataUnit.getDataUnitCount():
 				dataunit = self.visualizer.dataUnit
 			didSetDataUnit = False
 			self.visualizer.enable(False)
-			#if not self.visualizer.getProcessedMode():
-			Logging.info("Setting dataunit for visualizer", kw = "main")
-			self.visualizer.setDataUnit(dataunit)
-			didSetDataUnit = True
+			if not self.visualizer.getProcessedMode():
+				Logging.info("Setting dataunit for visualizer", kw = "main")
+				self.visualizer.setDataUnit(dataunit)
+				didSetDataUnit = True
 				
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
@@ -1544,7 +1545,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 #				self.visualizer.setDataUnit(dataunit)
 			#if hasDataunit:
 			#	Logging.info("Forcing visualizer update since dataunit has been changed", kw = "visualizer")
-			#	self.visualizer.updateRendering()
+			self.visualizer.updateRendering()
 			lib.messenger.send(None, "update_progress", 1.0, "Loading %s view..." % mode, 0)
 			return
 		
@@ -1812,7 +1813,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 	def loadTask(self, taskname):
 		"""
 		Load the task with the given name
-		"""   
+		"""
 		moduletype, windowtype, mod = self.taskPanels[taskname]
 		filesAtLeast, filesAtMost = mod.getInputLimits()
 		
@@ -1834,6 +1835,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			"You can select at most %d source datasets for %s" % (filesAtMost, action), "Too many source datasets")
 			self.setButtonSelection(-1)
 			return
+		
 		self.visualizer.enable(0)
 		lib.messenger.send(None, "update_progress", 0.1, "Loading task %s..." % action)
 		self.onMenuShowTree(show = False)
@@ -1882,6 +1884,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			ex.show()
 			self.closeTask()
 			return
+		
 		lib.messenger.send(None, "update_progress", 0.3, "Loading task %s..." % action)
 		Logging.info("Moduletype=", moduletype, kw = "dataunit")
 		module = moduletype()

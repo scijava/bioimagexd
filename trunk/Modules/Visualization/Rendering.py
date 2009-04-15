@@ -381,10 +381,9 @@ class RenderingMode(VisualizationMode):
 		self.visualizer.elevation.Unbind(wx.EVT_SPIN_UP)
 		self.visualizer.elevation.Unbind(wx.EVT_SPIN_DOWN)
 
-		# Reset color transfer function
 		dataunit = self.getDataUnit()
 		dataunit.resetColorTransferFunction()
-		
+
 		
 	def setDataUnit(self, dataUnit):
 		"""
