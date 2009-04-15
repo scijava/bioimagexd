@@ -680,6 +680,7 @@ class ParticleTracker:
 				# is not in a track
 				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
+					#print "Score=",currScore
 					# if there's no other particle that fits the criteria
 					if not foundOne:
 						#print "Found a candidate",testParticle

@@ -59,8 +59,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Rendering"
 		self.view = None
 		self.setVTKState = GUI.Urmas.UrmasPersist.setVTKState
-		self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState
-		
+		self.getVTKState = GUI.Urmas.UrmasPersist.getVTKState		
 
 		self.inputs = []
 		self.dataUnit = None

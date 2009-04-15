@@ -94,7 +94,14 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.selectedTimepoint = 0
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 		
-		
+
+	def onRemove(self):
+		"""
+		Remove event listeners
+		"""
+		lib.messenger.disconnect(None, "selected_objects", self.onSetSelectedObjects)
+		lib.messenger.disconnect(None, "timepoint_changed", self.onSetTimepoint)
+			
 	def onSetTimepoint(self, obj, event, timepoint):
 		"""
 		Update the column that can be edited based on the timepoint
@@ -489,7 +496,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		update the objects list
 		"""
-		if self.objectsReader:
+		if self.objectsReader and self.reportGUI:
 			rdr = self.objectsReader
 			rdr.read(statsTimepoint = self.selectedTimepoint)
 			self.reportGUI.setVolumes(rdr.getVolumes())

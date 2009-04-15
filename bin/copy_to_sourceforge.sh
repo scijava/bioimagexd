@@ -29,6 +29,9 @@ perl -i -p -e 's/TFLag = 0/TFLag = 1/g' sourceforge/scripting.py
 echo "Removing vtkMRCReader.cxx from CMakeLists.txt"
 perl -i -p -e 's/vtkMRCReader.cxx//g' sourceforge/vtkBXD/Processing/CMakeLists.txt
 cd sourceforge
+# Do not update build_innosetup.sh
+echo "Remove trunk/bin/build_innosetup from commit"
+rm trunk/bin/build_innosetup.sh
 echo
 echo "Possibly modified files:"
 svn stat|grep "^?"|grep -v ".pyc$"

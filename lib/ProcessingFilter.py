@@ -40,6 +40,7 @@ import sys
 import Logging
 import lib.messenger
 import scripting
+import traceback
 
 import GUI.GUIBuilder
 

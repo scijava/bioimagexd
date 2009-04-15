@@ -181,7 +181,8 @@ class DataUnit:
 					 dataset
 		"""
 		self.ctf = None
-		self.dataSource.resetColorTransferFunction()
+		if self.dataSource:
+			self.dataSource.resetColorTransferFunction()
 		ctf = self.getColorTransferFunction()
 		self.settings.set("ColorTransferFunction", ctf)
 
@@ -304,7 +305,6 @@ class DataUnit:
 		self.getExcitationWavelength = dataSource.getExcitationWavelength
 		self.getNumericalAperture = dataSource.getNumericalAperture
 	
-
 	def getFileName(self):
 		"""
 		Return the path to the file this dataunit represents
@@ -312,6 +312,13 @@ class DataUnit:
 		if self.dataSource:
 			return self.dataSource.getFileName()
 		return "unnamed"
+
+	def getDataUnitCount(self):
+		"""
+		Return count of dataunits
+		"""
+		return 1
+	
 	def __str__(self):
 		return "<DataUnit:"+ os.path.basename(self.getFileName())+":"+self.getName()+">"
 	

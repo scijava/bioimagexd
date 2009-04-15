@@ -470,3 +470,11 @@ class CombinedDataUnit(DataUnit):
 		"""
 		raise "Using bare DataUnitSettings"
  
+
+	def resetColorTransferFunction(self):
+		"""
+		Resets CTF from datasource
+		"""
+		for i,dataunit in enumerate(self.sourceunits):
+			dataunit.resetColorTransferFunction()
+		
