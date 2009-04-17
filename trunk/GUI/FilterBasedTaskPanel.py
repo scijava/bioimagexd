@@ -33,7 +33,6 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import TaskPanel
 import types
-
 import lib.FilterBasedModule
 
 class FilterBasedTaskPanel(TaskPanel.TaskPanel):
@@ -70,10 +69,10 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 				cached = 1
 			else:
 				parser = self.settings.parser
-					
+
+			self.filterList.setDataUnit(self.dataUnit)
 			self.filterList.readValuesFrom(parser)
 			self.parser = None
-			self.filterList.setDataUnit(self.dataUnit)
 			self.filterEditor.setFilterList(self.filterList)
 			self.filterEditor.updateFromFilterList()
 				
@@ -98,3 +97,12 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		"""
 		self.updateFilterData()
 		TaskPanel.TaskPanel.doPreviewCallback(self, event)
+
+	def removeFilters(self):
+		"""
+		Remove filters from settings
+		"""
+		filtNum = len(self.filterList.getFilters())
+		for i in range(filtNum-1,-1,-1):
+			self.filterList.removeFilter(i)
+			

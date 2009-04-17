@@ -200,7 +200,7 @@ class DataUnitSettings:
 				obj = settingsclass(self.dataSetNumber)
 				obj.setType(type)
 				return obj.readFrom(parser)
-		
+
 		for key in self.registered.keys():
 			ser = self.serialized[key]
 			if key in self.counted:
@@ -255,7 +255,7 @@ class DataUnitSettings:
 	def writeKey(self, key, parser, n = -1):
 		"""
 		Write a key and it's value to parser
-		"""	   
+		"""
 		nkey = "%s[%d]" % (key, n)
 		if not (key in self.settings or nkey in self.settings) \
 			and not (key in self.private or nkey in self.private):
@@ -284,7 +284,7 @@ class DataUnitSettings:
 	def writeTo(self, parser):
 		"""
 		Attempt to write all keys to a parser
-		"""	   
+		"""
 		if not parser.has_section("Settings"):
 			parser.add_section("Settings")
 

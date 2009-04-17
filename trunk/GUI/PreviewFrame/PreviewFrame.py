@@ -407,7 +407,7 @@ class PreviewFrame(InteractivePanel):
 		if not self.running:
 			renew = 1
 			self.running = 1
-		
+
 		if self.dataUnit.isProcessed():
 			try:
 				z = self.z
