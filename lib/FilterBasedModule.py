@@ -76,7 +76,6 @@ class FilterList:
 		"""
 		clear the filter list
 		"""
-
 		self.categories = []
 		self.filters = []
 		self.currentSelected = -1
@@ -133,6 +132,7 @@ class FilterList:
 		filterNames = self.getFilterNames()
 		parser.set("%sFilterList"%prefix,"FilterList",str(filterNames))
 		counts = {}
+
 		for i, filterName in enumerate(filterNames):
 			currfilter = self.filters[i]
 			keys = currfilter.getPlainParameters()
@@ -150,8 +150,8 @@ class FilterList:
 
 			parser.set(sectionName,"Enabled", str(currfilter.getEnabled()))
 			parser.set(sectionName, "InputMapping", str(currfilter.inputMapping))
-				
-				
+		
+		
 	def readValuesFrom(self, parser, prefix = ""):
 		"""
 		read the values for the parameters of the filters in this filterlist from a parser object
@@ -163,7 +163,6 @@ class FilterList:
 		# when we're restoring from presets or BBA file, the instances of the filters have already
 		# been created and we now set the filters' parameters
 		for currfilter in self.filters:
-
 			name = currfilter.getName()
 			sectionName = prefix+name
 			# We calculate the name of the section in which the settings are stored in the file

@@ -91,6 +91,12 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		Callback for when filter is removed
 		"""
 		self.restoreCtf()
+		if self.itkfilter:
+			del self.itkfilter
+		if self.relabelFilter:
+			del self.relabelFilter
+		if self.vtkToItk:
+			del self.vtkToItk
 
 	def onDisable(self):
 		"""
@@ -109,7 +115,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			

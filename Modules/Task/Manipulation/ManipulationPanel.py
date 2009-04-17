@@ -35,7 +35,6 @@ import GUI.Dialogs
 import GUI.FilterBasedTaskPanel
 import GUI.FilterEditor
 
-
 import glob 
 import lib.Command
 import lib.ImageOperations
@@ -52,6 +51,7 @@ import types
 import GUI.UIElements
 import vtk
 import wx
+
 
 class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 	"""

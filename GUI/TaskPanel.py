@@ -441,3 +441,9 @@ class TaskPanel(ScrolledPanel):
 		self.selectItem(None, None, 0)
 		# Delay the call, maybe it will make it work on mac
 		wx.FutureCall(100, self.createItemToolbar)
+
+	def removeFilters(self):
+		"""
+		"""
+		pass
+	

@@ -67,7 +67,7 @@ class FilterBasedTaskSettings(DataUnitSettings):
 	def writeTo(self, parser):
 		"""
 		Attempt to write all keys to a parser
-		"""	   
+		"""
 		DataUnitSettings.writeTo(self, parser)
 		filterList = self.get("FilterList")
 		if filterList:

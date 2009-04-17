@@ -1390,6 +1390,7 @@ class MainWindow(wx.Frame):
 
 		if self.currentTaskWindow:
 			Logging.info("Closing task")
+			self.currentTaskWindow.removeFilters()
 			self.currentTaskWindow.deregister()
 			self.currentTaskWindow.Show(0)
 			self.currentTaskWindow.Destroy()
