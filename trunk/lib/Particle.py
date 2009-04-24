@@ -500,8 +500,11 @@ class ParticleTracker:
 		inner = 0.0
 		for i in range(3):
 			inner += vector1[i] * vector2[i]
-		
-		ang = abs(math.acos(inner) * 180 / math.pi)
+
+		try: # There can be rounding problems
+			ang = abs(math.acos(inner) * 180 / math.pi)
+		except:
+			ang = 0.0
 		return ang
 		
 	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 0):
@@ -680,7 +683,7 @@ class ParticleTracker:
 				# is not in a track
 				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
-					#print "Score=",currScore
+
 					# if there's no other particle that fits the criteria
 					if not foundOne:
 						#print "Found a candidate",testParticle

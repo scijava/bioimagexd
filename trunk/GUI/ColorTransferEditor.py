@@ -584,7 +584,7 @@ class ColorTransferEditor(wx.Panel):
 	def onDeletePoint(self, event):
 		"""
 		Delete the selected point
-		"""		   
+		"""
 		if self.selectedPoint:
 			for i, pts in enumerate(self.points):
 				if self.selectedPoint in pts:
@@ -592,6 +592,7 @@ class ColorTransferEditor(wx.Panel):
 			self.selectedPoint = None
 			self.upToDate = 0			 
 			self.updateGraph()
+			
 			
 	def setAlphaMode(self, flag):
 		"""
@@ -702,7 +703,6 @@ class ColorTransferEditor(wx.Panel):
 				if d < self.selectThreshold and d < currd:
 					self.selectedPoint = pt
 					currd = d
-					self.upToDate = 0
 					break
 				
 	def dist(self, p1, p2):
@@ -798,7 +798,7 @@ class ColorTransferEditor(wx.Panel):
 	def updatePreview(self):
 		"""
 		Send an event updating the preview
-		"""			   
+		"""
 		if abs(time.time() - self.updateT) > 0.5:
 			self.updateT = time.time()
 			lib.messenger.send(None, "data_changed", 0)
@@ -914,7 +914,6 @@ class ColorTransferEditor(wx.Panel):
 		"""
 		Update the palette view of the ctf
 		"""
-		self.selectedPoint = None
 		if self.upToDate:
 			return
 		if not self.freeMode:
