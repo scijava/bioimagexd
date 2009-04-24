@@ -122,10 +122,9 @@ class RGBComponentDataSource(DataSource):
 		"""
 		Return the bit depth of data
 		"""
-		if not self.bitdepth:
-			
+		if not self.bitdepth:			
 			data = self.getDataSet(0, raw = 1)
-			
+			data.UpdateInformation()
 			self.scalarRange = data.GetScalarRange()
 			#print "Scalar range of data", self.scalarRange
 			scalartype = data.GetScalarType()

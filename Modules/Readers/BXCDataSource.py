@@ -356,10 +356,10 @@ class BXCDataSource(DataSource):
 		Return the bit depth of data
 		"""
 		if not self.bitdepth:
-			self.singleBitDepth = int(self.settings.get("BitDepth"))
+			self.bitdepth = int(self.settings.get("BitDepth"))
 			data = self.getDataSet(0, raw = 1)
 			data.UpdateInformation()
-			self.bitdepth = self.singleBitDepth * data.GetNumberOfScalarComponents()
+			self.singleBitDepth = self.bitdepth / data.GetNumberOfScalarComponents()
 		return self.bitdepth
 		
 		
