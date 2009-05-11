@@ -362,4 +362,51 @@ class BXCDataSource(DataSource):
 			self.singleBitDepth = self.bitdepth / data.GetNumberOfScalarComponents()
 		return self.bitdepth
 		
-		
+	def getTimeStamp(self, timepoint):
+		"""
+		@return the timestamp for given timepoint
+		"""
+		if len(self.timestamps) == 0:
+			self.createTimeStamps()
+		if len(self.timestamps) > timepoint:
+			return self.timestamps[timepoint]
+		return timepoint	
+
+	def getAbsoluteTimeStamp(self, timepoint):
+		"""
+		@return the absolute timestamp for given timepoint
+		"""
+		if len(self.absoluteTimestamps) == 0:
+			self.createTimeStamps()
+		if len(self.absoluteTimestamps) >= timepoint:
+			return self.absoluteTimestamps[timepoint]
+		return timepoint
+
+	def getTimeStamps(self):
+		"""
+		@return all the timestamps
+		"""
+		if len(self.timestamps) == 0:
+			self.createTimeStamps()
+		return self.timestamps
+
+	def getAbsoluteTimeStamps(self):
+		"""
+		@return all the absolute timestamps
+		"""
+		if len(self.absoluteTimestamps) == 0:
+			self.createTimeStamps()
+		return self.absoluteTimestamps
+
+	def createTimeStamps(self):
+		"""
+		Creates time stamps for setTimeStamps and setAbsoluteTimeStamps methods
+		"""
+		timestamps = self.settings.get("TimeStamps")
+		if not timestamps:
+			timestamps = []
+		absoluteTimestamps = self.settings.get("AbsoluteTimeStamps")
+		if not absoluteTimestamps:
+			absoluteTimestamps = []
+		self.setTimeStamps(timestamps)
+		self.setAbsoluteTimeStamps(absoluteTimestamps)

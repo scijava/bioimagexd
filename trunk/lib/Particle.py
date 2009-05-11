@@ -60,6 +60,8 @@ class ParticleReader:
 		self.avgints = []
 		self.objects = []
 		self.avgintsstderr = []
+		self.avgdists = []
+		self.avgdiststderr = []
 		
 	def getObjects(self):
 		"""
@@ -90,6 +92,12 @@ class ParticleReader:
 		Return a list of the areas of the objects (sorted)
 		"""
 		return self.areas
+
+	def getAverageDistances(self):
+		"""
+		Return a tuple of lists of the average distances of the objects to other objects
+		"""
+		return (self.avgdists,self.avgdiststderr)
 		
 	def read(self, statsTimepoint = 0):
 		"""
@@ -116,6 +124,9 @@ class ParticleReader:
 					obj, volumemicro, volume, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint, avgintstderr, avgdist, avgdiststderr, areamicro = line[0:14]
 				except:
 					obj, volumemicro, volume, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line[0:10] # Works with old data too
+					avgintstderr = 0.0
+					avgdist = 0.0
+					avgdiststderr = 0.0
 					areamicro = 0.0
 			try:
 				volume = int(volume)
@@ -123,12 +134,21 @@ class ParticleReader:
 			except ValueError:
 				continue
 			obj = int(obj)
-			cog = map(int, [float(cogX), float(cogY), float(cogZ)])
+			voxelSize = [1.0,1.0,1.0]
 			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
+			cog = [float(cogX), float(cogY), float(cogZ)]
+			for i in range(3):
+				voxelSize[i] = umcog[i] / cog[i]
+			cog = map(int, cog)
 			avgint = float(avgint)
 			avgintstderr = float(avgintstderr)
+			avgdist = float(avgdist)
+			avgdiststderr = float(avgdiststderr)
+			areamicro = float(areamicro)
+			
 			if volume >= self.filterObjectVolume and obj != 0: 
 				particle = Particle(umcog, cog, self.timepoint, volume, avgint, obj)
+				particle.setVoxelSize(voxelSize)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
 				self.objects.append(obj)
@@ -137,6 +157,8 @@ class ParticleReader:
 				self.avgints.append(avgint)
 				self.avgintsstderr.append(avgintstderr)
 				self.areas.append(areamicro)
+				self.avgdists.append(avgdist)
+				self.avgdiststderr.append(avgdiststderr)
 		if curr:
 			ret.append(curr)
 		return ret
@@ -164,6 +186,8 @@ class Particle:
 		self.seedParticles = []
 		self.totalTimepoints = 1
 		self.spacing = (1.0,1.0,1.0)
+		self.voxelSize = (1.0,1.0,1.0)
+		self.timeInterval = 1.0
 		
 	def getCenterOfMass(self):
 		"""
@@ -214,6 +238,8 @@ class Particle:
 		self.intval = particle.intval
 		self.matchScore = particle.matchScore
 		self.spacing = particle.spacing
+		self.voxelSize = particle.voxelSize
+		self.timeInterval = particle.timeInterval
 
 	def __str__(self):
 		try:
@@ -226,12 +252,26 @@ class Particle:
 	def __repr__(self):
 		return self.__str__()
 
-	def setSpacing(self,spacing):
+	def setSpacing(self, spacing):
 		"""
 		Set spacing of particle for distance calculations
 		"""
 		self.spacing = spacing
 
+	def setVoxelSize(self, voxelSize):
+		"""
+		Set voxel size of particle for length and speed calculations
+		"""
+		if len(voxelSize) == 3:
+			self.voxelSize = voxelSize
+
+	def setTimeInterval(self, timeInterval):
+		"""
+		Set time interval of time points in tracking for speed calculations
+		"""
+		if timeInterval > 0.0:
+			self.timeInterval = timeInterval
+			
 
 class ParticleTracker:
 	"""
@@ -254,6 +294,7 @@ class ParticleTracker:
 		self.spacing = (1.0,1.0,1.0)
 		self.filterObjectSize = 2  
 		self.minimumTrackLength = 3
+		self.timeInterval = 1.0
 
 		self.maxIntensity = None
 		self.maxSize = None
@@ -262,6 +303,8 @@ class ParticleTracker:
 		self.reader = None
 		self.particles = None	 
 		self.tracks = []
+
+		self.useNew = 1
 
 		if psyco and sys.platform != 'darwin':
 			psyco.bind(self.getStats)
@@ -307,6 +350,7 @@ class ParticleTracker:
 			for particleList in self.particles:
 				for particle in particleList:
 					particle.setSpacing(self.spacing)
+					particle.setTimeInterval(self.timeInterval)
 				
 	def getParticles(self, timepoint, objs):
 		"""
@@ -622,10 +666,15 @@ class ParticleTracker:
 			self.particleList = self.particles
 
 		timePoint = fromTimepoint
+		# Iterate over all time points
+		if self.useNew:
+			for i in range(self.totalTimepoints):
+				self.trackTimepointParticles(i,tracks)
+		else:
 		# Iterate over all particles in given timepoint
-		for i, particle in enumerate(self.particleList[timePoint]):
-			print "\nTracking particle %d / %d in timepoint %d" % (i, len(self.particleList[timePoint]), timePoint)
-			self.trackParticle(particle, fromTimepoint, tracks)
+			for i, particle in enumerate(self.particleList[timePoint]):
+				print "\nTracking particle %d / %d in timepoint %d" % (i, len(self.particleList[timePoint]), timePoint)
+				self.trackParticle(particle, fromTimepoint, tracks)
 		self.tracks = tracks
 			
 	def trackParticle(self, particle, timePoint, tracks):
@@ -657,6 +706,7 @@ class ParticleTracker:
 			if not track:
 				raise "Did not find track for seed particle", particle
 		searchOn = True
+
 		# Search the next timepoints for more particles
 		for search_timePoint in range(timePoint + 1, self.totalTimepoints):
 			# If no match was found, then this track is over
@@ -700,17 +750,16 @@ class ParticleTracker:
 						testParticle.flag = True
 						# Compare the distance calculated between the particle
 						# that is currently being tested, and the old candidate particle
-						
-						if currScore > currentMatch.matchScore:
-#							print "Current best",currScore,"is worse than current ", currentMatch.matchScore
-							testParticle.inTrack = True
-							testParticle.trackNum = self.trackCount
-							currentMatch.copy(testParticle)
-							currCandidate.inTrack = False
-							currCandidate.trackNum = -1
-							currCandidate = testParticle
-						else:
-							currentMatch.flag = True
+						#if currScore > currentMatch.matchScore:
+						testParticle.inTrack = True
+						testParticle.trackNum = self.trackCount
+						testParticle.matchScore = currScore
+						currentMatch.copy(testParticle)
+						currCandidate.inTrack = False
+						currCandidate.trackNum = -1
+						currCandidate = testParticle
+						#else:
+						#	currentMatch.flag = True
 				#	 # If the particle is already in a track but could also be in this
 				#	 # track, we have a few options
 				#	 # 1. Sort out to which track this particle really belongs (but how?)
@@ -728,8 +777,124 @@ class ParticleTracker:
 			oldParticle.copy(currentMatch)
 		tracks.append(track)
 		
-	def setSpacing(self,spacing):
+	def setSpacing(self, spacing):
 		"""
 		Set spacing of voxels
 		"""
 		self.spacing = spacing
+
+	def setTimeInterval(self, timeInterval):
+		"""
+		Set interval of time points
+		"""
+		if timeInterval > 0.0:
+			self.timeInterval = timeInterval
+
+	def trackTimepointParticles(self, timePoint, tracks):
+		"""
+		"""
+		if not self.seedParticles and timePoint == 0:
+			for i,particle in enumerate(self.particleList[timePoint]):
+				track = []
+				self.trackCount += 1
+				particle.inTrack = True
+				particle.trackNum = self.trackCount
+				track.append(particle)
+				tracks.append(track)
+			return
+
+		if timePoint == 0:
+			return
+
+		# Search all particles on this timepoint
+		scores = []
+		for i,testParticle in enumerate(self.particleList[timePoint]):
+			testParticle.inTrack = False
+			for j,track in enumerate(tracks):
+				# Calculate the factors between the particle that is being tested against
+				# the previous particle  (= oldParticle)
+				try:
+					oldParticle = track[timePoint-1]
+				except:
+					continue
+				distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
+				failed = (distFactor == None)   
+				angleFactor = 0
+				# If the particle being tested passed the previous tests
+				# and there is already a particle before the current one,
+				# then calculate the angle and see that it fits in the margin
+				if not failed and len(track) > 1:
+					angleFactor = self.calculateAngleFactor(testParticle, track)
+					if angleFactor == -1:
+						failed = 1
+				# If we got a match between the previous particle (oldParticle)
+				# and the currently tested particle (testParticle) and testParticle
+				# is not in a track
+				if (not failed):#and (not testParticle.inTrack):
+					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
+
+					scores.append({"Score": currScore, "Track": j, "Particle": i})
+
+		def compareScore(a,b):
+			return cmp(b["Score"], a["Score"])
+		scores.sort(compareScore)
+
+		trackUsage = {}
+		particleUsage = {}
+		tracksScores = {}
+		changes = True
+		numIteration = 1
+		# Iterate algorithm as long as changes are made
+		while(changes):
+			changes = False	
+			tmpScores = []
+			#isBestScore = {}
+			#isBestParticleScore = {}
+			for i,score in enumerate(scores):
+				trackNum = score["Track"]
+				particleNum = score["Particle"]
+				usedTrack = trackUsage.get(trackNum,-1)
+				usedParticle = particleUsage.get(particleNum,False)
+				trackScores = tracksScores.get(trackNum, [])
+				if numIteration == 1:
+					if len(trackScores) == 0:
+						tracksScores[trackNum] = []
+					tracksScores[trackNum].append(score)
+				
+				if usedTrack == -1 and not usedParticle and score["Score"] > 0.75 * tracksScores[trackNum][0]["Score"]:
+					trackUsage[trackNum] = particleNum
+					particleUsage[particleNum] = True
+					matchParticle = Particle()
+					matchParticle.copy(self.particleList[timePoint][particleNum])
+					matchParticle.inTrack = True
+					matchParticle.matchScore = score["Score"]
+					matchParticle.trackNum = trackNum
+					tracks[trackNum].append(matchParticle)
+					changes = True
+				else:
+					tmpScores.append(score)
+
+				#isBestScore[trackNum] = False
+				#isBestParticleScore[particleNum] = False
+			numIteration += 1
+			scores = tmpScores
+
+# Try to add particle on tracks that don't have any yet
+		for i,track in enumerate(tracks):
+			if trackUsage.get(i,-1) != -1:
+				continue
+
+			try:
+				trackScores = tracksScores[i]
+				particleNum = trackScores[0]["Particle"]
+				trackUsage[i] = particleNum
+				matchParticle = Particle()
+				matchParticle.copy(self.particleList[timePoint][particleNum])
+				matchParticle.inTrack = True
+				matchParticle.matchScore = trackScores[0]["Score"]
+				matchParticle.trackNum = i
+				tracks[i].append(matchParticle)
+				
+			except:
+				pass
+

@@ -28,13 +28,13 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.93 $"
 __date__ = "$Date: 2005/01/13 14:09:15 $"
 
-#import vtk
-
 import bxdexceptions
 import DataUnitSetting
 import lib.ImageOperations
 import Logging
 import os
+
+
 class DataUnit:
 	"""
 	Description: A class representing a timeseries of 3D data
@@ -223,8 +223,7 @@ class DataUnit:
 			self.settings.set("ColorTransferFunction", ctf)
 			#if ctf and self.settings.get("Type") == "ColorMergingSettings":
 			#	 self.settings.set("MergingColorTransferFunction", ctf)
-				
-
+		
 		if self.dataSource:
 			self.settings.set("VoxelSize", self.dataSource.getVoxelSize())
 			self.settings.set("Spacing", self.dataSource.getSpacing())
@@ -233,6 +232,8 @@ class DataUnit:
 			self.settings.set("EmissionWavelength", self.dataSource.getEmissionWavelength())
 			self.settings.set("ExcitationWavelength", self.dataSource.getExcitationWavelength())
 			self.settings.set("NumericalAperture", self.dataSource.getNumericalAperture())
+			self.settings.set("TimeStamps", self.dataSource.getTimeStamps())
+			self.settings.set("AbsoluteTimeStamps", self.dataSource.getAbsoluteTimeStamps())
 			
 	def getSettings(self):
 		"""
@@ -299,7 +300,6 @@ class DataUnit:
 		self.getResampledVoxelSize = dataSource.getResampledVoxelSize
 		self.getBitDepth = dataSource.getBitDepth
 		self.getSingleComponentBitDepth = dataSource.getSingleComponentBitDepth
-		self.getTimeStamp = dataSource.getTimeStamp
 		self.getScalarRange = dataSource.getScalarRange
 		self.getEmissionWavelength = dataSource.getEmissionWavelength
 		self.getExcitationWavelength = dataSource.getExcitationWavelength

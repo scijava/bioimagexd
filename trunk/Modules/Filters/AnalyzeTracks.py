@@ -36,9 +36,11 @@ import GUI.CSVListView
 import types
 import os
 import wx
+import csv
+import scripting
+import codecs
+import Logging
 
-import os
-import wx
 
 class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -58,9 +60,17 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.fileUpdated = 0
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 
-		self.descs = {"MinLength":"Minimum length of tracks","ResultsFile": "Tracking results file:"}
+		self.descs = {"MinLength":"Minimum length of tracks","ResultsFile": "Tracking results file:", "AnalyseFile": "Analyse results file:"}
 		self.numberOfPoints = None
 		self.particleFile = ""
+
+		self.lengths = []
+		self.dps = []
+		self.speeds = []
+		self.angles = []
+		self.tpCount = []
+		self.globalmin = 0
+		self.globalmax = 0
 
 	def setParameter(self, parameter, value):
 		"""
@@ -76,6 +86,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
+				["Results of the analyse", (("AnalyseFile", "Select the file to export analyse results", "*.csv"), )],
 				["Track parameters", ("MinLength",)]]
 
 	def getLongDesc(self, parameter):
@@ -102,10 +113,12 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""
-
 		if parameter == "ResultsFile":
 			return "track_results.csv"
-		if parameter == "MinLength": return 3
+		if parameter == "AnalyseFile":
+			return "track_analyse.csv"
+		if parameter == "MinLength":
+			return 3
 
 	def getGUI(self, parent, taskPanel):
 		"""
@@ -117,29 +130,13 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.trackListBox = GUI.CSVListView.CSVListView(self.gui)
 			self.aggregateBox = GUI.CSVListView.CSVListView(self.gui)
 			sizer = wx.BoxSizer(wx.VERTICAL)
-
 			sizer.Add(self.trackListBox, 1)
 			sizer.Add(self.aggregateBox, 1)
-			box = wx.BoxSizer(wx.HORIZONTAL)
 
-			self.readTracksBtn = wx.Button(self.gui, -1, "Read tracks")
-			box.Add(self.readTracksBtn)
-
-			self.readTracksBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
-
-			sizer.Add(box)
-			pos = (0, 0)
-			item = gui.sizer.FindItemAtPosition(pos)
-			if item.IsWindow():
-				win = item.GetWindow()
-			elif item.IsSizer():
-				win = item.GetSizer()
-			elif item.IsSpacer():
-				win = item.GetSpacer()
-
-			gui.sizer.Detach(win)
-			gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-			gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
+			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
+			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
+			sizer.Add(self.exportBtn)
+			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
@@ -155,6 +152,8 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
+		self.onReadTracks(None)
+
 		image = self.getInputFromChannel(0)
 		return image
 
@@ -167,7 +166,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			return
 		self.track = lib.Track.TrackReader()
 		self.track.readFromFile(filename)
-		self.tracks = self.track.getTracks(3)
+		self.tracks = self.track.getTracks(self.parameters["MinLength"])
 		self.showTracks(self.tracks)
 
 	def showTracks(self, tracks):
@@ -175,17 +174,18 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		show the given tracks in the track grid
 		"""
 #		track length
-#		Directional persistance = path length / distance to starting point
+#		Directional persistance = distance to starting point / path length
 #		speed
 #		angle (avg of changes)
 
-		rows = [["# of tps","Length", "Avg. speed", "Directional persistence", "Avg. angle"]]
-		globalmin = 9999999999
-		globalmax = 0
-		lengths = []
-		dps = []
-		speeds = []
-		tpCount = []
+		rows = [["# of tps", u"Length (\u03BCm)", u"Avg. speed (\u03BCm/s)", "Directional persistence", "Avg. angle"]]
+		self.globalmin = 9999999999
+		self.globalmax = 0
+		self.lengths = []
+		self.dps = []
+		self.speeds = []
+		self.angles = []
+		self.tpCount = []
 		dpsPerTp={}
 		for i, track in enumerate(tracks):
 			tps = track.getNumberOfTimepoints()
@@ -195,19 +195,20 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			speed = track.getSpeed()
 			dp = track.getDirectionalPersistence()
 			if tps not in dpsPerTp:
-				dpsPerTp[tps]=[]
+				dpsPerTp[tps] = []
 			dpsPerTp[tps].append(dp)
-			lengths.append(length)
-			speeds.append(speed)
-			tpCount.append(tps)
-			dps.append(dp)
-			avgang = track.getAverageAngle()
-			row = [tps, length, speed, dp, avgang]
+			self.lengths.append(length)
+			self.speeds.append(speed)
+			self.tpCount.append(tps)
+			self.dps.append(dp)
+			avgang,avgangstd,avgangstderr = track.getAverageAngle()
+			self.angles.append((avgang,avgangstderr))
+			row = [tps, "%.6f"%(length), "%.6f"%(speed), "%.6f"%(dp), u"%.6f\u00B1%.6f"%(avgang,avgangstderr)]
 			mintp, maxtp = track.getTimeRange()
-			if mintp < globalmin:
-				globalmin = mintp
-			if maxtp > globalmax:
-				globalmax = maxtp
+			if mintp < self.globalmin:
+				self.globalmin = mintp
+			if maxtp > self.globalmax:
+				self.globalmax = maxtp
 			for tp in range(0, maxtp + 1):
 				if tp < mintp:
 					row.append("")
@@ -223,13 +224,93 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		for k in dpkeys:
 			print "Avg. dp for tracks of len %d = %.3f"%(k, lib.Math.averageValue(dpsPerTp[k]))
 		
-		for i in range(0, globalmax):
+		for i in range(0, self.globalmax):
 			rows[0].append("T%d" % i)
 
 		self.trackListBox.setContents(rows)
 		
-		totalRows=[["# of tracks", "Avg tps","Avg. length", "Avg. speed (px/tp)", "Avg. DP"]]
-		avgs=[len(tracks), lib.Math.averageValue(tpCount), lib.Math.averageValue(lengths), lib.Math.averageValue(speeds), lib.Math.averageValue(dps)]
+		totalRows = [["# of tracks", "Avg. tps", u"Avg. length (\u03BCm)", u"Avg. speed (\u03BCm/s)", "Avg. DP", "Avg. angle"]]
+		self.avglen = lib.Math.meanstdeverr(self.lengths)
+		self.avgspeed = lib.Math.meanstdeverr(self.speeds)
+		self.avgdps = lib.Math.meanstdeverr(self.dps)
+		self.avgang = lib.Math.meanstdeverr([x for x,y in self.angles])
+		self.avgTpCount = lib.Math.averageValue(self.tpCount)
+		avgs = [len(tracks), self.avgTpCount, u"%.6f\u00B1%.6f"%(self.avglen[0],self.avglen[2]), u"%.6f\u00B1%.6f"%(self.avgspeed[0],self.avgspeed[2]), u"%.6f\u00B1%.6f"%(self.avgdps[0],self.avgdps[2]), u"%.6f\u00B1%.6f"%(self.avgang[0],self.avgang[2])]
 		totalRows.append(avgs)
 		self.aggregateBox.setContents(totalRows)
 		
+	def onExportStatistics(self, evt):
+		"""
+		Export the statistics to csv file
+		"""
+		name = self.parameters["AnalyseFile"]
+		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save tracking analyse results as", "%s"%name, "CSV File (*.csv)|*.csv")
+
+		if filename and self.taskPanel:
+			listOfFilters = self.taskPanel.filterList.getFilters()
+			filterIndex = listOfFilters.index(self)
+			func = "getFilter(%d)"%(filterIndex)
+			n = scripting.mainWindow.currentTaskWindowName
+			method = "scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
+			do_cmd = "%s.exportStatistics('%s')"%(method,filename)
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Export analysed tracking statistics")
+			cmd.run()
+			
+	def exportStatistics(self, filename):
+		"""
+		Export statistics from the current timepoint to the defined csv file
+		"""
+		timepoint = scripting.visualizer.getTimepoint()
+		self.writeToFile(filename, self.dataUnit, timepoint)
+
+	def writeOutput(self, dataUnit, timepoint):
+		"""
+		Write the output of this module during the processing
+		"""
+		fileroot = self.parameters["AnalyseFile"]
+		if not self.parameters["AnalyseFile"]:
+			fileroot = "tracking_analyse.csv"
+		fileroot = fileroot.split(".")
+		fileroot = ".".join(fileroot[:-1])
+		dircomp = os.path.dirname(fileroot)
+		if not dircomp:
+			bxddir = dataUnit.getOutputDirectory()
+			fileroot = os.path.join(bxddir, fileroot)
+		filename = "%s.csv" % fileroot
+		self.writeToFile(filename, dataUnit, timepoint)
+
+	def writeToFile(self, filename, dataUnit, timepoint):
+		"""
+		Write the statistics from a given timepoint to file
+		"""
+		f = codecs.open(filename, "ab", "latin1")
+		Logging.info("Saving statistics of tracking to file %s"%filename, kw="processing")
+		w = csv.writer(f, dialect = "excel", delimiter = ";")
+
+		headers = ["Track #", "# of timepoints", "Length (micrometers)", "Avg. speed (micrometers/second)", "Directional persistence", "Avg. angle", "Avg. angle std. error"]
+		for i in range(0, self.globalmax):
+			headers.append("T%d"%i)
+
+		w.writerow(headers)
+		for i,track in enumerate(self.tracks):
+			tps = self.tpCount[i]
+			length = self.lengths[i]
+			speed = self.speeds[i]
+			direction = self.dps[i]
+			angle,anglestderr = self.angles[i]
+			row = [str(i+1), str(tps), str(length), str(speed), str(direction), str(angle), str(anglestderr)]
+			
+			mintp, maxtp = track.getTimeRange()
+			for tp in range(0, maxtp + 1):
+				if tp < mintp:
+					row.append("")
+					continue
+				val, pos = track.getObjectAtTime(tp)
+				row.append(pos)
+			w.writerow(row)
+
+		# Write totals and averages
+		w.writerow(["Totals"])
+		w.writerow(["# of tracks", "Avg. timepoints", "Avg. length (micrometers)", "Avg. length std. error", "Avg. speed (micrometers/second)", "Avg. speed std. error", "Avg. directional persistence", "Avg. directional persistence std. error", "Avg. angle", "Avg. angle std. error"])
+		w.writerow([len(self.tracks), self.avgTpCount, self.avglen[0], self.avglen[2], self.avgspeed[0], self.avgspeed[2], self.avgdps[0], self.avgdps[2], self.avgang[0], self.avgang[2]])
+

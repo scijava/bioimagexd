@@ -86,7 +86,7 @@ class OlympusDataSource(DataSource):
 				self.path = "%s.files"%self.filename
 				print self.lutFileName
 			else:
-				self.path = os.path.join(os.path.dirname(filename), "%s.files"%dataName)
+				self.path = os.path.join(os.path.dirname(filename), directoryName)
 			
 			# when lutFileName is e.g. bro28_par3_07-04-18_LUT1.lut, we take the 
 			# bro28_par3_07-04-18 and ignore the LUT1.lut, and use that as the basis of the filenames

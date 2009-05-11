@@ -75,7 +75,6 @@ class BXCDataWriter(DataWriter):
 		"""
 		return self.filename
 		
-		
 	def getParser(self):
 		"""
 		Returns the parser that is used to read the .du file
@@ -136,6 +135,7 @@ class BXCDataWriter(DataWriter):
 			if not parser.has_section("PolyData"):
 				parser.add_section("PolyData")
 				parser.set("PolyData", "numberOfFiles", "%d"%nPoly)
+
 		n = len(self.dataSets)
 		parser.set("ImageData", "numberOfFiles", "%d" % n)
 		
@@ -143,13 +143,14 @@ class BXCDataWriter(DataWriter):
 			parser.set("PolyData", "file_%d"%i, self.polyDataFiles[i])
 		for i in range(n):
 			parser.set("ImageData", "file_%d" % i, self.dataSets[i])
-					
+		
 		try:
 			fp = open(self.filename, "w")
 		except IOError, ex:
 			Logging.error("Failed to write settings",
 			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" % (self.filename, str(ex)))
 			return
+
 		parser.write(fp)
 		fp.close()
 		self.sync()
@@ -281,4 +282,3 @@ class BXCDataWriter(DataWriter):
 			"Failed to write vtkPolyData object to file %s" % filename, ex)
 			return
 			
-

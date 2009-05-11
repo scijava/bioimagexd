@@ -239,7 +239,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				return 0, self.numberOfPoints
 			return 0, 1
 		if parameter == "MaxDirectionChange":
-			return (0, 360)
+			return (0, 180)
 		return (0, 100)
 				
 	def getDefaultValue(self, parameter):
@@ -476,7 +476,17 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		image = self.getInputFromChannel(0)
 		spacing = image.GetSpacing()
+		try:
+			datasource = self.dataUnit.sourceunits[0].getDataSource()
+			timeInterval = datasource.getTimeStamp(1)
+			if timeInterval < 0.0:
+				timeInterval = 1.0
+		except:
+			timeInterval = 1.0
+		
+		
 		self.tracker.setSpacing(spacing)
+		self.tracker.setTimeInterval(timeInterval)
 		self.tracker.setFilterObjectSize(self.parameters["MinSize"])
 		if not os.path.exists(self.particleFile):
 			GUI.Dialogs.showerror(None, "Could not read the selected particle file %s"%self.particleFile, "Cannot read particle file")
@@ -484,11 +494,14 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			self.tracker.readFromFile(self.particleFile, statsTimepoint = self.selectedTimepoint)
 		rdr = self.objectsReader = self.tracker.getReader()
-		
+
 		self.reportGUI.setVolumes(rdr.getVolumes())
 		self.reportGUI.setCentersOfMass(rdr.getCentersOfMass())
 		avgints,avgintsstderr = rdr.getAverageIntensities()
-		self.reportGUI.setAverageIntensities(avgints,avgintsstderr)    
+		self.reportGUI.setAverageIntensities(avgints,avgintsstderr)
+		self.reportGUI.setAreasUm(rdr.getAreas())
+		avgdists,avgdiststderr = rdr.getAverageDistances()
+		self.reportGUI.setAverageDistances(avgdists,avgdiststderr)
 		
 		self.calcTrackBtn.Enable(1)
 		
