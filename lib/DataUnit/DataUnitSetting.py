@@ -94,7 +94,8 @@ class DataUnitSettings:
 		self.register("Type")
 		self.register("Name")
 		self.register("BitDepth")
-		self.register("Timestamps", serialize = 1)
+		self.register("TimeStamps", serialize = 1)
+		self.register("AbsoluteTimeStamps", serialize = 1)
 		
 	def getDatasetNumber(self):
 		"""

@@ -123,7 +123,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		w.writerow(["Timepoint %d" % timepoint])
 		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
 					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
-					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
+					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
 		for i, (volume, volumeum) in enumerate(self.values):
 			cog = self.centersofmass[i]
 			umcog = self.umcentersofmass[i]
@@ -189,9 +189,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			filterIndex = listOfFilters.index(self)
 			func = "getFilter(%d)" %(filterIndex)
 			n = scripting.mainWindow.currentTaskWindowName
-			method="scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
+			method = "scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
 		
-			do_cmd = "%s.exportStatistics('%s')" % ( method, filename )
+			do_cmd = "%s.exportStatistics('%s')"%(method,filename)
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Export segmented object statistics")
 			cmd.run()
@@ -246,20 +246,23 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgintCalc.Update()
 
 		# Area calculation pipeline
-		areaImage = self.convertITKtoVTK(image)
-		areaImage.Update()
-		areaSpacing = areaImage.GetSpacing()
-		objectThreshold = vtk.vtkImageThreshold()
-		objectThreshold.SetOutputScalarTypeToUnsignedChar()
-		objectThreshold.SetInValue(255)
-		marchingCubes = vtk.vtkMarchingCubes()
-		marchingCubes.SetValue(0,255)
-		massProperties = vtk.vtkMassProperties()
-		objectThreshold.SetInput(areaImage)
-		marchingCubes.SetInput(objectThreshold.GetOutput())
-		massProperties.SetInput(marchingCubes.GetOutput())
-		areaDiv = (areaSpacing[0] / x)**2
-		voxelArea = x*y*2 + x*z*2 + y*z*2
+		largestSize = image.GetLargestPossibleRegion().GetSize()
+		# if 2D image, calculate area using volume
+		if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
+			areaImage = self.convertITKtoVTK(image)
+			areaImage.Update()
+			areaSpacing = areaImage.GetSpacing()
+			objectThreshold = vtk.vtkImageThreshold()
+			objectThreshold.SetOutputScalarTypeToUnsignedChar()
+			objectThreshold.SetInValue(255)
+			marchingCubes = vtk.vtkMarchingCubes()
+			marchingCubes.SetValue(0,255)
+			massProperties = vtk.vtkMassProperties()
+			objectThreshold.SetInput(areaImage)
+			marchingCubes.SetInput(objectThreshold.GetOutput())
+			massProperties.SetInput(marchingCubes.GetOutput())
+			areaDiv = (areaSpacing[0] / x)**2
+			voxelArea = x*y*2 + x*z*2 + y*z*2
 
 		ignoreLargest = 0
 		currFilter = self
@@ -289,16 +292,19 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 					c.append(v)
 					c2.append(v * voxelSizes[k])
 
-				# Get area of object
+			# Get area of object
 				areaInUm = 0
-				objectThreshold.ThresholdBetween(i,i)
-				polydata = marchingCubes.GetOutput()
-				polydata.Update()
-				if polydata.GetNumberOfPolys() > 0:
-					massProperties.Update()
-					areaInUm = massProperties.GetSurfaceArea() / areaDiv
+				if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
+					objectThreshold.ThresholdBetween(i,i)
+					polydata = marchingCubes.GetOutput()
+					polydata.Update()
+					if polydata.GetNumberOfPolys() > 0:
+						massProperties.Update()
+						areaInUm = massProperties.GetSurfaceArea() / areaDiv
+					else:
+						areaInUm = voxelArea
 				else:
-					areaInUm = voxelArea
+					areaInUm = volume * x * y
 				
 				centersofmass.append(tuple(c))
 				umcentersofmass.append(tuple(c2))
@@ -344,11 +350,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgIntOutsideObjsStdErr = 0.0
 		variances = 0.0
 		allVoxels = 0
+
 		for i in range(0,startIntensity):
-			voxelAmount = labelShape.GetVolume(i)
-			avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
-			variances += voxelAmount * abs(avgintCalc.GetVariance(i))
-			allVoxels += voxelAmount
+			if labelShape.HasLabel(i):
+				voxelAmount = labelShape.GetVolume(i)
+				avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
+				variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+				allVoxels += voxelAmount
+		
 		if allVoxels > 0:
 			avgIntOutsideObjs /= allVoxels
 			avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
@@ -358,10 +367,12 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		variances = 0.0
 		allVoxels = 0
 		for i in range(startIntensity, numberOfLabels):
-			voxelAmount = labelShape.GetVolume(i)
-			avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
-			variances += voxelAmount * abs(avgintCalc.GetVariance(i))
-			allVoxels += voxelAmount
+			if labelShape.HasLabel(i):
+				voxelAmount = labelShape.GetVolume(i)
+				avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
+				variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+				allVoxels += voxelAmount
+		
 		if allVoxels > 0:
 			avgIntInsideObjs /= allVoxels
 			avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)

@@ -414,6 +414,12 @@ class DataSource:
 		if len(self.timestamps) > timepoint:
 			return self.timestamps[timepoint]
 		return timepoint
+
+	def getTimeStamps(self):
+		"""
+		@return all the timestamps
+		"""
+		return self.timestamps
 		
 	def getAbsoluteTimeStamp(self, timepoint):
 		"""
@@ -426,6 +432,12 @@ class DataSource:
 		if len(self.absoluteTimestamps) >= timepoint:
 			return self.absoluteTimestamps[timepoint]
 		return timepoint
+
+	def getAbsoluteTimeStamps(self):
+		"""
+		@return all the absolute timestamps
+		"""
+		return self.absoluteTimestamps
 
 	def getEmissionWavelength(self):
 		"""
@@ -578,7 +590,7 @@ class DataSource:
 		timestamp = self.getTimeStamp(currentTimepoint)
 		msg = "Reading channel %s of %s"%(self.getName(), self.getShortName())
 		
-		if currentTimepoint >=0 and self.getDataSetCount()>1:
+		if currentTimepoint >= 0 and self.getDataSetCount() > 1:
 			msg += " (timepoint %d / %d" % (currentTimepoint+1, self.getDataSetCount())
 			msg+=", %.1fs)"%timestamp
 		if progress >= 1.0:

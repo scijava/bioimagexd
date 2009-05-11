@@ -134,13 +134,14 @@ class ParticleWriter:
 		fileToOpen = codecs.open(filename, "wb", "latin1")
 			
 		writer = csv.writer(fileToOpen, dialect = "excel", delimiter = ";")
-		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z"])
+		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z", "VoxelSize X", "VoxelSize Y", "VoxelSize Z", "Time Interval"])
 		for i, track in enumerate(tracks):
 			if len(track) < minimumTrackLength:
 				continue
 			for particle in track:
 				particleXPos, particleYPos, particleZPos = particle.posInPixels
+				voxelSizeX, voxelSizeY, voxelSizeZ = particle.voxelSize
 				writer.writerow([str(i), str(particle.intval), str(particle.timePoint), \
-				str(particleXPos), str(particleYPos), str(particleZPos)])		
+				str(particleXPos), str(particleYPos), str(particleZPos), voxelSizeX, voxelSizeY, voxelSizeZ, particle.timeInterval])
 		fileToOpen.close()
 		

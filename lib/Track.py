@@ -32,6 +32,8 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import math
 import csv
 import os
+import lib.Particle
+import lib.Math
 
 class Track:
 	"""
@@ -43,6 +45,8 @@ class Track:
 		self.values = {}
 		self.mintp, self.maxtp = 0, 0
 		self.length = -1
+		self.voxelSize = (1.0,1.0,1.0) # In um
+		self.timeInterval = 1.0 # Seconds between time points
 
 	def __len__(self):
 		return len(self.points.keys())
@@ -52,29 +56,34 @@ class Track:
 		return the distance between objects at tp1 and tp2
 		"""
 		if tp1 not in self.points:
-			return 0 #TODO: why 0? this equals to distance(p1, p1) - 14.8.2007 SS
+			return 0
 		if tp2 not in self.points:
 			return 0
-		pt = self.points[tp1]
-		pt2 = self.points[tp2]
+		
+		pt = list(self.points[tp1])
+		pt2 = list(self.points[tp2])
+		for i,size in enumerate(self.voxelSize):
+			pt[i] *= size
+			pt2[i] *= size
+
 		dx, dy, dz = pt[0] - pt2[0], pt[1] - pt2[1], pt[2] - pt2[2]
 		return math.sqrt(dx * dx + dy * dy + dz * dz)
 
 	def getLength(self):
 		"""
-		return the length of this track
+		return the length of this track in um
 		"""
 		if self.length < 0:
-			self.length = 0
+			self.length = 0.0
 			for i in range(self.mintp, self.maxtp):
 				self.length += self.distance(i, i + 1)
 		return self.length
 
 	def getSpeed(self):
 		"""
-		return the speed
+		return the speed in um/s
 		"""
-		return self.getLength() / (self.maxtp - self.mintp)
+		return self.getLength() / ((self.maxtp - self.mintp) * self.timeInterval)
 
 	def getDirectionalPersistence(self):
 		"""
@@ -86,24 +95,27 @@ class Track:
 		"""
 		return the average of the angle differences
 		"""
-		#TODO: check if this is working correctly
-		totalAngle = 0
-		numberOfAngles = 0
-
+		angles = []
 		for i in range(self.mintp, self.maxtp):
-			# we compare point (i) and (i + 1) values of x and y coordinates
-			x1, y1 = self.points[i][0:2]
-			x2, y2 = self.points[i + 1][0:2]
+			vec1 = list(self.points[i])
+			vec2 = list(self.points[i + 1])
+			# Create unit vectors in real space
+			lenVec1 = 0.0
+			lenVec2 = 0.0
+			for i,size in enumerate(self.voxelSize):
+				vec1[i] *= self.voxelSize[i]
+				vec2[i] *= self.voxelSize[i]
+				lenVec1 += vec1[i]
+				lenVec2 += vec2[i]
 
-			# we compute the angle between point (i) and (i + 1) in degrees
-			angle = math.atan2(y2 - y1, x2 - x1) * 180.0 / math.pi;
-			angle2 = angle
-			if angle < 0:
-				angle2 = 180 + angle
-			totalAngle += angle2
-			numberOfAngles += 1
+			for i in range(3):
+				vec1[i] /= lenVec1
+				vec2[i] /= lenVec2
 
-		return totalAngle / float(numberOfAngles)
+			angle = lib.Particle.ParticleTracker.angle(vec1,vec2)
+			angles.append(angle)
+
+		return lib.Math.meanstdeverr(angles)
 		
 	def addTrackPoint(self, timepoint, objval, position):
 		"""
@@ -131,6 +143,26 @@ class Track:
 		if timePoint not in self.points:
 			return -1, (-1, -1, -1)
 		return self.values[timePoint], self.points[timePoint]
+
+	def getNumberOfTimepoints(self):
+		"""
+		Return the number of timepoints in this track
+		"""
+		return self.maxtp - self.mintp + 1
+
+	def setTimeInterval(self, interval):
+		"""
+		Set the interval of time points
+		"""
+		if interval > 0.0:
+			self.timeInterval = interval
+
+	def setVoxelSize(self, voxelSize):
+		"""
+		Set the voxel size of the image, needed for distance and angle calculations.
+		"""
+		if len(voxelSize) == 3:
+			self.voxelSize = voxelSize
 
 
 class TrackReader:
@@ -215,7 +247,7 @@ class TrackReader:
 		currtrack = -1
 		#print "Reading..."
 		
-		for track, objval, timepoint, xCoordinate, yCoordinate, zCoordinate in reader:
+		for track, objval, timepoint, xCoordinate, yCoordinate, zCoordinate, xVoxelSize, yVoxelSize, zVoxelSize, timeInterval in reader:
 			try:
 				tracknum = int(track)
 			except ValueError:
@@ -226,6 +258,10 @@ class TrackReader:
 			xCoordinate = float(xCoordinate)
 			yCoordinate = float(yCoordinate)
 			zCoordinate = float(zCoordinate)
+			xVoxelSize = float(xVoxelSize)
+			yVoxelSize = float(yVoxelSize)
+			zVoxelSize = float(zVoxelSize)
+			timeInterval = float(timeInterval)
 			if tracknum != currtrack:
 				if ctrack:
 					#print "Adding track", ctrack
@@ -233,6 +269,8 @@ class TrackReader:
 					ctrack = Track()			
 				currtrack = tracknum
 			ctrack.addTrackPoint(timepoint, objval, (xCoordinate, yCoordinate, zCoordinate))
+			ctrack.setVoxelSize((xVoxelSize, yVoxelSize, zVoxelSize))
+			ctrack.setTimeInterval(timeInterval)
 			
 		if ctrack not in tracks:
 			tracks.append(ctrack)
