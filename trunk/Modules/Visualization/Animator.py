@@ -190,6 +190,7 @@ class AnimatorMode(VisualizationMode):
 			self.parent.Show(1)
 			self.urmaswin.enableRendering(1)
 			self.urmaswin.controlpanel.Show(1)
+			self.urmaswin.createMenu(self.visualizer.menuManager)
 			wx.CallAfter(self.urmaswin.updateRenderWindow)
 			
 		return self.urmaswin
