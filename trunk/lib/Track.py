@@ -43,13 +43,13 @@ class Track:
 	def __init__(self):
 		self.points = {}
 		self.values = {}
-		self.mintp, self.maxtp = 0, 0
+		self.mintp, self.maxtp = 1000, 0
 		self.length = -1
 		self.voxelSize = (1.0,1.0,1.0) # In um
 		self.timeInterval = 1.0 # Seconds between time points
 
 	def __len__(self):
-		return len(self.points.keys())
+		return len(self.points)
 	
 	def distance(self, tp1, tp2):
 		"""
@@ -89,7 +89,7 @@ class Track:
 		"""
 		return the directional persistence of this track
 		"""
-		return  self.distance(self.mintp, self.maxtp) / self.getLength()
+		return self.distance(self.mintp, self.maxtp) / self.getLength()
 
 	def getAverageAngle(self):
 		"""
@@ -121,6 +121,9 @@ class Track:
 		"""
 		add a point to this track
 		"""
+		if not objval: # Return if object is none particle
+			return
+		
 		if timepoint < self.mintp:
 			self.mintp = timepoint
 		if timepoint > self.maxtp:
@@ -225,15 +228,17 @@ class TrackReader:
 	def getTracks(self, minLength = 3):
 		"""
 		Return the tracks with length >= minLength
-		"""   
+		"""
 		def isLongerThan(trackObject, minimumLength):
 			"""
 			Created 12.07.2006, KP
 			Returns whether trackObjects length is greater than minimumLength
 			"""
 			return len(trackObject) > minimumLength
+		
 		if not self.tracks:
 			return []
+		
 		return [trackObject for trackObject in self.tracks if isLongerThan(trackObject, minLength)]
 
 	@staticmethod
@@ -254,10 +259,17 @@ class TrackReader:
 				continue
 			
 			timepoint = int(timepoint)
-			objval = int(objval)
-			xCoordinate = float(xCoordinate)
-			yCoordinate = float(yCoordinate)
-			zCoordinate = float(zCoordinate)
+			try:
+				objval = int(objval)
+				xCoordinate = float(xCoordinate)
+				yCoordinate = float(yCoordinate)
+				zCoordinate = float(zCoordinate)
+			except: # None particle
+				objval = None
+				xCoordinate = None
+				yCoordinate = None
+				zCoordinate = None
+			
 			xVoxelSize = float(xVoxelSize)
 			yVoxelSize = float(yVoxelSize)
 			zVoxelSize = float(zVoxelSize)

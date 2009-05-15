@@ -611,6 +611,10 @@ class ParticleTracker:
 	def calculateAngleFactor(self, testParticle, track):
 		"""
 		"""
+		# Return if track[-2] is a None particle
+		if not track[-2].posInPixels[0] or not track[-2].posInPixels[1] or not track[-2].posInPixels[2]:
+			return 0.0
+		
 		lenVec1 = 0.0
 		lenVec2 = 0.0
 		vector1 = []
@@ -879,7 +883,7 @@ class ParticleTracker:
 			numIteration += 1
 			scores = tmpScores
 
-# Try to add particle on tracks that don't have any yet
+		# Try to add particle on tracks that don't have any yet
 		for i,track in enumerate(tracks):
 			if trackUsage.get(i,-1) != -1:
 				continue
@@ -888,6 +892,7 @@ class ParticleTracker:
 				trackScores = tracksScores[i]
 				particleNum = trackScores[0]["Particle"]
 				trackUsage[i] = particleNum
+				particleUsage[particleNum] = True
 				matchParticle = Particle()
 				matchParticle.copy(self.particleList[timePoint][particleNum])
 				matchParticle.inTrack = True
@@ -898,3 +903,29 @@ class ParticleTracker:
 			except:
 				pass
 
+		# Add new tracks for particles that are not used on any track
+		for i,particle in enumerate(self.particleList[timePoint]):
+			if not particleUsage.get(i,False):
+				trackNum = len(tracks)
+				trackUsage[trackNum] = i
+				particleUsage[i] = True
+				newParticle = Particle()
+				newParticle.copy(particle)
+				newParticle.inTrack = True
+				newParticle.matchScore = 0
+				newParticle.trackNum = trackNum
+				newTrack = []
+
+				for i in range(timePoint):
+					noneParticle = Particle()
+					noneParticle.inTrack = True
+					noneParticle.matchScore = 0
+					noneParticle.trackNum = trackNum
+					noneParticle.intval = None
+					noneParticle.timePoint = i
+					noneParticle.posInPixels = (None,None,None)
+					noneParticle.voxelSize = particle.voxelSize
+					noneParticle.timeInterval = particle.timeInterval
+					newTrack.append(noneParticle)
+				newTrack.append(newParticle)
+				tracks.append(newTrack)
