@@ -866,6 +866,7 @@ enter the information below.""")
 		# Also, if there are no format specifiers (%) in the pattern, then
 		# just give the whole list
 		if nformat == 0:
+			filelist = files
 			self.sourceListbox.InsertItems(files, 0)
 			n = len(files)
 			pat = ""
@@ -876,10 +877,11 @@ enter the information below.""")
 				self.sourceListbox.Clear()
 				return
 		# If there is one specifier, then try to find files that correspond to that
-		if nformat == 1:
+		elif nformat == 1:
 			filelist = self.matchSingleDigitPattern(files, pattern, startfrom,startfrom + filecount + 1)
-		if nformat == 2:
+		elif nformat == 2:
 			filelist = self.matchDoubleDigitPattern(files, pattern, filecount)
+		
 		for file in filelist:
 			self.sourceListbox.Append(file)
 		try:

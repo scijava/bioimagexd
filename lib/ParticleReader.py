@@ -136,12 +136,18 @@ class ParticleWriter:
 		writer = csv.writer(fileToOpen, dialect = "excel", delimiter = ";")
 		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z", "VoxelSize X", "VoxelSize Y", "VoxelSize Z", "Time Interval"])
 		for i, track in enumerate(tracks):
-			if len(track) < minimumTrackLength:
+			trackLength = 0
+			for particle in track:
+				if particle.intval:
+					trackLength += 1
+			if trackLength < minimumTrackLength:
 				continue
+			
 			for particle in track:
 				particleXPos, particleYPos, particleZPos = particle.posInPixels
 				voxelSizeX, voxelSizeY, voxelSizeZ = particle.voxelSize
 				writer.writerow([str(i), str(particle.intval), str(particle.timePoint), \
 				str(particleXPos), str(particleYPos), str(particleZPos), voxelSizeX, voxelSizeY, voxelSizeZ, particle.timeInterval])
+
 		fileToOpen.close()
 		

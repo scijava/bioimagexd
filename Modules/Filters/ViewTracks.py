@@ -253,6 +253,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				val, pos = track.getObjectAtTime(tp)
 				# Set the value at row i, column tp+1 (because there is the column for enabling
 				# this track)
-				table.SetValue(i, tp + 1, pos, override = 1)
+				if val:
+					table.SetValue(i, tp + 1, pos, override = 1)
 		self.trackGrid.SetTable(table)
 		self.trackGrid.ForceRefresh()

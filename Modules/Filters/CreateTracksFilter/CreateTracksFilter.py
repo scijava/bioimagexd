@@ -233,11 +233,11 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "Track":
 			if self.track:
 				minlength = self.parameters["MinLength"]
-				return 0, self.track.getNumberOfTracks(minlength)            
+				return 0, self.track.getNumberOfTracks(minlength)
 		if parameter == "MinLength":
 			if self.numberOfPoints:
 				return 0, self.numberOfPoints
-			return 0, 1
+			return 0, 1000
 		if parameter == "MaxDirectionChange":
 			return (0, 180)
 		return (0, 100)
@@ -460,7 +460,8 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			for tp in range(mintp, maxtp + 1):
 				val, pos = track.getObjectAtTime(tp)
 				print "    value at tp ", tp, "(pos ", pos, ") is ", val
-				table.SetValue(i, tp, pos, override = 1)
+				if val:
+					table.SetValue(i, tp, pos, override = 1)
 		self.trackGrid.SetTable(table)
 		self.trackGrid.ForceRefresh()
 		
