@@ -106,6 +106,7 @@ class ParticleReader:
 		ret = []
 		skipNext = 0
 		curr = []
+		voxelSize = None
 		for line in self.rdr:
 			if skipNext:
 				skipNext = 0
@@ -134,11 +135,12 @@ class ParticleReader:
 			except ValueError:
 				continue
 			obj = int(obj)
-			voxelSize = [1.0,1.0,1.0]
 			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
 			cog = [float(cogX), float(cogY), float(cogZ)]
-			for i in range(3):
-				voxelSize[i] = umcog[i] / cog[i]
+			if not voxelSize and cog[0] > 0 and cog[1] > 0 and cog[2] > 0:
+				voxelSize = [1.0, 1.0, 1.0]
+				for i in range(3):
+					voxelSize[i] = umcog[i] / cog[i]
 			cog = map(int, cog)
 			avgint = float(avgint)
 			avgintstderr = float(avgintstderr)
@@ -811,6 +813,7 @@ class ParticleTracker:
 			return
 
 		# Search all particles on this timepoint
+		oldParticles = {}
 		scores = []
 		for i,testParticle in enumerate(self.particleList[timePoint]):
 			testParticle.inTrack = False
@@ -821,6 +824,12 @@ class ParticleTracker:
 					oldParticle = track[timePoint-1]
 				except:
 					continue
+				
+				# Calculate how many times same particle is in different tracks (track only once)
+				if not oldParticles.get(tuple(oldParticle.posInPixels), False):
+					oldParticles[tuple(oldParticle.posInPixels)] = 0
+				oldParticles[tuple(oldParticle.posInPixels)] += 1
+				
 				distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
 				failed = (distFactor == None)   
 				angleFactor = 0
@@ -836,7 +845,6 @@ class ParticleTracker:
 				# is not in a track
 				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
-
 					scores.append({"Score": currScore, "Track": j, "Particle": i})
 
 		def compareScore(a,b):
@@ -866,6 +874,11 @@ class ParticleTracker:
 					tracksScores[trackNum].append(score)
 				
 				if usedTrack == -1 and not usedParticle and score["Score"] > 0.75 * tracksScores[trackNum][0]["Score"]:
+					if timePoint > 0 and not oldParticles.get(tuple(tracks[trackNum][timePoint-1].posInPixels), True):
+						trackUsage[trackNum] = 0 # Don't use this track (some other track tracks the same particle)
+						continue
+					if timePoint > 0:
+						oldParticles[tuple(tracks[trackNum][timePoint-1].posInPixels)] = 0
 					trackUsage[trackNum] = particleNum
 					particleUsage[particleNum] = True
 					matchParticle = Particle()
@@ -891,6 +904,12 @@ class ParticleTracker:
 			try:
 				trackScores = tracksScores[i]
 				particleNum = trackScores[0]["Particle"]
+				if timePoint > 0 and not oldParticles.get(tuple(tracks[i][timePoint-1].posInPixels), True):
+					trackUsage[i] = 0
+					continue
+					
+				if timePoint > 0:
+					oldParticles[tuple(tracks[i][timePoint-1].posInPixels)] = 0
 				trackUsage[i] = particleNum
 				particleUsage[particleNum] = True
 				matchParticle = Particle()
@@ -923,7 +942,7 @@ class ParticleTracker:
 					noneParticle.trackNum = trackNum
 					noneParticle.intval = None
 					noneParticle.timePoint = i
-					noneParticle.posInPixels = (None,None,None)
+					noneParticle.posInPixels = [None,None,None]
 					noneParticle.voxelSize = particle.voxelSize
 					noneParticle.timeInterval = particle.timeInterval
 					newTrack.append(noneParticle)

@@ -227,7 +227,7 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		fixedImage.Update()
 
 		# Use last transform parameters as initialization to this registration
-		if self.transform and not usePrevious:
+		if self.transform and not usePrevious and False:
 			initialParameters = self.transform.GetParameters()
 		else:
 			initialParameters = None
