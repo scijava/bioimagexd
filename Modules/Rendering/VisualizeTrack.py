@@ -340,6 +340,15 @@ class VisualizeTrackModule(VisualizationModule):
 		"""          
 		pass
 
+	def disableRendering(self):
+		"""
+		Disable the rendering of this module
+		"""
+		for actor in self.actors:
+			self.renderer.RemoveActor(actor)
+		self.actors = []
+		self.wxrenwin.Render()
+		
 
 class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 
@@ -440,4 +449,4 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 				self.trackGrid.table.SetValue(i,0,0)
 
 		self.trackGrid.ForceRefresh()
-		
+	
