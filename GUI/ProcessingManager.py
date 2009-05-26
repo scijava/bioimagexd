@@ -100,7 +100,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 	def onDoProcessing(self, event):
 		"""
 		A method that tells the dataunit to process the selected timepoints
-		"""          
+		"""
 		self.Show(0)
 		name = self.dataUnit.getName()
 

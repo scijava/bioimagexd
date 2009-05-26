@@ -665,8 +665,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		dx = end[0]-start[0]
 		dy = end[1]-start[1]
 #		Logging.info("Currents scroll = %d, %d, adding %d and %d"%(x,y,dx,dy), kw="preview")
-		x+=dx
-		y+=dy
+		x -= dx
+		y -= dy
 		sx = int(x / self.scrollStepSize)
 		sy = int(y / self.scrollStepSize)
 		

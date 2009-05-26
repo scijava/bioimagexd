@@ -161,14 +161,14 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		if not event.LeftIsDown():
 			event.Skip()
 			return
+
 		x, y = event.GetPosition()
-		
-		#x,y=self.getScrolledXY(x,y)
 		x -= self.xmargin
 		y -= self.ymargin
+		x, y = self.getScrolledXY(x,y)
 		
-		x /= float(self.zoomFactor)
-		y /= float(self.zoomFactor)
+		#x /= float(self.zoomFactor)
+		#y /= float(self.zoomFactor)
 
 		dims = self.imagedata.GetDimensions()
 		
@@ -305,8 +305,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.permute.SetInputConnection(data.GetProducerPort())
 		
 		spacing = data.GetSpacing()
-		#data.SetSpacing(1, 1, 1)
-		#data.SetOrigin(0, 0, 0)
+
 		xscale = 1
 		yscale = 1
 		if plane == "zy":
@@ -542,10 +541,10 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		if not self.imagedata:
 			self.fitLater = 1
 			return
+
 		x, y, z = self.imagedata.GetDimensions()
-		
-		x += z * self.zoomZ + 2 * self.xmargin
-		y += z * self.zoomZ + 2 * self.ymargin
+		x += z * self.zspacing + 3 * self.xmargin
+		y += z * self.zspacing + 3 * self.ymargin
 		f = self.maxClientSizeX / x
 		f2 = self.maxClientSizeY / y
 		f = min(f, f2)

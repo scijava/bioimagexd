@@ -272,7 +272,6 @@ class AdjustPanel(TaskPanel):
 		"""
 		A method used to set the GUI widgets to their proper values
 		"""
-
 		if self.dataUnit:
 			self.iTFEditor.setIntensityTransferFunction(
 			self.settings.getCounted("IntensityTransferFunctions", self.timePoint)
