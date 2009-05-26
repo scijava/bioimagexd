@@ -553,7 +553,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' AN
 </p>
 <hr>
 <p>
-<p><a name="itk"><h2>Insight Segmentation and Registration TOolkit</h2></a>
+<p><a name="itk"><h2>Insight Segmentation and Registration Toolkit</h2></a>
 </p>
 <p> 
 /*=========================================================================<br>
