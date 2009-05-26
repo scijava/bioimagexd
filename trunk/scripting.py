@@ -132,6 +132,13 @@ def storeSettingsToCache(key, settingsList):
 		value.append((setting.getDatasetNumber(), configParser))
 	settingsCache[key] = value
 
+def removeSettingsFromCache(key, settingsList):
+	"""
+	"""
+	global settingsCache
+	key = tuple(key)
+	if key in settingsCache:
+		del settingsCache[key]
 
 def registerDialog(dialogName, dialog):
 	"""

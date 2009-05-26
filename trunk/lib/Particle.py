@@ -183,7 +183,7 @@ class Particle:
 		self.flag = 0
 		self.trackNum = -1
 		self.posInPixels = intpos
-		self.matchScore = 99999999999999
+		self.matchScore = 0
 		self.trackCount = 0
 		self.seedParticles = []
 		self.totalTimepoints = 1
@@ -404,7 +404,7 @@ class ParticleTracker:
 		mindists = []
 		maxdists = []
 		avgdists = []
-		minSize = 9999999
+		minSize = 999999999
 		maxSize = 0
 		minInt = 9999999999
 		maxInt = 0
@@ -831,7 +831,7 @@ class ParticleTracker:
 				oldParticles[tuple(oldParticle.posInPixels)] += 1
 				
 				distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
-				failed = (distFactor == None)   
+				failed = (distFactor == None)
 				angleFactor = 0
 				# If the particle being tested passed the previous tests
 				# and there is already a particle before the current one,
@@ -845,12 +845,19 @@ class ParticleTracker:
 				# is not in a track
 				if (not failed):#and (not testParticle.inTrack):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
-					scores.append({"Score": currScore, "Track": j, "Particle": i})
+					trackLen = 0
+					for trackPart in track:
+						if trackPart.posInPixels[0] and trackPart.posInPixels[1] and trackPart.posInPixels[2]:
+							trackLen += 1
+					scores.append({"Score": currScore, "Track": j, "Particle": i, "TrackLen": trackLen})
 
 		def compareScore(a,b):
-			return cmp(b["Score"], a["Score"])
+			if a["Score"] == b["Score"]:
+				return cmp(b["TrackLen"], a["TrackLen"])
+			else:
+				return cmp(b["Score"], a["Score"])
 		scores.sort(compareScore)
-
+		
 		trackUsage = {}
 		particleUsage = {}
 		tracksScores = {}

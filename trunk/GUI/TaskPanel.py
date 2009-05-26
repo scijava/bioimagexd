@@ -353,7 +353,7 @@ class TaskPanel(ScrolledPanel):
 		"""
 		A method that executes the operation on the selected
 					 dataset
-		"""		   
+		"""
 		mgr = ProcessingManager.ProcessingManager(self, self.operationName)
 		scripting.processingManager = mgr
 		mgr.setDataUnit(self.dataUnit)
@@ -362,7 +362,6 @@ class TaskPanel(ScrolledPanel):
 		if scripting.modal:
 			mgr.ShowModal()
 			mgr.Destroy()
-		   
 			scripting.processingManager = None
 		else:
 			mgr.Show()

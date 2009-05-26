@@ -59,7 +59,7 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""                 
+		"""
 		lib.ProcessingFilter.ProcessingFilter.execute(self, inputs)
 		image = self.getInput(1)
 	   

@@ -289,6 +289,8 @@ class MainWindow(wx.Frame):
 		lib.messenger.connect(None, "delete_dataset", self.onDeleteDataset)
 		lib.messenger.connect(None, "execute_command", self.onExecuteCommand)
 		lib.messenger.connect(None, "show_error", self.onShowError)
+		lib.messenger.connect(None, "data_changed", self.updateCache)
+
 		wx.CallAfter(self.showTip)
 		filelist = conf.getConfigItem("FileList", "General")
 		# We do not restore files is there were files requested to be loaded at startup
@@ -481,6 +483,7 @@ class MainWindow(wx.Frame):
 		# If no task window has been loaded, then we will update the visualizer
 		# with the selected dataset
 		if not self.currentTaskWindow:
+			data.getSettings().resetSettings()
 			Logging.info("Setting dataset for visualizer=", data.__class__, kw = "dataunit")
 			self.visualizer.setDataUnit(data)
 			#self.visualizer.updateRendering()
@@ -1880,12 +1883,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		try:
 			for dataunit in selectedFiles:
 				unit.addSourceDataUnit(dataunit)
-				#Logging.info("ctf of source=", dataunit.getSettings().get("ColorTransferFunction"), kw = "ctf")
+				Logging.info("ctf of source=", dataunit.getSettings().get("ColorTransferFunction"), kw = "ctf")
 		except Logging.GUIError, ex:
 			ex.show()
 			self.closeTask()
 			return
-		
+
 		lib.messenger.send(None, "update_progress", 0.3, "Loading task %s..." % action)
 		Logging.info("Moduletype=", moduletype, kw = "dataunit")
 		module = moduletype()
@@ -1922,7 +1925,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		#self.menuManager.enable(MenuManager.ID_CLOSE_TASKWIN)
 		self.menuManager.enable(MenuManager.ID_VIEW_TASKPANEL)
 		lib.messenger.send(None, "update_progress", 1.0, "Loading task %s... done" % action)
-					
+		
 		
 	def onMenuShowTree(self, event = None, show = -1):
 		"""
@@ -2162,3 +2165,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		flag = evt.IsChecked()
 		self.visualizer.resamplingBtn.SetToggle(flag)
 		self.visualizer.resampleData(flag)
+
+	def updateCache(self, evt = None, obj = None, delay = 0):
+		"""
+		Hackish way to update settings cache when something is changed.
+		"""
+		selectedPaths = self.tree.getSelectedPaths()
+		selectedFiles = self.tree.getSelectedDataUnits()
+		names = [i.getName() for i in selectedFiles]
+		cacheKey = scripting.getCacheKey(selectedPaths, names, "Adjust")
+		scripting.removeSettingsFromCache(cacheKey, "ColorTransferFunction")

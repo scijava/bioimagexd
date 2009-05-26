@@ -91,6 +91,7 @@ class ImportDialog(wx.Dialog):
 		wx.EVT_BUTTON(self, wx.ID_OK, self.onOkButton)
 		self.spacing = (1.0, 1.0, 1.0)
 		self.voxelSize = (1.0, 1.0, 1.0)
+		self.timeInterval = 1.0
 		
 		self.SetSizer(self.sizer)
 		self.sizer.SetSizeHints(self)
@@ -173,6 +174,7 @@ class ImportDialog(wx.Dialog):
 		Writes a .bxd file
 		"""
 		settings = self.dataUnit.getSettings()
+		settings.resetSettings()
 
 		Logging.info("Spacing for dataset=", self.spacing, kw = "io")
 		settings.set("Spacing", self.spacing)
@@ -189,7 +191,14 @@ class ImportDialog(wx.Dialog):
 		settings.set("Dimensions", self.dimensions)
 		name = self.nameEdit.GetValue()
 		settings.set("Name", name)
-		
+
+		timeStamps = []
+		timeStamp = 0.0
+		for i in range(self.tot):
+			timeStamps.append(timeStamp)
+			timeStamp += self.timeInterval
+		settings.set("TimeStamps", timeStamps)
+			
 		parser = self.writer.getParser()
 		settings.writeTo(parser)
 		i = 0
@@ -306,14 +315,14 @@ class ImportDialog(wx.Dialog):
 		self.dimensionLbl = wx.StaticText(self, -1, "")
 	
 		
-		self.depthlbl = wx.StaticText(self, -1, "Depth of Stack:")
+		self.depthlbl = wx.StaticText(self, -1, "Depth of stack:")
 		self.depthEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
 
 		self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfSlices)
 		self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfSlices)
 		
 
-		self.tpLbl = wx.StaticText(self, -1, "Number of Timepoints:")
+		self.tpLbl = wx.StaticText(self, -1, "Number of timepoints:")
 		#self.timepointLbl=wx.StaticText(self,-1,"1")
 		self.timepointEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
 #		self.timepointEdit.Bind(wx.EVT_TEXT, self.onUpdateNumberOfTimepoints)
@@ -321,7 +330,7 @@ class ImportDialog(wx.Dialog):
 		self.timepointEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfTimepoints)
 
 		
-		self.voxelSizeLbl = wx.StaticText(self, -1, u"Voxel size")
+		self.voxelSizeLbl = wx.StaticText(self, -1, u"Voxel size:")
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		self.voxelX = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
 		self.voxelY = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
@@ -343,8 +352,17 @@ class ImportDialog(wx.Dialog):
 		box.Add(self.lblY)
 		box.Add(self.voxelZ)
 		box.Add(self.lblZ)
+		
+		self.timeIntervalLbl = wx.StaticText(self, -1, "Time interval:")
+		self.timeIntervalEdit = wx.TextCtrl(self, -1, "1.0", size = (100, -1), style = wx.TE_PROCESS_ENTER)
+		self.timeIntervalS = wx.StaticText(self, -1, "sec")
+		intervalBox = wx.BoxSizer(wx.HORIZONTAL)
+		intervalBox.Add(self.timeIntervalEdit)
+		intervalBox.Add(self.timeIntervalS)
+		self.timeIntervalEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateTimeInterval)
+		self.timeIntervalEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateTimeInterval)
 
-		self.spcLbl = wx.StaticText(self, -1, "Dataset Spacing:")
+		self.spcLbl = wx.StaticText(self, -1, "Dataset spacing:")
 		self.spacingLbl = wx.StaticText(self, -1, "1.00 x 1.00 x 1.00")
 		
 		n = 0
@@ -368,6 +386,9 @@ enter the information below.""")
 		self.infosizer.Add(self.tpLbl, (n, 0))
 		self.infosizer.Add(self.timepointEdit, (n, 1), flag = wx.EXPAND | wx.ALL)
 		n += 1
+		self.infosizer.Add(self.depthlbl, (n, 0))
+		self.infosizer.Add(self.depthEdit, (n, 1), flag = wx.EXPAND | wx.ALL)
+		n += 1
 		self.infosizer.Add(self.voxelSizeLbl, (n, 0))
 		#self.infosizer.Add(self.voxelSizeEdit,(n,1),flag=wx.EXPAND|wx.ALL)
 		self.infosizer.Add(box, (n, 1), flag = wx.EXPAND | wx.ALL, span = (1, 2))
@@ -375,10 +396,9 @@ enter the information below.""")
 		self.infosizer.Add(self.spcLbl, (n, 0))
 		self.infosizer.Add(self.spacingLbl, (n, 1))
 		n += 1
-		self.infosizer.Add(self.depthlbl, (n, 0))
-		self.infosizer.Add(self.depthEdit, (n, 1), flag = wx.EXPAND | wx.ALL)
+		self.infosizer.Add(self.timeIntervalLbl, (n,0))
+		self.infosizer.Add(intervalBox, (n,1), flag = wx.EXPAND | wx.ALL, span = (1,2))
 		n += 1
-		
 		
 		self.colorBtn = GUI.ColorTransferEditor.CTFButton(self)
 		lib.messenger.connect(self.colorBtn, "ctf_modified", self.onUpdateCtf)
@@ -459,7 +479,7 @@ enter the information below.""")
 	def onUpdateVoxelSize(self, filename):
 		"""
 		A method to update the spacing depending on the voxel size
-		"""                       
+		"""
 		try:
 			vx = float(self.voxelX.GetValue())
 		except ValueError:
@@ -938,3 +958,22 @@ enter the information below.""")
 		update the ctf
 		"""
 		self.preview.updatePreview(1)
+
+	def onUpdateTimeInterval(self, evt):
+		"""
+		Event handler of time interval update.
+		"""
+		timeIntervalStr = self.timeIntervalEdit.GetValue().strip()
+		try:
+			interval = float(timeIntervalStr)
+		except:
+			return
+		
+		self.setTimeInterval(interval)
+
+	def setTimeInterval(self, interval):
+		"""
+		Set time interval between time points
+		"""
+		self.timeInterval = interval
+		

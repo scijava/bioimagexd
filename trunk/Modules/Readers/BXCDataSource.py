@@ -410,3 +410,27 @@ class BXCDataSource(DataSource):
 			absoluteTimestamps = []
 		self.setTimeStamps(timestamps)
 		self.setAbsoluteTimeStamps(absoluteTimestamps)
+
+	def getExcitationWavelength(self):
+		"""
+		Return excitation wavelength
+		"""
+		try:
+			excitation = self.settings.get("ExcitationWavelength")
+			excitation = float(excitation)
+		except:
+			excitation = 0
+		
+		return excitation
+
+	def getEmissionWavelength(self):
+		"""
+		Return emission wavelength
+		"""
+		try:
+			emission = self.settings.get("EmissionWavelength")
+			emission = float(emission)
+		except:
+			emission = 0
+
+		return emission

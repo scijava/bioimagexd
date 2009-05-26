@@ -34,7 +34,6 @@ import lib.ImageOperations
 import Logging
 import os
 
-
 class DataUnit:
 	"""
 	Description: A class representing a timeseries of 3D data

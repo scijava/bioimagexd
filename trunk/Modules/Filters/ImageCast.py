@@ -97,6 +97,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
+		bitDepth = 8
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)
 		self.vtkfilter.SetClampOverflow(self.parameters["ClampOverflow"])
@@ -104,6 +105,14 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 			if self.parameters[param]:
 				eval("self.vtkfilter.SetOutputScalarTypeTo%s()"%param)
 				self.eventDesc = "Casting the image to datatype %s"%param
+				if param in ["Short", "UnsignedShort"]:
+					bitDepth = 16
+				if param in ["Int", "UnsignedInt", "Float"]:
+					bitDepth = 32
+				if param in ["Double", "Long", "UnsignedLong"]:
+					bitDepth = 64
+
+		self.dataUnit.getSettings().set("BitDepth", bitDepth)
 
 		if update:
 			self.vtkfilter.Update()
