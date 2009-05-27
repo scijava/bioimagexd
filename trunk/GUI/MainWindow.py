@@ -2170,8 +2170,11 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		Hackish way to update settings cache when something is changed.
 		"""
-		selectedPaths = self.tree.getSelectedPaths()
-		selectedFiles = self.tree.getSelectedDataUnits()
-		names = [i.getName() for i in selectedFiles]
-		cacheKey = scripting.getCacheKey(selectedPaths, names, "Adjust")
-		scripting.removeSettingsFromCache(cacheKey, "ColorTransferFunction")
+		try:
+			selectedPaths = self.tree.getSelectedPaths()
+			selectedFiles = self.tree.getSelectedDataUnits()
+			names = [i.getName() for i in selectedFiles]
+			cacheKey = scripting.getCacheKey(selectedPaths, names, "Adjust")
+			scripting.removeSettingsFromCache(cacheKey, "ColorTransferFunction")
+		except:
+			pass
