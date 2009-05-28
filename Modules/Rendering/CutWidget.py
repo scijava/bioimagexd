@@ -194,8 +194,6 @@ class CutBoxModule(VisualizationModule):
 		planes = vtk.vtkPlanes()
 		obj.GetPlanes(planes)
 		
-		print "Bounds=", self.boxWidget.GetProp3D().GetBounds()
-			   
 		for mapper in self.clippedMappers:
 			mapper.RemoveAllClippingPlanes()
 		self.clippedMappers = []
@@ -206,10 +204,11 @@ class CutBoxModule(VisualizationModule):
 				self.clippedMappers.append(module.mapper)
 #                else:
 #                    module.mapper.RemoveAllClippingPlanes()
+	
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""             
+		"""
 		input = self.getInput(1)
 		if self.parameters["InsideOut"]:
 			self.boxWidget.InsideOutOn()
@@ -217,24 +216,23 @@ class CutBoxModule(VisualizationModule):
 			self.boxWidget.InsideOutOff()
 		self.boxWidget.SetInput(input)
 #        self.mapper.SetInput(data)
-	 
-
 		
 		#self.mapper.Update()
 		VisualizationModule.updateRendering(self)
-		self.parent.Render()    
-
+		self.parent.Render()
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""         
 		pass
+	
 	def setShading(self, shading):
 		"""
 		Set shading on / off
 		"""          
 		pass
+	
 	def disableRendering(self):
 		"""
 		Disable the Rendering of this module
@@ -243,12 +241,14 @@ class CutBoxModule(VisualizationModule):
 			mapper.RemoveAllClippingPlanes()        
 		self.boxWidget.Off()
 		self.wxrenwin.Render()
+		
 	def enableRendering(self):
 		"""
 		Enable the Rendering of this module
 		"""          
 		self.boxWidget.On()
-		self.wxrenwin.Render()        
+		self.wxrenwin.Render()
+		
 	def showPlane(self, flag):
 		"""
 		Show / hide the plane controls

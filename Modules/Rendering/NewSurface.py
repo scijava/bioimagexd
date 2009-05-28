@@ -232,9 +232,11 @@ class SurfaceModule(VisualizationModule):
 		self.setMethod(method)
 
 		if self.volumeModule:
+			self.volumeModule.function = vtk.vtkVolumeRayCastIsosurfaceFunction()
 			self.volumeModule.function.SetIsoValue(self.parameters["IsoValue"])
 			self.volumeModule.showTimepoint(self.timepoint)
 			return
+		
 		if not self.init:
 			self.init = 1
 			self.mapper.ColorByArrayComponent(0, 0)
