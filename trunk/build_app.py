@@ -132,7 +132,11 @@ def build():
 		includes = incl_modules,
 		packages = ["encodings"],
 		)
-		dataFiles.append("/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit")
+		# changed to /System/Library/.... to reflect default install location of ITK on OSX 10.5. On 10.4 ITK is in /Library/....
+		dataFiles.append("/System/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit")
+		
+		
+		
 		#dataFiles.append( ('../Frameworks', [
 		#'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
 		#appending the .rsrc file no longer needed in wx2.6
