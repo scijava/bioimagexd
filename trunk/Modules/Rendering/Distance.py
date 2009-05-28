@@ -197,6 +197,7 @@ class DistanceModule(VisualizationModule):
 		Set the ambient, diffuse and specular lighting of this module
 		"""			
 		pass
+	
 	def setShading(self, shading):
 		"""
 		Set shading on / off
