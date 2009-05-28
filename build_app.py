@@ -32,7 +32,8 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 try:
-	from distutils.core import setup
+	#from distutils.core import setup  # this iwas for the old py2app pre setuptools
+	from setuptools import setup # for new py2app using setuptools 
 except ImportError, importError:
 	print importError
 import os, os.path, glob
@@ -99,7 +100,7 @@ def build():
 	dataFiles.extend(modules)
 
 	if platform.system() == "Darwin":
-		import py2app
+		# import py2app # not needed for new py2app usiing setup tools. 
 		# A custom plist for letting it associate with all files.
 		pList = dict(CFBundleDocumentTypes=[dict(CFBundleTypeExtensions=["lsm"],
 									 CFBundleTypeName="Carl Zeiss LSM file",
@@ -135,8 +136,6 @@ def build():
 		# changed to /System/Library/.... to reflect default install location of ITK on OSX 10.5. On 10.4 ITK is in /Library/....
 		dataFiles.append("/System/Library/Frameworks/Python.framework/Versions/2.5/lib/InsightToolkit")
 		
-		
-		
 		#dataFiles.append( ('../Frameworks', [
 		#'/usr/local/lib/wxPython-unicode-2.5.5.1/lib/libwx_macud-2.5.5.rsrc',
 		#appending the .rsrc file no longer needed in wx2.6
@@ -149,6 +148,7 @@ def build():
 		#using install_name_tool -id old new]))
 		setup(
 			app=['BioImageXD.py'],
+			setup_requires=["py2app"],  # added for using new py2app with setuptools
 			data_files = dataFiles, 
 			options = dict( py2app = py2app_options )
 		)		 
