@@ -231,7 +231,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		names = [x.getName() for x in sources]
 		w.writerow(["Surface data analysis for",self.dataUnit.getName(), "source channels:"]+names+[ "timepoint",self.getCurrentTimepoint()])
 		w.writerow([])
-		
+
 		self.objectsBox.writeOut(w, [self.headers])
 		f.close()
 
