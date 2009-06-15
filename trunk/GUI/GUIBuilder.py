@@ -969,7 +969,7 @@ class GUIBuilder(wx.Panel):
 	def removeSeed(self, listbox, currFilter):
 		"""
 		Remove a seed from filter
-		"""
+		"""			
 		item = listbox.itemName
 		n = listbox.GetSelection()
 		if n != wx.NOT_FOUND:
@@ -977,9 +977,9 @@ class GUIBuilder(wx.Panel):
 			seedPoint = eval(s)
 			listbox.Delete(n)
 			
-		seeds = currFilter.getParameter(item)   
+		seeds = currFilter.getParameter(item[0])   
 		seeds.remove(seedPoint)
-		currFilter.setParameter(item, seeds)
+		currFilter.setParameter(item[0], seeds)
 
 	def onAddPixel(self, obj, event, rx, ry, rz, r, g, b, alpha, \
 					colorTransferFunction, item, currFilter, listbox):
