@@ -977,9 +977,9 @@ class GUIBuilder(wx.Panel):
 			seedPoint = eval(s)
 			listbox.Delete(n)
 			
-		seeds = currFilter.getParameter(item[0])   
+		seeds = currFilter.getParameter(item)   
 		seeds.remove(seedPoint)
-		currFilter.setParameter(item[0], seeds)
+		currFilter.setParameter(item, seeds)
 
 	def onAddPixel(self, obj, event, rx, ry, rz, r, g, b, alpha, \
 					colorTransferFunction, item, currFilter, listbox):
