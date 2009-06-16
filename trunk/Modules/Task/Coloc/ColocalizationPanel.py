@@ -165,6 +165,7 @@ class ColocalizationPanel(TaskPanel):
 				self.iterations.SetValue("%d" % iterations)
 		except:
 			pass
+		
 		coloctest = vtkbxd.vtkImageColocalizationTest()
 		#coloctest.SetRandomizeZ(1)
 		sources = self.dataUnit.getSourceDataUnits()
@@ -293,7 +294,7 @@ class ColocalizationPanel(TaskPanel):
 		choices = ["None", "Costes", "Fay", "van Steensel"], majorDimension = 2,
 		style = wx.RA_SPECIFY_COLS
 		)
-		#self.radiobox.Bind(wx.EVT_RADIOBOX, self.onSetTestMethod)
+		self.radiobox.Bind(wx.EVT_RADIOBOX, self.onSetTestMethod)
 		#self.pvalueNone = wx.RadioButton(self.colocalizationPanel, -1, "None", name="pvalue")
 		#self.pvalueNone.SetValue(True)
 		#self.pvalueNone.Bind(wx.EVT_RADIOBUTTON, self.onSetNone)
@@ -332,7 +333,6 @@ class ColocalizationPanel(TaskPanel):
 		self.NA.Bind(wx.EVT_TEXT, self.onUpdatePSF)
 		self.Ch2Lambda.Bind(wx.EVT_TEXT, self.onUpdatePSF)
 
-				
 		self.iterations.Enable(0)
 		self.NA.Enable(0)
 		self.Ch2Lambda.Enable(0)
