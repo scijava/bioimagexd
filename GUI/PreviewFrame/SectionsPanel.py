@@ -209,12 +209,14 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		else:
 			Logging.info("Out of bounds (%d,%d)" % (x, y), kw = "preview")
 			return
+		
 		self.drawPos = [math.ceil(a * self.zoomFactor) for a in (nx, ny, nz)]
 		if self.x != nx or self.y != ny or self.z != nz:
 			self.x, self.y, self.z = int(nx), int(ny), int(nz)
 			self.setTimepoint(self.timepoint)
 		else:
 			self.updatePreview()
+		
 		self.noUpdate = 1
 		lib.messenger.send(None, "zslice_changed", nz) 
 		self.noUpdate = 0
@@ -243,11 +245,9 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 	
 	
 		lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.ctf)
-
 		
 		event.Skip()
-			
-
+		
 	def onSize(self, event):
 		"""
 		Size event handler
@@ -346,7 +346,6 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 			self.voi.Update()
 			return lib.ImageOperations.scaleImage(self.voi.GetOutput(), interpolation = 2, xfactor = xscale, yfactor = yscale)
 			
-		
 		self.voi.Update()
 		return self.voi.GetOutput()
 
@@ -362,6 +361,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.timepoint = tp
 		if not scripting.renderingEnabled:
 			return
+		
 		if recalculate or not self.imagedata:
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
@@ -370,6 +370,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 				image = self.dataUnit.getTimepoint(tp)
 				image.SetUpdateExtent(image.GetWholeExtent())
 				self.ctf = self.dataUnit.getColorTransferFunction()
+			
 			self.cachedImage = image
 			self.imagedata = lib.ImageOperations.imageDataTo3Component(image, self.ctf)
 			self.imagedata.Update()
@@ -394,7 +395,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 				imgslice = lib.ImageOperations.vtkImageDataToWxImage(img)
 		else:
 			imgslice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
-			
+		
 		self.slices.append(imgslice)
 		
 		Logging.info("\n\nzspacing = %f\n"%self.zspacing, kw="preview")
@@ -407,6 +408,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 			interpolation = 1
 		if self.zoomFactor != 1 or self.zspacing != 1:
 			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = 1, xfactor = self.zspacing)
+		
 		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
 		self.slices.append(imgslice)
 		imgslice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
@@ -493,6 +495,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 			self.makeBackgroundBuffer(dc)	
 			dc.EndDrawing()
 			return
+		
 		row, col = 0, 0
 
 		x, y, z = [i * self.zoomFactor for i in self.dims]

@@ -33,6 +33,7 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 from GUI.PreviewFrame.PreviewFrame import PreviewFrame
 import Logging
 from Visualizer.VisualizationMode import VisualizationMode
+import scripting
 
 def getName():
 	"""
@@ -167,6 +168,7 @@ class SlicesMode(VisualizationMode):
 		"""
 		Set the mode of visualization
 		"""
+		scripting.wantWholeDataset = 0
 		if not self.iactivePanel:
 			self.iactivePanel = PreviewFrame(self.parent, scrollbars = True)
 		return self.iactivePanel

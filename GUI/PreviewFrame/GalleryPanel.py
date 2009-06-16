@@ -79,6 +79,7 @@ class GalleryPanel(InteractivePanel):
 		self.scrollTo = None
 		self.drawableRects = []
 		self.slice = 0
+		self.ctf = None
 		
 		self.interpolation = 0
 		
@@ -96,7 +97,6 @@ class GalleryPanel(InteractivePanel):
 		"""
 		lib.messenger.disconnect(None, "zslice_changed", self.setPreviewedSlice)
 		InteractivePanel.deregister(self)
-
 		
 	def setPreviewedSlice(self, obj, evt, slice):
 		"""
@@ -189,6 +189,7 @@ class GalleryPanel(InteractivePanel):
 		"""
 		if self.timepoint == timepoint and self.slices:
 			return
+		
 		self.timepoint = timepoint
 		if not scripting.renderingEnabled:
 			return
@@ -200,11 +201,11 @@ class GalleryPanel(InteractivePanel):
 
 		if self.visualizer.getProcessedMode():
 			image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
-			ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+			self.ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
 #			Logging.info("Using ", image, "for gallery", kw = "preview")
 		else:
 			image = self.dataUnit.getTimepoint(timepoint)
-			ctf = self.dataUnit.getColorTransferFunction()
+			self.ctf = self.dataUnit.getColorTransferFunction()
 
 		#self.imagedata = lib.ImageOperations.imageDataTo3Component(image,ctf)
 		self.imagedata = image
@@ -214,17 +215,14 @@ class GalleryPanel(InteractivePanel):
 		x, y, z = self.dataUnit.getDimensions()
 		
 		self.slices = []
-		
+
 		for i in range(z):
 			image = optimize.optimize(image = self.imagedata, updateExtent = (0, x - 1, 0, y - 1, i, i))
 			image = lib.ImageOperations.getSlice(image, i)
 			
-			slice = lib.ImageOperations.imageDataTo3Component(image, ctf)
-			slice.Update()
-
-			
 			lib.messenger.send(None, "update_progress", i / float(z), "Loading slice %d / %d for Gallery view" % (i + 1, z + 1))
-			self.slices.append(slice)
+			self.slices.append(image)
+		
 		lib.messenger.send(None, "update_progress", 1.0, "All slices loaded.")  
 		self.calculateBuffer()
 		if update:
@@ -238,9 +236,11 @@ class GalleryPanel(InteractivePanel):
 		"""
 		w, h = self.sliceSize
 		try:
-			slice = self.slices[slice]
+			slice = lib.ImageOperations.imageDataTo3Component(self.slices[slice], self.ctf)
+			slice.Update()
 		except:
 			return
+		
 		x, y, z = slice.GetDimensions()
 		factor = lib.ImageOperations.getZoomFactor(x, y, w, h)
 		
@@ -277,7 +277,7 @@ class GalleryPanel(InteractivePanel):
 		for tp in range(0, count):
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(self.slice, 1, tp)
-				ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
+				self.ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
 				Logging.info("Using ", image, "for gallery", kw = "preview")
 			else:
 				image = self.dataUnit.getTimepoint(tp)
@@ -285,13 +285,10 @@ class GalleryPanel(InteractivePanel):
 				image = optimize.optimize(image, updateExtent = (0, x - 1, 0, y - 1, self.slice, self.slice))
 				image = lib.ImageOperations.getSlice(image, self.slice)
 				image.Update()
-				ctf = self.dataUnit.getColorTransferFunction()
-			self.imagedata = lib.ImageOperations.imageDataTo3Component(image, ctf)
-			self.imagedata.Update()
+				self.ctf = self.dataUnit.getColorTransferFunction()
+			
 			tp = vtk.vtkImageData()
-			tp.DeepCopy(self.imagedata)
-	#			print "Got ", self.imagedata
-			#slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, self.slice)
+			tp.DeepCopy(image)
 			self.slices.append(tp)
 			
 		self.calculateBuffer()

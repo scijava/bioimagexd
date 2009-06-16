@@ -126,6 +126,7 @@ def execute_limited(pipeline, updateExtent = None):
 	if updateExtent and not scripting.wantWholeDataset:
 		Logging.info("Setting update extent to ", updateExtent, kw = "pipeline")
 		retval.SetUpdateExtent(updateExtent)
+	
 	print "Update extent now=",retval.GetUpdateExtent()
 	streamer.Update()
 	print "Done"

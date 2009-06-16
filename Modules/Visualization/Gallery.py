@@ -34,6 +34,7 @@ import Logging
 import wx.lib.scrolledpanel as scrolled
 from Visualizer.VisualizationMode import VisualizationMode
 import wx
+import scripting
 
 def getName():
 	"""
@@ -128,8 +129,7 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		"""
 		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (200, 500))
 		self.visualizer = visualizer
-		self.mode = mode
-	
+		self.mode = mode	
 
 		self.sizer = wx.GridBagSizer()
 		self.radiobox = wx.RadioBox(self, -1, "View in gallery", \
@@ -137,8 +137,8 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 									majorDimension = 2, \
 									style = wx.RA_SPECIFY_COLS)
 		z = 1
-		if visualizer.dataUnit:
-			x, y, z = visualizer.dataUnit.getDimensions()
+		#if visualizer.dataUnit:
+		#	x, y, z = visualizer.dataUnit.getDimensions()
 
 		self.okbutton = wx.Button(self, -1, "Update")
 		self.okbutton.Bind(wx.EVT_BUTTON, self.onSetViewMode)
@@ -167,6 +167,7 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 			val = self.visualizer.getTimepoint()
 		self.mode.galleryPanel.setShowTimepoints(pos, val)
 
+		
 class GalleryMode(VisualizationMode):
 
 	def __init__(self, parent, visualizer):
@@ -205,6 +206,7 @@ class GalleryMode(VisualizationMode):
 		"""
 		Set the mode of visualization
 		"""
+		scripting.wantWholeDataset = 0
 		self.sidebarWin = sidebarwin
 
 		if not self.galleryPanel:
@@ -221,7 +223,6 @@ class GalleryMode(VisualizationMode):
 			if self.dataUnit:
 				self.configPanel.setDataUnit(self.dataUnit)
 			self.configPanel.Show()
-
 		else:
 			self.configPanel.Show()
 			self.container.Show()
