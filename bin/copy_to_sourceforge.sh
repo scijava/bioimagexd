@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 if [ ! -d ../sourceforge ]; then
 	echo "The directory ../sourceforge does not exist"
 	echo "Check out the sourceforge repository before running this script"
@@ -37,7 +37,8 @@ echo "Possibly modified files:"
 svn stat|grep "^?"|grep -v ".pyc$"
 
 echo "Committing to sourceforge"
-if [-n "$1"]; then
+if [ "$1" ]
+then
 	svn commit -m "$1"
 else
 	svn commit -m "Update from internal repository to sourceforge"
