@@ -116,8 +116,7 @@ class ColocalizationPanel(TaskPanel):
 		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 2)
 		self.eventDesc = "Calculating statistics"
 		self.doPreviewCallback(None)
-		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 0) 
-				
+		self.dataUnit.getSourceDataUnits()[0].getSettings().set("CalculateThresholds", 0)
 		
 		
 	def getStatistics(self, event = None):
@@ -709,11 +708,11 @@ class ColocalizationPanel(TaskPanel):
 		bitmax2 = (2**sources[0].getSingleComponentBitDepth())-1
 		maxval = max(maxval, maxval2, bitmax1, bitmax2)
 		self.lowerthreshold1.SetRange(minval, maxval)
-		self.lowerthreshold1.SetValue((maxval - minval) / 2)
+		self.lowerthreshold1.SetValue((maxval - minval + 1) / 2)
 		self.upperthreshold1.SetRange(minval, maxval)
 		self.upperthreshold1.SetValue(maxval)
 		self.lowerthreshold2.SetRange(minval, maxval)
-		self.lowerthreshold2.SetValue((maxval - minval) / 2)
+		self.lowerthreshold2.SetValue((maxval - minval + 1) / 2)
 		self.upperthreshold2.SetRange(minval, maxval)
 		self.upperthreshold2.SetValue(maxval)
 		self.updateThreshold(None)

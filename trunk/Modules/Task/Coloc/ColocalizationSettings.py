@@ -87,7 +87,7 @@ class ColocalizationSettings(DataUnitSettings):
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
 		print "Initializing colocalization for %d channels" % channels
-		self.set("ColocalizationDepth", 8)
+		self.set("ColocalizationDepth", dataunit.getBitDepth())
 		if hasattr(dataunit, "getScalarRange"):
 			minval, maxval = dataunit.getScalarRange()
 		else:

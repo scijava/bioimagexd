@@ -84,7 +84,7 @@ class Scatterplot(wx.Panel):
 		self.scatterCTF = None
 		self.mode = (1, 2)
 		
-		self.userDrawnThresholds=None
+		self.userDrawnThresholds = None
 			
 		self.lower1, self.upper1, self.lower2, self.upper2 = 127,255,127,255
 		
@@ -192,6 +192,7 @@ class Scatterplot(wx.Panel):
 		"""
 		if not self.scatterBitmap:
 			return
+		
 		wcDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
 		"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
 	
@@ -365,7 +366,7 @@ class Scatterplot(wx.Panel):
 		if y2 < y1:
 			y1, y2 = y2, y1
 			
-		c = self.scalarMax / 255.0
+		c = (self.scalarMax + 1) / 256.0
 		x1 = int(c*x1)
 		x2 = int(c*x2)
 		y1 = int(c*y1)
@@ -407,7 +408,6 @@ class Scatterplot(wx.Panel):
 		self.renew = 1
 		self.sources = dataUnit.getSourceDataUnits()
 		self.dataUnit = dataUnit
-#		self.scalarMax = max([sourceUnit.getScalarRange()[1] for sourceUnit in self.sources])
 		self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
 		
 		self.buffer = wx.EmptyBitmap(*self.size)
@@ -502,7 +502,7 @@ class Scatterplot(wx.Panel):
 		log = self.logarithmic	# Flag indicating whether we should draw a logarithmic scatterplot
 		wv = self.wholeVolume	# Flag indicating whether we should use the whole volume
 		scatter, ctf, scatterImage = lib.ImageOperations.scatterPlot( imagedata1, imagedata2, z = -1,
-			countVoxels = cvx,  logarithmic = log, wholeVolume = wv)
+			countVoxels = cvx,  logarithmic = log, wholeVolume = wv, bitDepth = self.dataUnit.getBitDepth())
 #		scatter.Mirror(0)
 		self.scatterHeight = scatter.GetHeight()
 		return scatter, ctf, scatterImage
@@ -553,6 +553,14 @@ class Scatterplot(wx.Panel):
 			(lower1, upper1), (lower2, upper2) = self.userDrawnThresholds
 		slope, intercept = self.getSlope(), self.getIntercept()
 
+		if lower1 > upper1:
+			tmp = upper1
+			upper1 = lower1
+			lower1 = tmp
+		if lower2 > upper2:
+			tmp = upper2
+			upper2 = lower2
+			lower2 = tmp
 #		Logging.info("Painting scatterplot with thresholds (%d - %d) and (%d - %d)"%(lower1, upper1, lower2, upper2))
 		self.paintScatterplot(lower1, upper1, lower2, upper2, slope, intercept)
 		
@@ -579,7 +587,7 @@ class Scatterplot(wx.Panel):
 			dc = None
 			return
 
-		c = 255.0 / self.scalarMax
+		c = 256.0 / (self.scalarMax + 1)
 
 		bmp = self.scatter.ConvertToBitmap()
 		
@@ -636,11 +644,7 @@ class Scatterplot(wx.Panel):
 		dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		dc.DrawText("%d" % lower2, 3, ymax - lower2 * c)
 		dc.DrawText("%d" % lower1, self.xoffset + horizontalLegendWidth + lower1 * c, 265)
-		self.lower1 = lower1 * c
-		self.lower2 = lower2 * c
-		self.upper1 = upper1 * c
-		self.upper2 = upper2 * c
-		
+
 		self.scatterLegendBitmap = self.buffer
 		
 		self.dc = dc

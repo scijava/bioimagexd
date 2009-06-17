@@ -646,7 +646,7 @@ def fire(ctfLowerBound, ctfUpperBound):
 		  0,   0,   0,  35,  98, 160, 223, 255
 	]
 	maxColorIndex = min(len(reds), len(greens), len(blues))
-	div = ctfUpperBound / float(maxColorIndex)
+	div = ctfUpperBound / float(maxColorIndex-1)
 
 	ctf = vtk.vtkColorTransferFunction()
 	ctf.AddRGBPoint(0, 0, 0, 0)
@@ -663,6 +663,8 @@ def getOverlay(width, height, color, alpha):
 	Method: getOverlay(width, height, color, alpha)
 	Create an overlay of given color with given alpha
 	"""
+	width = abs(width)
+	height = abs(height)
 	print "Generating overlay",width,height,color
 	size = width * height * 3
 	formatString = "%ds" % size
@@ -683,7 +685,9 @@ def getOverlay(width, height, color, alpha):
 def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	"""
 	Create borders for an overlay that are only very little transparent
-	"""		  
+	"""
+	width = abs(width)
+	height = abs(height)
 	size = width * height * 3
 	formatString = "%ds" % size	
 	red, green, blue = color
@@ -948,7 +952,7 @@ def equalize(imagedata, ctf):
 		ctf2.AddRGBPoint(i, *val)
 	return ctf2
 	
-def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = True, logarithmic = True):
+def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = True, logarithmic = True, bitDepth = 8):
 	"""
 	Create scatterplot
 	"""
@@ -957,17 +961,16 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 		
 	imagedata1.Update()
 	imagedata2.Update()
-	x0, x1 = imagedata1.GetScalarRange()
-	#d = 255.0 / x1
-	sc1max = x1
+	#x0, x1 = imagedata1.GetScalarRange()
+	#sc1max = x1
 
-	x0, x1 = imagedata2.GetScalarRange()
-	#d = 255.0 / x1
-	sc2max = x1
+	#x0, x1 = imagedata2.GetScalarRange()
+	#sc2max = x1
 	
 	n = 255
 	#n = min(max(sc1max,sc2max),255)
-	d = n / max(sc1max,sc2max)
+	#d = (n+1) / float(2**bitDepth)
+	d = float(2**bitDepth) / (n+1)
 	
 	app = vtk.vtkImageAppendComponents()
 	app.AddInput(imagedata1)
@@ -980,6 +983,8 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	
 	acc = vtk.vtkImageAccumulate()
 	acc.SetComponentExtent(0, n, 0, n, 0, 0)
+	acc.SetComponentOrigin(0,0,0)
+	acc.SetComponentSpacing(d,d,0)
 	#acc.SetInputConnection(shiftscale.GetOutputPort())
 	acc.SetInputConnection(app.GetOutputPort())
 	acc.Update()
@@ -988,7 +993,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	origData = data
 	
 	originalRange = data.GetScalarRange()
-	
+
 	if logarithmic:
 		Logging.info("Scaling scatterplot logarithmically", kw = "imageop")
 		logscale = vtk.vtkImageLogarithmicScale()
@@ -999,7 +1004,6 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	x0, x1 = data.GetScalarRange()
 	
 	if countVoxels:
-		x0, x1 = data.GetScalarRange()
 		Logging.info("Scalar range of scatterplot = ", x0, x1, kw = "imageop")
 		ctf = fire(x0, x1)
 		ctf = equalize(data, ctf)

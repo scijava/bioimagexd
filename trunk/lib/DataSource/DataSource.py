@@ -294,7 +294,7 @@ class DataSource:
 			return self.intensityScale
 		else:
 			minval, maxval = self.originalScalarRange
-			scale = 255.0 / maxval
+			scale = 256.0 / (maxval + 1)
 			return scale
 
 	def getIntensityShift(self):
@@ -320,8 +320,10 @@ class DataSource:
 		"""
 		if not self.explicitScale:
 			return data
+		
 		if self.intensityScale == -1:
 			return data
+		
 		if not self.shift:
 			self.shift = vtk.vtkImageShiftScale()
 			self.shift.SetOutputScalarTypeToUnsignedChar()
@@ -336,7 +338,7 @@ class DataSource:
 			currScale = self.intensityScale
 		else:
 			minval, maxval = self.originalScalarRange
-			scale = 255.0 / maxval
+			scale = 256.0 / (maxval + 1)
 			self.shift.SetScale(scale)
 			currScale = scale
 		

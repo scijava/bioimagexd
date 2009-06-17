@@ -75,7 +75,6 @@ class Colocalization(Module):
 		"""
 		Adds an input for the colocalization filter
 		"""
-
 		Module.addInput(self, dataunit, data)
 		settings = dataunit.getSettings()
 		self.settingsLst.append(settings)
@@ -83,7 +82,6 @@ class Colocalization(Module):
 		th1 = settings.get("ColocalizationUpperThreshold")
 		self.thresholds.append((th0, th1))
 		self.depth = self.settings.get("ColocalizationDepth")
-
 
 	def getPreview(self, z):
 		"""
