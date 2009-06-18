@@ -1086,10 +1086,11 @@ class Visualizer:
 		self.zslider.SetRange(1, z)
 		Logging.info("Setting zslider value",kw="visualizer")
 		if z < self.z:
-			self.zslider.SetValue(1)
+			self.zslider.SetValue(z)
 			self.onChangeZSlice(None)
 		else:
 			self.zslider.SetValue(self.z+1)
+		
 		if z <= 1:
 			self.toggleZSlider(0)
 			#self.zsliderWin.SetDefaultSize((0, 768))
@@ -1103,6 +1104,11 @@ class Visualizer:
 		count = dataunit.getNumberOfTimepoints()
 
 		self.maxTimepoint = count - 1
+		# Check if current time point is out of range
+		currentTimepoint = self.getTimepoint()
+		if currentTimepoint > self.maxTimepoint:
+			self.setTimepoint(self.maxTimepoint)
+			
 		if count == 1:
 			Logging.info("Hiding time slider, because only one timepoint", kw="visualizer")
 			self.toggleTimeSlider(0)
@@ -1110,6 +1116,7 @@ class Visualizer:
 			Logging.info("Setting time range to %d" % count, kw = "visualizer")
 			self.toggleTimeSlider(1)
 			self.timeslider.SetRange(1, count)
+
 
 	def setDataUnit(self, dataunit):
 		"""

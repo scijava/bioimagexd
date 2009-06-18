@@ -479,7 +479,8 @@ class MainWindow(wx.Frame):
 		if data.dataSource.getResampleDimensions() != None:
 			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)
 		else:
-			tb.EnableTool(MenuManager.ID_RESAMPLING, 0) 
+			tb.EnableTool(MenuManager.ID_RESAMPLING, 0)
+
 		# If no task window has been loaded, then we will update the visualizer
 		# with the selected dataset
 		if not self.currentTaskWindow:
