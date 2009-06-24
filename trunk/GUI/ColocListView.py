@@ -91,9 +91,9 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 		["R(rand) > R(obs)", "", "", 2]
 		]
 		
-		if scripting.TFLag:
+		#if scripting.TFLag:
 			# Remove diff stain & r(obs) from non-tekes version
-			self.headervals = self.headervals[:-7]
+		#	self.headervals = self.headervals[:-7]
 			#+ self.headervals[-3:]
 
 
@@ -153,14 +153,14 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 				  "NumIterations":(n + 24, 0, ss)
 		}
 	 
-	 	if scripting.TFLag:
-	 		del mapping["DiffStainPercentageCh1"]
-	 		del mapping["DiffStainPercentageCh2"]
-	 		del mapping["DiffStainVoxelsCh1"]
-	 		del mapping["DiffStainVoxelsCh2"]
-	 		del mapping["RObserved"]
-	 		del mapping["RRandMean"]
-	 		del mapping["NumIterations"]
+	 	#if scripting.TFLag:
+	 	#	del mapping["DiffStainPercentageCh1"]
+	 	#	del mapping["DiffStainPercentageCh2"]
+	 	#	del mapping["DiffStainVoxelsCh1"]
+	 	#	del mapping["DiffStainVoxelsCh2"]
+	 	#	del mapping["RObserved"]
+	 	#	del mapping["RRandMean"]
+	 	#	del mapping["NumIterations"]
 	 		
 	 		
 	 	defined = len(variables.keys())

@@ -14,6 +14,7 @@ import csv
 import math
 import time
 import lib.Math
+import types
 
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -33,7 +34,11 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.umcentersofmass = None
 		self.avgIntList = None
 		self.objAreasUm = None
-		self.descs = {"StatisticsFile": "Results file:"}
+		self.descs = {"StatisticsFile": "Results file:",
+					  "AvgInt": "Calculate average intensities",
+					  "AvgDist": "Calculate average distances",
+					  "Area": "Calculate areas",
+					  "NonZero": "Calculate non-zero voxels"}
 		self.reportGUI = None		
 		
 		self.resultVariables = {"NumberOfObjects":		"Number of discrete objects in the image",
@@ -74,16 +79,17 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""	   
-		#if not self.dataUnit:
-		return "statistics.csv"
-		#else:
-		#	return self.dataUnit.getName() + ".csv"
+		if parameter == "StatisticsFile":
+			return "statistics.csv"
+		return True
 		
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
-		"""	   
-		return GUI.GUIBuilder.FILENAME
+		"""
+		if parameter == "StatisticsFile":
+			return GUI.GUIBuilder.FILENAME
+		return types.BooleanType
 		
 		
 	def getParameters(self):
@@ -91,7 +97,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["Measurement results",
-		(("StatisticsFile", "Select the file to which the statistics will be written", "*.csv"), )]]
+		(("StatisticsFile", "Select the file to which the statistics will be written", "*.csv"), )],
+				["Analyses", ("AvgInt", "AvgDist", "Area", "NonZero")]]
 		
 	def writeOutput(self, dataUnit, timepoint):
 		"""
@@ -212,14 +219,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 
 		image = self.getInput(1)
-		image = self.convertVTKtoITK(image)
 		print "Input for label shape=",self.getInputDataUnit(1)
 		print "Orig. dataunit = ",self.getInputDataUnit(2)
-		labelShape = itk.LabelShapeImageFilter[image].New()
-		labelShape.SetInput(image)
-		data = labelShape.GetOutput()
-		data.Update()
-		
+
 		x, y, z = self.dataUnit.getVoxelSize()
 		x *= 1000000
 		y *= 1000000
@@ -235,34 +237,6 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgDists = []
 		avgDistsStdErrs = []
 		objAreasUm = []
-		origInput = self.getInput(2)
-		origInput.Update()
-		origRange = origInput.GetScalarRange()
-		origInput = self.convertVTKtoITK(origInput)
-
-		avgintCalc = itk.LabelStatisticsImageFilter[origInput,image].New()
-		avgintCalc.SetInput(origInput)
-		avgintCalc.SetLabelInput(image)
-		avgintCalc.Update()
-
-		# Area calculation pipeline
-		largestSize = image.GetLargestPossibleRegion().GetSize()
-		# if 2D image, calculate area using volume
-		if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
-			areaImage = self.convertITKtoVTK(image)
-			areaImage.Update()
-			areaSpacing = areaImage.GetSpacing()
-			objectThreshold = vtk.vtkImageThreshold()
-			objectThreshold.SetOutputScalarTypeToUnsignedChar()
-			objectThreshold.SetInValue(255)
-			marchingCubes = vtk.vtkMarchingCubes()
-			marchingCubes.SetValue(0,255)
-			massProperties = vtk.vtkMassProperties()
-			objectThreshold.SetInput(areaImage)
-			marchingCubes.SetInput(objectThreshold.GetOutput())
-			massProperties.SetInput(marchingCubes.GetOutput())
-			areaDiv = (areaSpacing[0] / x)**2
-			voxelArea = x*y*2 + x*z*2 + y*z*2
 
 		ignoreLargest = 0
 		currFilter = self
@@ -274,8 +248,47 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
 
-		tott=0
+		areaImage = self.convertITKtoVTK(image)
+		image = self.convertVTKtoITK(image)
+		labelShape = itk.LabelShapeImageFilter[image].New()
+		labelShape.SetInput(image)
+		data = labelShape.GetOutput()
+		data.Update()
 		numberOfLabels = labelShape.GetNumberOfLabels()
+		
+		origInput = self.getInput(2)
+		origInput.Update()
+		origRange = origInput.GetScalarRange()
+		origInput = self.convertVTKtoITK(origInput)
+
+		if self.parameters["AvgInt"]:
+			avgintCalc = itk.LabelStatisticsImageFilter[origInput,image].New()
+			avgintCalc.SetInput(origInput)
+			avgintCalc.SetLabelInput(image)
+			avgintCalc.Update()
+
+		# Area calculation pipeline
+		if self.parameters["Area"]:
+			voxelArea = x*y*2 + x*z*2 + y*z*2
+			largestSize = image.GetLargestPossibleRegion().GetSize()
+			# if 2D image, calculate area using volume
+			if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
+				#areaImage = self.convertITKtoVTK(image)
+				#areaImage.Update()
+				areaSpacing = areaImage.GetSpacing()
+				marchingCubes = vtk.vtkMarchingCubes()
+				#marchingCubes.SetValue(0,255)
+				#	objectThreshold = vtk.vtkImageThreshold()
+				#	objectThreshold.SetOutputScalarTypeToUnsignedChar()
+				#	objectThreshold.SetInValue(255)
+				#	objectThreshold.SetInput(areaImage)
+				#	marchingCubes.SetInput(objectThreshold.GetOutput())
+				marchingCubes.SetInput(areaImage)
+				massProperties = vtk.vtkMassProperties()
+				massProperties.SetInput(marchingCubes.GetOutput())
+				areaDiv = (areaSpacing[0] / x)**2
+
+		tott=0
 		voxelSize = voxelSizes[0] * voxelSizes[1] * voxelSizes[2]
 		for i in range(startIntensity, numberOfLabels+1):
 			if not labelShape.HasLabel(i):
@@ -283,8 +296,13 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			else:
 				volume = labelShape.GetVolume(i)
 				centerOfMass = labelShape.GetCenterOfGravity(i)
-				avgInt = avgintCalc.GetMean(i)
-				avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
+				avgInt = 0.0
+				avgIntStdErr = 0.0
+				areaInUm = 0.0
+				
+				if self.parameters["AvgInt"]:
+					avgInt = avgintCalc.GetMean(i)
+					avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
 				c = []
 				c2 = []
 				for k in range(0, 3):
@@ -292,19 +310,20 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 					c.append(v)
 					c2.append(v * voxelSizes[k])
 
-			# Get area of object
-				areaInUm = 0
-				if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
-					objectThreshold.ThresholdBetween(i,i)
-					polydata = marchingCubes.GetOutput()
-					polydata.Update()
-					if polydata.GetNumberOfPolys() > 0:
-						massProperties.Update()
-						areaInUm = massProperties.GetSurfaceArea() / areaDiv
+				# Get area of object
+				if self.parameters["Area"]:
+					if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
+						#	objectThreshold.ThresholdBetween(i,i)
+						marchingCubes.SetValue(0,i)
+						polydata = marchingCubes.GetOutput()
+						polydata.Update()
+						if polydata.GetNumberOfPolys() > 0:
+							massProperties.Update()
+							areaInUm = massProperties.GetSurfaceArea() / areaDiv
+						else:
+							areaInUm = voxelArea
 					else:
-						areaInUm = voxelArea
-				else:
-					areaInUm = volume * x * y
+						areaInUm = volume * x * y
 				
 				centersofmass.append(tuple(c))
 				umcentersofmass.append(tuple(c2))
@@ -317,13 +336,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		t0 = time.time()
 		for i, cm in enumerate(umcentersofmass):
 			distList = []
-			for j, cm2 in enumerate(umcentersofmass):
-				if i == j: continue
-				dx = cm[0] - cm2[0]
-				dy = cm[1] - cm2[1]
-				dz = cm[2] - cm2[2]
-				dist = math.sqrt(dx*dx+dy*dy+dz*dz)
-				distList.append(dist)
+			if self.parameters["AvgDist"]:
+				for j, cm2 in enumerate(umcentersofmass):
+					if i == j: continue
+					dx = cm[0] - cm2[0]
+					dy = cm[1] - cm2[1]
+					dz = cm[2] - cm2[2]
+					dist = math.sqrt(dx*dx+dy*dy+dz*dz)
+					distList.append(dist)
 			avgDist, avgDistStd, avgDistStdErr = lib.Math.meanstdeverr(distList)
 			avgDists.append(avgDist)
 			avgDistsStdErrs.append(avgDistStdErr)
@@ -354,13 +374,15 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		for i in range(0,startIntensity):
 			if labelShape.HasLabel(i):
 				voxelAmount = labelShape.GetVolume(i)
-				avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
-				variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 				allVoxels += voxelAmount
-		
-		if allVoxels > 0:
-			avgIntOutsideObjs /= allVoxels
-			avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+				if self.parameters["AvgInt"]:
+					avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
+					variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+
+		if self.parameters["AvgInt"]:
+			if allVoxels > 0:
+				avgIntOutsideObjs /= allVoxels
+				avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
 		
 		avgIntInsideObjs = 0.0
 		avgIntInsideObjsStdErr = 0.0
@@ -369,21 +391,24 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		for i in range(startIntensity, numberOfLabels):
 			if labelShape.HasLabel(i):
 				voxelAmount = labelShape.GetVolume(i)
-				avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
-				variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 				allVoxels += voxelAmount
-		
-		if allVoxels > 0:
-			avgIntInsideObjs /= allVoxels
-			avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+				if self.parameters["AvgInt"]:
+					avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
+					variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 
-		labelShape = itk.LabelShapeImageFilter[origInput].New()
-		labelShape.SetInput(origInput)
-		labelShape.Update()
+		if self.parameters["AvgInt"]:
+			if allVoxels > 0:
+				avgIntInsideObjs /= allVoxels
+				avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+
 		nonZeroVoxels = 0
-		for i in range(1, int(origRange[1]) + 1):
-			if labelShape.HasLabel(i):
-				nonZeroVoxels += labelShape.GetVolume(i)
+		if self.parameters["NonZero"]:
+			labelShape = itk.LabelShapeImageFilter[origInput].New()
+			labelShape.SetInput(origInput)
+			labelShape.Update()
+			for i in range(1, int(origRange[1]) + 1):
+				if labelShape.HasLabel(i):
+					nonZeroVoxels += labelShape.GetVolume(i)
 		
 		distMean, distStd, distStdErr = lib.Math.meanstdeverr(self.avgDistList)
 		
