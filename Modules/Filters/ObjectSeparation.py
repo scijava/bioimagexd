@@ -62,7 +62,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "Level":
 			return 1
 		if parameter == "ImageSpacing":
-			return False
+			return True
 		return 0
 
 	def getType(self, parameter):
