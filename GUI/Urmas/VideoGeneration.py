@@ -372,7 +372,6 @@ class VideoGeneration(wx.Panel):
 		
 		self.oldSelection = 0
 		self.rendering = 0
-		self.oldformat = None
 		self.abort = 0
 		self.parent = parent
 		if self.control:
@@ -405,6 +404,7 @@ class VideoGeneration(wx.Panel):
 			sel = 5
 		self.outputFormat.SetSelection(sel)
 		self.encoder.setCodec(self.outputFormat.GetStringSelection())
+		self.defformat = (sel, self.outputFormat.GetSelection())
 		self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.okButton = wx.Button(self, -1, "Ok")
 		self.cancelButton = wx.Button(self, -1, "Cancel")
@@ -640,24 +640,40 @@ class VideoGeneration(wx.Panel):
 	def onUpdatePreset(self, event = None):
 		"""
 		Update the GUI based on the selected preset
-		""" 
+		"""
 		sel = self.preset.GetSelection()
 		flag = (sel == 0)
 		self.formatMenu.Enable(flag)
 		self.outputFormat.Enable(flag)
 		self.encoder.setPreset(sel)
 		if not flag:
-			oldformat1 = self.formatMenu.GetStringSelection()
-			oldformat2 = self.outputFormat.GetStringSelection()
-			self.oldformat = (oldformat1, oldformat2)
 			self.formatMenu.SetStringSelection("Video")
 			self.outputFormat.SetStringSelection("MPEG2")
+			self.frameSize.SetLabel("%d x %d"%self.encoder.presets[sel][0])
+			fps = self.encoder.presets[sel][1]
+			self.frameRate.SetLabel("%.2f"%fps)
+			self.durationInSecs = self.frames / fps
+			self.duration.SetLabel(self.createDuration(self.durationInSecs))
 		else:
-			if self.oldformat:
-				oldformat1, oldformat2 = self.oldformat
-				self.formatMenu.SetStringSelection(oldformat1)
-				self.outputFormat.SetStringSelection(oldformat2)
+			if self.defformat:
+				defformat1, defformat2 = self.defformat
+				self.formatMenu.SetSelection(defformat1)
+				self.outputFormat.SetSelection(defformat2)
+			self.frameSize.SetLabel("%d x %d"%self.encoder.getSize())
+			self.frameRate.SetLabel("%.2f"%self.encoder.getFPS())
+			self.durationInSecs = self.frames / self.encoder.getFPS()
+			self.duration.SetLabel(self.createDuration(self.durationInSecs))
 
+	def createDuration(self, durationInSecs):
+		"""
+		Create duration presentation from secs
+		"""
+		t = durationInSecs
+		h = t / 3600
+		m = t / 60
+		s = t % 60
+		t = "%.2d:%.2d:%.2d" % (h, m, s)
+		return t
 			
 	def generateGUI(self):
 		"""
@@ -679,11 +695,7 @@ class VideoGeneration(wx.Panel):
 
 		self.totalFrames = wx.StaticText(self, -1, "%d" % self.frames, size = (50, -1))
 		
-		t = self.durationInSecs
-		h = t / 3600
-		m = t / 60
-		s = t % 60
-		t = "%.2d:%.2d:%.2d" % (h, m, s)
+		t = self.createDuration(self.durationInSecs)
 		self.duration = wx.StaticText(self, -1, t, size = (100, -1))
 
 		self.outputFormatLbl = wx.StaticText(self, -1, "Video codec:")
