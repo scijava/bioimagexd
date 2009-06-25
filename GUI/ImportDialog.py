@@ -110,7 +110,7 @@ class ImportDialog(wx.Dialog):
 		self.inputFile = filename
 		self.browsedir.SetValue(filename)
 		self.selectMethodBasedOnFile(filename)
-		self.initialSelection = 0
+		self.initialSelection = 1
 		
 	def getDatasetName(self):
 		"""
@@ -787,6 +787,8 @@ enter the information below.""")
 
 		self.importDirectory = os.path.dirname(filename)
 		self.fileExtension = filename.split(".")[-1]
+		self.dataSource.initialize()
+		self.initialSelection = 1
 		
 		# Store the directory where files were last imported from for later use
 		conf = Configuration.getConfiguration()
@@ -826,7 +828,7 @@ enter the information below.""")
 		"""
 		# clear the box with filenames since we're going to repopulate it		
 		self.sourceListbox.Clear()
-		
+
 		if self.initialSelection:
 			self.nameEdit.SetValue(self.getNameFromFilename(self.browsedir.GetValue()))
 			self.selectMethodBasedOnFile(self.browsedir.GetValue())
@@ -869,15 +871,25 @@ enter the information below.""")
 		if not glob.glob(os.path.join(self.importDirectory, "*.%s"%ext)):
 			# if no files are found using that extension, then use the one taken from the initial file
 			ext = self.fileExtension
-			
-		pat = self.importDirectory + os.path.sep + "*.%s" % ext
+
+		pat = self.importDirectory + os.path.sep
+		# Try to find some characters from pattern not including numbers
+		r = re.compile("[a-z]+", re.IGNORECASE)
+		charStrings = r.findall(pattern)
+		if len(charStrings) > 0:
+			pat = pat + "*" + charStrings[0]
+
+		pat = pat + "*.%s" % ext
+
 		files = glob.glob(pat)
 		files.sort(self.sortNumerically)
 		try:
 			r = re.compile("[0-9]+")
 			startfrom = min(map(int, r.findall(os.path.basename(files[0]))))
+			endto = max(map(int, r.findall(os.path.basename(files[-1])))) + 1
 		except:
 			startfrom = 0
+			endto = len(files) + 1
 		print "Starting from ", startfrom
 		n = 0
 		filecount = len(files)
@@ -887,25 +899,16 @@ enter the information below.""")
 		# just give the whole list
 		if nformat == 0:
 			filelist = files
-			self.sourceListbox.InsertItems(files, 0)
-			n = len(files)
-			pat = ""
-			try:
-				self.dataSource.setFilenames(files)
-			except Logging.GUIError, ex:
-				ex.show()
-				self.sourceListbox.Clear()
-				return
 		# If there is one specifier, then try to find files that correspond to that
 		elif nformat == 1:
-			filelist = self.matchSingleDigitPattern(files, pattern, startfrom,startfrom + filecount + 1)
+			filelist = self.matchSingleDigitPattern(files, pattern, startfrom, endto)
 		elif nformat == 2:
 			filelist = self.matchDoubleDigitPattern(files, pattern, filecount)
-		
+
 		for file in filelist:
 			self.sourceListbox.Append(file)
 		try:
-			self.dataSource.setFilenames(filelist)                                
+			self.dataSource.setFilenames(filelist)
 		except Logging.GUIError, ex:
 			ex.show()
 			self.sourceListbox.Clear()
@@ -922,7 +925,6 @@ enter the information below.""")
 		#	self.imageInfo = ext
 
 
-			
 	def updateImageInfo(self, obj = None, event = ""):
 		"""
 		A method that reads information from an image
