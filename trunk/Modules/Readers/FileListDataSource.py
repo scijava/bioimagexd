@@ -59,9 +59,11 @@ class FileListDataSource(DataSource):
 		self.extMapping = {"tif": "TIFF", "tiff": "TIFF", "png": "PNG", "jpg": "JPEG", "jpeg": "JPEG", \
 							"pnm": "PNM", "vti": "XMLImageData", "vtk": "DataSet", "bmp": "BMP"}
 		self.dimMapping = {"bmp":2, "tif":2, "tiff":2, "png":2, "jpg":2, "jpeg":2, "pnm":2, "vti":3, "vtk":3}
-		self.ctf = None
 		self.callback = callback
-		self.dimensions = None
+		self.initialize()
+
+	def initialize(self):
+		self.ctf = None
 		self.voxelsize = (1, 1, 1)
 		self.spacing = (1, 1, 1)
 		self.flipVertically = False
@@ -80,12 +82,15 @@ class FileListDataSource(DataSource):
 		self.slicesPerTimepoint = 1
 		self.is3D = 0
 		self.rdrstr = ""
+		self.dimensions = None
 		
 	def getFileName(self):
 		"""
 		return the filename
 		"""
-		return self.filenames[0]
+		if len(self.filenames) > 0:
+			return self.filenames[0]
+		return ""
 		
 	def getNumberOfScalarComponents(self):
 		"""
@@ -110,6 +115,9 @@ class FileListDataSource(DataSource):
 		set the filenames that will be read
 		"""
 		self.filenames = filenames
+		if len(filenames) == 0:
+			return
+		
 		if not self.dimensions:
 			self.retrieveImageInfo(filenames[0])
 
