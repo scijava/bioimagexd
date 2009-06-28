@@ -65,8 +65,6 @@ class BXDDataSource(DataSource):
 					 returned in a list with one item for interoperability with
 					 LSM data source
 		"""
-		
-		
 		try:
 			f = open(filename, "r")
 		except IOError, ex:
