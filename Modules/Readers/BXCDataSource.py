@@ -408,6 +408,13 @@ class BXCDataSource(DataSource):
 		absoluteTimestamps = self.settings.get("AbsoluteTimeStamps")
 		if not absoluteTimestamps:
 			absoluteTimestamps = []
+		
+		if len(absoluteTimestamps) > len(timestamps):
+			timestamps = [0.0]
+			firstTS = absoluteTimestamps[0]
+			for ts in range(1,len(absoluteTimestamps)):
+				timestamps.append(absoluteTimestamps[ts] - firstTS)
+		
 		self.setTimeStamps(timestamps)
 		self.setAbsoluteTimeStamps(absoluteTimestamps)
 
