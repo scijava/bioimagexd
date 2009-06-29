@@ -224,16 +224,17 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Write the statistics to the given file
 		"""
-		f = codecs.open(filename, "ab", "utf-8")
-		w = csv.writer(f, dialect = "excel", delimiter = ";")
-		sources = self.dataUnit.getSourceDataUnits()
+		self.writeToFile(filename, self.dataUnit)
+		#f = codecs.open(filename, "ab", "utf-8")
+		#w = csv.writer(f, dialect = "excel", delimiter = ";")
+		#sources = self.dataUnit.getSourceDataUnits()
 		
-		names = [x.getName() for x in sources]
-		w.writerow(["Surface data analysis for",self.dataUnit.getName(), "source channels:"]+names+[ "timepoint",self.getCurrentTimepoint()])
-		w.writerow([])
+		#names = [x.getName() for x in sources]
+		#w.writerow(["Surface data analysis for",self.dataUnit.getName(), "source channels:"]+names+[ "timepoint",self.getCurrentTimepoint()])
+		#w.writerow([])
 		
-		self.objectsBox.writeOut(w, [self.headers])
-		f.close()
+		#self.objectsBox.writeOut(w, [self.headers])
+		#f.close()
 
 	def writeOutput(self, dataUnit, timepoint):
 		"""
@@ -251,7 +252,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		filename = "%s.csv" % fileroot
 		self.writeToFile(filename, dataUnit, timepoint)
 
-	def writeToFile(self, filename, dataUnit, timepoint):
+	def writeToFile(self, filename, dataUnit, timepoint = -1):
 		"""
 		write the objects from a given timepoint to file
 		"""
@@ -259,8 +260,10 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Logging.info("Saving polydata statistics to file %s"%filename, kw="processing")
 		
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
+
+		if timepoint >= 0:
+			w.writerow(["Timepoint %d" % timepoint])
 		
-		w.writerow(["Timepoint %d" % timepoint])
 		for row in self.objectData:
 			w.writerow(row)
 		f.close()
