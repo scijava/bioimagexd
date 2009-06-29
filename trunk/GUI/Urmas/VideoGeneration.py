@@ -456,8 +456,6 @@ class VideoGeneration(wx.Panel):
 		"""
 		Render the whole damn thing
 		"""
-		
-		
 		self.okButton.Enable(0)
 		self.encoder.setPath(self.rendir.GetValue())
 		videofile = self.videofile.GetValue()
@@ -498,7 +496,6 @@ class VideoGeneration(wx.Panel):
 			self.visualizer.setVisualizationMode("3d")
 	
 
-	
 		conf = Configuration.getConfiguration()
 		conf.setConfigItem("FramePath", "Paths", path)
 		conf.setConfigItem("VideoPath", "Paths", file)
@@ -553,9 +550,8 @@ class VideoGeneration(wx.Panel):
 		self.abort = 0
 		self.rendering = 0
 		self.renderingDone = 1
-				
+
 		lib.messenger.send(None, "video_generation_close")
-		
 		lib.messenger.disconnect(None, "rendering_done")
 
 	def encodeVideo(self):
@@ -572,13 +568,20 @@ class VideoGeneration(wx.Panel):
 				GUI.Dialogs.showmessage(self, "Encoding failed: File %s does not exist!" % vidFile, "Encoding failed")
 				
 		deleteFrames = (self.saveProjectBox.GetSelection() == 0) and not self.frameDeletionDisabled
+
 		if success and deleteFrames:
 			self.encoder.deleteFrames()
 		elif not deleteFrames and not self.frameDeletionDisabled:
 			filename = GUI.Dialogs.askSaveAsFileName(self, "Save rendering project as", "rendering.bxr", \
 												"BioImageXD Rendering Project (*.bxr)|*.bxr")
+			
+			if platform.system() == "Windows":
+				filename = filename.encode('mbcs')
+			else:
+				filename = filename.encode(sys.getfilesystemencoding())
+
 			if filename:
-				do_cmd = "scripting.videoGeneration.saveProjectFile(ur'%s')" % filename
+				do_cmd = "scripting.videoGeneration.saveProjectFile(r'%s')"%filename
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Save a rendering project file")
 				cmd.run()
