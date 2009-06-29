@@ -652,8 +652,8 @@ class VideoGeneration(wx.Panel):
 			self.frameSize.SetLabel("%d x %d"%self.encoder.presets[sel][0])
 			fps = self.encoder.presets[sel][1]
 			self.frameRate.SetLabel("%.2f"%fps)
-			self.durationInSecs = self.frames / fps
-			self.duration.SetLabel(self.createDuration(self.durationInSecs))
+			self.frames = int(fps * self.durationInSecs)
+			self.totalFrames.SetLabel("%d"%self.frames)
 		else:
 			if self.defformat:
 				defformat1, defformat2 = self.defformat
@@ -661,8 +661,8 @@ class VideoGeneration(wx.Panel):
 				self.outputFormat.SetSelection(defformat2)
 			self.frameSize.SetLabel("%d x %d"%self.encoder.getSize())
 			self.frameRate.SetLabel("%.2f"%self.encoder.getFPS())
-			self.durationInSecs = self.frames / self.encoder.getFPS()
-			self.duration.SetLabel(self.createDuration(self.durationInSecs))
+			self.frames = int(self.encoder.getFPS() * self.durationInSecs)
+			self.totalFrames.SetLabel("%d"%self.frames)
 
 	def createDuration(self, durationInSecs):
 		"""
