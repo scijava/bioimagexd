@@ -669,7 +669,9 @@ class ColocalizationPanel(TaskPanel):
 						  "PercentageTotalCh1", "PercentageTotalCh2",
 						  "PercentageVolumeCh2", "PercentageMaterialCh1", "PercentageMaterialCh2",
 						  "SumOverThresholdCh1", "SumOverThresholdCh2", "SumCh1", "SumCh2",
-						  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh2", "OverThresholdCh1"]:
+						  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh2", "OverThresholdCh1",
+					"PValue", "RObserved", "RRandMean", "RRandSD",
+					"NumIterations", "ColocCount", "Method"]:
 			variables[var] = sources[0].getSettings().get(var)
 		return variables
 
