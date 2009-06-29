@@ -171,7 +171,6 @@ class Colocalization(Module):
 					method = "self.colocAutoThreshold.Get%s()" % i
 	
 					val = eval(method)
-
 					settings.set(i, val)			
 		self.eventDesc = "Calculating colocalization..."
 		outScalar = self.settings.get("OutputScalar")

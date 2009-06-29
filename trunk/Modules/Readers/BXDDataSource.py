@@ -76,7 +76,6 @@ class BXDDataSource(DataSource):
 		f.close()
 		
 		dataunits = []
-
 		for i, line in enumerate(lines):
 			# We create a datasource with specific channel number that
 			#  we can associate with the dataunit

@@ -656,7 +656,7 @@ template < class T >
     self->SetDiffStainIntCh2( (sumCh2gtT)/float((sumCh1gtT - sumColocCh1)));
     
     self->SetColocAmount(Ncoloc);
-    self->SetColocPercent((double)Ncoloc / (maxX * maxY * maxZ));
+    self->SetColocPercent((double)Ncoloc / ((maxX+1) * (maxY+1) * (maxZ+1)));
 
     self->SetSumOverThresholdCh1(sumCh1gtT);
     self->SetSumOverThresholdCh2(sumCh2gtT);
