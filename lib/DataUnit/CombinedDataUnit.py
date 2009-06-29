@@ -206,6 +206,7 @@ class CombinedDataUnit(DataUnit):
 		n = 1
 		self.guicallback = callback
 		self.module.setControlDataUnit(self)
+
 		if not settings_only:
 			for timePoint in timepoints:
 				# First we reset the module, so that we can start the operation

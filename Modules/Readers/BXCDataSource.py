@@ -136,6 +136,12 @@ class BXCDataSource(DataSource):
 		Returns the DataSet at the specified index
 		@param i  The index
 		"""
+		# Check boundaries
+		if i < 0:
+			i = 0
+		elif i >= len(self.dataSets):
+			i = len(self.dataSets) - 1
+		
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
 		if raw:

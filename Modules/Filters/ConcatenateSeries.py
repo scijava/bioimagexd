@@ -127,10 +127,10 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 		timepoint = 0
 		for i, dataunit in enumerate(dataunits):
 			for tp in range(0, dataunit.getNumberOfTimepoints()):
-				print "Timepoint",timepoint,"maps to ",dataunit,tp
-				print "Absolute time at tp 0 = ",dataunit.getAbsoluteTimeStamp(0)
+				print "Timepoint",timepoint,"maps to",dataunit,tp
+				print "Absolute time at tp 0 =",dataunit.getAbsoluteTimeStamp(0)
 				self.timepointMapping[timepoint] = (dataunit, tp)
-				timepoint+=1
+				timepoint += 1
 				
 	def getImageForTimepoint(self, timepoint):
 		"""
@@ -143,7 +143,7 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""			   
+		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			
