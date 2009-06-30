@@ -170,7 +170,7 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
                 self->UpdateProgress(count/(50.0*target));
             }
             count++;
-       }          
+       }
     
       for(idxX = 0; idxX <= maxX; idxX++ ) {
           for(idxC = 0; idxC < maxC; idxC++ ) {
@@ -187,7 +187,11 @@ void vtkImageLabelDistanceToSurfaceExecute(vtkImageLabelDistanceToSurface *self,
 				else outCount->SetValue(fgScalar, outCount->GetValue(fgScalar)+1);
 
 				// Locate the nearest point on the given surface 
-				vtkIdType objId = locator->FindClosestPoint(x,y,z);
+				double findPoint[3];
+				findPoint[0] = x;
+				findPoint[1] = y;
+				findPoint[2] = z;
+				vtkIdType objId = locator->FindClosestPoint(findPoint);
 				surface->GetPoint(objId, Point);
 				 //printf("Point = %f, %f, %f\n", Point[0], Point[1], Point[2]);
 

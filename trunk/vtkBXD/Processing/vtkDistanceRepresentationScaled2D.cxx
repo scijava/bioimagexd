@@ -76,6 +76,28 @@ void vtkDistanceRepresentationScaled2D::GetPoint2WorldPosition(double pos[3])
 }
 
 //----------------------------------------------------------------------
+double* vtkDistanceRepresentationScaled2D::GetPoint1WorldPosition()
+{
+  if (!this->Point1Representation)
+    {
+    static double temp[3]=  {0, 0, 0};
+    return temp;
+    }
+  return this->Point1Representation->GetWorldPosition();
+}
+
+//----------------------------------------------------------------------
+double* vtkDistanceRepresentationScaled2D::GetPoint2WorldPosition()
+{
+  if (!this->Point2Representation)
+    {
+    static double temp[3]=  {0, 0, 0};
+    return temp;
+    }
+  return this->Point2Representation->GetWorldPosition();
+}
+
+//----------------------------------------------------------------------
 void vtkDistanceRepresentationScaled2D::SetPoint1DisplayPosition(double x[3])
 {
   this->Point1Representation->SetDisplayPosition(x);
@@ -83,6 +105,26 @@ void vtkDistanceRepresentationScaled2D::SetPoint1DisplayPosition(double x[3])
   this->Point1Representation->GetWorldPosition(p);
   this->Point1Representation->SetWorldPosition(p);
   this->AxisActor->GetPoint1Coordinate()->SetValue(p);
+}
+
+//----------------------------------------------------------------------
+void vtkDistanceRepresentationScaled2D::SetPoint1WorldPosition(double x[3])
+{
+  if (this->Point1Representation)
+    {
+    this->Point1Representation->SetWorldPosition(x);
+    this->AxisActor->GetPoint1Coordinate()->SetValue(x);
+    }
+}
+
+//----------------------------------------------------------------------
+void vtkDistanceRepresentationScaled2D::SetPoint2WorldPosition(double x[3])
+{
+  if (this->Point2Representation)
+    {
+    this->Point2Representation->SetWorldPosition(x);
+    this->AxisActor->GetPoint2Coordinate()->SetValue(x);
+    }
 }
 
 //----------------------------------------------------------------------

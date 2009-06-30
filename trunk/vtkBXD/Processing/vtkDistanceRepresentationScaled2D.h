@@ -56,10 +56,14 @@ public:
   // display and world coordinates.
   void GetPoint1WorldPosition(double pos[3]);
   void GetPoint2WorldPosition(double pos[3]);
+  void SetPoint1WorldPosition(double pos[3]);
+  void SetPoint2WorldPosition(double pos[3]);
   void SetPoint1DisplayPosition(double pos[3]);
   void SetPoint2DisplayPosition(double pos[3]);
   void GetPoint1DisplayPosition(double pos[3]);
   void GetPoint2DisplayPosition(double pos[3]);
+  double* GetPoint1WorldPosition();
+  double* GetPoint2WorldPosition();
 
   // Description:
   // Retrieve the vtkAxisActorScaled2D used to draw the measurement axis. With this 
