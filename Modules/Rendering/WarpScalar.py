@@ -109,7 +109,7 @@ class WarpScalarModule(VisualizationModule):
 		if parameter == "FeatureAngle":
 			return 90
 		if parameter == "Scale":
-			return - 0.2
+			return 0.2
 			
 	def getRange(self, parameter):
 		"""
