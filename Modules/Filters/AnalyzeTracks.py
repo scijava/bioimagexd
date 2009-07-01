@@ -178,7 +178,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 #		speed
 #		angle (avg of changes)
 
-		rows = [["# of tps", u"Length (\u03BCm)", u"Avg. speed (\u03BCm/s)", "Directional persistence", "Avg. angle"]]
+		rows = [["Track #", "# of tps", u"Length (\u03BCm)", u"Avg. speed (\u03BCm/s)", "Directional persistence", "Avg. angle"]]
 		self.globalmin = 9999999999
 		self.globalmax = 0
 		self.lengths = []
@@ -203,7 +203,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.dps.append(dp)
 			avgang,avgangstd,avgangstderr = track.getAverageAngle()
 			self.angles.append((avgang,avgangstderr))
-			row = [tps, "%.6f"%(length), "%.6f"%(speed), "%.6f"%(dp), u"%.6f\u00B1%.6f"%(avgang,avgangstderr)]
+			row = [i+1, tps, "%.6f"%(length), "%.6f"%(speed), "%.6f"%(dp), u"%.6f\u00B1%.6f"%(avgang,avgangstderr)]
 			mintp, maxtp = track.getTimeRange()
 			if mintp < self.globalmin:
 				self.globalmin = mintp
@@ -235,7 +235,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.avgdps = lib.Math.meanstdeverr(self.dps)
 		self.avgang = lib.Math.meanstdeverr([x for x,y in self.angles])
 		self.avgTpCount = lib.Math.averageValue(self.tpCount)
-		avgs = [len(tracks), self.avgTpCount, u"%.6f\u00B1%.6f"%(self.avglen[0],self.avglen[2]), u"%.6f\u00B1%.6f"%(self.avgspeed[0],self.avgspeed[2]), u"%.6f\u00B1%.6f"%(self.avgdps[0],self.avgdps[2]), u"%.6f\u00B1%.6f"%(self.avgang[0],self.avgang[2])]
+		avgs = [len(tracks), "%.6f"%self.avgTpCount, u"%.6f\u00B1%.6f"%(self.avglen[0],self.avglen[2]), u"%.6f\u00B1%.6f"%(self.avgspeed[0],self.avgspeed[2]), u"%.6f\u00B1%.6f"%(self.avgdps[0],self.avgdps[2]), u"%.6f\u00B1%.6f"%(self.avgang[0],self.avgang[2])]
 		totalRows.append(avgs)
 		self.aggregateBox.setContents(totalRows)
 		

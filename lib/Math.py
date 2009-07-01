@@ -3,7 +3,7 @@ import math
 def meanstdeverr(x):
 	n, mean, std = len(x), 0, 0
 	if n == 0:
-		return 0,0,0
+		return 0.0, 0.0, 0.0
 	for a in x: 
 		mean = mean + a
 	mean = mean / float(n)
@@ -19,4 +19,4 @@ def meanstdev(x):
 def averageValue(lst):
 	if len(lst) == 0:
 		return 0.0	
-	return sum(lst) / len(lst)
+	return sum(lst) / float(len(lst))
