@@ -30,6 +30,8 @@ __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 import csv
 import codecs
 import Particle
+import re
+import scripting
 
 class ParticleReader:
 	"""
@@ -127,14 +129,19 @@ class ParticleWriter:
 	def __init__(self):
 		pass
 		
-	def writeTracks(self, filename, tracks, minimumTrackLength = 3):
+	def writeTracks(self, filename, tracks, minimumTrackLength = 3, timeStamps = []):
 		"""
 		Write the particles
 		"""
 		fileToOpen = codecs.open(filename, "wb", "latin1")
 			
 		writer = csv.writer(fileToOpen, dialect = "excel", delimiter = ";")
-		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z", "VoxelSize X", "VoxelSize Y", "VoxelSize Z", "Time Interval"])
+		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z"])
+		try:
+			voxelSize = tracks[0][0].voxelSize
+		except:
+			voxelSize = (1.0,1.0,1.0)
+		
 		for i, track in enumerate(tracks):
 			trackLength = 0
 			for particle in track:
@@ -147,7 +154,28 @@ class ParticleWriter:
 				particleXPos, particleYPos, particleZPos = particle.posInPixels
 				voxelSizeX, voxelSizeY, voxelSizeZ = particle.voxelSize
 				writer.writerow([str(i), str(particle.intval), str(particle.timePoint), \
-				str(particleXPos), str(particleYPos), str(particleZPos), voxelSizeX, voxelSizeY, voxelSizeZ, particle.timeInterval])
+				str(particleXPos), str(particleYPos), str(particleZPos)])
 
 		fileToOpen.close()
+
+		try:
+			parser = scripting.MyConfigParser()
+			if not parser.has_section("TimeStamps"):
+				parser.add_section("TimeStamps")
+				parser.set("TimeStamps", "TimeStamps", "%s"%timeStamps)
+			if not parser.has_section("VoxelSize"):
+				parser.add_section("VoxelSize")
+				parser.set("VoxelSize", "VoxelSize", "%s"%voxelSize)
+		except:
+			return
+
+		ext = filename.split(".")[-1]
+		pat = re.compile('.%s'%ext)
+		filename = pat.sub('.ini', filename)
+		try:
+			fp = open(filename, "w")
+			parser.write(fp)
+			fp.close()
+		except IOError, ex:
+			Logging.error("Failed to write settings", "ParticleWriter failed to open .ini file %s for writing tracking settings (%s)"%(filename,ex))
 		

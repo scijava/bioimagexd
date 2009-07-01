@@ -479,15 +479,12 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		spacing = image.GetSpacing()
 		try:
 			datasource = self.dataUnit.sourceunits[0].getDataSource()
-			timeInterval = datasource.getTimeStamp(1)
-			if timeInterval < 0.0:
-				timeInterval = 1.0
+			timeStamps = datasource.getTimeStamps()
 		except:
-			timeInterval = 1.0
-		
+			timeStamps = []
 		
 		self.tracker.setSpacing(spacing)
-		self.tracker.setTimeInterval(timeInterval)
+		self.tracker.setTimeStamps(timeStamps)
 		self.tracker.setFilterObjectSize(self.parameters["MinSize"])
 		if not os.path.exists(self.particleFile):
 			GUI.Dialogs.showerror(None, "Could not read the selected particle file %s"%self.particleFile, "Cannot read particle file")
@@ -577,7 +574,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Tracking from timepoint", fromTp, "forward"
 		self.tracker.track(fromTimepoint = fromTp, seedParticles = objVals)
 		trackWriter = lib.ParticleReader.ParticleWriter()
-		trackWriter.writeTracks(self.parameters["ResultsFile"], self.tracker.getTracks(), self.parameters["MinLength"])
+		trackWriter.writeTracks(self.parameters["ResultsFile"], self.tracker.getTracks(), self.parameters["MinLength"], self.tracker.timeStamps)
 	
 		self.onReadTracks(None)
 

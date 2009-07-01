@@ -189,7 +189,6 @@ class Particle:
 		self.totalTimepoints = 1
 		self.spacing = (1.0,1.0,1.0)
 		self.voxelSize = (1.0,1.0,1.0)
-		self.timeInterval = 1.0
 		
 	def getCenterOfMass(self):
 		"""
@@ -241,7 +240,6 @@ class Particle:
 		self.matchScore = particle.matchScore
 		self.spacing = particle.spacing
 		self.voxelSize = particle.voxelSize
-		self.timeInterval = particle.timeInterval
 
 	def __str__(self):
 		try:
@@ -266,13 +264,6 @@ class Particle:
 		"""
 		if len(voxelSize) == 3:
 			self.voxelSize = voxelSize
-
-	def setTimeInterval(self, timeInterval):
-		"""
-		Set time interval of time points in tracking for speed calculations
-		"""
-		if timeInterval > 0.0:
-			self.timeInterval = timeInterval
 			
 
 class ParticleTracker:
@@ -296,7 +287,6 @@ class ParticleTracker:
 		self.spacing = (1.0,1.0,1.0)
 		self.filterObjectSize = 2  
 		self.minimumTrackLength = 3
-		self.timeInterval = 1.0
 
 		self.maxIntensity = None
 		self.maxSize = None
@@ -305,7 +295,7 @@ class ParticleTracker:
 		self.reader = None
 		self.particles = None	 
 		self.tracks = []
-
+		self.timeStamps = []
 		self.useNew = 1
 
 		if psyco and sys.platform != 'darwin':
@@ -352,7 +342,6 @@ class ParticleTracker:
 			for particleList in self.particles:
 				for particle in particleList:
 					particle.setSpacing(self.spacing)
-					particle.setTimeInterval(self.timeInterval)
 				
 	def getParticles(self, timepoint, objs):
 		"""
@@ -789,12 +778,11 @@ class ParticleTracker:
 		"""
 		self.spacing = spacing
 
-	def setTimeInterval(self, timeInterval):
+	def setTimeStamps(self, timeStamps):
 		"""
-		Set interval of time points
+		Set timestamps
 		"""
-		if timeInterval > 0.0:
-			self.timeInterval = timeInterval
+		self.timeStamps = timeStamps
 
 	def trackTimepointParticles(self, timePoint, tracks):
 		"""
@@ -951,7 +939,6 @@ class ParticleTracker:
 					noneParticle.timePoint = i
 					noneParticle.posInPixels = [None,None,None]
 					noneParticle.voxelSize = particle.voxelSize
-					noneParticle.timeInterval = particle.timeInterval
 					newTrack.append(noneParticle)
 				newTrack.append(newParticle)
 				tracks.append(newTrack)

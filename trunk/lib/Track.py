@@ -34,6 +34,8 @@ import csv
 import os
 import lib.Particle
 import lib.Math
+import re
+import scripting
 
 class Track:
 	"""
@@ -46,7 +48,7 @@ class Track:
 		self.mintp, self.maxtp = 1000, 0
 		self.length = -1
 		self.voxelSize = (1.0,1.0,1.0) # In um
-		self.timeInterval = 1.0 # Seconds between time points
+		self.timeStamps = [] # Seconds between time points
 
 	def __len__(self):
 		return len(self.points)
@@ -59,7 +61,7 @@ class Track:
 			return 0
 		if tp2 not in self.points:
 			return 0
-		
+
 		pt = list(self.points[tp1])
 		pt2 = list(self.points[tp2])
 		for i,size in enumerate(self.voxelSize):
@@ -83,7 +85,7 @@ class Track:
 		"""
 		return the speed in um/s
 		"""
-		return self.getLength() / ((self.maxtp - self.mintp) * self.timeInterval)
+		return self.getLength() / (self.timeStamps[self.maxtp] - self.timeStamps[self.mintp])
 
 	def getDirectionalPersistence(self):
 		"""
@@ -153,12 +155,11 @@ class Track:
 		"""
 		return self.maxtp - self.mintp + 1
 
-	def setTimeInterval(self, interval):
+	def setTimeStamps(self, timestamps):
 		"""
 		Set the interval of time points
 		"""
-		if interval > 0.0:
-			self.timeInterval = interval
+		self.timeStamps = timestamps
 
 	def setVoxelSize(self, voxelSize):
 		"""
@@ -192,11 +193,27 @@ class TrackReader:
 		try:
 			csvfileObject = open(filename)
 			self.reader = csv.reader(csvfileObject, dialect = "excel", delimiter = ";")
+			self.parser = scripting.MyConfigParser()
+			ext = filename.split(".")[-1]
+			pat = re.compile('.%s'%ext)
+			iniFilename = pat.sub('.ini',filename)
+			self.parser.read([iniFilename])
+			
 		except IOError, ioError:
 			print ioError
 			self.reader = None
-		if self.reader:
+			self.parser = None
+		if self.reader and self.parser:
 			self.tracks = self.readTracks(self.reader)
+			try:
+				timeStamps = eval(self.parser.get("TimeStamps", "TimeStamps"))
+				voxelSize = eval(self.parser.get("VoxelSize", "VoxelSize"))
+				for track in self.tracks:
+					track.setVoxelSize(voxelSize)
+					track.setTimeStamps(timeStamps)
+			except:
+				pass
+			
 			self.getMaximumTrackLength()
 			
 	def getTrack(self, trackNumber, minLength = 3):
@@ -251,8 +268,7 @@ class TrackReader:
 
 		currtrack = -1
 		#print "Reading..."
-		
-		for track, objval, timepoint, xCoordinate, yCoordinate, zCoordinate, xVoxelSize, yVoxelSize, zVoxelSize, timeInterval in reader:
+		for track, objval, timepoint, xCoordinate, yCoordinate, zCoordinate in reader:
 			try:
 				tracknum = int(track)
 			except ValueError:
@@ -270,10 +286,6 @@ class TrackReader:
 				yCoordinate = None
 				zCoordinate = None
 			
-			xVoxelSize = float(xVoxelSize)
-			yVoxelSize = float(yVoxelSize)
-			zVoxelSize = float(zVoxelSize)
-			timeInterval = float(timeInterval)
 			if tracknum != currtrack:
 				if ctrack:
 					#print "Adding track", ctrack
@@ -281,8 +293,6 @@ class TrackReader:
 					ctrack = Track()			
 				currtrack = tracknum
 			ctrack.addTrackPoint(timepoint, objval, (xCoordinate, yCoordinate, zCoordinate))
-			ctrack.setVoxelSize((xVoxelSize, yVoxelSize, zVoxelSize))
-			ctrack.setTimeInterval(timeInterval)
 			
 		if ctrack not in tracks:
 			tracks.append(ctrack)
