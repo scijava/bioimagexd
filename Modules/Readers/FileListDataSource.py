@@ -117,7 +117,7 @@ class FileListDataSource(DataSource):
 		self.filenames = filenames
 		if len(filenames) == 0:
 			return
-		
+
 		if not self.dimensions:
 			self.retrieveImageInfo(filenames[0])
 
@@ -377,7 +377,6 @@ class FileListDataSource(DataSource):
 			self.ctf.AddRGBPoint(0, 0, 0, 0)
 			self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)
 			
-		
 		self.x, self.y, z = data.GetDimensions()
 		self.dimensions = (self.x, self.y, self.slicesPerTimepoint)
 		if z > 1:

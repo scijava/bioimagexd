@@ -866,6 +866,7 @@ enter the information below.""")
 		update the file list based on a pattern modified by user, or calculated from file name
 		"""
 		pattern = self.patternEdit.GetValue()
+		nformat = pattern.count("%")
 		# First see that we find files using the extension in the pattern
 		ext = pattern.split(".")[-1]
 		if not glob.glob(os.path.join(self.importDirectory, "*.%s"%ext)):
@@ -876,7 +877,7 @@ enter the information below.""")
 		# Try to find some characters from pattern not including numbers
 		r = re.compile("[a-z]+", re.IGNORECASE)
 		charStrings = r.findall(pattern)
-		if len(charStrings) > 0:
+		if len(charStrings) > (nformat + 1):
 			pat = pat + "*" + charStrings[0]
 
 		pat = pat + "*.%s" % ext
@@ -893,7 +894,6 @@ enter the information below.""")
 		print "Starting from ", startfrom
 		n = 0
 		filecount = len(files)
-		nformat = pattern.count("%")        
 		# If we're using all files in directory, just add them to the list
 		# Also, if there are no format specifiers (%) in the pattern, then
 		# just give the whole list
