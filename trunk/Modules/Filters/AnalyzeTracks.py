@@ -283,7 +283,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Write the statistics from a given timepoint to file
 		"""
-		f = codecs.open(filename, "ab", "latin1")
+		f = codecs.open(filename, "wb", "latin1")
 		Logging.info("Saving statistics of tracking to file %s"%filename, kw="processing")
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
 

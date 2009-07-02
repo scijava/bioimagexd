@@ -102,10 +102,13 @@ class DanielssonDistanceMapFilter(lib.ProcessingFilter.ProcessingFilter):
 		squared = self.parameters["Squared"]
 		imageSpacing = self.parameters["ImageSpacing"]
 
+		invert = itk.InvertIntensityImageFilter[image,image].New()
 		danielsson = itk.DanielssonDistanceMapImageFilter[image,image].New()
+
+		invert.SetInput(image)
 		self.filter = danielsson
 		self.filter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
-		self.filter.SetInput(image)
+		self.filter.SetInput(invert.GetOutput())
 		self.filter.SetSquaredDistance(squared)
 		self.filter.SetUseImageSpacing(imageSpacing)
 
