@@ -150,6 +150,7 @@ Jorma Virtanen <br>
 Mikko Huhtala <br>
 Pekka Neittaanmäki <br>
 Anna - Brita Öst <br>
+Mikko Karjalainen <br>
 </p><p>
 ISB - National Graduate School in Informational and Structural Biology <br>
 </p>

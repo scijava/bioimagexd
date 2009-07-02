@@ -90,7 +90,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the range for the parameter
 		"""				
-		return (0, self.dataUnit.getNumberOfTimepoints())
+		return (1, self.dataUnit.getNumberOfTimepoints())
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -99,8 +99,8 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
-		tp1 = self.parameters["Timepoint1"]
-		tp2 = self.parameters["Timepoint2"]
+		tp1 = self.parameters["Timepoint1"] - 1
+		tp2 = self.parameters["Timepoint2"] - 1
 		self.vtkfilter = vtkbxd.vtkImageAutoThresholdColocalization()
 		units = self.dataUnit.getSourceDataUnits()
 		data1 = units[0].getTimepoint(tp1)
