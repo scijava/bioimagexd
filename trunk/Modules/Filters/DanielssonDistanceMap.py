@@ -78,6 +78,8 @@ class DanielssonDistanceMapFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the default value of the parameter
 		@param param Parameter name
 		"""
+		if param == "ImageSpacing":
+			return True
 		return False
 
 	def getParameterLevel(self,param):
