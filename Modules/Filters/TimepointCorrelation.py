@@ -83,7 +83,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the default value of a parameter
 		"""		
 		if parameter == "Timepoint1":
-			return 0
+			return 1
 		return 1
 		
 	def getRange(self, parameter):
