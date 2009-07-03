@@ -40,6 +40,8 @@ import csv
 import scripting
 import codecs
 import Logging
+import platform
+import sys
 
 
 class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
@@ -224,7 +226,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		for k in dpkeys:
 			print "Avg. dp for tracks of len %d = %.3f"%(k, lib.Math.averageValue(dpsPerTp[k]))
 		
-		for i in range(0, self.globalmax):
+		for i in range(0, self.globalmax+1):
 			rows[0].append("T%d" % i)
 
 		self.trackListBox.setContents(rows)
@@ -245,14 +247,18 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		name = self.parameters["AnalyseFile"]
 		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save tracking analyse results as", "%s"%name, "CSV File (*.csv)|*.csv")
-
+		if platform.system() == "Windows":
+			filename = filename.encode('mbcs')
+		else:
+			filename = filename.encode(sys.getfilesystemencoding())
+	
 		if filename and self.taskPanel:
 			listOfFilters = self.taskPanel.filterList.getFilters()
 			filterIndex = listOfFilters.index(self)
 			func = "getFilter(%d)"%(filterIndex)
 			n = scripting.mainWindow.currentTaskWindowName
 			method = "scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
-			do_cmd = "%s.exportStatistics('%s')"%(method,filename)
+			do_cmd = "%s.exportStatistics(r'%s')"%(method,filename)
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", desc = "Export analysed tracking statistics")
 			cmd.run()
 			
@@ -288,7 +294,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
 
 		headers = ["Track #", "# of timepoints", "Length (micrometers)", "Avg. speed (micrometers/second)", "Directional persistence", "Avg. angle", "Avg. angle std. error"]
-		for i in range(0, self.globalmax):
+		for i in range(0, self.globalmax+1):
 			headers.append("T%d"%i)
 
 		w.writerow(headers)
