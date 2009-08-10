@@ -76,3 +76,25 @@ SET_TARGET_PROPERTIES (vtkBXDProcessingPythonD
   )
 ENDIF (VTK_WRAP_PYTHON AND VTKBXD_WRAP_PYTHON)
 
+# Create the vtkBXDBioImageXD Java library.
+IF (VTK_WRAP_JAVA AND VTKBXD_WRAP_JAVA)
+  #INCLUDE(${VTK_CMAKE_DIR}/vtkWrapJava.cmake)
+  #SET(VTK_WRAP_JAVA3_INIT_DIR "${PROJECT_SOURCE_DIR}")
+  SET(VTK_JAVA_HOME ${PROJECT_BINARY_DIR}/java/${PROJECT_NAME})
+  MAKE_DIRECTORY(${VTK_JAVA_HOME})
+  VTK_WRAP_JAVA3(vtkBXDProcessingJava ProcessingJava_SRCS "${Processing_SRCS}")
+  ADD_LIBRARY (vtkBXDProcessingJava ${ProcessingJava_SRCS})
+
+  SET_TARGET_PROPERTIES (vtkBXDProcessingJava
+    PROPERTIES  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+  )
+
+  TARGET_LINK_LIBRARIES(vtkBXDProcessingJava vtkBXDProcessing vtkImaging vtkImagingJava vtkCommon vtkCommonJava vtkIO vtkIOJava vtkWidgets vtkWidgetsJava vtkFiltering vtkFilteringJava)
+
+  INSTALL(TARGETS vtkBXDProcessing vtkBXDProcessingJava
+    RUNTIME DESTINATION bin 
+    LIBRARY DESTINATION lib 
+    ARCHIVE DESTINATION lib 
+  )
+
+ENDIF (VTK_WRAP_JAVA AND VTKBXD_WRAP_JAVA)
