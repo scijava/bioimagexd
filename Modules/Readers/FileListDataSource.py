@@ -29,7 +29,6 @@ __version__ = "$Revision: 1.37 $"
 __date__ = "$Date: 2005 / 01 / 13 13:42:03 $"
 
 from lib.DataSource.DataSource import DataSource
-import Image
 import Logging
 import os.path
 import vtk
@@ -162,12 +161,25 @@ class FileListDataSource(DataSource):
 			if file not in self.imageDims:
 				print "Trying to open",type(file)
 				try:
-					i = Image.open(file)
+					ext = file.split(".")[-1].upper()
+					if ext == "TIF":
+						ext = "TIFF"
+					if ext == "JPG":
+						ext = "JPEG"
+
+					if ext == "VTI":
+						reader = vtk.vtkXMLImageReader()
+					else:
+						reader = eval("vtk.vtk%sReader()"%ext)
+					reader.SetFileName(file)
+					reader.UpdateInformation()
 				except IOError, ex:
 					traceback.print_exc()
 					raise Logging.GUIError("Cannot open image file", "Cannot open image file %s" % file)
-				fSize = i.size
-				self.imageDims[file] = i.size
+
+				extent = reader.GetDataExtent()
+				fSize = (extent[1],extent[3])
+				self.imageDims[file] = fSize
 			else:
 				fSize = self.imageDims[file]
 			if s and fSize != s:
@@ -222,8 +234,10 @@ class FileListDataSource(DataSource):
 		dim = self.dimMapping[ext]
 		
 		if ext in ["tif", "tiff"]:
-			tiffimg = Image.open(files[0])
-			if tiffimg.mode == "RGB":
+			reader = vtkbxd.vtkExtTIFFReader()
+			reader.SetFileName(files[0])
+			reader.UpdateInformation()
+			if reader.GetNumberOfScalarComponents() >= 3:
 				print "MODE IS RGB, IS AN RGB IMAGE"
 			else:
 				print "MODE ISN'T RGB, THEREFOR NOT RGB"
