@@ -32,10 +32,6 @@ __date__ = "$Date: 2005/01/13/ 13:42:03 $"
 
 from lib.DataSource.DataSource import DataSource
 from lib.DataUnit.DataUnit import DataUnit
-try:
-	import Image
-except:
-	Image = None
 import Logging
 import math
 import os
@@ -44,8 +40,8 @@ import string
 import vtk
 import vtkbxd
 import scripting
-
 import lib.messenger
+
 
 def getExtensions(): 
 	return ["txt","lei"]
@@ -210,19 +206,9 @@ class LeicaDataSource(DataSource):
 		if bd == 32:
 			return None
 		if not self.ctf:
-			if not self.reader.isRaw(self.experiment):
-				ctf = vtk.vtkColorTransferFunction()            
-				r, g, b = self.reader.GetColor(self.experiment, self.channel)
-				r /= 255.0
-				g /= 255.0
-				b /= 255.0
-				ctf.AddRGBPoint(0, 0, 0, 0)
-				ctf.AddRGBPoint(255, r, g, b)
-				self.ctf = ctf
-			else:
-				lutColor = self.reader.getLutColor(self.experiment)
-				ctf = self.getColorByName(lutColor)
-				self.ctf = ctf
+			lutColor = self.reader.getLutColor(self.experiment, self.channel)
+			ctf = self.getColorByName(lutColor)
+			self.ctf = ctf
 		return self.ctf        
 		
 	def getColorByName(self, name):
@@ -283,15 +269,14 @@ class LeicaExperiment:
 		self.RE_PhysOrig = re.compile(r'Physical\sOrigin.*', re.I)
 #		self.RE_TimeStamp = re.compile(r'Stamp_(\d+).*(\d+):
 
-
 		self.setFileName(ExpPathTxt)
 		self.TP_CH_VolDataList = {}
 	
-	def getLutColor(self, experiment):
+	def getLutColor(self, experiment, channel):
 		"""
 		return the name of the color that the lut of the given experiment represents
 		"""
-		return self.SeriesDict[experiment]['LutColor']
+		return self.SeriesDict[experiment]['LutColor_c%d'%channel]
 	
 	def isRaw(self, experiment):
 		"""
@@ -347,25 +332,6 @@ class LeicaExperiment:
 		z = self.SeriesDict[experiment]["Number_Sections"]   
 		return (x, y, z)
 		
-	def GetColor(self, experiment, channel):
-		"""
-		Return the data for a given timepoint
-		"""    
-		rdr = self.getChannelReader(experiment, channel, 0)
-		rdr.ComputeInternalFileName(0)
-		fn = rdr.GetInternalFileName()
-		if not Image:
-			return 0, 0, 0
-		img = Image.open(fn)
-		if not img.palette:
-			return 255, 255, 255
-		
-		palette = img.palette.getdata()[1]
-		r = palette[255]
-		g = palette[2 * 256 - 1]
-		b = palette[3 * 256 - 1]
-		return ord(r), ord(g), ord(b)
-
 	def GetTimepoint(self, experiment, channel, timepoint):
 		"""
 		Return the data for a given timepoint
@@ -475,7 +441,6 @@ class LeicaExperiment:
 		PhysLengthLine = PhysLengthLine.replace(chr(0), " ")
 		WordsPhysLength = PhysLengthLine.split()
 		Seconds = float(WordsPhysLength[-2].strip())
-
 		
 		return NumT, Seconds
 		
@@ -594,8 +559,7 @@ class LeicaExperiment:
 		SeriesResYSplit.reverse()
 		SeriesResY = int(SeriesResYSplit[0].strip())
 		return SeriesResY
-						
-						
+
 	def Extract_Series_Info(self):
 		"""
 		Method: Extract_Series_Info
@@ -610,15 +574,21 @@ class LeicaExperiment:
 			seriesname = self.GetSeriesName(Series_Data)
 			lines = string.split("\n")
 			lutNameLine="Name:	Green"
+			channelLUTNames = []
 			for i,line in enumerate(lines):
-				if "LUT_0" in line:
+				if "LUT_" in line:
 					lutNameLine = lines[i+1]
-					break
+					channelLUTNames.append(lutNameLine)
+
+			if not channelLUTNames:
+				channelLUTNames.append(lutNameLine)
+			
 			# strip the last two characters, which are \x00 and \r
-			name = lutNameLine.split("\t")[1].strip()
-			name = name.replace("\x00","")
-			Series_Info['LutColor'] = name
-					
+			for i,name in enumerate(channelLUTNames):
+				name = name.split("\t")[1].strip()
+				name = name.replace("\x00","")
+				Series_Info['LutColor_c%d'%i] = name
+				
 			SeriesScanMode = self.GetScanMode(Series_Data)
 			
 			Series_Info['Pixel_Size'] = self.GetNumberOfComponents(Series_Data)                
