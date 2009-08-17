@@ -1522,11 +1522,15 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			
 		# If a visualizer is already running, just switch the mode
 		selectedFiles = self.tree.getSelectedDataUnits()
-		if not len(selectedFiles):
+		if (not len(selectedFiles)) and mode != "3d" and mode != "animator":
 			Dialogs.showerror(self, "You need to select a dataset to load in the visualizer.", \
 								"Please select a dataset")
 			return
 
+		# If we open 3D then there is not necessary any open files when we use
+		# pdb reader or tracking visualizer
+		if len(selectedFiles) == 0:
+			selectedFiles.append(None)
 		self.setButtonSelection(eid)
 		self.setVisualizerMenuSelection(eid)
 
@@ -1537,7 +1541,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				dataunit = self.visualizer.dataUnit
 			didSetDataUnit = False
 			self.visualizer.enable(False)
-			if not self.visualizer.getProcessedMode():
+			if not self.visualizer.getProcessedMode() and dataunit:
 				Logging.info("Setting dataunit for visualizer", kw = "main")
 				self.visualizer.setDataUnit(dataunit)
 				didSetDataUnit = True

@@ -191,8 +191,10 @@ class UrmasControl:
 	def getDataUnit(self):
 		"""
 		Returns the dataunit
-		"""			   
-		return self.dataUnit
+		"""
+		if hasattr(self,"dataUnit"):
+			return self.dataUnit
+		return None
 		
 	def setDataUnit(self, dataunit):
 		"""

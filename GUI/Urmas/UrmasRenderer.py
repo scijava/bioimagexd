@@ -167,7 +167,6 @@ class UrmasRenderer:
 		self.renderingInterface.setDataUnit(self.dataUnit)
 		self.renderingInterface.setCurrentTimepoint(0)
 		self.renderingInterface.setTimePoints([0])
-		settings = self.dataUnit.getSettings()
 #        ctf= settings.get("ColorTransferFunction")
 #        self.renderingInterface.doRendering(preview=data,ctf = ctf)
 

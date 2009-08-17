@@ -90,7 +90,7 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Execute the filter with given inputs and return the output
 		"""            
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
+		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
 		image = self.getInput(1)

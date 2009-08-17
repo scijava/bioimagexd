@@ -35,6 +35,7 @@ import GUI.Dialogs
 import lib.ImageOperations
 import Logging
 import scripting
+import Configuration
 import lib.messenger
 import math
 import os.path
@@ -60,7 +61,18 @@ class CTFButton(wx.BitmapButton):
 		self.ctf.AddRGBPoint(255, 1, 1, 1)
 		self.bmp = lib.ImageOperations.paintCTFValues(self.ctf)
 		self.SetBitmapLabel(self.bmp)
-		self.Bind(wx.EVT_BUTTON, self.onModifyCTF)
+		self.Bind(wx.EVT_LEFT_UP, self.onModifyCTF)
+		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
+
+		self.ID_SAVE_PALETTE_IMAGE = wx.NewId()
+		self.ID_SAVE_PALETTE_KEY = wx.NewId()
+		self.menu = wx.Menu()
+		item = wx.MenuItem(self.menu, self.ID_SAVE_PALETTE_IMAGE, "Save palette image...")
+		self.Bind(wx.EVT_MENU, self.onSavePaletteImage, id = self.ID_SAVE_PALETTE_IMAGE)
+		self.menu.AppendItem(item)
+		item = wx.MenuItem(self.menu, self.ID_SAVE_PALETTE_KEY, "Save palette key...")
+		self.Bind(wx.EVT_MENU, self.onSavePaletteKey, id = self.ID_SAVE_PALETTE_KEY)
+		self.menu.AppendItem(item)
 		
 	def isChanged(self):
 		"""
@@ -116,6 +128,123 @@ class CTFButton(wx.BitmapButton):
 		Returns the opacity function
 		"""
 		return self.panel.setOpacityTransferFunction(otf)
+
+	def onRightClick(self, event):
+		"""
+		Handler of right mouse button click
+		"""
+		self.PopupMenu(self.menu, event.GetPosition())
+
+	def onSavePaletteImage(self, event):
+		"""
+		Event handler of save palette image
+		"""
+		filename,mime = self.askPaletteFileName("Save palette image")
+		if not filename:
+			return
+		
+		img = self.bmp.ConvertToImage()
+		img.SaveMimeFile(filename, mime)
+
+	def onSavePaletteKey(self, event):
+		"""
+		Event handler of save palette key
+		"""
+		filename,mime = self.askPaletteFileName("Save palette key")
+		if not filename:
+			return
+
+		width = self.bmp.GetWidth()
+		bmpHeight = self.bmp.GetHeight()
+		height = bmpHeight + 16
+		bitmap = wx.EmptyBitmap(width = width, height = height)
+
+		black = (0,0,0)
+		white = (255,255,255)
+		longMark = 5
+		shortMark = 3
+
+		dc = wx.MemoryDC()
+		dc.SelectObject(bitmap)
+		dc.BeginDrawing()
+
+		# Paint background and copy palette
+		dc.SetBackground(wx.Brush(black))
+		dc.SetBrush(wx.Brush(black))
+		dc.DrawRectangle(0, 0, width, height)
+		dc.DrawBitmap(self.bmp, 0, 0)
+
+		# Draw scale
+		lineList = []
+		dc.SetPen(wx.Pen(white, 1))
+		longStartY = bmpHeight + 1
+		for x in (0,64,128,192,255):
+			lineList.append((x, longStartY, x, longStartY + longMark))
+
+		shortStartY = longStartY + (longMark - shortMark) / 2
+		for x in range(4, 256, 4):
+			lineList.append((x, shortStartY, x, shortStartY + shortMark))
+
+		lineList.append((0, longStartY + longMark / 2, width - 1,longStartY + longMark / 2))
+		dc.DrawLineList(lineList)
+		
+		# Write numbers
+		textY = longStartY + longMark + 1
+		textHeight = 6
+		textWidth = 32
+		font = self.GetFont()
+		font.SetPointSize(6)
+		dc.SetFont(font)
+		dc.SetTextForeground(white)
+		dc.DrawLabel(str(self.minval), wx.Rect(0, textY, textWidth, textHeight), wx.ALIGN_LEFT)
+		dc.DrawLabel(str(self.maxval), wx.Rect(width - textWidth - 1, textY, textWidth, textHeight), wx.ALIGN_RIGHT)
+		diff = self.maxval - self.minval + 1
+		for i in range(1,4):
+			value = i * diff / 4
+			dc.DrawLabel(str(value), wx.Rect(i*256/4 - textWidth/2, textY, textWidth, textHeight), wx.ALIGN_CENTER_HORIZONTAL)
+		
+		dc.EndDrawing()
+
+		img = bitmap.ConvertToImage()
+		img.SaveMimeFile(filename, mime)
+		del dc
+		del bitmap
+
+	def askPaletteFileName(self, title):
+		"""
+		Asks filename to save a palette
+		"""
+		wcDict = {"png": "Portable Network Graphics Image (*.png)", "jpeg": "JPEG Image (*.jpeg)",
+		"tiff": "TIFF Image (*.tiff)", "bmp": "Bitmap Image (*.bmp)"}
+		conf = Configuration.getConfiguration()
+		defaultExt = conf.getConfigItem("ImageFormat", "Output")
+		if defaultExt == "jpg":
+			defaultExt = "jpeg"
+		if defaultExt == "tif":
+			defaultExt = "tiff"
+
+		if defaultExt not in wcDict:
+			defaultExt = "png"
+		initFile = "palette.%s" % (defaultExt)
+		wc = wcDict[defaultExt] + "|*.%s" % defaultExt
+		del wcDict[defaultExt]
+		
+		for key in wcDict.keys():
+			wc += "|%s|*.%s" % (wcDict[key], key)
+		
+		filename = GUI.Dialogs.askSaveAsFileName(self, title, initFile, wc, "palette")
+		if not filename:
+			return None,None
+		
+		ext = filename.split(".")[-1].lower()
+		if ext == "jpg":
+			ext = "jpeg"
+		if ext == "tif":
+			ext = "tiff"
+		mime = "image/%s"%ext
+
+		return filename,mime
+		
 
 class CTFPaintPanel(wx.Panel):
 	"""

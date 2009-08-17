@@ -230,9 +230,6 @@ class ExportDialog(wx.Dialog):
 		self.outputFormat.menu.Bind(wx.EVT_CHOICE, self.updateListOfImages)
 		self.sourcesizer.Add(self.outputFormat)
 		
-		
-
-
 		self.sourceListbox = wx.ListBox(self.imagePanel, -1, size = (600, 100), style = wx.LB_ALWAYS_SB | wx.LB_EXTENDED)
 		self.listlbl = wx.StaticText(self.imagePanel, -1, "List of Images:")
 		self.sourcesizer.Add(self.listlbl)
@@ -247,16 +244,13 @@ class ExportDialog(wx.Dialog):
 
 		self.nlbl = wx.StaticText(self.imagePanel, -1, "Number of images:")
 		self.imageAmountLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.imageAmnt)
- 
-		
+
 		self.dimlbl = wx.StaticText(self.imagePanel, -1, "Image dimensions:")
 		self.dimensionLbl = wx.StaticText(self.imagePanel, -1, "%d x %d" % (self.x, self.y))
 	
-		
 		self.depthlbl = wx.StaticText(self.imagePanel, -1, "Depth of Stack:")
 		self.depthLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.z)
 		
-
 		self.tpLbl = wx.StaticText(self.imagePanel, -1, "Number of Timepoints:")
 		self.timepointLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.n)
 		
@@ -267,14 +261,12 @@ class ExportDialog(wx.Dialog):
 		self.infosizer.Add(self.dimlbl, (1, 0))
 		self.infosizer.Add(self.dimensionLbl, (1, 1), flag = wx.EXPAND | wx.ALL)
 		
-		
 		self.infosizer.Add(self.tpLbl, (2, 0))
 		self.infosizer.Add(self.timepointLbl, (2, 1), flag = wx.EXPAND | wx.ALL)
 
 		self.infosizer.Add(self.depthlbl, (3, 0))
 		self.infosizer.Add(self.depthLbl, (3, 1), flag = wx.EXPAND | wx.ALL)
 
-		
 		self.imageInfoSizer.Add(self.infosizer)
 		
 		self.imageSizer.Add(self.imageInfoSizer, (0, 0), flag = wx.EXPAND | wx.ALL, border = 5)

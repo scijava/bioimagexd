@@ -42,6 +42,8 @@ import traceback
 import lib.Command
 import os
 import GUI.Scatterplot
+import Configuration
+
 RADIO_CHOICE = "RADIO_CHOICE"
 THRESHOLD = "THRESHOLD"
 CTF = "CTF"
@@ -705,12 +707,20 @@ class GUIBuilder(wx.Panel):
 		box = wx.BoxSizer(wx.VERTICAL)
 		text = currentFilter.getDesc(itemName)
 		defValue = currentFilter.getDefaultValue(itemName)
+		ftype = defValue.split(".")[-1]
+		conf = Configuration.getConfiguration()
+		remember = conf.getConfigItem("RememberPath", "Paths")
+		lastPath = ""
+		if remember:
+			lastPath = conf.getConfigItem("LastPath_%s"%ftype, "Paths")
+			if not lastPath:
+				lastPath = "."
 
 		updateFilenameFunc = lambda event, its = items[n], f = currentFilter, i = itemName, \
 						s = self: s.onSetFileName(f, i, event)
 
 		browse = FileBrowseButton(self, -1, size = (400, -1), labelText = text, 
-		fileMask = items[n][2], dialogTitle = items[n][1], changeCallback = updateFilenameFunc)
+		fileMask = items[n][2], dialogTitle = items[n][1], startDirectory = lastPath, changeCallback = updateFilenameFunc)
 
 		browse.SetValue(defValue)
 		setFilenameFunc = lambda obj, event, arg, b = browse, i = itemName, s = self: \
@@ -773,6 +783,14 @@ class GUIBuilder(wx.Panel):
 		"""			  
 		filename = event.GetString()
 		filter.setParameter(item, filename)
+		if filename == filter.getDefaultValue(item):
+			return
+		
+		conf = Configuration.getConfiguration()
+		remember = conf.getConfigItem("RememberPath", "Paths")
+		ftype = filename.split(".")[-1]
+		if remember:
+			conf.setConfigItem("LastPath_%s"%ftype, "Paths", os.path.dirname(filename))
 		
 	def onSetChoiceFromFilter(self, cc, itemName, value):
 		"""
@@ -783,7 +801,7 @@ class GUIBuilder(wx.Panel):
 	def onSetFileNameFromFilter(self, browseButton, itemName, value):
 		"""
 		Set the file name
-		"""			  
+		"""
 		browseButton.SetValue(value)
 		
 	def onSetRadioBox(self, box, item, value):
