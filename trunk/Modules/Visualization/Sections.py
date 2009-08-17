@@ -78,13 +78,13 @@ def getShortDesc():
 	"""
 	return a short description (used as menu items etc.) of this visualization mode
 	"""
-	return "Orthographic mode"
+	return "Orthogonal mode"
 
 def getDesc():
 	"""
 	return a description (used as tooltips etc.) of this visualization mode
 	"""
-	return "Display three orthographic sections of the dataset"    
+	return "Display three orthogonal sections of the dataset"    
 
 def getClass():
 	"""

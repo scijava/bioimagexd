@@ -54,7 +54,7 @@ class RenderingInterface:
 		self.timePoints = timePoints
 		
 		self.settings_mode = 0
-		self.frameName = ""
+		self.frameName = "frame"
 		self.thread = None
 		self.stop = 0
 		self.currentTimePoint = -1
@@ -97,7 +97,10 @@ class RenderingInterface:
 					 This will also update relevant information about the dataset
 
 		Preconditions: self.dataUnit != 0
-		"""		   
+		"""
+		if not self.dataUnit:
+			return
+		
 		self.currentTimePoint = timepoint
 		if self.dataUnit.isProcessed():
 			self.currentData = self.dataUnit.doPreview(scripting.WHOLE_DATASET, True, timepoint)
@@ -145,15 +148,17 @@ class RenderingInterface:
 		"""
 		Set the dataunit from which the rendered datasets are read
 		"""
+		# Format, the format will be /path/to/data/image_001.png
+		ndigits = 1
+		self.format = "%%s%s%%s_%%.%dd.%s" % (os.path.sep, ndigits, self.imageType)
+		
 		self.dataUnit = dataUnit
 		if not dataUnit:
 			return
+		
 		# Calculate how many digits there will be in the rendered output
 		# file names, with a running counter
 		ndigits = 1 + int(math.log(self.dataUnit.getNumberOfTimepoints(), 10))
-
-		# Format, the format will be /path/to/data/image_001.png		
-		self.format = "%%s%s%%s_%%.%dd.%s" % (os.path.sep, ndigits, self.imageType)
 
 		#Logging.info("File name format = ", self.format)
 		self.ctf = dataUnit.getColorTransferFunction()

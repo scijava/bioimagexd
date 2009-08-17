@@ -740,13 +740,16 @@ class ProcessingFilter:
 		self.recordedParameters[parameter] = value
 		if self.getType(parameter) == GUI.GUIBuilder.ROISELECTION:
 			i, roi = value
-			setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i
 			rois = scripting.visualizer.getRegionsOfInterest()
 			if oldval in rois:
 				n = rois.index(oldval)
 				setoldval = "scripting.visualizer.getRegionsOfInterest()[%d]" % n
 			else:
 				setoldval = ""
+			if len(rois) > i:
+				setval = "scripting.visualizer.getRegionsOfInterest()[%d]" % i
+			else:
+				setval = ""
 			value = roi
 		else:
 			if type(value) in [types.StringType, types.UnicodeType]:

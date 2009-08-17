@@ -95,7 +95,7 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
 				return (0, n[0])
-			return 0
+			return 0, None
 		return 0
 		
 	def execute(self, inputs, update = 0, last = 0):

@@ -39,6 +39,7 @@ import Visualizer.VisualizationFrame as VisualizationFrame
 from Visualizer.VisualizationMode import VisualizationMode
 import Visualizer.VisualizerWindow as VisualizerWindow
 import wx
+import Logging
 
 def getName():
 	"""
@@ -382,7 +383,8 @@ class RenderingMode(VisualizationMode):
 		self.visualizer.elevation.Unbind(wx.EVT_SPIN_DOWN)
 
 		dataunit = self.getDataUnit()
-		dataunit.resetColorTransferFunction()
+		if dataunit:
+			dataunit.resetColorTransferFunction()
 
 		
 	def setDataUnit(self, dataUnit):
@@ -448,7 +450,7 @@ class RenderingMode(VisualizationMode):
 		"""
 		if not lbl:
 			lbl = name
-		if not self.dataUnit:
+		if not self.dataUnit and lbl not in ["Protein Data Bank"]:
 			GUI.Dialogs.showerror(self.parent, \
 									"No dataset has been loaded for visualization", \
 									"Cannot load visualization module")
