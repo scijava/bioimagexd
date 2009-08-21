@@ -103,7 +103,7 @@ class SurfaceModule(VisualizationModule):
 	def setScalarRange(self, min, max):
 		"""
 		Set the scalar range of this module
-		"""   
+		"""
 		self.scalarRange = (min, max)
 		lib.messenger.send(self, "update_SurfaceRangeBegin")
 		lib.messenger.send(self, "update_SurfaceRangeEnd")
@@ -157,8 +157,12 @@ class SurfaceModule(VisualizationModule):
 			return 0
 		if parameter == "PreserveTopology": 
 			return 1
-		if parameter == "IsoValue": 
+		if parameter == "IsoValue":
+			#if self.scalarRange[1] - self.scalarRange[0] <= 256:
 			return 128
+			#else:
+			#	return int(0.75 * self.scalarRange[1])
+		
 		if parameter == "Transparency": 
 			return 0
 		if parameter == "SurfaceRangeBegin": 
@@ -227,7 +231,7 @@ class SurfaceModule(VisualizationModule):
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""           
+		"""
 		method = self.parameters["Method"]
 		self.setMethod(method)
 
@@ -247,11 +251,11 @@ class SurfaceModule(VisualizationModule):
 			dataUnit = self.dataUnit
 		dataCtf = dataUnit.getColorTransferFunction()
 		if self.parameters["SolidColor"]:
-			ctf = vtk.vtkColorTransferFunction()
-			ctf.AddRGBPoint(0, 0,0,0)
 			minval, maxval = dataCtf.GetRange()
+			ctf = vtk.vtkColorTransferFunction()
+			ctf.AddRGBPoint(int(minval), 0,0,0)
 			r,g,b = dataCtf.GetColor(maxval)
-			ctf.AddRGBPoint(1, r,g,b)
+			ctf.AddRGBPoint(int(minval) + 1, r,g,b)
 			ctf.AddRGBPoint(maxval, r,g,b)
 		else:
 			ctf = dataCtf
@@ -259,10 +263,7 @@ class SurfaceModule(VisualizationModule):
 		self.mapper.ScalarVisibilityOn()
 		
 		min, max = self.data.GetScalarRange()
-		
-		#if (min,max) != self.scalarRange:
 		self.setScalarRange(min, max)
-		
 		
 		self.mapper.SetScalarRange(min, max)
 		self.mapper.SetColorModeToMapScalars()
@@ -285,6 +286,7 @@ class SurfaceModule(VisualizationModule):
 			VisualizationModule.updateRendering(self, polyinput)
 			self.parent.Render() 
 			return
+		
 		input = self.getInput(1)
 		
 		if self.parameters["Gaussian"]:
@@ -320,7 +322,7 @@ class SurfaceModule(VisualizationModule):
 		#TODO: should decimateLevel and preserveTopology be instance variables?
 		decimateLevel = self.parameters["Simplify"] 
 		preserveTopology = self.parameters["PreserveTopology"] 
-		if decimateLevel != 0:            
+		if decimateLevel != 0:
 			self.decimate.SetPreserveTopology(preserveTopology)
 			if not preserveTopology:
 				self.decimate.SplittingOn()
@@ -342,10 +344,9 @@ class SurfaceModule(VisualizationModule):
 			self.normals.SetInput(input)
 			input = self.normals.GetOutput()
 
-		
 		self.mapper.SetInput(input)
 		VisualizationModule.updateRendering(self, input)
-		self.parent.Render()    
+		self.parent.Render()
 
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Surface rendering", **kws):
@@ -391,7 +392,7 @@ class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 	def setModule(self, module):
 		"""
 		Set the module to be configured
-		"""  
+		"""
 		ModuleConfigurationPanel.setModule(self, module)
 		#print "module=",module
 		self.module = module

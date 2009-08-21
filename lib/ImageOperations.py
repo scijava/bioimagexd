@@ -726,7 +726,7 @@ def getImageScalarRange(image):
 		return 0,4095
 	return x0,x1
 	
-def get_histogram(image, maxval = 0):
+def get_histogram(image, maxval = 0, minval = 0):
 	"""
 	Return the histogram of the image as a list of floats
 	"""
@@ -736,27 +736,30 @@ def get_histogram(image, maxval = 0):
 	if maxval == 0:
 		x0, x1 = getImageScalarRange(image)
 		x1 = int(math.floor(x1))
+		x0 = int(math.ceil(x0))
 	else:
-		x0,x1 = (0,int(math.floor(maxval)))
+		x0,x1 = (int(math.ceil(minval)),int(math.floor(maxval)))
 
-	accu.SetComponentExtent(0, x1, 0, 0, 0, 0)
+	accu.SetComponentExtent(0, 255, 0, 0, 0, 0)
+	accu.SetComponentOrigin(minval, 0, 0)
+	accu.SetComponentSpacing((maxval - minval) / 255, 0, 0)
 	accu.Update() 
 	data = accu.GetOutput()
 	
 	values = []
 	x0, x1, y0, y1, z0, z1 = data.GetWholeExtent()
 
-	for i in range(0, x1 + 1):
+	for i in range(x0, x1 + 1):
 		c = data.GetScalarComponentAsDouble(i, 0, 0, 0)
 		values.append(c)
 	return values
 	
 def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), logarithmic = 1, \
-				ignore_border = 0, lower = 0, upper = 0, percent_only = 0, maxval = 255):
+				ignore_border = 0, lower = 0, upper = 0, percent_only = 0, maxval = 255, minval = 0):
 	"""
 	Draw a histogram of a volume
 	"""
-	values = get_histogram(imagedata,maxval)
+	values = get_histogram(imagedata,maxval,minval)
 	sum = 0
 	xoffset = 10
 	sumth = 0
