@@ -271,7 +271,6 @@ class GUIBuilder(wx.Panel):
 		
 		histogram = Histogram.Histogram(background)
 		
-		
 		self.histograms.append(histogram)
 		func = lambda event, its = item, f = currentFilter:self.onSetThreshold(event, its, f)
 		histogram.Bind(Histogram.EVT_SET_THRESHOLD, func)
@@ -636,7 +635,8 @@ class GUIBuilder(wx.Panel):
 		item = items[n]
 		level = currentFilter.getParameterLevel(itemName)
 		
-		if not parent: parent = self
+		if not parent:
+			parent = self
 		text = currentFilter.getDesc(itemName)
 		box = wx.BoxSizer(wx.VERTICAL)
 		if text:
@@ -644,7 +644,7 @@ class GUIBuilder(wx.Panel):
 			box.Add(label)
 		background = wx.Window(parent, -1)
 		
-		slider = self.createSlider(currentFilter, itemName,item, background)
+		slider = self.createSlider(currentFilter, itemName, item, background)
 		if level:
 			background.SetBackgroundColour(level)
 			if text:
@@ -662,7 +662,8 @@ class GUIBuilder(wx.Panel):
 		"""
 		defValue = currentFilter.getDefaultValue(itemName)
 		minval, maxval = currentFilter.getRange(itemName)
-		x = max(200, maxval)
+		#x = max(200, maxval)
+		x = 256
 		
 		slider = wx.Slider(parent, -1, value = defValue, minValue = minval, maxValue = maxval,
 		style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (x, -1))

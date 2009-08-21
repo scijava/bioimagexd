@@ -120,20 +120,20 @@ class Histogram(wx.Panel):
 		self.replaceCTF = colorTransferFunction
 		self.colorTransferFunction = colorTransferFunction
 		
-	def setLowerThreshold(self, lowerThreshhold):
+	def setLowerThreshold(self, lowerThreshold):
 		"""
 		Set the lower threshold showin with this widget
 		"""
-		self.lowerThreshold = lowerThreshhold
+		self.lowerThreshold = lowerThreshold
 		self.actionstart = None
 		self.updatePreview(renew = 1)
 		self.Refresh()
 
-	def setUpperThreshold(self, upperThreshhold):
+	def setUpperThreshold(self, upperThreshold):
 		"""
 		Set the upper threshold showin with this widget
 		"""
-		self.upperThreshold = upperThreshhold
+		self.upperThreshold = upperThreshold
 		self.actionstart = None
 		self.updatePreview(renew = 1)
 		self.Refresh()
@@ -160,7 +160,7 @@ class Histogram(wx.Panel):
 
 	def markActionStart(self, event):
 		"""
-		Sets the starting position of rubber band for zooming
+		Sets the starting position of selecting threshold
 		"""
 		position = event.GetPosition()
 		x, y = position
@@ -189,10 +189,9 @@ class Histogram(wx.Panel):
 		print "upper threshold=",self.upperThreshold
 		print "scale=",self.scale
 
-		lowerDifference = abs(x - self.lowerThreshold/self.scale)
-		upperDifference = abs(x - self.upperThreshold/self.scale)
-		# x is in range 0-255, thresholds can be larger
-
+		lowerDifference = abs(x - (self.lowerThreshold - self.scalarMin)/self.scale)
+		upperDifference = abs(x - (self.upperThreshold - self.scalarMin)/self.scale)
+		# x is in range 0-255, thresholds can be different
 		if lowerDifference > 30 and upperDifference > 30:
 			self.mode = "middle"
 			self.middleStart = x
@@ -200,9 +199,9 @@ class Histogram(wx.Panel):
 			self.mode = "upper"
 			if lowerDifference < upperDifference:
 				self.mode = "lower"
-			if int(self.scale * x) < self.lowerThreshold:
+			if int(self.scale * x + self.scalarMin) < self.lowerThreshold:
 				self.mode = "lower"
-			if int(self.scale * x) > self.upperThreshold:
+			if int(self.scale * x + self.scalarMin) > self.upperThreshold:
 				self.mode = "upper"
 		self.updatePreview()
 			
@@ -232,7 +231,7 @@ class Histogram(wx.Panel):
 		if not self.actionstart:
 			return
 		xorg, y1 = self.actionstart
-		x1 = int(xorg * self.scale)
+		x1 = int(xorg * self.scale + self.scalarMin)
 		
 		set = self.dataUnit.getSettings().set
 		get = self.dataUnit.getSettings().get
@@ -254,11 +253,11 @@ class Histogram(wx.Panel):
 				set("ColocalizationLowerThreshold", x1)
 			self.lowerThreshold = x1
 		elif self.mode == "middle":
-			difference = x1 - int(self.scale * self.middleStart)
-			if self.lowerThreshold + difference < 0:
-				difference = - self.lowerThreshold
-			if self.upperThreshold + difference > int(self.scale * 255):
-				difference = int(self.scale * 255) - self.upperThreshold
+			difference = x1 - int(self.scale * self.middleStart + self.scalarMin)
+			if self.lowerThreshold + difference < self.scalarMin:
+				difference = self.scalarMin - self.lowerThreshold
+			if self.upperThreshold + difference > self.scalarMax:
+				difference = self.scalarMax - self.upperThreshold
 			self.lowerThreshold += difference
 			self.upperThreshold += difference
 			self.middleStart = xorg
@@ -324,10 +323,10 @@ class Histogram(wx.Panel):
 
 		self.renew = 1
 		self.noupdate = noupdate
-		self.scalarMax = dataUnit.getScalarRange()[1]
-		self.lowerThreshold = self.scalarMax / 2
+		self.scalarMin, self.scalarMax = dataUnit.getScalarRange()
+		self.lowerThreshold = (self.scalarMax - self.scalarMin) / 2 + self.scalarMin
 		self.upperThreshold = self.scalarMax
-		self.scale = self.scalarMax / 255.0
+		self.scale = (self.scalarMax - self.scalarMin) / 255.0
 		self.updatePreview()
 
 	def updatePreview(self, *args, **kws):
@@ -363,7 +362,7 @@ class Histogram(wx.Panel):
 																ignore_border = self.ignoreBorder, \
 																lower = lower * self.scale, \
 																upper = upper * self.scale, \
-																maxval = 255 * self.scale)
+																maxval = self.scalarMax, minval = self.scalarMin)
 			self.xoffset = xoffset
 			self.histogram = histogram
 			width = self.histogram.GetWidth()
@@ -409,7 +408,7 @@ class Histogram(wx.Panel):
 			
 			if self.actionstart:
 				xorg, y1 = self.actionstart
-				x1 = int(self.scale * xorg)
+				x1 = int(self.scale * xorg + self.scalarMin)
 
 				if self.mode == "upper":
 					upper1 = x1
@@ -418,11 +417,11 @@ class Histogram(wx.Panel):
 					lower1 = x1
 					self.lowerThreshold = x1
 				elif self.mode == "middle":
-					difference = x1 - int(self.scale * self.middleStart)
-					if self.lowerThreshold + difference < 0:
-						difference = - self.lowerThreshold
-					if self.upperThreshold + difference > int(self.scale * 255):
-						difference = int(self.scale * 255) - self.upperThreshold
+					difference = x1 - int(self.scale * self.middleStart + self.scalarMin)
+					if self.lowerThreshold + difference < self.scalarMin:
+						difference = self.scalarMin - self.lowerThreshold
+					if self.upperThreshold + difference > self.scalarMax:
+						difference = self.scalarMax - self.upperThreshold
 					
 					self.middleStart = xorg
 					self.lowerThreshold += difference
@@ -460,26 +459,27 @@ class Histogram(wx.Panel):
 		b = int(b)
 
 		overlayWidth = abs(int((upper1 - lower1) / self.scale))
-
 		borders = lib.ImageOperations.getOverlayBorders(overlayWidth, 150, (r, g, b), 80)
 		borders = borders.ConvertToBitmap()
-		dc.DrawBitmap(borders, self.xoffset + int(lower1 / self.scale), 0, 1)
+		dc.DrawBitmap(borders, self.xoffset + int((lower1 - self.scalarMin) / self.scale), 0, 1)
 
 		overlay = lib.ImageOperations.getOverlay(overlayWidth, 150, (r, g, b), 32)
 		overlay = overlay.ConvertToBitmap()
-		dc.DrawBitmap(overlay, self.xoffset + int(lower1 / self.scale), 0, 1)
+		dc.DrawBitmap(overlay, self.xoffset + int((lower1 - self.scalarMin) / self.scale), 0, 1)
 
 		if self.values:
 			tot = 0
 			totth = 0
 			for i, val in enumerate(self.values):
 				tot += val
-				if i >= lower1 and i <= upper1:
+				if i * self.scale + self.scalarMin >= lower1 and i <= upper1:
 					totth += val
 			self.percent = totth / float(tot)
 
 		if not self.percent:
 			self.percent = 0.00
+
+		dc.SetBackground(wx.Brush((255,255,255)))
 		dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		dc.DrawText("%.2f%% of data selected (range %d-%d)" \
 					% (100 * self.percent, self.lowerThreshold, \
@@ -487,12 +487,9 @@ class Histogram(wx.Panel):
 		dc.EndDrawing()
 		dc = None
 
-
 		
 	def OnPaint(self, event):
 		"""
 		Does the actual blitting of the bitmap
 		"""
 		dc = wx.BufferedPaintDC(self, self.buffer)#, self.buffer)
-		
-

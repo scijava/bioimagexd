@@ -131,8 +131,8 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		if dataUnit:
 			sourceDataUnits = dataUnit.getSourceDataUnits()
 			if sourceDataUnits:
-				self.defaultUpper = sourceDataUnits[0].getScalarRange()[1]
-				self.defaultLower = self.defaultUpper / 2
+				min, self.defaultUpper = sourceDataUnits[0].getScalarRange()
+				self.defaultLower = (self.defaultUpper + min) / 2
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		
 
@@ -162,6 +162,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
+		min,max = self.dataUnit.getSourceDataUnits()[0].getScalarRange()
 		self.eventDesc="Thresholding image"
 
 		if not self.parameters["Demonstrate"]:
@@ -193,19 +194,19 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			origCtf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
 			self.origCtf = origCtf
 			ctf = vtk.vtkColorTransferFunction()
-			ctf.AddRGBPoint(0, 0, 0, 0.0)
-			if lower > 0:
-				ctf.AddRGBPoint(lower, 0, 0, 1.0)
-				ctf.AddRGBPoint(lower + 1, 0, 0, 0)
+			ctf.AddRGBPoint(min, 0, 0, 0.0)
+			if lower >= min + 1:
+				ctf.AddRGBPoint(lower - 1, 0, 0, 1.0)
+				ctf.AddRGBPoint(lower, 0, 0, 0)
 			
 			
 			val = [0, 0, 0]
-			origCtf.GetColor(255, val)
+			origCtf.GetColor(max, val)
 			r, g, b = val
 			ctf.AddRGBPoint(upper, r, g, b)
-			if upper < 255:
+			if upper <= max + 1:
 				ctf.AddRGBPoint(upper + 1, 0, 0, 0)
-				ctf.AddRGBPoint(255, 1.0, 0, 0)
+				ctf.AddRGBPoint(max, 1.0, 0, 0)
 			self.dataUnit.getSettings().set("ColorTransferFunction", ctf)
 			if self.gui:
 				self.gui.histograms[0].setReplacementCTF(ctf)
