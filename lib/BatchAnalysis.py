@@ -320,30 +320,26 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		scripting.combinedDataUnit = None
 		ftime = time.time()
 		print "BBA took %f secs"%(ftime - stime)
-				
+	
 	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders):
 		"""
 		write the csv results out
 		"""
 		selectedVars = self.getSelectedVariables(procListName)
 		row=[""]*len(varHeaders)
+
 		for var in selectedVars.keys():
 			varName = selectedVars[var]
 			if var in varHeaders:
 				i = varHeaders.index(var)
 
-				# Following doesn't work since it cannot find results of vars
-				# that end with number other than 1 (f. ex. M2)
-				# Maybe this number should be put in front of the variable name
-				# or use #number in the end?
-				#reg = re.compile("([0-9]+)$")
-				
-				#try:
-				#	match = reg.search(var)
-				#	n = int(match.groups(0)[0])
-				#except:
-				#	n = 1
-				n = 1
+				reg = re.compile("([0-9]+)$")
+				try:
+					match = reg.search(var)
+					n = int(match.groups(0)[0])
+				except:
+					n = 1
+
 				value = procedureList.getResultVariable(varName, nth = n-1)
 				row[i] = value
 			else:
@@ -389,7 +385,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			procList = self.procedureLists[procListName]
 			parser.add_section(procListName)
 			procList.writeOut(parser, prefix = "%s_"%procListName)
-			
+
 			if procListName in self.selectedVariables:
 				for key,value in self.selectedVariables[procListName].items():
 					parser.set(procListName, key, value)

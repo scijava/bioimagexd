@@ -479,7 +479,7 @@ class PreviewFrame(InteractivePanel):
 			extract.SetComponents(0, 1, 2)
 			extract.SetInput(data)
 			data = extract.GetOutput()
-		
+
 		if ncomps == 1:
 			Logging.info("Mapping trough ctf", kw = "preview")
 			

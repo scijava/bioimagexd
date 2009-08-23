@@ -388,6 +388,7 @@ class CombinedDataUnit(DataUnit):
 		# If either no output channels have been specified (in which case
 		# we return just the normal preview) or the combined result
 		# (n = last chl+1) has	been requested
+
 		if self.merging or not self.outputChannels or (n in self.outputChannels and self.outputChannels[n]):
 			# If the renew flag is true, we need to regenerate the preview
 			if renew:

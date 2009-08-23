@@ -79,11 +79,8 @@ class Scatterplot(wx.Panel):
 			size = (w, h)
 			
 		self.xoffset = 0
-
-			
 		self.scatterCTF = None
 		self.mode = (1, 2)
-		
 		self.userDrawnThresholds = None
 			
 		self.lower1, self.upper1, self.lower2, self.upper2 = 127,255,127,255
@@ -113,7 +110,6 @@ class Scatterplot(wx.Panel):
 		self.menu = wx.Menu()
 		lib.messenger.connect(None, "threshold_changed", self.updatePreview)
 		
-
 		item = wx.MenuItem(self.menu, self.ID_LOGARITHMIC, "Logarithmic scale", kind = wx.ITEM_CHECK)
 		self.Bind(wx.EVT_MENU, self.onSetLogarithmic, id = self.ID_LOGARITHMIC)
 		self.menu.AppendItem(item)

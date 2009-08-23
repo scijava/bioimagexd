@@ -138,7 +138,8 @@ LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, in
 
   ctf->RemoveAllPoints();
 
-  double *table = new double[(end+1-start)*3];
+  int points = (end-start+1);
+  double *table = new double[points*3];
   double *tablePtr = table;
   double red;
   double green;
@@ -146,7 +147,7 @@ LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, in
   int gPoint = this->InputStrLen / 3;
   int bPoint = gPoint * 2;
 
-  for (int i = start; (i < end+1) && (bPoint + i < this->InputStrLen); ++i)
+  for (int i = 0; (i < points) && (bPoint + i < this->InputStrLen); ++i)
 	{
 	  red = this->InputString[i] / 255.0;
 	  green = this->InputString[gPoint+i] / 255.0;
@@ -157,7 +158,7 @@ LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, in
 	  tablePtr += 3;
 	}
 
-  ctf->BuildFunctionFromTable(start, end, end+1-start, table);
+  ctf->BuildFunctionFromTable(start, end, points, table);
   delete[] table;
 
   return 1;

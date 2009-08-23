@@ -1899,7 +1899,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		module = moduletype()
 		unit.setModule(module)
 		unit.setCacheKey(cacheKey)
-		
 		window.setCombinedDataUnit(unit)		
 
 		for name, taskid in self.taskToId.items():

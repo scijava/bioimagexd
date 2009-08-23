@@ -188,10 +188,9 @@ class PickVariablesDialog(wx.Dialog):
 		for (currFilter, filterVariables) in variables:
 			for varName in filterVariables:
 				self.checkListCtrl.InsertStringItem(i, "")
-				self.checkListCtrl.SetStringItem(i, 1,varName)
+				self.checkListCtrl.SetStringItem(i, 1, varName)
 				inChs = ", ".join(currFilter.getSelectedInputChannelNames())
 				self.checkListCtrl.SetStringItem(i, 2, inChs)
-	
 
 				# Set the name the variable will be known as
 				# if this has not been set before, then it will of the form
@@ -205,11 +204,11 @@ class PickVariablesDialog(wx.Dialog):
 					asName = "%s%s"%(name, varName)
 					if varCount[varName] > 1:
 						varIndex = counts.get(varName, 1)
-						asName="%s%d"%(asName, varIndex)
+						asName="%s#%d"%(asName, varIndex)
 						counts[varName] = varIndex+1
 						
 					self.checkListCtrl.CheckItem(i, False)
-				self.checkListCtrl.SetStringItem(i,3,asName)
+				self.checkListCtrl.SetStringItem(i, 3, asName)
 				self.checkListCtrl.SetStringItem(i, 4, descs[varName])
 				i+=1
 			
