@@ -208,7 +208,6 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 					self.emissionWavelength = emissionWavelength
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		
-
 			
 	def setInputChannel(self, inputNum,n):
 		lib.ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
@@ -275,6 +274,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
+		
 		images = [self.getInput(x) for x in range(1,3)]
 		self.eventDesc="Calculating colocalization"
 		self.colocFilter.RemoveAllInputs()
@@ -288,15 +288,17 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		ch2thresmax = self.getPrecedingResultVariable("Ch2ThresholdMax")
 		
 		Logging.info("result vars ch1, ch2=",ch1thresmax, ch2thresmax)
-		if ch1thresmax != None and ch2thresmax != None:
+		if ch1thresmax != None and ch2thresmax != None and self.prevFilter.getName() == "Auto threshold colocalization":
 			slope = self.getPrecedingResultVariable("Slope")
 			intercept = self.getPrecedingResultVariable("Intercept")
 			print "Got slope, intercept", slope, intercept
 			lib.messenger.send(self, "set_slope_intercept", slope, intercept)
 			self.set("LowerThresholdCh1", ch1thresmax)
 			self.set("LowerThresholdCh2", ch2thresmax)
+		
 		maxval = int(max([x.GetScalarRange()[1] for x in images]))
 		self.colocRange = maxval
+
 		lib.messenger.send(self, "update_LowerThresholdCh1")
 		lib.messenger.send(self, "update_LowerThresholdCh2")
 		lib.messenger.send(self, "update_UpperThresholdCh1")
@@ -337,6 +339,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		if self.parameters["Costes"] or self.parameters["Fay"] or self.parameters["Steensel"]:
 			self.calculatePValue(images)
+		
 		if self.listctrl:
 			self.listctrl.updateListCtrl(self.getResultVariableDict())
 	

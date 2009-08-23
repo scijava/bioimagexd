@@ -33,6 +33,7 @@ import lib.ImageOperations
 import Logging
 import wx
 import lib.messenger
+import math
 
 myEVT_SET_THRESHOLD = wx.NewEventType()
 EVT_SET_THRESHOLD = wx.PyEventBinder(myEVT_SET_THRESHOLD, 1)
@@ -472,14 +473,13 @@ class Histogram(wx.Panel):
 			totth = 0
 			for i, val in enumerate(self.values):
 				tot += val
-				if i * self.scale + self.scalarMin >= lower1 and i <= upper1:
+				if math.ceil(i + self.scalarMin) >= lower1 and math.floor(i + self.scalarMin) <= upper1:
 					totth += val
 			self.percent = totth / float(tot)
 
 		if not self.percent:
 			self.percent = 0.00
 
-		dc.SetBackground(wx.Brush((255,255,255)))
 		dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		dc.DrawText("%.2f%% of data selected (range %d-%d)" \
 					% (100 * self.percent, self.lowerThreshold, \

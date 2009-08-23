@@ -541,14 +541,13 @@ def vtkImageDataToPreviewBitmap(dataunit, timepoint, color, width = 0, height = 
 		color = dataunit.getColorTransferFunction()
 	
 	ctf = getColorTransferFunction(color)
-	
-	maxval = ctf.GetRange()[1]
+	minval,maxval = ctf.GetRange()
 	imax = imagedata.GetScalarRange()[1]
 	if maxval > imax:
-		step = float(maxval / imax)
+		step = float((maxval-minval) / imax)
 		ctf2 = vtk.vtkColorTransferFunction()
-		Logging.info("Creating CTF in range 0, %d with steps %d"%(int(maxval), int(step)))
-		for i in range(0, int(maxval), int(step)):
+		Logging.info("Creating CTF in range %d, %d with steps %d"%(int(minval), int(maxval), int(step)))
+		for i in range(int(minval), int(maxval), int(step)):
 			red, green, blue = ctf.GetColor(i)
 			ctf2.AddRGBPoint(i / step, red, green, blue)
 		ctf = ctf2
@@ -720,10 +719,13 @@ def getImageScalarRange(image):
 	x0, x1 = image.GetScalarRange()
 
 	scalarType = image.GetScalarTypeAsString()
-	if scalarType == "unsigned char": return 0, 255
+	if scalarType == "unsigned char":
+		return 0, 255
 	if scalarType == "unsigned short": 
-		if x1>4095: return 0, (2**16)-1
-		return 0,4095
+		if x1 > 4095:
+			return 0, (2**16)-1
+		return 0, 4095
+
 	return x0,x1
 	
 def get_histogram(image, maxval = 0, minval = 0):
@@ -738,11 +740,12 @@ def get_histogram(image, maxval = 0, minval = 0):
 		x1 = int(math.floor(x1))
 		x0 = int(math.ceil(x0))
 	else:
-		x0,x1 = (int(math.ceil(minval)),int(math.floor(maxval)))
+		x0, x1 = (int(math.ceil(minval)),int(math.floor(maxval)))
 
-	accu.SetComponentExtent(0, 255, 0, 0, 0, 0)
-	accu.SetComponentOrigin(minval, 0, 0)
-	accu.SetComponentSpacing((maxval - minval) / 255, 0, 0)
+	accu.SetComponentExtent(0, x1 - x0, 0, 0, 0, 0)
+	accu.SetComponentOrigin(x0, 0, 0)
+	#accu.SetComponentSpacing((x1 - x0) / 255.0, 0, 0)
+	accu.SetComponentSpacing(1, 0, 0)
 	accu.Update() 
 	data = accu.GetOutput()
 	
@@ -846,9 +849,9 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			#dc.DrawLine(xoffset + i, x1 - c, xoffset + i, x1 - c-2)
 			
 	if colorTransferFunction:
-		for i in range(0, 256):
+		for i in range(minval, maxval + d, d):
 			val = [0, 0, 0]
-			colorTransferFunction.GetColor(i * d, val)
+			colorTransferFunction.GetColor(i, val)
 			r, g, b = val
 			r = int(r * 255)
 			b = int(b * 255)
