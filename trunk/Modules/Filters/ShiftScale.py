@@ -95,6 +95,9 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 
 		image = self.getInput(1)
+		image.UpdateInformation()
+		image.SetUpdateExtent(image.GetWholeExtent())
+		image.Update()
 		print "Using ",image
 		self.vtkfilter.SetInput(image)
 		self.vtkfilter.SetClampOverflow(self.parameters["NoOverflow"])
