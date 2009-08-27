@@ -67,10 +67,10 @@ class FilterList:
 		"""
 		i = 0
 		for f in self.filters:
-			if var in f.getResultVariables() and i==nth:
+			if var in f.getResultVariables() and i == nth:
 				return f.getResultVariable(var)
 			elif var in f.getResultVariables():
-				i+=1
+				i += 1
 			
 	def clear(self):
 		"""
