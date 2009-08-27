@@ -333,7 +333,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 			if var in varHeaders:
 				i = varHeaders.index(var)
 
-				reg = re.compile("([0-9]+)$")
+				reg = re.compile("#([0-9]+)$")
 				try:
 					match = reg.search(var)
 					n = int(match.groups(0)[0])
