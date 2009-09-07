@@ -99,7 +99,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 			

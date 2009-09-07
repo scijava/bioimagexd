@@ -13,7 +13,7 @@ mkdir Python/Configuration
 mkdir Python/Release/itkExtras
 
 echo "Created ITK-pkg directory"
-for i in /cygdrive/c/BioImageXD/InsightToolkit/bin/Release/*.dll
+for i in /cygdrive/c/BioImageXD/ITK/bin/Release/*.dll
 do
 	TGT="`basename $i | sed s/dll/pyd/g`"
 	if [ "$TGT" = "ITKCommon.pyd" ]; then
@@ -25,15 +25,16 @@ do
     cp $i lib/Release/$TGT
 done
 
-cp /cygdrive/c/BioImageXD/InsightToolkit/bin/Release/*.pyd lib/Release
+cp /cygdrive/c/BioImageXD/ITK/bin/Release/*.pyd lib/Release
+cp /cygdrive/c/BioImageXD/trunk/bin/Microsoft.VC90.CRT.ITK.manifest lib/Release/Microsoft.VC90.CRT.manifest
 #cp /cygdrive/c/BioImageXD/InsightToolkit/lib/Release/*.pyd lib
 
 
-cp /cygdrive/c/BioImageXD/InsightToolkit/bin/Release/*.py Python/Release
-cp /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/Release/*.py Python/Release
+cp /cygdrive/c/BioImageXD/ITK/bin/Release/*.py Python/Release
+cp /cygdrive/c/BioImageXD/ITK/Wrapping/WrapITK/Python/Release/*.py Python/Release
 
-cp /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/itkExtras/__init__.py Python/Release/itkExtras
-cp -fr /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/Configuration Python
+cp /cygdrive/c/BioImageXD/ITK/Wrapping/WrapITK/Python/itkExtras/__init__.py Python/Release/itkExtras
+cp -fr /cygdrive/c/BioImageXD/ITK/Wrapping/WrapITK/Python/Configuration Python
 
 #cp /cygdrive/c/BioImageXD/InsightToolkit/lib/Release/*.py Python
 #cp /cygdrive/c/BioImageXD/InsightToolkit/Python/Release/*.py Python
@@ -41,7 +42,7 @@ cp -fr /cygdrive/c/BioImageXD/InsightToolkit/Wrapping/WrapITK/Python/Configurati
 
 for extproj in ItkVtkGlue labelShape
 do
-	BASE="/cygdrive/c/BioImageXD/InsightToolkit-3.10.0/Wrapping/WrapITK/ExternalProjects/${extproj}"
+	BASE="/cygdrive/c/BioImageXD/InsightToolkit-3.14.0/Wrapping/WrapITK/ExternalProjects/${extproj}"
 	cp $BASE/lib/Release/*.py Python/Release
 	cp $BASE/lib/Release/*.pyd lib/Release
 	#for i in $BASE/lib/Release/*.dll

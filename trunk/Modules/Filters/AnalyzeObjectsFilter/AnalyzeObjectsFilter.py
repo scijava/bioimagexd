@@ -247,7 +247,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
-
+		
 		areaImage = self.convertITKtoVTK(image)
 		image = self.convertVTKtoITK(image)
 		labelShape = itk.LabelShapeImageFilter[image].New()
