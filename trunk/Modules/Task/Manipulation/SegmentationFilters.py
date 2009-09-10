@@ -574,7 +574,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		image = self.getInput(1)
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
-		
 		self.itkfilter = itk.NeighborhoodConnectedImageFilter.IUC3IUC3.New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])

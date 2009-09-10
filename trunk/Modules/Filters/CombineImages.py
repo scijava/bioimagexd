@@ -33,6 +33,7 @@ __version__ = "$Revision$"
 __date__ = "$Date$"
 
 import lib
+import lib.ProcessingFilter
 import GUI
 import vtk
 

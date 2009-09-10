@@ -20,7 +20,7 @@ vtkImageSolitaryFilter.cxx
 vtkLSMReader.cxx
 vtkLIFReader.cxx
 vtkImageLabelCount.cxx
-vtkMRCReader.cxx
+
 vtkImageIterativeDeconvolution3D.cxx
 vtkImageDiffractionPSF3D.cxx
 vtkImageLabelDistanceToSurface.cxx

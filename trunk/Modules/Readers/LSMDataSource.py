@@ -144,15 +144,18 @@ class LsmDataSource(DataSource):
 		Return the bit depth of data
 		"""
 		if not self.bitdepth:
-			d = self.reader.GetOutput().GetScalarType()
+			data = self.reader.GetOutput()
+			data.UpdateInformation()
+			d = data.GetScalarType()
 			if d == 3:
-				self.bitdepth = 8
+				self.singleBitDepth = 8
 				if not self.originalScalarRange:
 					self.originalScalarRange = (0, 255)
 			if d == 5:
-				self.bitdepth = 12
+				self.singleBitDepth = 12
 				if not self.originalScalarRange:
 					self.originalScalarRange = (0, 4095)
+			self.bitdepth = self.singleBitDepth * data.GetNumberOfScalarComponents()
 		return self.bitdepth
 		
 	def getScalarRange(self):
