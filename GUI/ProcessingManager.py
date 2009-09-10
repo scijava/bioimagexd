@@ -85,13 +85,15 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 			
 		t2 = time.time()
 		diff = t2 - self.t1
-		self.t1 = t2
-		totsecs = diff * (total - nth)
+		#self.t1 = t2
+		perc = 1.0 * nth / total
+		processsecs = diff / perc
+		totsecs = processsecs - diff
 		print "Diff=%f, total=%d, n=%d, secs=%d" % (diff, total, nth, totsecs)
 		mins = totsecs / 60
 		secs = totsecs % 60
 		self.progressDialog.Update(nth, "Timepoint %d (%d/%d) (%d%%) Time remaining: "
-		"%d mins %d seconds" % (tp + 1, nth, total, 100 * (1.0 * nth) / total, mins, secs))
+		"%d mins %d seconds" % (tp + 1, nth, total, 100 * perc, mins, secs))
 		if nth == total:
 			self.progressDialog.Destroy()
 			

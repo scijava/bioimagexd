@@ -30,7 +30,6 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
-		
 import sys
 import StringIO
 import os.path
@@ -38,6 +37,15 @@ import os
 import getopt
 import codecs
 import platform
+
+# Add path to VTK and ITK libraries if we are running under Linux and this is
+# Linux package installation
+if platform.system() == "Linux" and os.path.exists("./VTK") and os.path.exists("./ITK"):
+	curdir = os.path.abspath(os.path.curdir)
+	sys.path.append(curdir + '/VTK/lib/python2.5/site-packages/vtk')
+	sys.path.append(curdir + '/VTK/lib/python2.5/site-packages')
+	sys.path.append(curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
+	
 
 # We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
