@@ -356,10 +356,14 @@ class FileListDataSource(DataSource):
 		
 	def getDataBitDepth(self, data):
 		scalartype = data.GetScalarType()
+		scalarRange = data.GetScalarRange()
 		if scalartype == 4:
 			return 16
 		elif scalartype == 5:
-			return 12
+			if scalarRange[1] < 2**12:
+				return 12
+			else:
+				return 16
 		elif scalartype == 3:
 			return 8
 		elif scalartype == 7:
@@ -384,12 +388,17 @@ class FileListDataSource(DataSource):
 		data = rdr.GetOutput()
 		data.Update()
 		self.numberOfComponents = data.GetNumberOfScalarComponents()
-		
+
 		if not self.ctf:
 			bd = self.getDataBitDepth(data)
 			self.ctf = vtk.vtkColorTransferFunction()
-			self.ctf.AddRGBPoint(0, 0, 0, 0)
-			self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)
+			if bd == 8 or bd == 12:
+				self.ctf.AddRGBPoint(0, 0, 0, 0)
+				self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)
+			else:
+				range = data.GetScalarRange()
+				self.ctf.AddRGBPoint(range[0], 0, 0, 0)
+				self.ctf.AddRGBPoint(range[1], 0, 1, 0)
 			
 		self.x, self.y, z = data.GetDimensions()
 		self.dimensions = (self.x, self.y, self.slicesPerTimepoint)

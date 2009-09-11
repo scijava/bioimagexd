@@ -947,8 +947,13 @@ enter the information below.""")
 			x0, x1 = self.dataSource.getScalarRange()
 			bd = self.dataSource.getSingleComponentBitDepth()
 			self.ctf = vtk.vtkColorTransferFunction()
-			self.ctf.AddRGBPoint(0, 0, 0, 0)
-			self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)
+			if bd == 8 or bd == 12:
+				self.ctf.AddRGBPoint(0, 0, 0, 0)
+				self.ctf.AddRGBPoint((2 ** bd) - 1, 0, 1, 0)
+			else:
+				self.ctf.AddRGBPoint(x0, 0, 0, 0)
+				self.ctf.AddRGBPoint(x1, 0, 1, 0)
+
 			self.colorBtn.setColorTransferFunction(self.ctf)
 			self.dataSource.setColorTransferFunction(self.ctf)
 			self.settings.set("ColorTransferFunction", self.ctf)

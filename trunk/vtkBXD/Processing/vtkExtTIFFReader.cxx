@@ -9,6 +9,7 @@
 
 Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
 Copyright (c) 2005 Kalle Pahajoki Modifications for raw mode support
+Copyright (c) 2008 Lassi Paavolainen Support for multipage tiffs
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -161,7 +162,7 @@ int vtkExtTIFFReaderInternal::Initialize()
       {
       return 0;
       }
-    TIFFGetField(this->Image, TIFFTAG_SAMPLESPERPIXEL, 
+    TIFFGetFieldDefaulted(this->Image, TIFFTAG_SAMPLESPERPIXEL, 
                  &this->SamplesPerPixel);
     TIFFGetField(this->Image, TIFFTAG_COMPRESSION, &this->Compression);
     TIFFGetField(this->Image, TIFFTAG_BITSPERSAMPLE, 
@@ -311,17 +312,17 @@ void vtkExtTIFFReaderUpdate2(vtkExtTIFFReader *self, OT *outPtr, int *outExt,
     {
     return;
     }
-    //printf("Initializing colors\n");
+  //printf("Initializing colors\n");
   self->InitializeColors();
     
-//printf("Reading image...\n");
+  //printf("Reading image...\n");
   self->ReadImageInternal(self->GetInternalImage()->Image, 
                           outPtr, outExt, sizeof(OT), idx );
 
   // close the file
-    //printf("Closing the file\n");
+  //printf("Closing the file\n");
   self->GetInternalImage()->Clean();
-    //printf("Done\n");
+  //printf("Done\n");
 }
 
 //----------------------------------------------------------------------------
@@ -562,12 +563,13 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
       vtkErrorMacro("This reader cannot read old JPEG compression");
       return;
       }
+
     int width  = this->GetInternalImage()->Width;
     int height = this->GetInternalImage()->Height;
-    //printf("width=%d, height=%d, size=%d\n",width,height,size);
+	// printf("width=%d, height=%d, size=%d\n",width,height,size);
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-	//      printf("isize=%d, height=%d\n",isize,height);
+	//printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
     tdata_t buf = _TIFFmalloc(isize);
@@ -594,17 +596,17 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
                 vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
                 break;
               }
-              unsigned short* buf2 = (unsigned short*)buf;
-              for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
-                    *image++ = *buf2++;
-              }
+			unsigned short* buf2 = (unsigned short*)buf;
+			for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel)
+			  {
+				*image++ = *buf2++;
+			  }
             }
-              _TIFFfree(buf);
-			  return;
+		  _TIFFfree(buf);
+		  return;
           }
   }
   else if(this->GetInternalImage()->BitsPerSample==8) {
-   
         unsigned char* image;
         image = (unsigned char*)outPtr;
             
@@ -622,8 +624,8 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
                     *image++ = *buf2++;
               }
             }
-              _TIFFfree(buf);
-			  return;
+		  _TIFFfree(buf);
+		  return;
           }
   }
 }

@@ -144,6 +144,7 @@ class BXCDataSource(DataSource):
 		
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
+		self.scalarRange = data.GetScalarRange()
 		if raw:
 			return data
 		
@@ -352,9 +353,15 @@ class BXCDataSource(DataSource):
 		"""
 		if not self.scalarRange:
 			self.getBitDepth()
-			min = 0
-			max = 2**self.singleBitDepth - 1
-			self.scalarRange = (int(min),int(max))
+			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.datasets) == 1:
+				min = 0
+				max = 2**self.singleBitDepth - 1
+				self.scalarRange = (int(min),int(max))
+			else:
+				data = self.getDataSet(0, raw = 1)
+				data.Update()
+				self.scalarRange = data.GetScalarRange()
+		
 		return self.scalarRange
 
 	def getBitDepth(self):
