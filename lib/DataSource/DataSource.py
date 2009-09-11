@@ -533,7 +533,7 @@ class DataSource:
 		"""
 		if not self.bitdepth:
 			data = self.getDataSet(0, raw = 1)
-			data.UpdateInformation()
+			data.Update()
 			self.scalarRange = data.GetScalarRange()
 			scalartype = data.GetScalarType()
 
@@ -541,7 +541,7 @@ class DataSource:
 				self.bitdepth = 16
 			elif scalartype == 5:
 				self.bitdepth = 16
-				if max(self.scalarRange) > 4096:
+				if max(self.scalarRange) > 2**12-1:
 					self.bitdepth = 16
 				else:
 					self.bitdepth = 12
