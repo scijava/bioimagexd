@@ -144,7 +144,7 @@ class BXCDataSource(DataSource):
 		
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
-		self.scalarRange = data.GetScalarRange()
+		#self.scalarRange = data.GetScalarRange()
 		if raw:
 			return data
 		
