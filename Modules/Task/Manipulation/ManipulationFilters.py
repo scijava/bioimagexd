@@ -289,10 +289,8 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image, cast = types.FloatType)
-		f3 = itk.Image.F3
 		
-		self.itkfilter = itk.GradientAnisotropicDiffusionImageFilter[f3, f3].New()
-
+		self.itkfilter = itk.GradientAnisotropicDiffusionImageFilter[image, image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetTimeStep(self.parameters["TimeStep"])
 		self.itkfilter.SetConductanceParameter(self.parameters["Conductance"])
@@ -350,10 +348,9 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		image = self.getInput(1)
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
-		uc3 = itk.Image.UC3
-		shift = itk.ShiftScaleImageFilter[uc3, uc3].New()
-		recons = itk.ReconstructionByDilationImageFilter[uc3, uc3].New()
-		subst = itk.SubtractImageFilter[uc3, uc3, uc3].New()
+		shift = itk.ShiftScaleImageFilter[image, image].New()
+		recons = itk.ReconstructionByDilationImageFilter[image, image].New()
+		subst = itk.SubtractImageFilter[image, image, image].New()
 		shift.SetInput(image)
 		shift.SetShift(-1)
 		recons.SetMaskImage(image)
