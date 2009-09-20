@@ -1,5 +1,11 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+
 #Change PROJECT_NAME to the name of your project
 PROJECT(itkBXD)
+
+IF(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+ENDIF(COMMAND cmake_policy)
 
 #include some macros from another file...
 INCLUDE(IJMacros.txt)

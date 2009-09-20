@@ -32,6 +32,8 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import lib.ProcessingFilter
 import vtk
+import vtkbxd
+import types
 from lib.FilterTypes import *
 
 
@@ -48,13 +50,26 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.vtkfilter = vtk.vtkImageMathematics()
+		self.descs = {"ClampOverflow": "Clamp overflow"}
+		self.vtkfilter = vtkbxd.vtkImageMathematicsClamp()
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""            
-		return []
+		return [["", ("ClampOverflow",)],]
+
+	def getType(self, param):
+		"""
+		Return the type of param
+		"""
+		return types.BooleanType
+
+	def getDefaultValue(self, param):
+		"""
+		Return the default value of the param
+		"""
+		return True
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -62,7 +77,8 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		lib.ProcessingFilter.ProcessingFilter.execute(self, inputs)
 		image = self.getInput(1)
-	   
+		self.vtkfilter.SetClampOverflow(self.parameters["ClampOverflow"])
+	
 		if self.numberOfInputs[0] > 1:
 			self.vtkfilter.SetInput1(image)
 			self.vtkfilter.SetInput2(self.getInput(2))

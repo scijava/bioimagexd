@@ -26,6 +26,7 @@ vtkImageDiffractionPSF3D.cxx
 vtkImageLabelDistanceToSurface.cxx
 vtkHandleColorTransferFunction.cxx
 vtkTestMemory.cxx
+vtkImageMathematicsClamp.cxx
 )
 
 # --------------------------------------------------------------------------
