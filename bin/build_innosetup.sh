@@ -1,4 +1,5 @@
 #! /bin/sh
+# This is the directory where py2exe build everything needed bu BXD except ITK
 FROMDIR='C:\\BioImageXD\\sourceforge\\dist'
 cd dist
 
