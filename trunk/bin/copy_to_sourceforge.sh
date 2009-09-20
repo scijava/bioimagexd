@@ -25,9 +25,6 @@ done
 #echo "Remember to set the t-flag"
 echo "Modifying T-flag"
 perl -i -p -e 's/TFLag = 0/TFLag = 1/g' sourceforge/scripting.py
-# Remove vtkMRCReader.cxx from CMakeLists.txt
-echo "Removing vtkMRCReader.cxx from CMakeLists.txt"
-perl -i -p -e 's/vtkMRCReader.cxx//g' sourceforge/vtkBXD/Processing/CMakeLists.txt
 cd sourceforge
 # Do not update build_innosetup.sh
 echo "Remove bin/build_innosetup.sh from commit"
