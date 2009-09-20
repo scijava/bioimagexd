@@ -162,7 +162,7 @@ class FilterEditor(wx.Panel):
 		self.addAnalyzeBtn.Bind(wx.EVT_LEFT_DOWN, f)
 
 		f = lambda evt, btn = self.addMiscBtn, \
-			cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+			cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION, lib.FilterTypes.FOURIER): \
 			self.onShowAddMenu(evt, btn, cats)
 		self.addMiscBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
