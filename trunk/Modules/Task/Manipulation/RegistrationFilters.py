@@ -34,8 +34,7 @@ import lib.ProcessingFilter
 import types
 import GUI.GUIBuilder as GUIBuilder
 import scripting
-from lib.FilterTypes import *
-
+import lib.FilterTypes
 
 class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -43,7 +42,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 	Description: A filter for doing registration
 	"""     
 	name = "3D Registration filter"
-	category = REGISTRATION
+	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self, inputs = (1, 1)):
@@ -150,6 +149,7 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 def getFilters():
     """
-    This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
+    This function returns all the filter classes in this module and is used by
+	ManipulationFilters.getFilterList()
     """
     return []
