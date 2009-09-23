@@ -48,10 +48,8 @@ import wx
 import MathFilters
 import SegmentationFilters
 import MorphologicalFilters
-try:
-	import RegistrationFilters
-except:
-	pass
+import RegistrationFilters
+import FourierFilters
 
 from lib.FilterTypes import *
 
@@ -76,10 +74,9 @@ def getFilterList():
 	filterlist += MathFilters.getFilters()
 	filterlist += SegmentationFilters.getFilters()
 	filterlist += MorphologicalFilters.getFilters()
-	try:
-		filterlist += RegistrationFilters.getFilters()
-	except:
-		pass
+	filterlist += RegistrationFilters.getFilters()
+	filterlist += FourierFilters.getFilters()
+	
 	return filterlist
 
 

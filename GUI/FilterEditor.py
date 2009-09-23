@@ -140,7 +140,7 @@ class FilterEditor(wx.Panel):
 
 		MP = self.filtersModule
 		f = lambda evt, btn = self.addFilteringBtn, \
-					cats = (lib.FilterTypes.FILTERING, lib.FilterTypes.DECONVOLUTION, lib.FilterTypes.FEATUREDETECTION, lib.FilterTypes.MORPHOLOGICAL, lib.FilterTypes.MISCFILTERING): \
+					cats = (lib.FilterTypes.FILTERING, lib.FilterTypes.DECONVOLUTION, lib.FilterTypes.FEATUREDETECTION, lib.FilterTypes.MORPHOLOGICAL, lib.FilterTypes.FOURIER, lib.FilterTypes.MISCFILTERING): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addFilteringBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
@@ -162,7 +162,7 @@ class FilterEditor(wx.Panel):
 		self.addAnalyzeBtn.Bind(wx.EVT_LEFT_DOWN, f)
 
 		f = lambda evt, btn = self.addMiscBtn, \
-			cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION, lib.FilterTypes.FOURIER): \
+			cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
 			self.onShowAddMenu(evt, btn, cats)
 		self.addMiscBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
