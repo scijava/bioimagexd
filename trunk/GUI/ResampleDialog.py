@@ -92,12 +92,14 @@ class ResampleDialog(wx.Dialog):
 		self.dimsLbl.SetLabel(self.currDimText % (x, y, z))
 		self.onUpdateDims(None)
 		self.onSetToHalfSize(None)
+
 	def onUpdateDims(self, evt):
 		"""
 		Update the dimensions
 		"""
 		if self.blockDimUpdate:
 			return
+		
 		rx, ry, rz = self.dims
 		try:
 			rx = int(self.newDimX.GetValue())
@@ -105,6 +107,7 @@ class ResampleDialog(wx.Dialog):
 			rz = int(self.newDimZ.GetValue())
 		except:
 			pass
+		
 		self.currSize = (rx, ry, rz)
 		x, y, z = self.dataUnits[0].dataSource.getOriginalDimensions()
 		xf = rx / float(x)

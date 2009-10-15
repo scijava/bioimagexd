@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: BioImageXD
@@ -40,12 +40,18 @@ import platform
 
 # Add path to VTK and ITK libraries if we are running under Linux and this is
 # Linux package installation
-if platform.system() == "Linux" and os.path.exists("./VTK") and os.path.exists("./ITK"):
-	curdir = os.path.abspath(os.path.curdir)
-	sys.path.append(curdir + '/VTK/lib/python2.5/site-packages/vtk')
-	sys.path.append(curdir + '/VTK/lib/python2.5/site-packages')
-	sys.path.append(curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
-	
+if platform.system() == "Linux":
+	bxdPath = os.path.dirname(sys.argv[0])
+	if len(bxdPath) > 0:
+		curdir = os.path.abspath(bxdPath)
+	else:
+		curdir = os.path.abspath(os.path.curdir)
+
+	if os.path.exists(curdir + "/VTK") and os.path.exists(curdir + "/ITK"):
+		sys.path.append(curdir + '/VTK/lib/python2.5/site-packages/vtk')
+		sys.path.append(curdir + '/VTK/lib/python2.5/site-packages')
+		sys.path.append(curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
+
 
 # We need to import VTK here so that it is imported before wxpython.
 # if wxpython gets imported before vtk, the vtkExtTIFFReader will not read the olympus files
