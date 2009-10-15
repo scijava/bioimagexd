@@ -440,8 +440,9 @@ class PreviewFrame(InteractivePanel):
 			x, y = self.dataDimX, self.dataDimY
 			usedUpdateExt = 1
 			uext = (0, x - 1, 0, y - 1, self.z, self.z)
-		
+
 		t = time.time()
+		colorImage.ReleaseDataFlagOn()
 		colorImage = optimize.optimize(image = colorImage, updateExtent = uext)
 
 		t2 = time.time()
