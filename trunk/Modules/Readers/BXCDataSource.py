@@ -353,7 +353,7 @@ class BXCDataSource(DataSource):
 		"""
 		if not self.scalarRange:
 			self.getBitDepth()
-			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.datasets) == 1:
+			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.dataSets) == 1:
 				min = 0
 				max = 2**self.singleBitDepth - 1
 				self.scalarRange = (int(min),int(max))

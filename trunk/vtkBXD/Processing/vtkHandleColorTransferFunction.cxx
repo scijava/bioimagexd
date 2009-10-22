@@ -271,3 +271,31 @@ unsigned char* vtkHandleColorTransferFunction::GetOutputArray()
 {
   return this->OutputArray;
 }
+
+int vtkHandleColorTransferFunction::
+ScaleColorTransferFunction(vtkColorTransferFunction *fromCtf, vtkColorTransferFunction *toCtf, double toMin, double toMax)
+{
+  double fromMin = 0.0;
+  double fromMax = 0.0;
+  int size = fromCtf->GetSize();
+  double *fromTable = new double[size*3];
+  fromCtf->GetRange(fromMin,fromMax);
+  fromCtf->GetTable(fromMin,fromMax,size,fromTable);
+
+  double *toTable = new double[size*3];
+  double *fromPtr = fromTable;
+  double *toPtr = toTable;
+
+  for (int i = 0; i < size*3; ++i)
+	{
+	  *toPtr = *fromPtr;
+	  toPtr++;
+	  fromPtr++;
+	}
+
+  toCtf->BuildFunctionFromTable(toMin,toMax,size,toTable);
+  delete[] toTable;
+  delete[] fromTable;
+
+  return 1;
+}

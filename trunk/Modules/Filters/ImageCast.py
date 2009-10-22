@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: ShiftScale
+ Unit: ImageCast.py
  Project: BioImageXD
  Created: 10.12.2007, LP
  Description:
 
- A module for shifting and scaling the intensities
+ A module for casting the intensity of dataset
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -36,6 +36,7 @@ import types
 import GUI.GUIBuilder
 import lib.FilterTypes
 import vtk
+import vtkbxd
 
 class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -98,12 +99,19 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 
 		bitDepth = 8
+		min = 0.0
+		max = 255.0
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)
 		self.vtkfilter.SetClampOverflow(self.parameters["ClampOverflow"])
+		output = self.vtkfilter.GetOutput()
+
 		for param in ["Float","Double","Int","UnsignedInt","Long","UnsignedLong","Short","UnsignedShort","Char","UnsignedChar"]:
 			if self.parameters[param]:
 				eval("self.vtkfilter.SetOutputScalarTypeTo%s()"%param)
+				output.Update()
+				min,max = output.GetScalarRange()
+				
 				self.eventDesc = "Casting the image to datatype %s"%param
 				if param in ["Short", "UnsignedShort"]:
 					bitDepth = 16
@@ -112,7 +120,13 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 				if param in ["Double", "Long", "UnsignedLong"]:
 					bitDepth = 64
 
-		self.dataUnit.getSettings().set("BitDepth", bitDepth)
+		settings = self.dataUnit.getSettings()
+		settings.set("BitDepth", bitDepth)
+		ctf = settings.get("ColorTransferFunction")
+		scaledCtf = vtk.vtkColorTransferFunction()
+		handleCtf = vtkbxd.vtkHandleColorTransferFunction()
+		handleCtf.ScaleColorTransferFunction(ctf,scaledCtf,min,max)
+		settings.set("ColorTransferFunction",scaledCtf)
 
 		if update:
 			self.vtkfilter.Update()
