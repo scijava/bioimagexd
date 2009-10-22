@@ -45,7 +45,8 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.ignoreObjects = 1
 		
-		self.descs = {"Threshold": "Remove objects with less voxels than:"}
+		self.descs = {"Threshold": "Remove objects with less voxels than:",
+					  "FullyConnected": "Fully Connected (8 or 26)"}
 		self.itkFlag = 1
 		self.origCtf = None
 		self.relabelFilter = None
@@ -56,25 +57,30 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the level of the given parameter
 		"""
-		return scripting.COLOR_INTERMEDIATE
+		return scripting.COLOR_BEGINNER
 			
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
-		"""	   
+		"""
+		if parameter == "FullyConnected":
+			return False
 		return 0
 		
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
-		"""	   
+		"""
+		if parameter == "FullyConnected":
+			return types.BooleanType
 		return types.IntType
 		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Minimum object size (in pixels)", ("Threshold", )]]
+		return [["Minimum object size (in pixels)", ("Threshold", )],
+				["Connectedness", ("FullyConnected",)]]
 
 	def onRemove(self):
 		"""
@@ -112,6 +118,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		self.eventDesc = "Performing connected component labeling"
 		self.itkfilter.SetInput(image)
+		self.itkfilter.SetFullyConnected(self.parameters["FullyConnected"])
 				
 		self.setImageType("UL%d"%dim)
 		self.itkfilter.Update()
