@@ -47,6 +47,8 @@ public:
   int LoadColorTransferFunctionFromString(vtkColorTransferFunction*, int, int);
   int ColorTransferFunctionToString(vtkColorTransferFunction*, int);
   void CreateRandomColorTransferFunction(vtkColorTransferFunction*, int, int, double);
+  int ScaleColorTransferFunction(vtkColorTransferFunction*, vtkColorTransferFunction*, double, double);
+
   int SetInputString(void*, int);
   vtkUnsignedCharArray* GetOutputString();
   unsigned char* GetOutputArray();

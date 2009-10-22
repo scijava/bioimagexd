@@ -295,10 +295,10 @@ class OlympusDataSource(DataSource):
 		red0, green0, blue0 = -1, -1, -1
 		for i in range(0, maxval + 1):
 			red, green, blue = vals[int(i * coeff)]
-			if i in [0, maxval] or (red != red0 or green != green0 or blue != blue0):
+			if i == maxval or red != red0 or green != green0 or blue != blue0:
 				ctf.AddRGBPoint(i, red / 255.0, green / 255.0, blue / 255.0)
 				red0, green0, blue0 = red, green, blue
-		
+
 		return ctf
 
 	
