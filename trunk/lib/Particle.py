@@ -187,8 +187,7 @@ class Particle:
 		self.trackCount = 0
 		self.seedParticles = []
 		self.totalTimepoints = 1
-		self.spacing = (1.0,1.0,1.0)
-		self.voxelSize = (1.0,1.0,1.0)
+		self.voxelSize = [1.0,1.0,1.0]
 		
 	def getCenterOfMass(self):
 		"""
@@ -206,9 +205,9 @@ class Particle:
 		"""
 		@return the distance in 3D between points (x,y,z) and (x2,y2,z2)
 		"""
-		distanceX = (x - x2) * self.spacing[0]
-		distanceY = (y - y2) * self.spacing[1]
-		distanceZ = (z - z2) * self.spacing[2]
+		distanceX = (x - x2) * self.voxelSize[0]
+		distanceY = (y - y2) * self.voxelSize[1]
+		distanceZ = (z - z2) * self.voxelSize[2]
 		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
 		
 	def distance(self, particle):	 
@@ -238,7 +237,6 @@ class Particle:
 		self.timePoint = particle.timePoint
 		self.intval = particle.intval
 		self.matchScore = particle.matchScore
-		self.spacing = particle.spacing
 		self.voxelSize = particle.voxelSize
 
 	def __str__(self):
@@ -251,12 +249,6 @@ class Particle:
 
 	def __repr__(self):
 		return self.__str__()
-
-	def setSpacing(self, spacing):
-		"""
-		Set spacing of particle for distance calculations
-		"""
-		self.spacing = spacing
 
 	def setVoxelSize(self, voxelSize):
 		"""
@@ -284,7 +276,7 @@ class ParticleTracker:
 		self.intensityChange = None
 		self.angleChange = None
 
-		self.spacing = (1.0,1.0,1.0)
+		self.voxelSize = [1.0,1.0,1.0]
 		self.filterObjectSize = 2  
 		self.minimumTrackLength = 3
 
@@ -341,7 +333,7 @@ class ParticleTracker:
 			self.particles = self.reader.read(statsTimepoint = statsTimepoint)
 			for particleList in self.particles:
 				for particle in particleList:
-					particle.setSpacing(self.spacing)
+					particle.setVoxelSize(self.voxelSize)
 				
 	def getParticles(self, timepoint, objs):
 		"""
@@ -611,9 +603,9 @@ class ParticleTracker:
 		vector1 = []
 		vector2 = []
 		for i in range(3):
-			vector1.append((track[-1].posInPixels[i] - track[-2].posInPixels[i]) * self.spacing[i])
+			vector1.append((track[-1].posInPixels[i] - track[-2].posInPixels[i]) * self.voxelSize[i])
 			lenVec1 += vector1[i]**2
-			vector2.append((testParticle.posInPixels[i] - track[-1].posInPixels[i]) * self.spacing[i])
+			vector2.append((testParticle.posInPixels[i] - track[-1].posInPixels[i]) * self.voxelSize[i])
 			lenVec2 +=  vector2[i]**2
 		if (lenVec1 == 0 or lenVec2 == 0):
 			return 0.0
@@ -680,7 +672,7 @@ class ParticleTracker:
 		"""
 		oldParticle = Particle()
 		currCandidate = Particle()
-		currCandidate.setSpacing(self.spacing)
+		currCandidate.setVoxelSize(self.voxelSize)
 		# Make a copy of the particle 
 		oldParticle.copy(particle)
 		# if there are no seed particles (and hence, no initial tracks), then create
@@ -709,7 +701,7 @@ class ParticleTracker:
 				break
 			foundOne = False
 			currentMatch = Particle()
-			currentMatch.setSpacing(self.spacing)
+			currentMatch.setVoxelSize(self.voxelSize)
 			for testParticle in self.particles[search_timePoint]:
 				# Calculate the factors between the particle that is being tested against
 				# the previous particle  (= oldParticle)
@@ -772,11 +764,17 @@ class ParticleTracker:
 			oldParticle.copy(currentMatch)
 		tracks.append(track)
 		
-	def setSpacing(self, spacing):
+	def setVoxelSize(self, voxelSize):
 		"""
-		Set spacing of voxels
+		Set size of voxels
 		"""
-		self.spacing = spacing
+		if (type(voxelSize) == list):
+			self.voxelSize = voxelSize
+		else:
+			vs = []
+			for item in voxelSize:
+				vs.append(item)
+			self.voxelSize = vs
 
 	def setTimeStamps(self, timeStamps):
 		"""

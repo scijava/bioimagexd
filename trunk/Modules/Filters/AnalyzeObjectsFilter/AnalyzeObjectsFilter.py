@@ -15,6 +15,7 @@ import math
 import time
 import lib.Math
 import types
+import platform
 
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -191,6 +192,11 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		name = self.dataUnit.getName()
 		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save segmentation statistics as", \
 													"%s.csv" % name, "CSV File (*.csv)|*.csv")
+		if platform.system() == "Windows":
+			filename = filename.encode('mbcs')
+		else:
+			filename = filename.encode(sys.getfilesystemencoding())
+		
 		if filename and self.taskPanel:
 			listOfFilters = self.taskPanel.filterList.getFilters()
 			filterIndex = listOfFilters.index(self)
