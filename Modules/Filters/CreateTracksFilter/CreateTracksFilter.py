@@ -211,16 +211,18 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""    
 		if parameter == "UseSize":
 			return types.BooleanType
-		elif parameter in ["MaxVelocity", "MinVelocity","MaxSizeChange", "MinLength", "MinSize","VelocityDeviation"]:
+		elif parameter in ["MaxSizeChange", "MinLength", "MinSize","VelocityDeviation"]:
 			return GUI.GUIBuilder.SPINCTRL
 		elif parameter in ["SizeWeight", "DirectionWeight", "IntensityWeight", "MaxDirectionChange", \
 							"MaxIntensityChange", "MaxSizeChange", "VelocityWeight"]:
 			return GUI.GUIBuilder.SPINCTRL
-		if parameter == "Track":
+		elif parameter in ["MaxVelocity", "MinVelocity"]:
+			return types.FloatType
+		elif parameter == "Track":
 			return GUI.GUIBuilder.SLICE     
-		if parameter == "ROI":
+		elif parameter == "ROI":
 			return GUI.GUIBuilder.ROISELECTION
-		if parameter == "UseROI":
+		elif parameter == "UseROI":
 			return types.BooleanType
 		return GUI.GUIBuilder.FILENAME
 		
@@ -228,7 +230,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the range of given parameter
 		"""             
-		if parameter in ["MaxVelocity", "MinSize","MinVelocity","VelocityDeviation","MaxSizeChange","MaxIntensityChange"]:
+		if parameter in ["MinSize","VelocityDeviation","MaxSizeChange","MaxIntensityChange"]:
 			return (0, 999)
 		if parameter == "Track":
 			if self.track:
@@ -251,9 +253,9 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "MinSize":
 			return 6
 		if parameter == "MaxVelocity":
-			return 18
+			return 2.0
 		if parameter == "MinVelocity":
-			return 5
+			return 0.0
 		if parameter == "MaxSizeChange":
 			return 35
 		if parameter == "MinLength":
@@ -475,15 +477,15 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not self.tracker:
 			self.tracker = lib.Particle.ParticleTracker()
 
-		image = self.getInputFromChannel(0)
-		spacing = image.GetSpacing()
 		try:
 			datasource = self.dataUnit.sourceunits[0].getDataSource()
 			timeStamps = datasource.getTimeStamps()
+			voxelSize = self.dataUnit.getVoxelSize()
 		except:
 			timeStamps = []
-		
-		self.tracker.setSpacing(spacing)
+			voxelSize = (1.0,1.0,1.0)
+
+		self.tracker.setVoxelSize(voxelSize)
 		self.tracker.setTimeStamps(timeStamps)
 		self.tracker.setFilterObjectSize(self.parameters["MinSize"])
 		if not os.path.exists(self.particleFile):
@@ -533,8 +535,8 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Do the actual tracking
 		"""
-		self.tracker.setMaxSpeed(self.parameters["MaxVelocity"])
-		self.tracker.setMinSpeed(self.parameters["MinVelocity"])
+		self.tracker.setMaxSpeed(self.parameters["MaxVelocity"]/1000000.0)
+		self.tracker.setMinSpeed(self.parameters["MinVelocity"]/1000000.0)
 		self.tracker.setSpeedDeviation(self.parameters["VelocityDeviation"]/ 100.0)
 
 		self.tracker.setSizeChange(self.parameters["MaxSizeChange"] / 100.0)

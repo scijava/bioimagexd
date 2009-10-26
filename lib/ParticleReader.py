@@ -140,7 +140,7 @@ class ParticleWriter:
 		try:
 			voxelSize = tracks[0][0].voxelSize
 		except:
-			voxelSize = (1.0,1.0,1.0)
+			voxelSize = [1.0,1.0,1.0]
 		
 		for i, track in enumerate(tracks):
 			trackLength = 0

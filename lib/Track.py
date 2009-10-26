@@ -55,7 +55,7 @@ class Track:
 	
 	def distance(self, tp1, tp2):
 		"""
-		return the distance between objects at tp1 and tp2
+		return the distance between objects at tp1 and tp2 in um
 		"""
 		if tp1 not in self.points:
 			return 0
@@ -68,7 +68,9 @@ class Track:
 			pt[i] *= size
 			pt2[i] *= size
 
-		dx, dy, dz = pt[0] - pt2[0], pt[1] - pt2[1], pt[2] - pt2[2]
+		dx = pt[0] - pt2[0]
+		dy = pt[1] - pt2[1]
+		dz = pt[2] - pt2[2]
 		return math.sqrt(dx * dx + dy * dy + dz * dz)
 
 	def getLength(self):
@@ -208,6 +210,9 @@ class TrackReader:
 			try:
 				timeStamps = eval(self.parser.get("TimeStamps", "TimeStamps"))
 				voxelSize = eval(self.parser.get("VoxelSize", "VoxelSize"))
+				for i in range(len(voxelSize)):
+					voxelSize[i] *= 1000000.0
+
 				for track in self.tracks:
 					track.setVoxelSize(voxelSize)
 					track.setTimeStamps(timeStamps)
