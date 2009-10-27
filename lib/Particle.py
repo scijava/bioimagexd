@@ -389,6 +389,7 @@ class ParticleTracker:
 		maxSize = 0
 		minInt = 9999999999
 		maxInt = 0
+
 		for i, pts in enumerate(self.particles):
 			avgdist = 0
 			numberOfParticles = 0
@@ -419,7 +420,13 @@ class ParticleTracker:
 						maxdist = distance
 					avgdist += distance
 					numberOfParticles += 1
-			avgdist /= float(numberOfParticles)
+			if numberOfParticles == 0:
+				avgdist = 0
+				mindist = 0
+				maxdist = 0
+			else:
+				avgdist /= float(numberOfParticles)
+				
 			mindists.append(mindist)
 			maxdists.append(maxdist)
 			avgdists.append(avgdist)

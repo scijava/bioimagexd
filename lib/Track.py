@@ -93,6 +93,10 @@ class Track:
 		"""
 		return the directional persistence of this track
 		"""
+		length = self.getLength()
+		if length == 0.0:
+			return 1.0
+		
 		return self.distance(self.mintp, self.maxtp) / self.getLength()
 
 	def getAverageAngle(self):
