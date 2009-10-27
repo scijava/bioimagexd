@@ -204,7 +204,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			n = scripting.mainWindow.currentTaskWindowName
 			method = "scripting.mainWindow.tasks['%s'].filterList.%s"%(n,func)
 		
-			do_cmd = "%s.exportStatistics('%s')"%(method,filename)
+			do_cmd = "%s.exportStatistics(r'%s')"%(method,filename)
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Export segmented object statistics")
 			cmd.run()

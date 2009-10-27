@@ -83,6 +83,7 @@ class GUIBuilder(wx.Panel):
 		self.buildGUI(myfilter)
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
+		self.Bind(wx.EVT_CHILD_FOCUS, self.onFocus)
 		
 		
 	def getSizerPosition(self):
@@ -1115,3 +1116,9 @@ class GUIBuilder(wx.Panel):
 		if chain:
 			chain(event, input, parameter, itemType, currentFilter)
 		
+	def onFocus(self, event):
+		"""
+		Pass focus event to prevent jumping around in scrolled panel
+		"""
+		pass
+	
