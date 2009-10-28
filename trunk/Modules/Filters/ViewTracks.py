@@ -156,7 +156,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "MinLength":
 			if self.numberOfPoints:
 				return 0, self.numberOfPoints
-			return 0, 1
+			return 0, 1000
 				
 	def getDefaultValue(self, parameter):
 		"""
