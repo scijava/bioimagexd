@@ -255,17 +255,17 @@ class TrackReader:
 		"""
 		Return the tracks with length >= minLength
 		"""
-		def isLongerThan(trackObject, minimumLength):
+		def isLongerThanOrEqual(trackObject, minimumLength):
 			"""
 			Created 12.07.2006, KP
 			Returns whether trackObjects length is greater than minimumLength
 			"""
-			return len(trackObject) > minimumLength
+			return len(trackObject) >= minimumLength
 		
 		if not self.tracks:
 			return []
 		
-		return [trackObject for trackObject in self.tracks if isLongerThan(trackObject, minLength)]
+		return [trackObject for trackObject in self.tracks if isLongerThanOrEqual(trackObject, minLength)]
 
 	@staticmethod
 	def readTracks(reader):

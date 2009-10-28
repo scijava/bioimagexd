@@ -62,7 +62,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.fileUpdated = 0
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 
-		self.descs = {"MinLength":"Minimum length of tracks","ResultsFile": "Tracking results file:", "AnalyseFile": "Analyse results file:"}
+		self.descs = {"MinLength":"Minimum length of tracks:","ResultsFile": "Tracking results file:", "AnalyseFile": "Analyse results file:"}
 		self.numberOfPoints = None
 		self.particleFile = ""
 
@@ -102,13 +102,17 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the type of the parameter
 		"""
 		if parameter == "MinLength":
-			return types.IntType
+			return GUI.GUIBuilder.SPINCTRL
 		return GUI.GUIBuilder.FILENAME
 
 	def getRange(self, parameter):
 		"""
 		Return the range of given parameter
 		"""
+		if parameter == "MinLength":
+			if self.numberOfPoints:
+				return 0, self.numberOfPoints
+			return 0, 1000
 		return 0, 0
 
 	def getDefaultValue(self, parameter):
