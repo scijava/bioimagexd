@@ -51,9 +51,11 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"ObjAvgIntensityStdErr": "Standard error of object average intensity",
 								"AvgIntOutsideObjs":    "Average intensity of voxels outside the objects",
 								"AvgIntOutsideObjsStdErr": "Standard error of average intensity outside objects",
+								"AvgIntOutsideObjsNonZero": "Average intensity of voxels outside the objects, excluding voxels of zero intensity",
+								"AvgIntOutsideObjsNonZeroStdErr": "Standard error of average intensity outside objects, excluding voxels of zero intensity",
 								"AvgIntInsideObjs":		"Average intensity of voxels inside the objects",
 								"AvgIntInsideObjsStdErr": "Standard error of average intensity inside objects",
-								"NonZeroVoxels":		"The number of non-zero voxels", 
+								"NonZeroVoxels":		"The number of non-zero voxels",
 								"AverageDistance":		"Average distance between two objects",
 								"AvgDistanceStdErr":	"Standard error of the average distance between two objects",
 								"ObjAvgAreaInUm":       "Average area of objects, in square micrometers",
@@ -168,7 +170,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				avgareaums, avgareaumsstd, avgareaumsstderr = lib.Math.meanstdeverr(self.objAreasUm)
 				sumareaums = sum(self.objAreasUm, 0.0)
 				
-				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums])
+				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums, self.avgIntOutsideObjsNonZero, self.avgIntOutsideObjsNonZeroStdErr, self.avgIntInsideObjs, self.avgIntInsideObjsStdErr])
 				self.reportGUI.setVolumes(self.values)
 				self.reportGUI.setAreasUm(self.objAreasUm)
 				self.reportGUI.setCentersOfMass(self.centersofmass)
@@ -224,9 +226,44 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
-		image = self.getInput(1)
+		labelImage = self.getInput(1)
+		labelImage.Update()
+		origImage = self.getInput(2)
+		origImage.Update()
+		origRange = origImage.GetScalarRange()
+
 		print "Input for label shape=",self.getInputDataUnit(1)
 		print "Orig. dataunit = ",self.getInputDataUnit(2)
+
+		# Do necessary conversions of datatype
+		origVTK = origImage
+		if self.parameters["AvgInt"] or self.parameters["NonZero"]:
+			origITK = self.convertVTKtoITK(origVTK)
+
+		# Cannot have two convertVTKtoITK in same filter
+		if self.parameters["AvgInt"] or self.parameters["Area"]:
+			labelVTK = self.convertITKtoVTK(labelImage)
+		if "itkImage" not in str(labelImage.__class__):
+			extent = labelImage.GetWholeExtent()
+			if extent[5] - extent[4] == 0:
+				dim = 2
+			else:
+				dim = 3
+			scalarType = labelImage.GetScalarType()
+			if scalarType != 9: # Convert to unsigned long
+				castVTK = vtk.vtkImageCast()
+				castVTK.SetOutputScalarTypeToUnsignedLong()
+				castVTK.SetInput(labelImage)
+				labelImage = castVTK.GetOutput()
+				labelImage.Update()
+				
+			vtkItk = eval("itk.VTKImageToImageFilter.IUL%d.New()"%dim)
+			vtkItk.SetInput(labelImage)
+			labelITK = vtkItk.GetOutput()
+			labelITK.Update()
+		else:
+			labelITK = labelImage
+
 
 		x, y, z = self.dataUnit.getVoxelSize()
 		x *= 1000000
@@ -244,7 +281,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgDistsStdErrs = []
 		objAreasUm = []
 
-		ignoreLargest = 0
+		ignoreLargest = 1
 		currFilter = self
 		while currFilter:
 			if currFilter.ignoreObjects > ignoreLargest:
@@ -254,42 +291,27 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
 		
-		areaImage = self.convertITKtoVTK(image)
-		image = self.convertVTKtoITK(image)
-		labelShape = itk.LabelShapeImageFilter[image].New()
-		labelShape.SetInput(image)
+		labelShape = itk.LabelShapeImageFilter[labelITK].New()
+		labelShape.SetInput(labelITK)
 		data = labelShape.GetOutput()
 		data.Update()
 		numberOfLabels = labelShape.GetNumberOfLabels()
 		
-		origInput = self.getInput(2)
-		origInput.Update()
-		origRange = origInput.GetScalarRange()
-		origInput = self.convertVTKtoITK(origInput)
-
 		if self.parameters["AvgInt"]:
-			avgintCalc = itk.LabelStatisticsImageFilter[origInput,image].New()
-			avgintCalc.SetInput(origInput)
-			avgintCalc.SetLabelInput(image)
+			avgintCalc = itk.LabelStatisticsImageFilter[origITK,labelITK].New()
+			avgintCalc.SetInput(origITK)
+			avgintCalc.SetLabelInput(labelITK)
 			avgintCalc.Update()
 
 		# Area calculation pipeline
 		if self.parameters["Area"]:
 			voxelArea = x*y*2 + x*z*2 + y*z*2
-			largestSize = image.GetLargestPossibleRegion().GetSize()
+			largestSize = labelITK.GetLargestPossibleRegion().GetSize()
 			# if 2D image, calculate area using volume
 			if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
-				#areaImage = self.convertITKtoVTK(image)
-				#areaImage.Update()
-				areaSpacing = areaImage.GetSpacing()
+				areaSpacing = labelVTK.GetSpacing()
 				marchingCubes = vtk.vtkMarchingCubes()
-				#marchingCubes.SetValue(0,255)
-				#	objectThreshold = vtk.vtkImageThreshold()
-				#	objectThreshold.SetOutputScalarTypeToUnsignedChar()
-				#	objectThreshold.SetInValue(255)
-				#	objectThreshold.SetInput(areaImage)
-				#	marchingCubes.SetInput(objectThreshold.GetOutput())
-				marchingCubes.SetInput(areaImage)
+				marchingCubes.SetInput(labelVTK)
 				massProperties = vtk.vtkMassProperties()
 				massProperties.SetInput(marchingCubes.GetOutput())
 				areaDiv = (areaSpacing[0] / x)**2
@@ -374,55 +396,67 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		avgIntOutsideObjs = 0.0
 		avgIntOutsideObjsStdErr = 0.0
-		variances = 0.0
-		allVoxels = 0
+		avgIntOutsideObjsNonZero = 0.0
+		avgIntOutsideObjsNonZeroStdErr = 0.0
+		nonZeroVoxels = -1
 
-		for i in range(0,startIntensity):
-			if labelShape.HasLabel(i):
-				voxelAmount = labelShape.GetVolume(i)
-				allVoxels += voxelAmount
-				if self.parameters["AvgInt"]:
+		if self.parameters["AvgInt"]:
+			variances = 0.0
+			allVoxels = 0
+			for i in range(0,startIntensity):
+				if labelShape.HasLabel(i):
+					voxelAmount = labelShape.GetVolume(i)
+					allVoxels += voxelAmount
 					avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
 					variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 
-		if self.parameters["AvgInt"]:
 			if allVoxels > 0:
 				avgIntOutsideObjs /= allVoxels
 				avgIntOutsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
+			labelAverage = vtkbxd.vtkImageLabelAverage()
+			labelAverage.AddInput(origVTK)
+			labelAverage.AddInput(labelVTK)
+			labelAverage.SetBackgroundLevel(startIntensity)
+			labelAverage.Update()
+			avgIntOutsideObjsNonZero = labelAverage.GetAverageOutsideLabels()
+			avgIntOutsideObjsNonZeroStdErr = labelAverage.GetOutsideLabelsStdDev() / math.sqrt(labelAverage.GetVoxelsOutsideLabels())
+			# Get also non zero voxels here that there is no need to recalculate
+			nonZeroVoxels = labelAverage.GetNonZeroVoxels()
+			
 		
 		avgIntInsideObjs = 0.0
 		avgIntInsideObjsStdErr = 0.0
-		variances = 0.0
-		allVoxels = 0
-		for i in range(startIntensity, numberOfLabels):
-			if labelShape.HasLabel(i):
-				voxelAmount = labelShape.GetVolume(i)
-				allVoxels += voxelAmount
-				if self.parameters["AvgInt"]:
+		if self.parameters["AvgInt"]:
+			variances = 0.0
+			allVoxels = 0
+			for i in range(startIntensity, numberOfLabels):
+				if labelShape.HasLabel(i):
+					voxelAmount = labelShape.GetVolume(i)
+					allVoxels += voxelAmount
 					avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
 					variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 
-		if self.parameters["AvgInt"]:
 			if allVoxels > 0:
 				avgIntInsideObjs /= allVoxels
 				avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
 
-		nonZeroVoxels = 0
-		if self.parameters["NonZero"]:
-			labelShape = itk.LabelShapeImageFilter[origInput].New()
-			labelShape.SetInput(origInput)
+		if self.parameters["NonZero"] and nonZeroVoxels < 0:
+			labelShape = itk.LabelShapeImageFilter[origITK].New()
+			labelShape.SetInput(origITK)
 			labelShape.Update()
 			for i in range(1, int(origRange[1]) + 1):
 				if labelShape.HasLabel(i):
 					nonZeroVoxels += labelShape.GetVolume(i)
 		
 		distMean, distStd, distStdErr = lib.Math.meanstdeverr(self.avgDistList)
-		
+		self.avgIntInsideObjs = avgIntInsideObjs
+		self.avgIntInsideObjsStdErr = avgIntInsideObjsStdErr
 		self.avgIntOutsideObjs = avgIntOutsideObjs
 		self.avgIntOutsideObjsStdErr = avgIntOutsideObjsStdErr
+		self.avgIntOutsideObjsNonZero = avgIntOutsideObjsNonZero
+		self.avgIntOutsideObjsNonZeroStdErr = avgIntOutsideObjsNonZeroStdErr
 		self.distMean = distMean
 		self.distStdErr = distStdErr
-
 		avgAreaUm, avgAreaUmStd, avgAreaUmStdErr = lib.Math.meanstdeverr(objAreasUm)
 		areaSumUm = sum(objAreasUm, 0.0)
 
@@ -434,6 +468,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setResultVariable("ObjAreaSumInUm",areaSumUm)
 		self.setResultVariable("ObjAvgIntensity",avgints)
 		self.setResultVariable("AvgIntOutsideObjs", avgIntOutsideObjs)
+		self.setResultVariable("AvgIntOutsideObjsNonZero", avgIntOutsideObjsNonZero)
 		self.setResultVariable("AvgIntInsideObjs", avgIntInsideObjs)
 		self.setResultVariable("NonZeroVoxels", nonZeroVoxels)
 		self.setResultVariable("AverageDistance", distMean)
@@ -443,6 +478,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setResultVariable("ObjAvgAreaInUmStdErr",avgAreaUmStdErr)
 		self.setResultVariable("ObjAvgIntensityStdErr",avgintsstderr)
 		self.setResultVariable("AvgIntOutsideObjsStdErr",avgIntOutsideObjsStdErr)
+		self.setResultVariable("AvgIntOutsideObjsNonZeroStdErr",avgIntOutsideObjsNonZeroStdErr)
 		self.setResultVariable("AvgIntInsideObjsStdErr",avgIntInsideObjsStdErr)
 		if self.reportGUI:
 			self.reportGUI.DeleteAllItems()
@@ -451,6 +487,6 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
 			self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
 			self.reportGUI.setAreasUm(objAreasUm)
-			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm])
+			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm, avgIntOutsideObjsNonZero, avgIntOutsideObjsNonZeroStdErr, avgIntInsideObjs, avgIntInsideObjsStdErr])
 			
 		return self.getInput(1)

@@ -367,7 +367,7 @@ def lutToString(ctf, luttype = "ImageJ"):
 		perColor = 1
 	if luttype == "BioImageXD":
 		stringOfLUT = "BXDLUT"
-		Logging.info("Adding to BXDLUT structure the minval=%d, maxval=%d" % (minval, maxval), kw = "ctf")
+		Logging.info("Adding to BXDLUT structure the minval=%f, maxval=%f" % (minval, maxval), kw = "ctf")
 		
 		stringOfLUT += struct.pack("f", minval)
 		stringOfLUT += struct.pack("f", maxval)

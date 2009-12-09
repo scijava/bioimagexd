@@ -1076,7 +1076,7 @@ class Visualizer:
 		if not flag:
 			self.zsliderWin.SetDefaultSize((0,0))
 		else:
-			self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
+			self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
 	
 	def setUpZSliderFromDataunit(self, dataunit):
 		"""

@@ -67,7 +67,7 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getGUI(self, parent, taskPanel):
 		"""
 		Return the GUI for this filter
-		"""				 
+		"""
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		if not self.reportGUI:
 			self.reportGUI = IntensityMeasurementsList.IntensityMeasurementsList(self.gui, -1)

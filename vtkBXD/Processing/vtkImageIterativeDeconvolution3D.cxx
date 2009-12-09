@@ -353,7 +353,7 @@ void vtkImageIterativeDeconvolution3DExecute(vtkImageIterativeDeconvolution3D *s
 			break;
 		}
 		oldPercentChange = percentChange;
-		printf("%d iterations complete.\n",iter);
+		printf("%d iterations complete.\n",iter+1);
 	}
 	printf("Final filter.");
 	FastHartleyTransform3D(dataX,w,h,d,false);

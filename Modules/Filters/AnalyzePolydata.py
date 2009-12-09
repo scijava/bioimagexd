@@ -313,7 +313,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			yPoint = y * ys
 			zPoint = z * zs
 			dist = 0 
-			objid = locator.FindClosestPoint(xPoint, yPoint, zPoint)
+			objid = locator.FindClosestPoint((xPoint, yPoint, zPoint))
 			x2,y2,z2 = polydata.GetPoint(objid)
 			x2 /= xs
 			y2 /= ys

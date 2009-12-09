@@ -30,13 +30,11 @@
 #define __itkDynamicThreshold3DImageFilter_txx
 
 #include "itkDynamicThreshold3DImageFilter.h"
-#include "itkProgressReporter.h"
 #include "itkMeanImageFilter.h"
 #include "itkMedianImageFilter.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 #include "itkProgressAccumulator.h"
-#include "itkProgressReporter.h"
 
 namespace itk {
 
@@ -134,7 +132,6 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
 	}
 
   ProgressAccumulator::Pointer pipelineProgress = ProgressAccumulator::New();
-  //itk::ProgressReporter progress(this,0,region.GetNumberOfPixels(),100);
   pipelineProgress->SetMiniPipelineFilter(this);
   itkDebugMacro(<< "Using radius (" << radius[0] << "," << radius[1] << "," << radius[2] << ")");
   if (this->m_StatisticsType == Mean)
@@ -143,7 +140,6 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
 	  mean->SetRadius(radius);
 	  mean->SetInput(inputImage);
 	  pipelineProgress->RegisterInternalFilter(mean,1.0f);
-	  //pipelineProgress->RegisterInternalFilter(this,0.33f);
 	  mean->GraftOutput(this->GetOutput());
 	  mean->Update();
 	  this->GraftOutput(mean->GetOutput());
@@ -154,7 +150,6 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
 	  median->SetRadius(radius);
 	  median->SetInput(inputImage);
 	  pipelineProgress->RegisterInternalFilter(median,1.0f);
-	  //pipelineProgress->RegisterInternalFilter(this,0.25f);
 	  median->GraftOutput(this->GetOutput());
 	  median->Update();
 	  this->GraftOutput(median->GetOutput());
@@ -173,7 +168,6 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
 		{
 		  outIter.Set(this->m_OutsideValue);
 		}
-	  //progress.CompletedPixel();
 	}
 }
 

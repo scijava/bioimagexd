@@ -186,7 +186,7 @@ class GUIBuilder(wx.Panel):
 						elif itemType == SLICE:
 							self.currentRow += self.createSliceSelection(n, items, currentFilter)
 						elif itemType == FILENAME:
-							skipNextNItems = 2
+							#skipNextNItems = 2
 							self.currentRow += self.createFileSelection(n, items, currentFilter)
 						elif itemType == CHOICE:
 							self.currentRow += self.createChoice(n, items, currentFilter)

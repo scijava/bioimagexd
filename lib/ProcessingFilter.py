@@ -811,3 +811,22 @@ class ProcessingFilter:
 		data.Update()
 		return data
 	
+	def getITKImageType(self, img):
+		"""
+		Return tuple of ITK image type in form (type,dim)
+		"""
+		dim = img.GetLargestPossibleRegion().GetImageDimension()
+		type = ""
+		imgClass = str(img.__class__)
+		if "itkImageUC" in imgClass:
+			type = "UC"
+		elif "itkImageUS" in imgClass:
+			type = "US"
+		elif "itkImageUL" in imgClass:
+			type = "UL"
+		elif "itkImageF" in imgClass:
+			type = "F"
+		elif "itkImageD" in imgClass:
+			type = "D"
+
+		return (type,dim)

@@ -36,6 +36,7 @@ import codecs
 import Logging
 import csv
 import lib.ParticleReader
+import lib.Particle
 
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -49,15 +50,19 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
+		self.objects = []
+		self.readObjects = []
+		self.polydata = None
 		self.imageCache = {}
 		self.spacing = (1,1,1)
+		self.modified = 1
 		self.descs = {"X":"X:", "Y":"Y:", "Z":"Z:","Time":"Number of timepoints",
 		"Coloc":"Create colocalization between channels", 
 		"ColocAmountStart":"Coloc. amnt (at start)",
 		"ColocAmountEnd":"Coloc. amnt (at end)",
 		"Shift":"Create shift in the data",
-		"ShiftStart":"Min. shift (in px):",
-		"ShiftEnd":"Max. shift (in px)",
+		"ShiftStart":"Min. shift (in x,y px size):",
+		"ShiftEnd":"Max. shift (in x,y px size)",
 		"ShotNoiseAmount":"% of shot noise",
 		"ShotNoiseMin":"Min. intensity of shot noise",
 		"BackgroundNoiseAmount":"% of background noise",
@@ -73,14 +78,18 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"MoveTowardsPoint":"Move towards a point",
 		"TargetPoints":"# of target points",
 		"Clustering":"Objects should cluster",
-		"SpeedStart":"Obj. min speed (in px)",
-		"SpeedEnd":"Obj. max speed (in px)",
+		"SpeedStart":"Obj. min speed (in x,y px size)",
+		"SpeedEnd":"Obj. max speed (in x,y px size)",
 		"SizeChange":"Size change (in %)",
 		"ClusterPercentage":"% of objects cluster",
-		"ClusterDistance":"Min. distance for clustering (in px)",
+		"ClusterDistance":"Min. distance for clustering (in x,y px size)",
 		"Cache":"Cache timepoints",
 		"CacheAmount":"# of timepoints cached",
-		"CreateAll":"Create all timepoints at once","CreateNoise":"Create noise"}
+		"CreateAll":"Create all timepoints at once",
+		"CreateNoise":"Create noise",
+		"ReadObjects":"Read sizes and number from",
+		"ObjectsCreateSource":"Create objects close to surface from source",
+		"SigmaDistSurface":"Sigma of Gaussian distance to surface (in x,y px size)"}
 	
 	def getParameters(self):
 		"""
@@ -88,8 +97,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
 			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
-			["Objects",("NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange")],
-			["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
+			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange", "ObjectsCreateSource", "SigmaDistSurface")],
+			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
 			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
 			["Clustering",("Clustering","ClusterPercentage","ClusterDistance")],
 		]
@@ -102,9 +111,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.parameters.get(parameter)!=value:
 			self.modified = 1
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
-		if parameter in ["Time", "X","Y","Z"]:
+		if parameter in ["Time", "X", "Y", "Z"]:
 			if self.dataUnit:
-				self.dataUnit.setNumberOfTimepoints(value)
+				self.dataUnit.setNumberOfTimepoints(self.parameters["Time"])
 				self.dataUnit.setModifiedDimensions((self.parameters["X"], self.parameters["Y"], self.parameters["Z"]))
 				lib.messenger.send(None, "update_dataset_info")
 				
@@ -125,13 +134,15 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""	   
-		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage"]:
+		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage","SigmaDistSurface"]:
 			return types.FloatType
 		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd"]:
 			return types.IntType
 			
-		if parameter in ["CreateNoise","Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll"]:
+		if parameter in ["CreateNoise","Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll","ObjectsCreateSource"]:
 			return types.BooleanType
+		if parameter == "ReadObjects":
+			return GUI.GUIBuilder.FILENAME
 			
 		return types.IntType
 		
@@ -139,7 +150,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""		
-		if parameter in ["X","Y"]:return 512
+		if parameter in ["X","Y"]: return 512
 		if parameter == "Cache": return True
 		if parameter == "CacheAmount": return 15
 		if parameter == "CreateAll": return True
@@ -166,6 +177,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ObjectFluctuationEnd": return 0
 		if parameter == "ObjSizeStart": return 5
 		if parameter == "ObjSizeEnd": return 50
+		if parameter == "ReadObjects": return "statistics.csv"
+		if parameter == "ObjectsCreateSource": return False
+		if parameter == "SigmaDistSurface": return 5.0
 		
 		# Shift of 1-5% per timepoint
 		if parameter == "ShiftStart": return 1
@@ -180,9 +194,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
 		self.majorAxis = random.randint(int(0.55*y), int(0.85*y))
 		
-		
 		for image in self.imageCache.values():
 			image.ReleaseData()
+		
 		self.imageCache = {}
 		self.jitters = []
 		self.shifts = []
@@ -322,11 +336,15 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					rx, ry, rz = self.getPointInsideCell()
 					print "it's",rx,ry,rz
 					self.towardsPoints.append((rx,ry,rz))
+
+			if self.readObjects:
+				self.numberOfObjects = len(self.readObjects)
+			else:
+				self.numberOfObjects = random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])
 			
-			self.numberOfObjects = random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])
 			for obj in range(0, self.numberOfObjects):
 				print "Creating object %d"%obj
-				(rx,ry,rz), size = self.createObject()
+				(rx,ry,rz), size = self.createObject(obj)
 				objs.append((obj, (rx,ry,rz), size))
 		else:
 			for objN, (rx,ry,rz), size in self.objects[tp-1]:
@@ -369,11 +387,19 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				objs.append((objN, (rx,ry,rz), size))
 		return objs
 		
-	def createObject(self):
-		rx, ry, rz = self.getPointInsideCell()
-		sizeStart = self.parameters["ObjSizeStart"]
-		sizeEnd = self.parameters["ObjSizeEnd"]
-		size = random.randint(sizeStart, sizeEnd)
+	def createObject(self, objNum):
+		if self.readObjects:
+			size = self.readObjects[objNum][0][0]
+		else:
+			sizeStart = self.parameters["ObjSizeStart"]
+			sizeEnd = self.parameters["ObjSizeEnd"]
+			size = random.randint(sizeStart, sizeEnd)
+
+		if self.parameters["ObjectsCreateSource"]:
+			rx, ry, rz = self.getPointCloseToSurface()
+		else:
+			rx, ry, rz = self.getPointInsideCell()
+
 		return ((rx,ry,rz),size)
 		
 	def getPointInsideCell(self):
@@ -388,7 +414,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Create a test dataset within the parameters defined
 		"""
-		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
+		x,y,z = self.parameters["X"], self.parameters["Y"], self.parameters["Z"]
 		if self.modified:
 			print "Creating the time series data"
 			self.createTimeSeries()
@@ -420,16 +446,21 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					image.SetScalarComponentFromDouble(ix,iy,iz,0,0)
 
 		print "Creating shot noise"
-		noisePercentage = self.parameters["ShotNoiseAmount"]
-		noiseAmount = (noisePercentage/100.0) * (x*y*z)
+		if self.parameters["CreateNoise"]:
+			noisePercentage = self.parameters["ShotNoiseAmount"]
+			noiseAmount = (noisePercentage/100.0) * (x*y*z)
+			bgnoisePercentage = self.parameters["BackgroundNoiseAmount"]
+			bgNoiseAmount = (bgnoisePercentage/100.0) * (x*y*z)
+		else:
+			noiseAmount = 0
+			bgNoiseAmount = 0
+			
 		while noiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
 			image.SetScalarComponentFromDouble(rx,ry,rz,0,random.randint(self.parameters["ShotNoiseMin"],255))
 			noiseAmount -= 1
 		
-		bgnoisePercentage = self.parameters["BackgroundNoiseAmount"]
-		noiseAmount = (bgnoisePercentage/100.0) * (x*y*z)
-		while noiseAmount > 0:
+		while bgNoiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
 			image.SetScalarComponentFromDouble(rx,ry,rz, 0, random.randint(self.parameters["BackgroundNoiseMin"],self.parameters["BackgroundNoiseMax"]))
 			noiseAmount -= 1
@@ -518,6 +549,37 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 						count += 1
 #		print "Size %d yields %d voxels"%(size, count)
 
+	def getPointCloseToSurface(self):
+		"""
+		Select random point close to surface provided by user as parameter
+		"""
+		numOfPolys = self.polydata.GetNumberOfPolys()
+		randPolyID = random.randint(0, numOfPolys-1)
+		pdata = self.polydata.GetPolys().GetData()
+		pointIDs = [int(pdata.GetTuple1(i)) for i in range(4*randPolyID+1,4*randPolyID+4)]
+		points = [self.polydata.GetPoint(i) for i in pointIDs]
+		# Calculate center of random polygon
+		center = [0.0, 0.0, 0.0]
+		for point in points:
+			for i in range(3):
+				center[i] += point[i]
+
+		for i in range(3):
+			center[i] /= 3
+
+		sigma = self.parameters["SigmaDistSurface"]
+		randomCOM = [int(random.gauss(center[i], sigma) / self.spacing[i]) for i in range(3)]
+		dims = (self.parameters["X"], self.parameters["Y"], self.parameters["Z"])
+
+		for i in range(3):
+			if randomCOM[i] < 0:
+				randomCOM[i] = 0
+			elif randomCOM[i] > dims[i] - 1:
+				randomCOM[i] = dims[i] - 1
+
+		return tuple(randomCOM)
+		
+
 	def writeOutput(self, dataUnit, timepoint):
 		"""
 		Optionally write the output of this module during the processing
@@ -542,21 +604,53 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		#w.writerow(["Timepoint %d" % timepoint])
 		#w.writerow(["Object #", "Center of mass","Size"])
 					
-		if timepoint==self.parameters["Time"]-1:
+		if timepoint == self.parameters["Time"]-1:
 			trackWriter = lib.ParticleReader.ParticleWriter()
 			trackWriter.writeTracks(filename, self.tracks, 3)
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""			   
+		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
+
 		currentTimepoint = self.getCurrentTimepoint()
 		inputImage = self.getInput(1)
 		self.spacing = list(inputImage.GetSpacing())
 		for i in range(3):
 			self.spacing[i] /= self.spacing[0]
 		self.spacing = tuple(self.spacing)
+
+		if os.path.exists(self.parameters["ReadObjects"]) and self.modified:
+			reader = lib.Particle.ParticleReader(self.parameters["ReadObjects"], 0)
+			objects = reader.read()
+			volumes = reader.getVolumes()
+			intensities = reader.getAverageIntensities()
+			objCount = min(len(volumes),len(intensities[0]))
+			self.readObjects = []
+			for i in range(objCount):
+				self.readObjects.append((volumes[i], intensities[0][i]))
+
+		if self.parameters["ObjectsCreateSource"] and self.modified:
+			# Update first dims of result data
+			wholeExtent = inputImage.GetWholeExtent()
+			x = wholeExtent[1] - wholeExtent[0] + 1
+			y = wholeExtent[3] - wholeExtent[2] + 1
+			z = wholeExtent[5] - wholeExtent[4] + 1
+			if self.dataUnit:
+				self.parameters["X"] = x
+				self.parameters["Y"] = y
+				self.parameters["Z"] = z
+				self.dataUnit.setModifiedDimensions((x, y, z))
+				lib.messenger.send(None, "update_dataset_info")
+
+			polydata = self.getPolyDataInput(1)
+			if polydata:
+				self.polydata = polydata
+			else:
+				Logging.error("No polydata in source", "Cannot create objects close to surface of input as there is no polydata in input.")
+				return inputImage
+		
 		return self.createData(currentTimepoint)
 	
