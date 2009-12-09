@@ -33,6 +33,7 @@
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
+#include "math.h"
 
 #include "vtkCriticalSection.h"
 static vtkSimpleCriticalSection CriticalSection;
@@ -79,6 +80,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
   unsigned long nonZeroInsideCount = 0, nonZeroOutsideCount = 0;
   unsigned long nonZeroCount = 0;
   double insideSum = 0, outsideSum = 0;
+  double insideStd = 0.0, outsideStd = 0.0;
   unsigned long *maskPtr;
   int* table;
   unsigned long count = 0;
@@ -140,7 +142,6 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
             scalar = *inPtr++;
             maskScalar = (unsigned long) *maskPtr++;
 
-            
             if (maskScalar > n) {
                 n = maskScalar;
             }
@@ -149,10 +150,12 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
                 if (maskScalar >= bgLevel) {
                     nonZeroInsideCount++;
                     insideSum += scalar;
+					insideStd += scalar * scalar;
                 } 
 				else {
                     nonZeroOutsideCount++;
                     outsideSum += scalar;
+					outsideStd += scalar * scalar;
                 }
                 
             }
@@ -183,6 +186,11 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
   }
   self->SetVoxelsOutsideLabels(nonZeroOutsideCount);
   self->SetNonZeroVoxels(nonZeroCount);
+
+  insideStd = sqrt((insideStd / nonZeroInsideCount) - self->GetAverageInsideLabels());
+  outsideStd = sqrt((outsideStd / nonZeroOutsideCount) - self->GetAverageOutsideLabels());
+  self->SetInsideLabelsStdDev(insideStd);
+  self->SetOutsideLabelsStdDev(outsideStd);
   
   for(int i=0;i<=n;i++) {
      avg = avgArray->GetValue(i);
@@ -190,7 +198,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
      if (numberOfValues) {
        avg /= numberOfValues;     
        avgArray -> SetValue(i,avg);
-     } 
+     }
 	 else avgArray->SetValue(i, 0);
   }
   CriticalSection.Unlock();

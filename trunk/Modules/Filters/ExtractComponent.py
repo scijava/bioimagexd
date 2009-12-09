@@ -35,7 +35,7 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 	Description: A filter for extracting component or components from a dataset
 	"""     
 	name = "Extract components"
-	category = lib.FilterTypes.FILTERING
+	category = lib.FilterTypes.CONVERSION
 	
 	def __init__(self):
 		"""

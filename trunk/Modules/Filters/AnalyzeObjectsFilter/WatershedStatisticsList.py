@@ -34,9 +34,8 @@ class WatershedTotalsList(wx.ListCtrl):
 		"""
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
-			size = (785, 60),
-			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES,
-			
+			size = (995, 60),
+			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES
 			)
 
 		self.InsertColumn(0, "# of objects")
@@ -46,8 +45,10 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.InsertColumn(4, u"Avg. Area (\u03BCm)")
 		self.InsertColumn(5, u"Sum of Areas (\u03BCm)")
 		self.InsertColumn(6, "Avg. intensity (obj)")
-		self.InsertColumn(7, "Avg. intensity (outside objs)")
-		self.InsertColumn(8, u"Avg. distance to other objs (\u03BCm)")
+		self.InsertColumn(7, "Avg. intensity (voxels in objs)")
+		self.InsertColumn(8, "Avg. intensity (outside objs)")
+		self.InsertColumn(9, "Avg. intensity (outside objs, non zero)")
+		self.InsertColumn(10, u"Avg. distance to other objs (\u03BCm)")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 105)
@@ -57,6 +58,8 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.SetColumnWidth(6, 105)
 		self.SetColumnWidth(7, 105)
 		self.SetColumnWidth(8, 105)
+		self.SetColumnWidth(9, 105)
+		self.SetColumnWidth(10, 105)
 		self.stats = []
 	
 		self.SetItemCount(1)
@@ -100,9 +103,14 @@ class WatershedTotalsList(wx.ListCtrl):
 		elif col == 6:
 			return u"%.3f\u00B1%.3f"%(self.stats[7],self.stats[8])
 		elif col == 7:
-			return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
+			return u"%.3f\u00B1%.3f"%(self.stats[17],self.stats[18])
 		elif col == 8:
+			return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
+		elif col == 9:
+			return u"%.3f\u00B1%.3f"%(self.stats[15],self.stats[16])
+		elif col == 10:
 			return u"%.2f\u00B1%.2f"%(self.stats[11],self.stats[12])
+				
  
 	def OnGetItemImage(self, item):
 		return -1

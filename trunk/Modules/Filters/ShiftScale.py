@@ -53,7 +53,7 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Applying a shift and scale to image intensity"
-		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to range 0-255", "NoOverflow":"Prevent over/underflow"}
+		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to max range of data type", "NoOverflow":"Prevent over/underflow"}
 	
 	def getParameters(self):
 		"""
@@ -102,16 +102,29 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetInput(image)
 		self.vtkfilter.SetClampOverflow(self.parameters["NoOverflow"])
 		if self.parameters["AutoScale"]:
-			x, y = image.GetScalarRange()
-			print "image type=", image.GetScalarTypeAsString()
-			print "Range of data=", x, y
-			self.vtkfilter.SetOutputScalarTypeToUnsignedChar()
-			if not y:
-				lib.messenger.send(None, "show_error", "Bad scalar range", "Data has scalar range of %d -%d" % (x, y))
-				return vtk.vtkImageData()
-			scale = 255.0 / y
-			print "Scale=", scale
-			self.vtkfilter.SetShift(0)
+			minRange, maxRange = image.GetScalarRange()
+			scalarType = image.GetScalarType()
+			minScalar = image.GetScalarTypeMin()
+			maxScalar = image.GetScalarTypeMax()
+
+			if minRange >= 0 and maxRange <= 4095 and minScalar == 0 and maxScalar == 65535: # Hack for 12-bit datas
+				maxScalar = 4095.0
+			
+			print "Image type =", image.GetScalarTypeAsString()
+			print "Range of data =", minRange, maxRange
+			print "Max range of data =", minScalar, maxScalar
+			self.vtkfilter.SetOutputScalarType(scalarType)
+
+			if maxRange - minRange == 0:
+				lib.messenger.send(None, "show_error", "Bad scalar range", "Data has scalar range of %d -%d" % (minRange, maxRange))
+				return image
+			
+			shift = minScalar - minRange
+			scale = (maxScalar - minScalar) / (maxRange - minRange)
+
+			print "Shift =", shift
+			print "Scale =", scale
+			self.vtkfilter.SetShift(shift)
 			self.vtkfilter.SetScale(scale)
 		else:
 			self.vtkfilter.SetShift(self.parameters["Shift"])

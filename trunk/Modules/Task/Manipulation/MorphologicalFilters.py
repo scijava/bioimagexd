@@ -101,7 +101,7 @@ def getFilters():
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
-			SobelFilter, MedianFilter, OpeningByReconstruction, GrayscaleFillHole]
+			SobelFilter, MedianFilter, OpeningByReconstruction]
 
 
 class ErodeFilter(MorphologicalFilter):
@@ -285,53 +285,3 @@ class OpeningByReconstruction(MorphologicalFilter):
 
 		return output
 		
-
-class GrayscaleFillHole(MorphologicalFilter):
-	"""
-	GrayscaleFillHole removes local minima not connected to the boundary of the
-	image
-	"""
-	name = "Grayscale fill hole"
-	category = lib.FilterTypes.MORPHOLOGICAL
-	level = scripting.COLOR_BEGINNER
-
-	def __init__(self):
-		"""
-		Initialization
-		"""
-		MorphologicalFilter.__init__(self)
-		self.descs = {}
-		self.itkFlag = 1
-		self.filter = None
-		self.pc = itk.PyCommand.New()
-		self.pc.SetCommandCallable(self.updateProgress)
-
-	def updateProgress(self):
-		"""
-		Update progress event handler
-		"""
-		lib.ProcessingFilter.ProcessingFilter.updateProgress(self,self.filter,"ProgressEvent")
-
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""
-		return []
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""
-		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-
-		image = self.getInput(1)
-		image = self.convertVTKtoITK(image)
-
-		self.filter = itk.GrayscaleFillholeImageFilter[image,image].New()
-		self.filter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
-		self.filter.SetInput(image)
-		output = self.filter.GetOutput()
-		output.Update()
-
-		return output
