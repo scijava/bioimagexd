@@ -419,7 +419,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			labelAverage.SetBackgroundLevel(startIntensity)
 			labelAverage.Update()
 			avgIntOutsideObjsNonZero = labelAverage.GetAverageOutsideLabels()
-			avgIntOutsideObjsNonZeroStdErr = labelAverage.GetOutsideLabelsStdDev() / math.sqrt(labelAverage.GetVoxelsOutsideLabels())
+			if labelAverage.GetVoxelsOutsideLabels() == 0:
+				avgIntOutsideObjsNonZeroStdErr = 0.0
+			else:
+				avgIntOutsideObjsNonZeroStdErr = labelAverage.GetOutsideLabelsStdDev() / math.sqrt(labelAverage.GetVoxelsOutsideLabels())
 			# Get also non zero voxels here that there is no need to recalculate
 			nonZeroVoxels = labelAverage.GetNonZeroVoxels()
 			
