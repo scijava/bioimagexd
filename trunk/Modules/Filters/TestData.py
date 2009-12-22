@@ -244,6 +244,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				
 			print "Creating objects for timepoint %d"%tp
 			objs = self.createObjectsForTimepoint(tp)
+
 			if self.parameters["ObjectFluctuationEnd"]:
 				print "Adding fluctuations to object numbers"
 				objs = self.createFluctuations(objs)
@@ -252,10 +253,10 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.tracks = []
 		for tp, objs in enumerate(self.objects):
 			for i, (objN, (x,y,z), size) in enumerate(objs):
-				if len(self.tracks) <= objN:
+				if len(self.tracks) < objN:
 					self.tracks.append([])
 				p = lib.Particle.Particle((x,y,z), (x,y,z), tp, size, 20, objN)
-				self.tracks[objN].append(p)
+				self.tracks[objN-1].append(p)
 		if self.parameters["Clustering"]:
 			print "Introducing clustering"
 			self.clusterObjects(self.objects)
@@ -288,9 +289,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		for tp,objN,i,objN2,j in combine:
 			ob1 = objects[tp][i]
 			ob2 = objects[tp][j]
-			if len(self.tracks[objN]) > tp and len(self.tracks[objN2]) > tp:
-				self.tracks[objN].remove(self.tracks[objN][tp])
-				self.tracks[objN2].remove(self.tracks[objN2][tp])
+			if len(self.tracks[objN-1]) > tp and len(self.tracks[objN2-1]) > tp:
+				self.tracks[objN-1].remove(self.tracks[objN-1][tp])
+				self.tracks[objN2-1].remove(self.tracks[objN2-1][tp])
 			toremove.append((tp,ob1,ob2))
 			objN,(x1,y1,z1),s1 = ob1
 			objN2,(x2,y2,z2),s2 = ob2
@@ -299,7 +300,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			y3 = (y1+y2)/2
 			z3 = (z1+z2)/2
 			objects[tp].append((objN,(x3,y3,z3), s3))
-			self.tracks[objN].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, 20, objN))
+			self.tracks[objN-1].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, 20, objN))
 
 		for tp,ob1,ob2 in toremove:
 			objects[tp].remove(ob1)
@@ -342,7 +343,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			else:
 				self.numberOfObjects = random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])
 			
-			for obj in range(0, self.numberOfObjects):
+			for obj in range(1, self.numberOfObjects+1):
 				print "Creating object %d"%obj
 				(rx,ry,rz), size = self.createObject(obj)
 				objs.append((obj, (rx,ry,rz), size))
@@ -594,15 +595,20 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		#f = codecs.open(filename, "awb", "latin1")
-		#Logging.info("Saving statistics to file %s"%filename, kw="processing")
+		# Make own writer for this and Analyze objects
+		f = codecs.open(filename, "ab", "latin1")
+		Logging.info("Saving statistics to file %s"%filename, kw="processing")
 		
-		#w = csv.writer(f, dialect = "excel", delimiter = ";")
+		w = csv.writer(f, dialect = "excel", delimiter = ";")
 		
-		#settings = dataUnit.getSettings()
-		#settings.set("StatisticsFile", filename)
-		#w.writerow(["Timepoint %d" % timepoint])
-		#w.writerow(["Object #", "Center of mass","Size"])
+		settings = dataUnit.getSettings()
+		settings.set("StatisticsFile", filename)
+		w.writerow(["Timepoint %d" % timepoint])
+		w.writerow(["Object #", "Center of Mass X", "Center of Mass Y", "Center of Mass Z", "Volume (voxels)"])
+		for obj in self.objects[timepoint]:
+			objN, com, volume = obj
+			w.writerow([str(objN), str(cog[0]), str(cog[1]), str(cog[2]), str(volume)])
+		f.close()
 					
 		if timepoint == self.parameters["Time"]-1:
 			trackWriter = lib.ParticleReader.ParticleWriter()

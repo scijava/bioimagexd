@@ -2066,9 +2066,18 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		Possibly queries the user before quitting, then quits
 		"""
 		conf = Configuration.getConfiguration()
-		
+		try:
+			openFiles = conf.getConfigItem("FileList", "General")
+		except:
+			openFiles = []
+
+		if not openFiles or type(openFiles) == types.UnicodeType:
+			numOpenFiles = 0
+		else:
+			numOpenFiles = len(openFiles)
+
 		askOnQuit = conf.getConfigItem("AskOnQuit", "General")
-		if askOnQuit and eval(askOnQuit):
+		if askOnQuit and eval(askOnQuit) and numOpenFiles:
 			dlg = QuitDialog.QuitDialog(self, "Do you really want to quit",
 											"Do you want to save file tree for later use?")
 
@@ -2077,12 +2086,14 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 
 			if answer != wx.ID_YES and answer != wx.ID_NO:
 				return
+		else:
+			answer = wx.ID_NO
 			
 		self.saveWindowSizes()
 			
 		self.visualizer.enable(0)		
 		self.visualizer.closeVisualizer()
-		conf = Configuration.getConfiguration()
+
 		if answer == wx.ID_NO:
 			conf.setConfigItem("FileList", "General", "[]")
 		conf.setConfigItem("CleanExit", "General", "True")

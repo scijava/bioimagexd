@@ -76,6 +76,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.greenitems = []
 		self.yellowitems = []
 		self.dataUnitToPath = {}
+		self.selectedItem = None
 		
 		isz = (16, 16)
 		il = wx.ImageList(isz[0], isz[1])
