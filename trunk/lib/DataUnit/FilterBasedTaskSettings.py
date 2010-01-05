@@ -79,10 +79,9 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		"""
 		if name == "FilterList":
 			filterList = lib.FilterBasedModule.FilterList()
-			filterNames = eval(value)
-			filterList.populate(filterNames)
+			#filterNames = eval(value)
+			#filterList.populate(filterNames)
 			return filterList
-				
 		else:
 			return DataUnitSettings.deserialize(name, value)
 		

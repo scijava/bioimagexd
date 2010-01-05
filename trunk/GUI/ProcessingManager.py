@@ -130,7 +130,7 @@ class ProcessingManager(TimepointSelection.TimepointSelection):
 		# Set file path for returning to the mainwindow
 		self.filePath = filename
 		self.t1 = time.time()
-		
+
 		tps = self.getSelectedTimepoints()
 		lib.messenger.connect(None, "update_processing_progress", self.updateProgressMeter)
 		try:

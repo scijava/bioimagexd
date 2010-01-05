@@ -34,8 +34,8 @@
 #include "vtkXMLDataElement.h"
 #include "vtkUnsignedLongLongArray.h"
 
-typedef struct ChannelData;
-typedef struct DimensionData;
+struct ChannelData;
+struct DimensionData;
 
 // Non supported wrapper parser syntax must be surrounded with comments BTX and ETX
 //BTX

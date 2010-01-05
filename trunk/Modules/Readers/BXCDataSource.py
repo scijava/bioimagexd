@@ -287,7 +287,7 @@ class BXCDataSource(DataSource):
 			self.dataSets.append(filename)
 
 		# If everything went well, we create a new DataUnit-instance of the
-		# correct subclass, so that the DataUnit-instace can take over and
+		# correct subclass, so that the DataUnit-instance can take over and
 		# resume data processing. First, we return the DataUnit to the caller,
 		# so it can set a reference to it:
 		dataunit = DataUnit()

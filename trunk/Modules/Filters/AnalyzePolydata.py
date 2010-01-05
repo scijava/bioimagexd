@@ -36,7 +36,7 @@ import lib.Math
 import GUI.GUIBuilder
 import itk
 import os
-import lib.Particle
+import lib.ParticleReader
 import lib.FilterTypes
 import GUI.CSVListView
 import wx
@@ -448,7 +448,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 					particleFile = os.path.join(path,fileName)
 
 		if os.path.exists(particleFile):
-			reader = lib.Particle.ParticleReader(particleFile, 0)
+			reader = lib.ParticleReader.ParticleReader(particleFile, 0)
 			objects = reader.read()
 		else: # Do AnalyzeObjects
 			pass

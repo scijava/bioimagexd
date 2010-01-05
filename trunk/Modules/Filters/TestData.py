@@ -37,6 +37,7 @@ import Logging
 import csv
 import lib.ParticleReader
 import lib.Particle
+import lib.ParticleWriter
 
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -524,15 +525,15 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		n = 0
 		r = int(origr)
 		maxx,maxy,maxz = imageData.GetDimensions()
-		xs = x0-r
-		ys = y0-r
-		zs = z0-r
+		xs = int(x0-r)
+		ys = int(y0-r)
+		zs = int(z0-r)
 		if xs < 0: xs = 0
 		if ys < 0: ys = 0
 		if zs < 0: zs = 0
-		xe = x0+r
-		ye = y0+r
-		ze = z0+r
+		xe = int(x0+r)
+		ye = int(y0+r)
+		ze = int(z0+r)
 		if xe >= maxx: xe = maxx-1
 		if ye >= maxy: ye = maxy-1
 		if ze >= maxz: ze = maxz-1
@@ -604,14 +605,19 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
 		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Center of Mass X", "Center of Mass Y", "Center of Mass Z", "Volume (voxels)"])
+		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
+					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
+					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
+
 		for obj in self.objects[timepoint]:
 			objN, com, volume = obj
-			w.writerow([str(objN), str(cog[0]), str(cog[1]), str(cog[2]), str(volume)])
+			w.writerow([str(objN), "", str(volume), str(com[0]), str(com[1]), str(com[2]), "", "", "", "", "", "", "", ""])
 		f.close()
 					
 		if timepoint == self.parameters["Time"]-1:
-			trackWriter = lib.ParticleReader.ParticleWriter()
+			tail,sep,head = filename.rpartition('.csv')
+			filename = ''.join((tail,'_track',sep))
+			trackWriter = lib.ParticleWriter.ParticleWriter()
 			trackWriter.writeTracks(filename, self.tracks, 3)
 		
 	def execute(self, inputs, update = 0, last = 0):
@@ -629,7 +635,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.spacing = tuple(self.spacing)
 
 		if os.path.exists(self.parameters["ReadObjects"]) and self.modified:
-			reader = lib.Particle.ParticleReader(self.parameters["ReadObjects"], 0)
+			reader = lib.ParticleReader.ParticleReader(self.parameters["ReadObjects"], 0)
 			objects = reader.read()
 			volumes = reader.getVolumes()
 			intensities = reader.getAverageIntensities()

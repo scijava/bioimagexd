@@ -815,7 +815,6 @@ class MainWindow(wx.Frame):
 			dataUnit.getSettings().writeTo(parser)
 			writer.write()
 		
-			
 			bxdwriter.addChannelWriter(writer)
 		bxdwriter.write()
 			
@@ -1641,7 +1640,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.onMenuShowTree(show = True)
 			asklist = []
 			wc = self.datasetWildcards + "|Encoding project (*.bxr)|*.bxr"
-
 			asklist = Dialogs.askOpenFileName(self, "Open a volume dataset", wc)
 		else:
 			asklist = args

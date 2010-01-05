@@ -217,7 +217,6 @@ class FileListDataSource(DataSource):
 		"""
 		create the reader list from a given set of file names and parameters
 		"""
-
 		for i in self.readers:
 			del i
 		self.readers = []
