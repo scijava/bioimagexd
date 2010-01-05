@@ -233,7 +233,7 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		tracksFile = bgDataUnit.getSettings().get("StatisticsFile")
 		if tracksFile:
 			self.tracksFile = tracksFile
-			self.reader = lib.Particle.ParticleReader(tracksFile, 0)
+			self.reader = lib.ParticleReader.ParticleReader(tracksFile, 0)
 		else:
 			self.reader = None
 			

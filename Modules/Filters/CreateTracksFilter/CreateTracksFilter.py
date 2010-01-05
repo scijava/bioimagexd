@@ -34,7 +34,7 @@ import lib.FilterTypes
 import GUI.GUIBuilder
 import lib.Particle
 import lib.ParticleTracker
-import lib.ParticleReader
+import lib.ParticleWriter
 import lib.Track
 
 import Modules.DynamicLoader
@@ -575,7 +575,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		fromTp = self.trackGrid.getTimepoint()
 		print "Tracking from timepoint", fromTp, "forward"
 		self.tracker.track(fromTimepoint = fromTp, seedParticles = objVals)
-		trackWriter = lib.ParticleReader.ParticleWriter()
+		trackWriter = lib.ParticleWriter.ParticleWriter()
 		trackWriter.writeTracks(self.parameters["ResultsFile"], self.tracker.getTracks(), self.parameters["MinLength"], self.tracker.timeStamps)
 	
 		self.onReadTracks(None)

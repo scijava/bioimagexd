@@ -3,7 +3,7 @@
  Project: BioImageXD
  Description:
 
- A module containing classes related to reading and writing tracks
+ A module containing classes related to reading objects and tracks.
 							
  Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
@@ -23,7 +23,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
 
 """
-__author__ = "BioImageXD Project < http://www.bioimagexd.org/>"
+__author__ = "BioImageXD Project < http://www.bioimagexd.net/>"
 __version__ = "$Revision: 1.42 $"
 __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
@@ -38,18 +38,22 @@ class ParticleReader:
 	A class for reading all particle definitions from .CSV files created by the
 	segmentation code
 	"""
-	def __init__(self, filename, filterObjectSize = 1):
+	def __init__(self, filename, filterObjectVolume = 2):
 		"""
 		Initialize the reader and necessary information for the reader
 		"""
 		self.rdr = csv.reader(open(filename), dialect = "excel", delimiter = ";")
-		self.filterObjectSize = 1#filterObjectSize
-		self.timepoint = -1	 
+		print "Reading file",filename
+		self.filterObjectVolume = filterObjectVolume
+		self.timepoint = -1  
 		self.volumes = []
+		self.areas = []
 		self.cogs = []
 		self.avgints = []
-		self.avgintsstderr = []
 		self.objects = []
+		self.avgintsstderr = []
+		self.avgdists = []
+		self.avgdiststderr = []
 		
 	def getObjects(self):
 		"""
@@ -73,22 +77,35 @@ class ParticleReader:
 		"""
 		return a list of the avereage intensities of the objects (sorted)
 		"""
-		return (self.avgints, self.avgintsstderr)
+		return (self.avgints,self.avgintsstderr)
+
+	def getAreas(self):
+		"""
+		Return a list of the areas of the objects (sorted)
+		"""
+		return self.areas
+
+	def getAverageDistances(self):
+		"""
+		Return a tuple of lists of the average distances of the objects to other objects
+		"""
+		return (self.avgdists,self.avgdiststderr)
 		
-	def read(self, statsTimepoint  = 0):
+	def read(self, statsTimepoint = 0):
 		"""
 		Read the particles from the filename and create corresponding instances of Particle class
 		"""
-		
 		ret = []
 		skipNext = 0
 		curr = []
+		voxelSize = None
 		for line in self.rdr:
 			if skipNext:
 				skipNext = 0
 				continue
 			if len(line) == 1:
 				timePoint = int(line[0].split(" ")[1])
+				#print "Current timepoint = ", timePoint
 				if curr:
 					ret.append(curr)
 				curr = []
@@ -96,86 +113,47 @@ class ParticleReader:
 				skipNext = 1
 				continue
 			else:
-				obj, sizemicro, size, cog, umcog, avgint, avgintstderr = line[0:7]
+				try:
+					obj, volumemicro, volume, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint, avgintstderr, avgdist, avgdiststderr, areamicro = line[0:14]
+				except:
+					obj, volumemicro, volume, cogX, cogY, cogZ, umcogX, umcogY, umcogZ, avgint = line[0:10] # Works with old data too
+					avgintstderr = 0.0
+					avgdist = 0.0
+					avgdiststderr = 0.0
+					areamicro = 0.0
 			try:
-				size = int(size)
-				sizemicro = float(sizemicro)
+				volume = int(volume)
+				volumemicro = float(volumemicro)
 			except ValueError:
 				continue
 			obj = int(obj)
-			cog = [float(coordinate) for coordinate in cog[1:-1].split(", ")]
-			#cog = eval(cog)
-			umcog = [float(coordinate) for coordinate in umcog[1:-1].split(", ")]
+			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
+			cog = [float(cogX), float(cogY), float(cogZ)]
+			if not voxelSize and cog[0] > 0 and cog[1] > 0 and cog[2] > 0:
+				voxelSize = [1.0, 1.0, 1.0]
+				for i in range(3):
+					voxelSize[i] = umcog[i] / cog[i]
+			cog = map(int, cog)
 			avgint = float(avgint)
 			avgintstderr = float(avgintstderr)
-			if size >= self.filterObjectSize and obj != 0: 
-				particle = Particle.Particle(umcog, cog, self.timepoint, size, avgint, obj)
+			avgdist = float(avgdist)
+			avgdiststderr = float(avgdiststderr)
+			areamicro = float(areamicro)
+			
+			if volume >= self.filterObjectVolume and obj != 0: 
+				particle = Particle(umcog, cog, self.timepoint, volume, avgint, obj)
+				particle.setVoxelSize(voxelSize)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
 				self.objects.append(obj)
-				self.cogs.append((int(cog[0]), int(cog[1]), int(cog[2])))
-				self.volumes.append((size, sizemicro))
+				self.cogs.append(tuple(cog))
+				self.volumes.append((volume, volumemicro))
 				self.avgints.append(avgint)
 				self.avgintsstderr.append(avgintstderr)
+				self.areas.append(areamicro)
+				self.avgdists.append(avgdist)
+				self.avgdiststderr.append(avgdiststderr)
 		if curr:
 			ret.append(curr)
 		return ret
-		
-		
-class ParticleWriter:
-	"""
-	A class for writing particles
-	"""
-	def __init__(self):
-		pass
-		
-	def writeTracks(self, filename, tracks, minimumTrackLength = 3, timeStamps = []):
-		"""
-		Write the particles
-		"""
-		fileToOpen = codecs.open(filename, "wb", "latin1")
-			
-		writer = csv.writer(fileToOpen, dialect = "excel", delimiter = ";")
-		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z"])
-		try:
-			voxelSize = tracks[0][0].voxelSize
-		except:
-			voxelSize = [1.0,1.0,1.0]
-		
-		for i, track in enumerate(tracks):
-			trackLength = 0
-			for particle in track:
-				if particle.intval:
-					trackLength += 1
-			if trackLength < minimumTrackLength:
-				continue
-			
-			for particle in track:
-				particleXPos, particleYPos, particleZPos = particle.posInPixels
-				voxelSizeX, voxelSizeY, voxelSizeZ = particle.voxelSize
-				writer.writerow([str(i), str(particle.intval), str(particle.timePoint), \
-				str(particleXPos), str(particleYPos), str(particleZPos)])
 
-		fileToOpen.close()
-
-		try:
-			parser = scripting.MyConfigParser()
-			if not parser.has_section("TimeStamps"):
-				parser.add_section("TimeStamps")
-				parser.set("TimeStamps", "TimeStamps", "%s"%timeStamps)
-			if not parser.has_section("VoxelSize"):
-				parser.add_section("VoxelSize")
-				parser.set("VoxelSize", "VoxelSize", "%s"%voxelSize)
-		except:
-			return
-
-		ext = filename.split(".")[-1]
-		pat = re.compile('.%s'%ext)
-		filename = pat.sub('.ini', filename)
-		try:
-			fp = open(filename, "w")
-			parser.write(fp)
-			fp.close()
-		except IOError, ex:
-			Logging.error("Failed to write settings", "ParticleWriter failed to open .ini file %s for writing tracking settings (%s)"%(filename,ex))
-		
