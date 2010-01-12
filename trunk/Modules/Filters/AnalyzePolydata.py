@@ -305,6 +305,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		for obj in objects:
 			x, y, z  = obj.getCenterOfMass()
+
 			xReal = x * objVoxelSizes[0]
 			yReal = y * objVoxelSizes[1]
 			zReal = z * objVoxelSizes[2]
@@ -349,8 +350,8 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Calculating average distances"
 
 		distanceCalc.Update()
-		distArray = distanceCalc.GetAverageDistanceToSurfaceArray();
-		distStdErrArray = distanceCalc.GetAverageDistanceToSurfaceStdErrArray();
+		distArray = distanceCalc.GetAverageDistanceToSurfaceArray()
+		distStdErrArray = distanceCalc.GetAverageDistanceToSurfaceStdErrArray()
 		distances = []
 		distancesStdErr = []
 		comDistances = []
@@ -362,10 +363,11 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			value = distStdErrArray.GetValue(i)
 			distancesStdErr.append(value)
 
-		distArray = distanceCalc.GetAverageDistanceToPointArray();
-		distStdErrArray = distanceCalc.GetAverageDistanceToPointStdErrArray();
-		insideArray = distanceCalc.GetInsideCountArray();
-		outsideArray = distanceCalc.GetOutsideCountArray();
+		distArray = distanceCalc.GetAverageDistanceToPointArray()
+		distStdErrArray = distanceCalc.GetAverageDistanceToPointStdErrArray()
+		insideArray = distanceCalc.GetInsideCountArray()
+		outsideArray = distanceCalc.GetOutsideCountArray()
+
 		for i in range(1, distArray.GetSize()):
 			value = distArray.GetValue(i)
 			comDistances.append(value)
@@ -498,7 +500,6 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				writeEntry.append("%.3f"%avgDistToComStdErr[i]) # 6
 				writeEntry.append("%d"%objInsideCount[i][0])
 				writeEntry.append("%d"%objInsideCount[i][1])
-				
 				percInsideList.append(objInsideCount[i][0]/float(objInsideCount[i][0]+objInsideCount[i][1]))
 				
 				insideCountVox += objInsideCount[i][0]

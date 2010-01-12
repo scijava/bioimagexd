@@ -1,3 +1,32 @@
+"""
+ Unit: AnalyzeObjectsFilter.py
+ Project: BioImageXD
+ Description:
+
+ A module containing object analyses for processing task.
+							
+ Copyright (C) 2005	 BioImageXD Project
+ See CREDITS.txt for details
+
+ This program is free software; you can redistribute it and / or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
+
+"""
+__author__ = "BioImageXD Project < http://www.bioimagexd.net/>"
+__version__ = "$Revision$"
+__date__ = "$Date$"
+
 import lib.ProcessingFilter
 import lib.FilterTypes
 import scripting
@@ -16,6 +45,8 @@ import time
 import lib.Math
 import types
 import platform
+import lib.ParticleWriter
+import sys
 
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -123,27 +154,22 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		f = codecs.open(filename, "ab", "latin1")
-		Logging.info("Saving statistics to file %s"%filename, kw="processing")
-		
-		w = csv.writer(f, dialect = "excel", delimiter = ";")
-		
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
-		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
-					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
-					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
-		for i, (volume, volumeum) in enumerate(self.values):
-			cog = self.centersofmass[i]
-			umcog = self.umcentersofmass[i]
-			avgint = self.avgIntList[i]
-			avgintstderr = self.avgIntStdErrList[i]
-			avgdist = self.avgDistList[i]
-			avgdiststderr = self.avgDistStdErrList[i]
-			areaUm = self.objAreasUm[i]
-			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm)])
-		f.close()
+		writer = lib.ParticleWriter.ParticleWriter()
+
+		volume = [vol for (vol,volum) in self.values]
+		volumeum = [volum for (vol,volum) in self.values]
+		writer.setObjectValue('volume', volume)
+		writer.setObjectValue('volumeum', volumeum)
+		writer.setObjectValue('centerofmass', self.centersofmass)
+		writer.setObjectValue('umcenterofmass', self.umcentersofmass)
+		writer.setObjectValue('avgint', self.avgIntList)
+		writer.setObjectValue('avgintstderr', self.avgIntStdErrList)
+		writer.setObjectValue('avgdist', self.avgDistList)
+		writer.setObjectValue('avgdiststderr', self.avgDistStdErrList)
+		writer.setObjectValue('areaum', self.objAreasUm)
+		writer.writeObjects(filename,timepoint)
 
 	def getGUI(self, parent, taskPanel):
 		"""
