@@ -82,9 +82,9 @@ class Particle:
 		"""
 		@return the distance in 3D between points (x,y,z) and (x2,y2,z2)
 		"""
-		distanceX = (x - x2) * self.voxelSize[0]
-		distanceY = (y - y2) * self.voxelSize[1]
-		distanceZ = (z - z2) * self.voxelSize[2]
+		distanceX = x - x2
+		distanceY = y - y2
+		distanceZ = z - z2
 		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
 		
 	def distance(self, particle):	 
@@ -94,8 +94,8 @@ class Particle:
 		Pre: Valid coordinates
 		Post: A distance, with a max error of ...
 		"""
-		particleXPos, particleYPos, particleZPos = particle.posInPixels
-		selfXPos, selfYPos, selfZPos = self.posInPixels
+		particleXPos, particleYPos, particleZPos = [particle.posInPixels[i] for i in range(0,3)]
+		selfXPos, selfYPos, selfZPos = [self.posInPixels[i] for i in range(0,3)]
 		return self.distance3D(particleXPos, particleYPos, particleZPos, selfXPos, selfYPos, selfZPos)
 		
 	def copy(self, particle):
@@ -120,7 +120,7 @@ class Particle:
 		try:
 			xPosition, yPosition, zPosition = self.posInPixels 
 			return "<Obj#%d (%d,%d,%d) T%d, %s>" \
-					% (self.intval, xPosition, yPosition, zPosition, self.timePoint, bool(self.inTrack))
+					% (self.intval, round(xPosition), round(yPosition), round(zPosition), self.timePoint, bool(self.inTrack))
 		except:
 			raise "Bad pos", self.pos	# TODO: When does this get raised?
 
@@ -396,6 +396,9 @@ class ParticleTracker:
 		sizeFactor = abs(sizeFactor - 1)
 		
 		intChange =  float(abs(testParticle.averageIntensity - oldParticle.averageIntensity))
+		if oldParticle.averageIntensity == 0:
+			return None, None, None
+		
 		intFactor = intChange / oldParticle.averageIntensity
 		if intFactor > self.intensityChange:
 			return None, None, None

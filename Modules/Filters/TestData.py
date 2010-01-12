@@ -54,8 +54,10 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.objects = []
 		self.readObjects = []
 		self.polydata = None
+		self.objPolydata = []
 		self.imageCache = {}
-		self.spacing = (1,1,1)
+		self.spacing = (1.0, 1.0, 1.0)
+		self.voxelSize = (1.0, 1.0, 1.0)
 		self.modified = 1
 		self.descs = {"X":"X:", "Y":"Y:", "Z":"Z:","Time":"Number of timepoints",
 		"Coloc":"Create colocalization between channels", 
@@ -345,9 +347,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				self.numberOfObjects = random.randint(self.parameters["NumberOfObjectsStart"],self.parameters["NumberOfObjectsEnd"])
 			
 			for obj in range(1, self.numberOfObjects+1):
-				print "Creating object %d"%obj
-				(rx,ry,rz), size = self.createObject(obj)
-				objs.append((obj, (rx,ry,rz), size))
+				self.createObject(obj,objs)
 		else:
 			for objN, (rx,ry,rz), size in self.objects[tp-1]:
 				if self.parameters["RandomMovement"]:
@@ -389,7 +389,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				objs.append((objN, (rx,ry,rz), size))
 		return objs
 		
-	def createObject(self, objNum):
+	def createObject(self, objNum, objs):
+		print "Creating object %d"%objNum
+
 		if self.readObjects:
 			size = self.readObjects[objNum][0][0]
 		else:
@@ -402,7 +404,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			rx, ry, rz = self.getPointInsideCell()
 
-		return ((rx,ry,rz),size)
+		objs.append((objNum, (rx,ry,rz), size))
+
 		
 	def getPointInsideCell(self):
 		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
@@ -475,6 +478,35 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			ry += shifty
 			rz += shiftz
 			self.createObjectAt(image, rx,ry,rz, size)
+
+		if self.parameters["ObjectsCreateSource"]:
+			self.objPolydata = []
+			locator = vtk.vtkOBBTree()
+			locator.SetDataSet(self.polydata)
+			locator.BuildLocator()
+			pointLocator = vtk.vtkPointLocator()
+			pointLocator.SetDataSet(self.polydata)
+			pointLocator.BuildLocator()
+			for tp in range(len(self.objects)):
+				objPolyTP = []
+				for objN, (cx, cy, cz), size in self.objects[tp]:
+					cxs = cx * self.spacing[0]
+					cys = cy * self.spacing[1]
+					czs = cz * self.spacing[2]
+					locatorInside = locator.InsideOrOutside((cxs,cys,czs))
+					if locatorInside == -1:
+						inside = 1
+					else:
+						inside = 0
+					objid = pointLocator.FindClosestPoint((cxs, cys, czs))
+					x2,y2,z2 = self.polydata.GetPoint(objid)
+					x2 /= self.spacing[0]
+					y2 /= self.spacing[1]
+					z2 /= self.spacing[2]
+					distToSurf = self.distance((cx,cy,cz), (x2,y2,z2), self.voxelSize)
+					objPolyTP.append((objN, (cx,cy,cz), distToSurf, inside))
+				
+				self.objPolydata.append(objPolyTP)
 		
 		n = len(self.imageCache.items())
 		if n > self.parameters["CacheAmount"]:
@@ -596,24 +628,62 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		# Make own writer for this and Analyze objects
-		f = codecs.open(filename, "ab", "latin1")
-		Logging.info("Saving statistics to file %s"%filename, kw="processing")
-		
-		w = csv.writer(f, dialect = "excel", delimiter = ";")
-		
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
-		w.writerow(["Timepoint %d" % timepoint])
-		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
-					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
-					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
 
+		volumes = []
+		volumeums = []
+		coms = []
+		comums = []
+		avgint = []
+		avgintstderr = []
+		avgdist = []
+		avgdiststderr = []
+		areaum = []
 		for obj in self.objects[timepoint]:
 			objN, com, volume = obj
-			w.writerow([str(objN), "", str(volume), str(com[0]), str(com[1]), str(com[2]), "", "", "", "", "", "", "", ""])
-		f.close()
-					
+			volumes.append(volume)
+			coms.append(com)
+			com = list(com)
+			for i in range(len(com)):
+				com[i] *= self.voxelSize[i]
+			com = tuple(com)
+			comums.append(com)
+			volumeums.append(0.0)
+			avgint.append(0)
+			avgintstderr.append(0.0)
+			avgdist.append(0.0)
+			avgdiststderr.append(0.0)
+			areaum.append(0.0)
+
+		writer = lib.ParticleWriter.ParticleWriter()
+		writer.setObjectValue('volume', volumes)
+		writer.setObjectValue('volumeum', volumeums)
+		writer.setObjectValue('centerofmass', coms)
+		writer.setObjectValue('umcenterofmass', comums)
+		writer.setObjectValue('avgint', avgint)
+		writer.setObjectValue('avgintstderr', avgintstderr)
+		writer.setObjectValue('avgdist', avgdist)
+		writer.setObjectValue('avgdiststderr', avgdiststderr)
+		writer.setObjectValue('areaum', areaum)
+		writer.writeObjects(filename, timepoint)
+
+		if self.parameters["ObjectsCreateSource"]:
+			# Write analyse polydata results
+			filepoly = filename
+			tail,sep,head = filepoly.rpartition('.csv')
+			filepoly = ''.join((tail,'_poly',sep))
+			# Move this to somewhere else
+			f = codecs.open(filepoly, "ab", "latin1")
+			Logging.info("Saving polydata statistics to file %s"%filepoly, kw="processing")
+			w = csv.writer(f, dialect = "excel", delimiter = ";")
+			if timepoint >= 0:
+				w.writerow(["Timepoint %d" % timepoint])
+			w.writerow(["Obj#","COM X", "COM Y", "COM Z", "Dist.(COM-surface)","COM inside surface"])
+			for (objN,(comx,comy,comz),dist,inside) in self.objPolydata[timepoint]:
+				w.writerow([objN, comx, comy, comz, dist, inside])
+			f.close()
+		
 		if timepoint == self.parameters["Time"]-1:
 			tail,sep,head = filename.rpartition('.csv')
 			filename = ''.join((tail,'_track',sep))
@@ -629,6 +699,11 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		currentTimepoint = self.getCurrentTimepoint()
 		inputImage = self.getInput(1)
+		
+		try:
+			self.voxelSize = self.dataUnit.getVoxelSize()
+		except:
+			self.voxelSize = (1.0, 1.0, 1.0)
 		self.spacing = list(inputImage.GetSpacing())
 		for i in range(3):
 			self.spacing[i] /= self.spacing[0]
@@ -665,4 +740,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				return inputImage
 		
 		return self.createData(currentTimepoint)
+	
+	def distance(self, com1, com2, voxelSize):
+		"""
+		Help method to calculate distance of two points
+		"""
+		distanceX = (com1[0] - com2[0]) * voxelSize[0]
+		distanceY = (com1[1] - com2[1]) * voxelSize[1]
+		distanceZ = (com1[2] - com2[2]) * voxelSize[2]
+		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
 	

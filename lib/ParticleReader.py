@@ -29,7 +29,7 @@ __date__ = "$Date: 2005 / 01 / 13 14:52:39 $"
 
 import csv
 import codecs
-import Particle
+import lib.Particle
 import re
 import scripting
 
@@ -133,7 +133,7 @@ class ParticleReader:
 				voxelSize = [1.0, 1.0, 1.0]
 				for i in range(3):
 					voxelSize[i] = umcog[i] / cog[i]
-			cog = map(int, cog)
+			#cog = map(int, cog)
 			avgint = float(avgint)
 			avgintstderr = float(avgintstderr)
 			avgdist = float(avgdist)
@@ -141,7 +141,7 @@ class ParticleReader:
 			areamicro = float(areamicro)
 			
 			if volume >= self.filterObjectVolume and obj != 0: 
-				particle = Particle(umcog, cog, self.timepoint, volume, avgint, obj)
+				particle = lib.Particle.Particle(umcog, cog, self.timepoint, volume, avgint, obj)
 				particle.setVoxelSize(voxelSize)
 				curr.append(particle)
 			if self.timepoint == statsTimepoint:
