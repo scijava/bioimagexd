@@ -374,12 +374,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				rx += speedx
 				ry += speedy
 				rz += speedz
-				if rx < 0: x = 0
-				if ry < 0: y = 0
-				if rz < 0: z = 0
-				if rx >= self.parameters["X"]: rx = self.parameters["X"] - 1
-				if ry >= self.parameters["Y"]: rx = self.parameters["Y"] - 1
-				if rz >= self.parameters["Z"]: rx = self.parameters["Z"] - 1
+				if rx < 0: rx = 0
+				if ry < 0: ry = 0
+				if rz < 0: rz = 0
+				if rx > self.parameters["X"] - 1: rx = self.parameters["X"] - 1
+				if ry > self.parameters["Y"] - 1: rx = self.parameters["Y"] - 1
+				if rz > self.parameters["Z"] - 1: rx = self.parameters["Z"] - 1
 				
 				if self.parameters["SizeChange"]:
 					maxchange = int(size*(self.parameters["SizeChange"]/100.0))
@@ -473,11 +473,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
 		print "Creating objects"
-		for objN, (rx,ry,rz), size in self.objects[currentTimepoint]:
+		for oIter, (objN, (rx,ry,rz), size) in enumerate(self.objects[currentTimepoint]):
 			rx += shiftx
 			ry += shifty
 			rz += shiftz
-			self.createObjectAt(image, rx,ry,rz, size)
+			(rx,ry,rz), realSize = self.createObjectAt(image, rx,ry,rz, size)
+			# Change possible new size and com to object
+			self.objects[currentTimepoint][oIter] = (objN, (rx,ry,rz), realSize)
 
 		if self.parameters["ObjectsCreateSource"]:
 			self.objPolydata = []
@@ -505,7 +507,6 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					z2 /= self.spacing[2]
 					distToSurf = self.distance((cx,cy,cz), (x2,y2,z2), self.voxelSize)
 					objPolyTP.append((objN, (cx,cy,cz), distToSurf, inside))
-				
 				self.objPolydata.append(objPolyTP)
 		
 		n = len(self.imageCache.items())
@@ -554,21 +555,48 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		origr = math.pow(size*2.3561944901923448, 0.333333)
 		#r = int(1+math.sqrt(size/math.pi))
-		n = 0
 		r = int(origr)
 		maxx,maxy,maxz = imageData.GetDimensions()
+		minx,miny,minz = [0 for i in range(3)]
+		maxx -= 1
+		maxy -= 1
+		maxz -= 1
+		
 		xs = int(x0-r)
 		ys = int(y0-r)
 		zs = int(z0-r)
-		if xs < 0: xs = 0
-		if ys < 0: ys = 0
-		if zs < 0: zs = 0
 		xe = int(x0+r)
 		ye = int(y0+r)
 		ze = int(z0+r)
-		if xe >= maxx: xe = maxx-1
-		if ye >= maxy: ye = maxy-1
-		if ze >= maxz: ze = maxz-1
+
+		# Be sure that whole object is inside image range
+		if xs < minx:
+			x0 -= xs
+			xs = 0
+		if ys < miny:
+			y0 -= ys
+			ys = 0
+		if zs < minz:
+			z0 -= zs
+			zs = 0
+		if xe > maxx:
+			x0 = x0 - xe - maxx
+			xe = maxx
+		if ye > maxy:
+			y0 = y0 - ye - maxy
+			ye = maxy
+		if ze > maxz:
+			z0 = z0 - ze - maxz
+			ze = maxz
+
+		# Calculate approximation of area of object to be created
+		#a = ((xe-xs)/2.0) * self.voxelSize[0] * 1000000 # convert to um
+		#b = ((ye-ys)/2.0) * self.voxelSize[1] * 1000000 # convert to um
+		#c = ((ze-zs)/2.0) * self.voxelSize[2] * 1000000 # convert to um
+		#ap = a**1.6
+		#bp = b**1.6
+		#cp = c**1.6
+		#area = 4*math.pi*((ap*bp + ap*cp + bp*cp)/3)**(1/1.6)
 		
 		count = 0
 		for x in range(xs,xe):
@@ -581,7 +609,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 						minval = 220
 						imageData.SetScalarComponentFromDouble(x,y,z,0,random.randint(minval,255))
 						count += 1
-#		print "Size %d yields %d voxels"%(size, count)
+		return (x0,y0,z0), count
 
 	def getPointCloseToSurface(self):
 		"""
@@ -640,20 +668,47 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgdist = []
 		avgdiststderr = []
 		areaum = []
-		for obj in self.objects[timepoint]:
+		voxelVolume = 1.0
+		for i in range(3):
+			voxelVolume *= self.voxelSize[i]
+			voxelVolume *= 1000000 # convert to um
+
+		# Sort objects
+		for tpObjs in self.objects:
+			tpObjs.sort()
+		
+		
+		for i, obj in enumerate(self.objects[timepoint]):
 			objN, com, volume = obj
 			volumes.append(volume)
 			coms.append(com)
 			com = list(com)
-			for i in range(len(com)):
-				com[i] *= self.voxelSize[i]
+			for cIter in range(len(com)):
+				com[cIter] *= self.voxelSize[cIter]
+				com[cIter] *= 1000000 # convert to um
+
+			distList = []
+			for j, obj2 in enumerate(self.objects[timepoint]):
+				if i == j: continue
+				objN2, com2, volume2 = obj2
+				com2 = list(com2)
+				for cIter in range(3):
+					com2[cIter] *= self.voxelSize[cIter]
+					com2[cIter] *= 1000000 # convert to um
+				dx = com[0] - com2[0]
+				dy = com[1] - com2[1]
+				dz = com[2] - com2[2]
+				dist = math.sqrt(dx*dx + dy*dy + dz*dz)
+				distList.append(dist)
+			avgDist, avgDistStd, avgDistStdErr = lib.Math.meanstdeverr(distList)
+				
 			com = tuple(com)
 			comums.append(com)
-			volumeums.append(0.0)
-			avgint.append(0)
+			volumeums.append(volume * voxelVolume)
+			avgint.append(255.0)
 			avgintstderr.append(0.0)
-			avgdist.append(0.0)
-			avgdiststderr.append(0.0)
+			avgdist.append(avgDist)
+			avgdiststderr.append(avgDistStdErr)
 			areaum.append(0.0)
 
 		writer = lib.ParticleWriter.ParticleWriter()
@@ -669,6 +724,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		writer.writeObjects(filename, timepoint)
 
 		if self.parameters["ObjectsCreateSource"]:
+			# Sort objects
+			for tpObjs in self.objPolydata:
+				tpObjs.sort()
 			# Write analyse polydata results
 			filepoly = filename
 			tail,sep,head = filepoly.rpartition('.csv')
@@ -680,8 +738,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			if timepoint >= 0:
 				w.writerow(["Timepoint %d" % timepoint])
 			w.writerow(["Obj#","COM X", "COM Y", "COM Z", "Dist.(COM-surface)","COM inside surface"])
-			for (objN,(comx,comy,comz),dist,inside) in self.objPolydata[timepoint]:
-				w.writerow([objN, comx, comy, comz, dist, inside])
+			for i, (objN,(comx,comy,comz),dist,inside) in enumerate(self.objPolydata[timepoint]):
+				dist *= 1000000 # convert to um
+				w.writerow([i+1, comx, comy, comz, dist, inside])
 			f.close()
 		
 		if timepoint == self.parameters["Time"]-1:
