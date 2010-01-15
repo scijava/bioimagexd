@@ -36,7 +36,7 @@ import sys
 import math
 import codecs
 import copy
-import ParticleReader
+import lib.ParticleReader
 try:
 	import psyco
 except ImportError:
@@ -94,8 +94,8 @@ class Particle:
 		Pre: Valid coordinates
 		Post: A distance, with a max error of ...
 		"""
-		particleXPos, particleYPos, particleZPos = [particle.posInPixels[i] for i in range(0,3)]
-		selfXPos, selfYPos, selfZPos = [self.posInPixels[i] for i in range(0,3)]
+		particleXPos, particleYPos, particleZPos = [particle.posInPixels[i] * self.voxelSize[i] for i in range(0,3)]
+		selfXPos, selfYPos, selfZPos = [self.posInPixels[i] * self.voxelSize[i] for i in range(0,3)]
 		return self.distance3D(particleXPos, particleYPos, particleZPos, selfXPos, selfYPos, selfZPos)
 		
 	def copy(self, particle):
@@ -206,7 +206,7 @@ class ParticleTracker:
 		print "Reading from file = '", filename, "'"
 
 		if os.path.exists(filename):
-			self.reader = ParticleReader(filename, filterObjectVolume = self.filterObjectSize)
+			self.reader = lib.ParticleReader.ParticleReader(filename, filterObjectVolume = self.filterObjectSize)
 			self.particles = self.reader.read(statsTimepoint = statsTimepoint)
 			for particleList in self.particles:
 				for particle in particleList:
@@ -702,7 +702,6 @@ class ParticleTracker:
 				if not oldParticles.get(tuple(oldParticle.posInPixels), False):
 					oldParticles[tuple(oldParticle.posInPixels)] = 0
 				oldParticles[tuple(oldParticle.posInPixels)] += 1
-				
 				distFactor, sizeFactor, intFactor = self.score(testParticle, oldParticle)
 				failed = (distFactor == None)
 				angleFactor = 0

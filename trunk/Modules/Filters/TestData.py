@@ -55,6 +55,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.readObjects = []
 		self.polydata = None
 		self.objPolydata = []
+		self.timeStamps = []
 		self.imageCache = {}
 		self.spacing = (1.0, 1.0, 1.0)
 		self.voxelSize = (1.0, 1.0, 1.0)
@@ -92,13 +93,14 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"CreateNoise":"Create noise",
 		"ReadObjects":"Read sizes and number from",
 		"ObjectsCreateSource":"Create objects close to surface from source",
-		"SigmaDistSurface":"Sigma of Gaussian distance to surface (in x,y px size)"}
+		"SigmaDistSurface":"Sigma of Gaussian distance to surface (in x,y px size)",
+		"TimeDifference":"Time difference between time points"}
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
+		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
 			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
 			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange", "ObjectsCreateSource", "SigmaDistSurface")],
 			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
@@ -137,7 +139,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""	   
-		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage","SigmaDistSurface"]:
+		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage","SigmaDistSurface","TimeDifference"]:
 			return types.FloatType
 		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd"]:
 			return types.IntType
@@ -183,6 +185,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ReadObjects": return "statistics.csv"
 		if parameter == "ObjectsCreateSource": return False
 		if parameter == "SigmaDistSurface": return 5.0
+		if parameter == "TimeDifference": return 300.0
 		
 		# Shift of 1-5% per timepoint
 		if parameter == "ShiftStart": return 1
@@ -767,6 +770,14 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		for i in range(3):
 			self.spacing[i] /= self.spacing[0]
 		self.spacing = tuple(self.spacing)
+
+		# Create timestamps
+		self.timeStamps = []
+		curStamp = 0.0
+		for i in range(self.parameters["Time"]):
+			self.timeStamps.append(curStamp)
+			curStamp += self.parameters["TimeDifference"]
+		self.dataUnit.getSettings().set("TimeStamps", self.timeStamps)
 
 		if os.path.exists(self.parameters["ReadObjects"]) and self.modified:
 			reader = lib.ParticleReader.ParticleReader(self.parameters["ReadObjects"], 0)
