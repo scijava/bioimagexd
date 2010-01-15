@@ -480,7 +480,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				entry = []
 				writeEntry = []
 				entry.append("#%d"%object.objectNumber()) # 1
-				entry.append("%d,%d,%d"%(int(x),int(y),int(z))) # 2
+				entry.append("%d,%d,%d"%(int(round(x)),int(round(y)),int(round(z)))) # 2
 				entry.append(u"%.3f \u03BCm"%objComDistToSurf[i]) # 3
 				entry.append(u"%.3f\u00B1%.3f \u03BCm"%(avgDistToSurf[i],avgDistToSurfStdErr[i])) # 4
 				entry.append(u"%.3f \u03BCm"%objComDistToSurfCom[i]) # 5
@@ -489,9 +489,9 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				entry.append("%d"%objInsideCount[i][1])
 
 				writeEntry.append("%d"%object.objectNumber()) # 1
-				writeEntry.append("%d"%int(x)) # 2
-				writeEntry.append("%d"%int(y)) # 2
-				writeEntry.append("%d"%int(z)) # 2
+				writeEntry.append("%d"%int(round(x))) # 2
+				writeEntry.append("%d"%int(round(y))) # 2
+				writeEntry.append("%d"%int(round(z))) # 2
 				writeEntry.append("%.3f"%objComDistToSurf[i]) # 3
 				writeEntry.append("%.3f"%avgDistToSurf[i]) # 4
 				writeEntry.append("%.3f"%avgDistToSurfStdErr[i]) # 4

@@ -104,24 +104,50 @@ class Track:
 		return the average of the angle differences
 		"""
 		angles = []
-		for i in range(self.mintp, self.maxtp):
-			vec1 = list(self.points[i])
-			vec2 = list(self.points[i + 1])
-			# Create unit vectors in real space
+		for i in range(self.mintp+2, self.maxtp+1):
+			point1 = list(self.points[i-2])
+			point2 = list(self.points[i-1])
+			point3 = list(self.points[i])
+
+			vec1 = []
 			lenVec1 = 0.0
+			vec2 = []
 			lenVec2 = 0.0
 			for i,size in enumerate(self.voxelSize):
-				vec1[i] *= self.voxelSize[i]
-				vec2[i] *= self.voxelSize[i]
-				lenVec1 += vec1[i]
-				lenVec2 += vec2[i]
+				vec1.append((point2[i]-point1[i]) * self.voxelSize[i])
+				lenVec1 += vec1[i]**2
+				vec2.append((point3[i]-point2[i]) * self.voxelSize[i])
+				lenVec2 += vec2[i]**2
 
-			for i in range(3):
+			if (lenVec1 == 0 or lenVec2 == 0):
+				angles.append(0.0)
+				continue
+
+			lenVec1 = math.sqrt(lenVec1)
+			lenVec2 = math.sqrt(lenVec2)
+			for i in range(len(vec1)):
 				vec1[i] /= lenVec1
 				vec2[i] /= lenVec2
 
 			angle = lib.Particle.ParticleTracker.angle(vec1,vec2)
 			angles.append(angle)
+			#vec1 = list(self.points[i])
+			#vec2 = list(self.points[i + 1])
+			# Create unit vectors in real space
+			#lenVec1 = 0.0
+			#lenVec2 = 0.0
+			#for i,size in enumerate(self.voxelSize):
+			#	vec1[i] *= self.voxelSize[i]
+			#	vec2[i] *= self.voxelSize[i]
+			#	lenVec1 += vec1[i]
+			#	lenVec2 += vec2[i]
+
+			#for i in range(3):
+			#	vec1[i] /= lenVec1
+			#	vec2[i] /= lenVec2
+
+			#angle = lib.Particle.ParticleTracker.angle(vec1,vec2)
+			#angles.append(angle)
 
 		return lib.Math.meanstdeverr(angles)
 		
