@@ -38,6 +38,7 @@ import csv
 import lib.ParticleReader
 import lib.Particle
 import lib.ParticleWriter
+import lib.Math
 
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -263,6 +264,11 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					self.tracks.append([])
 				p = lib.Particle.Particle((x,y,z), (x,y,z), tp, size, 20, objN)
 				self.tracks[objN-1].append(p)
+
+		if self.parameters["ObjectsCreateSource"]:
+			for tp, objs in enumerate(self.objects):
+				self.objPolydata.append([])
+		
 		if self.parameters["Clustering"]:
 			print "Introducing clustering"
 			self.clusterObjects(self.objects)
@@ -480,37 +486,37 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			rx += shiftx
 			ry += shifty
 			rz += shiftz
-			(rx,ry,rz), realSize = self.createObjectAt(image, rx,ry,rz, size)
+			(rx,ry,rz), realSize, intList = self.createObjectAt(image, rx,ry,rz, size)
+			objMean, objStd, objStdErr = lib.Math.meanstdeverr(intList)
 			# Change possible new size and com to object
-			self.objects[currentTimepoint][oIter] = (objN, (rx,ry,rz), realSize)
+			self.objects[currentTimepoint][oIter] = (objN, (rx,ry,rz), realSize, (objMean, objStdErr))
 
 		if self.parameters["ObjectsCreateSource"]:
-			self.objPolydata = []
 			locator = vtk.vtkOBBTree()
 			locator.SetDataSet(self.polydata)
 			locator.BuildLocator()
 			pointLocator = vtk.vtkPointLocator()
 			pointLocator.SetDataSet(self.polydata)
 			pointLocator.BuildLocator()
-			for tp in range(len(self.objects)):
-				objPolyTP = []
-				for objN, (cx, cy, cz), size in self.objects[tp]:
-					cxs = cx * self.spacing[0]
-					cys = cy * self.spacing[1]
-					czs = cz * self.spacing[2]
-					locatorInside = locator.InsideOrOutside((cxs,cys,czs))
-					if locatorInside == -1:
-						inside = 1
-					else:
-						inside = 0
-					objid = pointLocator.FindClosestPoint((cxs, cys, czs))
-					x2,y2,z2 = self.polydata.GetPoint(objid)
-					x2 /= self.spacing[0]
-					y2 /= self.spacing[1]
-					z2 /= self.spacing[2]
-					distToSurf = self.distance((cx,cy,cz), (x2,y2,z2), self.voxelSize)
-					objPolyTP.append((objN, (cx,cy,cz), distToSurf, inside))
-				self.objPolydata.append(objPolyTP)
+			objPolyTP = []
+			for objN, (cx, cy, cz), size, meanInt in self.objects[currentTimepoint]:
+				cxs = cx * self.spacing[0]
+				cys = cy * self.spacing[1]
+				czs = cz * self.spacing[2]
+				locatorInside = locator.InsideOrOutside((cxs,cys,czs))
+				if locatorInside == -1:
+					inside = 1
+				else:
+					inside = 0
+
+				objid = pointLocator.FindClosestPoint((cxs, cys, czs))
+				x2,y2,z2 = self.polydata.GetPoint(objid)
+				x2 /= self.spacing[0]
+				y2 /= self.spacing[1]
+				z2 /= self.spacing[2]
+				distToSurf = self.distance((cx,cy,cz), (x2,y2,z2), self.voxelSize)
+				objPolyTP.append((objN, (cx,cy,cz), distToSurf, inside))
+			self.objPolydata[currentTimepoint] = objPolyTP
 		
 		n = len(self.imageCache.items())
 		if n > self.parameters["CacheAmount"]:
@@ -602,6 +608,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		#area = 4*math.pi*((ap*bp + ap*cp + bp*cp)/3)**(1/1.6)
 		
 		count = 0
+		intList = []
+		totalInt = 0.0
+		coms = [0.0, 0.0, 0.0]
 		for x in range(xs,xe):
 			for y in range(ys,ye):
 				for z in range(zs,ze):
@@ -610,9 +619,17 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					if d <= r:
 						#minval = int(255-(d/float(r)*128))
 						minval = 220
-						imageData.SetScalarComponentFromDouble(x,y,z,0,random.randint(minval,255))
+						voxelInt = random.randint(minval,255)
+						imageData.SetScalarComponentFromDouble(x,y,z,0,voxelInt)
 						count += 1
-		return (x0,y0,z0), count
+						intList.append(voxelInt)
+						totalInt += voxelInt
+						coms[0] += voxelInt * x
+						coms[1] += voxelInt * y
+						coms[2] += voxelInt * z
+
+		x0, y0, z0 = [coms[i] / (totalInt) for i in range(3)]
+		return (x0,y0,z0), count, intList
 
 	def getPointCloseToSurface(self):
 		"""
@@ -682,7 +699,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		
 		for i, obj in enumerate(self.objects[timepoint]):
-			objN, com, volume = obj
+			objN, com, volume, meanInt = obj
 			volumes.append(volume)
 			coms.append(com)
 			com = list(com)
@@ -693,7 +710,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			distList = []
 			for j, obj2 in enumerate(self.objects[timepoint]):
 				if i == j: continue
-				objN2, com2, volume2 = obj2
+				objN2, com2 = obj2[0:2]
 				com2 = list(com2)
 				for cIter in range(3):
 					com2[cIter] *= self.voxelSize[cIter]
@@ -708,8 +725,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			com = tuple(com)
 			comums.append(com)
 			volumeums.append(volume * voxelVolume)
-			avgint.append(255.0)
-			avgintstderr.append(0.0)
+			avgint.append(meanInt[0])
+			avgintstderr.append(meanInt[1])
 			avgdist.append(avgDist)
 			avgdiststderr.append(avgDistStdErr)
 			areaum.append(0.0)
@@ -743,7 +760,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			w.writerow(["Obj#","COM X", "COM Y", "COM Z", "Dist.(COM-surface)","COM inside surface"])
 			for i, (objN,(comx,comy,comz),dist,inside) in enumerate(self.objPolydata[timepoint]):
 				dist *= 1000000 # convert to um
-				w.writerow([i+1, comx, comy, comz, dist, inside])
+				w.writerow([i+1, int(round(comx)), int(round(comy)), int(round(comz)), dist, inside])
 			f.close()
 		
 		if timepoint == self.parameters["Time"]-1:
