@@ -256,7 +256,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		write the objects from a given timepoint to file
 		"""
-		f = codecs.open(filename, "wb", "latin1")
+		f = codecs.open(filename, "ab", "latin1")
 		Logging.info("Saving polydata statistics to file %s"%filename, kw="processing")
 		
 		w = csv.writer(f, dialect = "excel", delimiter = ";")
@@ -395,6 +395,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			x *= xs
 			y *= ys
 			z *= zs
+
 			inside = locator.InsideOrOutside([x,y,z])
 			if inside == -1:
 				distances.append(True)
