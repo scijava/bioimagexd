@@ -105,9 +105,12 @@ class Track:
 		"""
 		angles = []
 		for i in range(self.mintp+2, self.maxtp+1):
-			point1 = list(self.points[i-2])
-			point2 = list(self.points[i-1])
-			point3 = list(self.points[i])
+			try:
+				point1 = list(self.points[i-2])
+				point2 = list(self.points[i-1])
+				point3 = list(self.points[i])
+			except:
+				continue
 
 			vec1 = []
 			lenVec1 = 0.0

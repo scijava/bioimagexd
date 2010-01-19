@@ -212,8 +212,11 @@ class TrackTableGrid(gridlib.Grid):
 
 		self.dataUnit = dataUnit
 		self.trackFilter = trackFilter
+
 		n = dataUnit.getNumberOfTimepoints()
 		self.canEnable = canEnable
+		if canEnable:
+			n += 1
 		table = TrackTable(cols = n, canEnable = canEnable)
 
 		# The second parameter means that the grid is to take ownership of the
@@ -225,11 +228,13 @@ class TrackTableGrid(gridlib.Grid):
 		self.selectedRow = None
 		self.SetColLabelSize(20)
 		self.SetRowLabelSize(20)
-		for i in range(n):			
-			self.SetColSize(i, 60)        
-		
 		if canEnable:
 			self.SetColSize(0, 25)
+			for i in range(1,n):
+				self.SetColSize(i, 60)        
+		else:
+			for i in range(n):
+				self.SetColSize(i,60)
 		
 		self.Bind(gridlib.EVT_GRID_CELL_RIGHT_CLICK, self.OnRightDown)  
 		self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnLeftDown) 
