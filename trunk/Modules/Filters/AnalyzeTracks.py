@@ -222,6 +222,8 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				val, pos = track.getObjectAtTime(tp)
 				# Set the value at row i, column tp+1 (because there is the column for enabling
 				# this track)
+				if val == -1:
+					pos = ""
 				row.append(pos)
 			rows.append(row)
 
@@ -231,7 +233,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			print "Avg. dp for tracks of len %d = %.3f"%(k, lib.Math.averageValue(dpsPerTp[k]))
 		
 		for i in range(0, self.globalmax+1):
-			rows[0].append("T%d" % i)
+			rows[0].append("T%d" %(i+1))
 
 		self.trackListBox.setContents(rows)
 		

@@ -263,6 +263,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				if len(self.tracks) < objN:
 					self.tracks.append([])
 				p = lib.Particle.Particle((x,y,z), (x,y,z), tp, size, 20, objN)
+				p.setVoxelSize(self.voxelSize)
 				self.tracks[objN-1].append(p)
 
 		if self.parameters["ObjectsCreateSource"]:
@@ -767,7 +768,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			tail,sep,head = filename.rpartition('.csv')
 			filename = ''.join((tail,'_track',sep))
 			trackWriter = lib.ParticleWriter.ParticleWriter()
-			trackWriter.writeTracks(filename, self.tracks, 3)
+			trackWriter.writeTracks(filename, self.tracks, 3, self.timeStamps)
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
