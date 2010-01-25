@@ -115,6 +115,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter == "StatisticsFile":
 			return "statistics.csv"
+		if parameter == "Area":
+			return False
 		return True
 		
 	def getType(self, parameter):
@@ -336,8 +338,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			# if 2D image, calculate area using volume
 			if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
 				areaSpacing = labelVTK.GetSpacing()
+				objectThreshold = vtk.vtkImageThreshold()
+				objectThreshold.SetInput(labelVTK)
+				objectThreshold.SetOutputScalarTypeToUnsignedChar()
+				objectThreshold.SetInValue(255)
+				objectThreshold.SetOutValue(0)
 				marchingCubes = vtk.vtkMarchingCubes()
-				marchingCubes.SetInput(labelVTK)
+				#marchingCubes.SetInput(labelVTK)
+				marchingCubes.SetInput(objectThreshold.GetOutput())
 				massProperties = vtk.vtkMassProperties()
 				massProperties.SetInput(marchingCubes.GetOutput())
 				areaDiv = (areaSpacing[0] / x)**2
@@ -367,8 +375,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				# Get area of object
 				if self.parameters["Area"]:
 					if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
-						#	objectThreshold.ThresholdBetween(i,i)
-						marchingCubes.SetValue(0,i)
+						objectThreshold.ThresholdBetween(i,i)
+						#marchingCubes.SetValue(0,i)
+						marchingCubes.SetValue(0,255)
 						polydata = marchingCubes.GetOutput()
 						polydata.Update()
 						if polydata.GetNumberOfPolys() > 0:
