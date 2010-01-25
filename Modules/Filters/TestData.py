@@ -79,6 +79,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ObjSizeEnd":"Max. size of object (in px)",
 		"ObjectFluctuationStart":"Min. change in object #",
 		"ObjectFluctuationEnd":"Max. change in object #",
+		"ObjMinInt":"Min. intensity of objects",
+		"ObjMaxInt":"Max. intensity of objects",
 		"RandomMovement":"Move randomly",
 		"MoveTowardsPoint":"Move towards a point",
 		"TargetPoints":"# of target points",
@@ -103,7 +105,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
 			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
-			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange", "ObjectsCreateSource", "SigmaDistSurface")],
+			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjMinInt","ObjMaxInt","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange", "ObjectsCreateSource", "SigmaDistSurface")],
 			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
 			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
 			["Clustering",("Clustering","ClusterPercentage","ClusterDistance")],
@@ -142,7 +144,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage","SigmaDistSurface","TimeDifference"]:
 			return types.FloatType
-		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd"]:
+		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd","ObjMinInt","ObjMaxInt"]:
 			return types.IntType
 			
 		if parameter in ["CreateNoise","Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll","ObjectsCreateSource"]:
@@ -183,6 +185,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ObjectFluctuationEnd": return 0
 		if parameter == "ObjSizeStart": return 5
 		if parameter == "ObjSizeEnd": return 50
+		if parameter == "ObjMinInt": return 200
+		if parameter == "ObjMaxInt": return 255
 		if parameter == "ReadObjects": return "statistics.csv"
 		if parameter == "ObjectsCreateSource": return False
 		if parameter == "SigmaDistSurface": return 5.0
@@ -245,7 +249,10 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					direction = random.choice([-1,1])
 					x,y,z = self.shifts[-1]
 					z += random.randint(2,5)*direction
-					self.shifts[-1] = (x,y,z)
+					if len(shifts) == 1:
+						pass
+					else:
+						self.shifts[-1] = (x,y,z)
 			else:
 				self.shifts.append((0,0,0))
 				
@@ -460,7 +467,6 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				for ix in range(0,x):
 					image.SetScalarComponentFromDouble(ix,iy,iz,0,0)
 
-		print "Creating shot noise"
 		if self.parameters["CreateNoise"]:
 			noisePercentage = self.parameters["ShotNoiseAmount"]
 			noiseAmount = (noisePercentage/100.0) * (x*y*z)
@@ -469,16 +475,18 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			noiseAmount = 0
 			bgNoiseAmount = 0
-			
+
+		print "Creating shot noise"
 		while noiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
 			image.SetScalarComponentFromDouble(rx,ry,rz,0,random.randint(self.parameters["ShotNoiseMin"],255))
 			noiseAmount -= 1
-		
+
+		print "Creating background noise"
 		while bgNoiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
 			image.SetScalarComponentFromDouble(rx,ry,rz, 0, random.randint(self.parameters["BackgroundNoiseMin"],self.parameters["BackgroundNoiseMax"]))
-			noiseAmount -= 1
+			bgNoiseAmount -= 1
 
 		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
@@ -618,9 +626,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					# Do not use spacing to get real looking objects
 					d = math.sqrt((x0-x)**2 + (y0-y)**2 + (z0-z)**2)
 					if d <= r:
-						#minval = int(255-(d/float(r)*128))
-						minval = 220
-						voxelInt = random.randint(minval,255)
+						voxelInt = random.randint(self.parameters["ObjMinInt"],self.parameters["ObjMaxInt"])
 						imageData.SetScalarComponentFromDouble(x,y,z,0,voxelInt)
 						count += 1
 						intList.append(voxelInt)
