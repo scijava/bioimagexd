@@ -70,7 +70,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ShiftEnd":"Max. shift (in x,y px size)",
 		"ShotNoiseAmount":"% of shot noise",
 		"ShotNoiseMin":"Min. intensity of shot noise",
-		"BackgroundNoiseAmount":"% of background noise",
+		#"BackgroundNoiseAmount":"% of background noise",
 		"BackgroundNoiseMin":"Min. intensity of bg noise",
 		"BackgroundNoiseMax":"Max. intensity of bg noise",
 		"NumberOfObjectsStart":"# objects (at least)",
@@ -104,7 +104,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
-			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseAmount","BackgroundNoiseMin","BackgroundNoiseMax")],
+			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseMin","BackgroundNoiseMax")],
 			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjMinInt","ObjMaxInt","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange", "ObjectsCreateSource", "SigmaDistSurface")],
 			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
 			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
@@ -142,7 +142,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""	   
-		if parameter in ["ShotNoiseAmount","BackgroundNoiseAmount","ClusteringPercentage","SigmaDistSurface","TimeDifference"]:
+		if parameter in ["ShotNoiseAmount","ClusteringPercentage","SigmaDistSurface","TimeDifference"]:
 			return types.FloatType
 		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd","ObjMinInt","ObjMaxInt"]:
 			return types.IntType
@@ -176,7 +176,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "SizeChange": return 5
 		if parameter == "SpeedStart": return 2
 		if parameter == "SpeedEnd": return 10
-		if parameter == "BackgroundNoiseAmount": return 5
+		#if parameter == "BackgroundNoiseAmount": return 5
 		if parameter == "BackgroundNoiseMin": return 1
 		if parameter == "BackgroundNoiseMax": return 30
 		if parameter == "NumberOfObjectsStart":return 20
@@ -453,40 +453,48 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if currentTimepoint in self.imageCache:
 			print "Returning cached image"
 			return self.imageCache[currentTimepoint]
-		
-		image = vtk.vtkImageData()
-		image.SetScalarTypeToUnsignedChar()
-		x,y,z = self.parameters["X"], self.parameters["Y"], self.parameters["Z"]
-		image.SetDimensions((x,y,z))
-		image.AllocateScalars()
-		image.SetSpacing(self.spacing)
-		
-		print "Initializing image"
-		for iz in range(0,z):
-			for iy in range(0,y):
-				for ix in range(0,x):
-					image.SetScalarComponentFromDouble(ix,iy,iz,0,0)
+
+		print "Allocating image"
+
+		if self.parameters["CreateNoise"]:
+			print "Creating background noise"
+			noiseSource = vtk.vtkImageNoiseSource()
+			noiseSource.SetWholeExtent(0,x-1,0,y-1,0,z-1)
+			noiseSource.SetMinimum(self.parameters["BackgroundNoiseMin"])
+			noiseSource.SetMaximum(self.parameters["BackgroundNoiseMax"])
+			castFilter = vtk.vtkImageCast()
+			castFilter.SetOutputScalarTypeToUnsignedChar()
+			castFilter.SetInputConnection(noiseSource.GetOutputPort())
+			information = vtk.vtkImageChangeInformation()
+			information.SetInputConnection(castFilter.GetOutputPort())
+			information.SetOutputSpacing(self.spacing)
+			image = information.GetOutput()
+			image.Update()
+		else:
+			image = vtk.vtkImageData()
+			image.SetScalarTypeToUnsignedChar()
+			x,y,z = self.parameters["X"], self.parameters["Y"], self.parameters["Z"]
+			image.SetDimensions((x,y,z))
+			image.AllocateScalars()
+			image.SetSpacing(self.spacing)
+			
+			print "Initializing image"
+			for iz in range(0,z):
+				for iy in range(0,y):
+					for ix in range(0,x):
+						image.SetScalarComponentFromDouble(ix,iy,iz,0,0)
 
 		if self.parameters["CreateNoise"]:
 			noisePercentage = self.parameters["ShotNoiseAmount"]
 			noiseAmount = (noisePercentage/100.0) * (x*y*z)
-			bgnoisePercentage = self.parameters["BackgroundNoiseAmount"]
-			bgNoiseAmount = (bgnoisePercentage/100.0) * (x*y*z)
+			print "Creating shot noise"
 		else:
 			noiseAmount = 0
-			bgNoiseAmount = 0
 
-		print "Creating shot noise"
 		while noiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
 			image.SetScalarComponentFromDouble(rx,ry,rz,0,random.randint(self.parameters["ShotNoiseMin"],255))
 			noiseAmount -= 1
-
-		print "Creating background noise"
-		while bgNoiseAmount > 0:
-			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
-			image.SetScalarComponentFromDouble(rx,ry,rz, 0, random.randint(self.parameters["BackgroundNoiseMin"],self.parameters["BackgroundNoiseMax"]))
-			bgNoiseAmount -= 1
 
 		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
@@ -620,13 +628,20 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		intList = []
 		totalInt = 0.0
 		coms = [0.0, 0.0, 0.0]
+		# Select intensity for object, voxel intensity will be -20 to +20
+		objInt = int(round(self.parameters["ObjMinInt"] + random.betavariate(2,2) * (self.parameters["ObjMaxInt"] - self.parameters["ObjMinInt"])))
+		minInt = objInt - 20
+		if minInt < self.parameters["ObjMinInt"]: minInt = self.parameters["ObjMinInt"]
+		maxInt = objInt + 20
+		if maxInt > self.parameters["ObjMaxInt"]: maxInt = self.parameters["ObjMaxInt"]
+		
 		for x in range(xs,xe):
 			for y in range(ys,ye):
 				for z in range(zs,ze):
 					# Do not use spacing to get real looking objects
 					d = math.sqrt((x0-x)**2 + (y0-y)**2 + (z0-z)**2)
 					if d <= r:
-						voxelInt = random.randint(self.parameters["ObjMinInt"],self.parameters["ObjMaxInt"])
+						voxelInt = random.randint(minInt,maxInt)
 						imageData.SetScalarComponentFromDouble(x,y,z,0,voxelInt)
 						count += 1
 						intList.append(voxelInt)
