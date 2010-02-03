@@ -40,6 +40,11 @@ import lib.Particle
 import lib.ParticleWriter
 import lib.Math
 
+DIST_UNIFORM = 0
+DIST_NORM = 1
+DIST_POSNORM = 2
+DIST_NEGNORM = 3
+
 class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for generating test data
@@ -70,6 +75,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ShiftEnd":"Max. shift (in x,y px size)",
 		"ShotNoiseAmount":"% of shot noise",
 		"ShotNoiseMin":"Min. intensity of shot noise",
+		"ShotNoiseMax":"Max. intensity of shot noise",
+		"ShotNoiseDistribution":"Shot noise distribution",
 		#"BackgroundNoiseAmount":"% of background noise",
 		"BackgroundNoiseMin":"Min. intensity of bg noise",
 		"BackgroundNoiseMax":"Max. intensity of bg noise",
@@ -79,17 +86,18 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ObjSizeEnd":"Max. size of object (in px)",
 		"ObjectFluctuationStart":"Min. change in object #",
 		"ObjectFluctuationEnd":"Max. change in object #",
-		"ObjMinInt":"Min. intensity of objects",
-		"ObjMaxInt":"Max. intensity of objects",
+		"ObjMinInt":"Min. intensity of objects at the first time point",
+		"ObjMaxInt":"Max. intensity of objects at the first time point",
+		"IntChange":"Max. intensity change (in %)",
 		"RandomMovement":"Move randomly",
 		"MoveTowardsPoint":"Move towards a point",
 		"TargetPoints":"# of target points",
 		"Clustering":"Objects should cluster",
 		"SpeedStart":"Obj. min speed (in x,y px size)",
 		"SpeedEnd":"Obj. max speed (in x,y px size)",
-		"SizeChange":"Size change (in %)",
+		"SizeChange":"Max. size change (in %)",
 		"ClusterPercentage":"% of objects cluster",
-		"ClusterDistance":"Min. distance for clustering (in x,y px size)",
+		"ClusterDistance":"Max. distance for clustering (in x,y px size)",
 		"Cache":"Cache timepoints",
 		"CacheAmount":"# of timepoints cached",
 		"CreateAll":"Create all timepoints at once",
@@ -104,8 +112,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the list of parameters needed for configuring this GUI
 		"""			   
 		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
-			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","BackgroundNoiseMin","BackgroundNoiseMax")],
-			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjMinInt","ObjMaxInt","ObjectFluctuationStart","ObjectFluctuationEnd","SizeChange", "ObjectsCreateSource", "SigmaDistSurface")],
+			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","ShotNoiseMax","ShotNoiseDistribution","BackgroundNoiseMin","BackgroundNoiseMax")],
+			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","SizeChange","ObjMinInt","ObjMaxInt","IntChange","ObjectFluctuationStart","ObjectFluctuationEnd","ObjectsCreateSource", "SigmaDistSurface")],
 			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
 			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
 			["Clustering",("Clustering","ClusterPercentage","ClusterDistance")],
@@ -146,11 +154,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			return types.FloatType
 		if parameter in ["X","Y","Z","ShiftStart","ShiftEnd","ObjMinInt","ObjMaxInt"]:
 			return types.IntType
-			
 		if parameter in ["CreateNoise","Coloc","Shift","RandomMovement","MoveTowardsPoint","Clustering","Cache","CreateAll","ObjectsCreateSource"]:
 			return types.BooleanType
 		if parameter == "ReadObjects":
 			return GUI.GUIBuilder.FILENAME
+		if parameter == "ShotNoiseDistribution":
+			return GUI.GUIBuilder.CHOICE
 			
 		return types.IntType
 		
@@ -173,6 +182,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "MoveTowardsPoint":return True
 		if parameter == "ShotNoiseAmount": return 0.1
 		if parameter == "ShotNoiseMin": return 128
+		if parameter == "ShotNoiseMax": return 255
+		if parameter == "ShotNoiseDistribution": return 0
 		if parameter == "SizeChange": return 5
 		if parameter == "SpeedStart": return 2
 		if parameter == "SpeedEnd": return 10
@@ -187,6 +198,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ObjSizeEnd": return 50
 		if parameter == "ObjMinInt": return 200
 		if parameter == "ObjMaxInt": return 255
+		if parameter == "IntChange": return 5
 		if parameter == "ReadObjects": return "statistics.csv"
 		if parameter == "ObjectsCreateSource": return False
 		if parameter == "SigmaDistSurface": return 5.0
@@ -196,6 +208,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ShiftStart": return 1
 		if parameter == "ShiftEnd": return 15
 		return 0
+
+	def getRange(self, param):
+		"""
+		Return range of list parameter
+		"""
+		if param == "ShotNoiseDistribution":
+			return ("Uniform distribution", "Normal distribution","Positive normal distribution","Negative normal distribution")
 		
 	def createTimeSeries(self):
 		"""
@@ -263,23 +282,23 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				print "Adding fluctuations to object numbers"
 				objs = self.createFluctuations(objs)
 			self.objects.append(objs)
-			
+
+		if self.parameters["Clustering"]:
+			print "Introducing clustering"
+			self.clusterObjects(self.objects)
+		
 		self.tracks = []
 		for tp, objs in enumerate(self.objects):
-			for i, (objN, (x,y,z), size) in enumerate(objs):
+			for i, (objN, (x,y,z), size, objInt) in enumerate(objs):
 				if len(self.tracks) < objN:
 					self.tracks.append([])
-				p = lib.Particle.Particle((x,y,z), (x,y,z), tp, size, 20, objN)
+				p = lib.Particle.Particle((x,y,z), (x,y,z), tp, size, objInt, objN)
 				p.setVoxelSize(self.voxelSize)
 				self.tracks[objN-1].append(p)
 
 		if self.parameters["ObjectsCreateSource"]:
 			for tp, objs in enumerate(self.objects):
 				self.objPolydata.append([])
-		
-		if self.parameters["Clustering"]:
-			print "Introducing clustering"
-			self.clusterObjects(self.objects)
 	
 	def clusterObjects(self, objects):
 		"""
@@ -287,14 +306,15 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		combine = []
 		clustered = {}
-		clusteredObjN = {}
+		#clusteredObjN = {}
 		
 		for tp,objs in enumerate(objects):
-			for i, (objN, (x,y,z), size) in enumerate(objs):
-				for j, (objN2, (x2,y2,z2), size) in enumerate(objs):
+			if tp == 0: continue
+			for i, (objN, (x,y,z), size, objInt) in enumerate(objs):
+				for j, (objN2, (x2,y2,z2), size2, objInt2) in enumerate(objs):
 					if objN == objN2: continue
-					if objN in clusteredObjN: continue
-					if objN2 in clusteredObjN: continue
+					#if objN in clusteredObjN: continue
+					#if objN2 in clusteredObjN: continue
 					if (tp,objN) in clustered or (tp,objN2) in clustered: continue
 					d = math.sqrt(((x2-x) * self.spacing[0])**2 + ((y2-y) * self.spacing[1])**2 + ((z2-z) * self.spacing[2])**2)
 					if d < self.parameters["ClusterDistance"]:
@@ -302,30 +322,38 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 							combine.append((tp,objN,i,objN2,j))
 							clustered[(tp,objN2)]=1
 							clustered[(tp,objN)]=1
-							clusteredObjN[objN]=1
-							clusteredObjN[objN2]=1
+							#clusteredObjN[objN]=1
+							#clusteredObjN[objN2]=1
 
 		toremove=[]
 		for tp,objN,i,objN2,j in combine:
 			ob1 = objects[tp][i]
 			ob2 = objects[tp][j]
-			if len(self.tracks[objN-1]) > tp and len(self.tracks[objN2-1]) > tp:
-				self.tracks[objN-1].remove(self.tracks[objN-1][tp])
-				self.tracks[objN2-1].remove(self.tracks[objN2-1][tp])
+			#if len(self.tracks[objN-1]) > tp and len(self.tracks[objN2-1]) > tp:
+			#	self.tracks[objN-1].remove(self.tracks[objN-1][tp])
+			#	self.tracks[objN2-1].remove(self.tracks[objN2-1][tp])
 			toremove.append((tp,ob1,ob2))
-			objN,(x1,y1,z1),s1 = ob1
-			objN2,(x2,y2,z2),s2 = ob2
+			objN,(x1,y1,z1),s1,int1 = ob1
+			objN2,(x2,y2,z2),s2,int2 = ob2
 			s3 = int((s1+s2)*0.7)
 			x3 = (x1+x2)/2
 			y3 = (y1+y2)/2
 			z3 = (z1+z2)/2
-			objects[tp].append((objN,(x3,y3,z3), s3))
-			self.tracks[objN-1].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, 20, objN))
+			int3 = int((int1+int2) * 0.7)
+			objects[tp].append((objN,(x3,y3,z3), s3, int3))
+			#self.tracks[objN-1].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, int3, objN))
+
+		removedByTP = []
+		for remtp in range(len(self.objects)):
+			removedByTP.append(0)
 
 		for tp,ob1,ob2 in toremove:
 			objects[tp].remove(ob1)
 			objects[tp].remove(ob2)
-		
+			removedByTP[tp] += 1
+
+		for remtp in range(len(self.objects)):
+			print "Removed from timepoint %d: %d"%(remtp,removedByTP[remtp])
 	
 	def createFluctuations(self, objects):
 		"""
@@ -366,7 +394,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			for obj in range(1, self.numberOfObjects+1):
 				self.createObject(obj,objs)
 		else:
-			for objN, (rx,ry,rz), size in self.objects[tp-1]:
+			for objN, (rx,ry,rz), size, objInt in self.objects[tp-1]:
 				if self.parameters["RandomMovement"]:
 					speedx = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
 					speedy = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
@@ -399,11 +427,24 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				if rz > self.parameters["Z"] - 1: rx = self.parameters["Z"] - 1
 				
 				if self.parameters["SizeChange"]:
-					maxchange = int(size*(self.parameters["SizeChange"]/100.0))
+					negative = 1.0
+					maxchange = int(round(size*(self.parameters["SizeChange"]/100.0)))
+					if maxchange < 0:
+						negative = -1
 					change = random.randint(0, maxchange)
-					if random.random() < 0.5: change *= -1
+					change *= negative
 					size += change
-				objs.append((objN, (rx,ry,rz), size))
+
+				if self.parameters["IntChange"]:
+					negative = 1.0
+					maxchange = int(round(objInt*(self.parameters["IntChange"]/100.0)))
+					if maxchange < 0:
+						negative = -1
+					change = random.randint(0, maxchange)
+					change *= negative
+					objInt += change
+
+				objs.append((objN, (rx,ry,rz), size, objInt))
 		return objs
 		
 	def createObject(self, objNum, objs):
@@ -421,8 +462,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			rx, ry, rz = self.getPointInsideCell()
 
-		objs.append((objNum, (rx,ry,rz), size))
-
+		# Select intensity for object, voxel intensity will be -20 to +20
+		objInt = random.randint(self.parameters["ObjMinInt"],self.parameters["ObjMaxInt"])
+		objs.append((objNum, (rx,ry,rz), size, objInt))
 		
 	def getPointInsideCell(self):
 		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
@@ -491,19 +533,44 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			noiseAmount = 0
 
+		shotNoiseMin = self.parameters["ShotNoiseMin"]
+		shotNoiseMax = self.parameters["ShotNoiseMax"]
+		shotNoiseDistr = self.parameters["ShotNoiseDistribution"]
+		mu = (shotNoiseMax + shotNoiseMin) / 2.0
+		sigma = (shotNoiseMax - mu) / 3.0
 		while noiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
-			image.SetScalarComponentFromDouble(rx,ry,rz,0,random.randint(self.parameters["ShotNoiseMin"],255))
+			if shotNoiseDistr == DIST_UNIFORM:
+				shotInt = random.randint(shotNoiseMin,shotNoiseMax)
+			else:
+				if shotNoiseDistr == DIST_NORM:
+					shotInt = random.gauss(mu,sigma)
+				elif shotNoiseDistr == DIST_POSNORM:
+					shotInt = random.gauss(0.0, 2*sigma)
+					shotInt = int(round(abs(shotInt) + shotNoiseMin))
+				elif shotNoiseDistr == DIST_NEGNORM:
+					shotInt = random.gauss(0.0, 2*sigma)
+					if shotInt > 0:
+						shotInt *= -1.0
+					shotInt = int(round(shotInt + shotNoiseMax))
+
+				if shotInt < shotNoiseMin:
+					shotInt = shotNoiseMin
+				elif shotInt > shotNoiseMax:
+					shotInt = shotNoiseMax
+				
+			image.SetScalarComponentFromDouble(rx,ry,rz,0,shotInt)
 			noiseAmount -= 1
 
 		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
-		print "Creating objects"
-		for oIter, (objN, (rx,ry,rz), size) in enumerate(self.objects[currentTimepoint]):
+		print "Creating objects",currentTimepoint
+		for oIter, (objN, (rx,ry,rz), size, objInt) in enumerate(self.objects[currentTimepoint]):
 			rx += shiftx
 			ry += shifty
 			rz += shiftz
-			(rx,ry,rz), realSize, intList = self.createObjectAt(image, rx,ry,rz, size)
+				
+			(rx,ry,rz), realSize, intList = self.createObjectAt(image, rx,ry,rz, size, objInt)
 			objMean, objStd, objStdErr = lib.Math.meanstdeverr(intList)
 			# Change possible new size and com to object
 			self.objects[currentTimepoint][oIter] = (objN, (rx,ry,rz), realSize, (objMean, objStdErr))
@@ -572,16 +639,18 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		d1 = math.sqrt(p1[0]*p1[0]+p1[1]*p1[1])+math.sqrt(p2[0]*p2[0]+p2[1]*p2[1])
 		return d1 < majorAxis
 		
-	def createObjectAt(self, imageData, x0, y0, z0, size):
+	def createObjectAt(self, imageData, x0, y0, z0, size, objInt):
 		"""
 		Create an object in the image at the give position
 		@param imageData the image to modify
 		@param x0, y0, z0	 the coordinates of the object
 		@param size      the size of the object in pixels
 		"""
-		origr = math.pow(size*2.3561944901923448, 0.333333)
+		origr = math.pow(size*0.23561944901923448, 0.333333)
 		#r = int(1+math.sqrt(size/math.pi))
-		r = int(origr)
+		r = int(round(origr))
+		if r < 1:
+			r = 1
 		maxx,maxy,maxz = imageData.GetDimensions()
 		minx,miny,minz = [0 for i in range(3)]
 		maxx -= 1
@@ -597,23 +666,29 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		# Be sure that whole object is inside image range
 		if xs < minx:
-			x0 -= xs
+			xe += (minx - xs)
 			xs = 0
+			x0 = (xe + xs) / 2.0
 		if ys < miny:
-			y0 -= ys
+			ye += (miny - ys)
 			ys = 0
+			y0 = (ye + ys) / 2.0
 		if zs < minz:
-			z0 -= zs
+			ze += (minz - zs)
 			zs = 0
+			z0 = (ze + zs) / 2.0
 		if xe > maxx:
-			x0 = x0 - xe - maxx
+			xs -= (xe - maxx)
 			xe = maxx
+			x0 = (xe + xs) / 2.0
 		if ye > maxy:
-			y0 = y0 - ye - maxy
+			ys -= (ye - maxy)
 			ye = maxy
+			y0 = (ye + ys) / 2.0
 		if ze > maxz:
-			z0 = z0 - ze - maxz
+			zs -= (ze - maxz)
 			ze = maxz
+			z0 = (ze + zs) / 2.0
 
 		# Calculate approximation of area of object to be created
 		#a = ((xe-xs)/2.0) * self.voxelSize[0] * 1000000 # convert to um
@@ -629,11 +704,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		totalInt = 0.0
 		coms = [0.0, 0.0, 0.0]
 		# Select intensity for object, voxel intensity will be -20 to +20
-		objInt = int(round(self.parameters["ObjMinInt"] + random.betavariate(2,2) * (self.parameters["ObjMaxInt"] - self.parameters["ObjMinInt"])))
 		minInt = objInt - 20
-		if minInt < self.parameters["ObjMinInt"]: minInt = self.parameters["ObjMinInt"]
+		if minInt < 0: minInt = 0
+		if minInt > 255: minInt = 235
 		maxInt = objInt + 20
-		if maxInt > self.parameters["ObjMaxInt"]: maxInt = self.parameters["ObjMaxInt"]
+		if maxInt < 0: maxInt = 20
+		if maxInt > 255: maxInt = 255
 		
 		for x in range(xs,xe):
 			for y in range(ys,ye):
