@@ -648,47 +648,53 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		origr = math.pow(size*0.23561944901923448, 0.333333)
 		#r = int(1+math.sqrt(size/math.pi))
-		r = int(round(origr))
-		if r < 1:
-			r = 1
+		#r = int(round(origr))
+		#if r < 1:
+		#	r = 1
 		maxx,maxy,maxz = imageData.GetDimensions()
 		minx,miny,minz = [0 for i in range(3)]
 		maxx -= 1
 		maxy -= 1
 		maxz -= 1
-		
-		xs = int(x0-r)
-		ys = int(y0-r)
-		zs = int(z0-r)
-		xe = int(x0+r)
-		ye = int(y0+r)
-		ze = int(z0+r)
+
+		xs = x0-origr
+		ys = y0-origr
+		zs = z0-origr
+		xe = x0+origr
+		ye = y0+origr
+		ze = z0+origr
+		xsInt = int(math.floor(xs))
+		ysInt = int(math.floor(ys))
+		zsInt = int(math.floor(zs))
+		xeInt = int(math.ceil(xe))
+		yeInt = int(math.ceil(ye))
+		zeInt = int(math.ceil(ze))
 
 		# Be sure that whole object is inside image range
-		if xs < minx:
-			xe += (minx - xs)
-			xs = 0
-			x0 = (xe + xs) / 2.0
-		if ys < miny:
-			ye += (miny - ys)
-			ys = 0
-			y0 = (ye + ys) / 2.0
-		if zs < minz:
-			ze += (minz - zs)
-			zs = 0
-			z0 = (ze + zs) / 2.0
-		if xe > maxx:
-			xs -= (xe - maxx)
-			xe = maxx
-			x0 = (xe + xs) / 2.0
-		if ye > maxy:
-			ys -= (ye - maxy)
-			ye = maxy
-			y0 = (ye + ys) / 2.0
-		if ze > maxz:
-			zs -= (ze - maxz)
-			ze = maxz
-			z0 = (ze + zs) / 2.0
+		if xsInt < minx:
+			xeInt += (minx - xsInt)
+			xsInt = 0
+			x0 = (xeInt + xsInt) / 2.0
+		if ysInt < miny:
+			yeInt += (miny - ysInt)
+			ysInt = 0
+			y0 = (yeInt + ysInt) / 2.0
+		if zsInt < minz:
+			zeInt += (minz - zsInt)
+			zsInt = 0
+			z0 = (zeInt + zsInt) / 2.0
+		if xeInt > maxx:
+			xsInt -= (xeInt - maxx)
+			xeInt = maxx
+			x0 = (xeInt + xsInt) / 2.0
+		if yeInt > maxy:
+			ysInt -= (yeInt - maxy)
+			yeInt = maxy
+			y0 = (yeInt + ysInt) / 2.0
+		if zeInt > maxz:
+			zsInt -= (zeInt - maxz)
+			zeInt = maxz
+			z0 = (zeInt + zsInt) / 2.0
 
 		# Calculate approximation of area of object to be created
 		#a = ((xe-xs)/2.0) * self.voxelSize[0] * 1000000 # convert to um
@@ -711,12 +717,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if maxInt < 0: maxInt = 20
 		if maxInt > 255: maxInt = 255
 		
-		for x in range(xs,xe):
-			for y in range(ys,ye):
-				for z in range(zs,ze):
+		for x in range(xsInt,xeInt):
+			for y in range(ysInt,yeInt):
+				for z in range(zsInt,zeInt):
 					# Do not use spacing to get real looking objects
-					d = math.sqrt((x0-x)**2 + (y0-y)**2 + (z0-z)**2)
-					if d <= r:
+					d = math.sqrt((x0-(x+0.5))**2 + (y0-(y+0.5))**2 + (z0-(z+0.5))**2)
+					if d <= origr:
 						voxelInt = random.randint(minInt,maxInt)
 						imageData.SetScalarComponentFromDouble(x,y,z,0,voxelInt)
 						count += 1

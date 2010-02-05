@@ -265,11 +265,10 @@ void vtkExtTIFFReader::ExecuteInformation()
 
   //printf("Computing Internal File Name for dataextent %d,%d,%d,%d,%d,%d\n", DataExtent[0], DataExtent[1], DataExtent[2], DataExtent[3], DataExtent[4], DataExtent[5]);
 
-  if(this->GetInternalImage()->BitsPerSample==16) {
+  if(this->GetInternalImage()->BitsPerSample==16 || this->GetInternalImage()->BitsPerSample == 12) {
     this->SetDataScalarTypeToUnsignedShort();
   }  else this->SetDataScalarTypeToUnsignedChar();     
       
-    
   switch ( this->GetFormat() )
     {
     case vtkExtTIFFReader::GRAYSCALE:
@@ -289,11 +288,11 @@ void vtkExtTIFFReader::ExecuteInformation()
 
   if ( !this->GetInternalImage()->CanRead() )
     {
-        if(this->GetInternalImage()->BitsPerSample!=16) {
+	  if (this->GetInternalImage()->BitsPerSample != 16 && this->GetInternalImage()->BitsPerSample != 12) {
             this->SetNumberOfScalarComponents( 4 );
         }
     }
-    
+
   //printf("vtkImageReader2::ExecuteInformation()\n");
 
   this->vtkImageReader2::ExecuteInformation();
@@ -342,7 +341,7 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
    //printf("update extent=%d,%d,%d,%d,%d,%d\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   long pixSize = data->GetNumberOfScalarComponents()*sizeof(OT);  
 
-   //printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
+  printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
   outPtr2 = outPtr;
   int idx2;
   char progressText[100];
@@ -566,10 +565,10 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
 
     int width  = this->GetInternalImage()->Width;
     int height = this->GetInternalImage()->Height;
-	// printf("width=%d, height=%d, size=%d\n",width,height,size);
+	printf("width=%d, height=%d, size=%d\n",width,height,size);
     this->InternalExtents = outExt;
     unsigned int isize = TIFFScanlineSize(this->GetInternalImage()->Image);
-	//printf("isize=%d, height=%d\n",isize,height);
+	printf("isize=%d, height=%d\n",isize,height);
     unsigned int cc;
     int row, inc = 1;
     tdata_t buf = _TIFFmalloc(isize);
@@ -580,7 +579,7 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
 		TIFFSetDirectory(this->InternalImage->Image,idx);
 	  }
 
-     // special case for 16-bit grayscale
+     // special case for 16-bit and 12-bit grayscale
     if(this->GetInternalImage()->BitsPerSample==16 && this->GetFormat()== vtkExtTIFFReader::GRAYSCALE)
     {
         isize /= 2;
@@ -596,6 +595,7 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
                 vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
                 break;
               }
+
 			unsigned short* buf2 = (unsigned short*)buf;
 			for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel)
 			  {
@@ -606,6 +606,34 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
 		  return;
           }
   }
+	else if (this->GetInternalImage()->BitsPerSample==12 && this->GetFormat()== vtkExtTIFFReader::GRAYSCALE) // Really special case for 12-bit data
+    {
+        isize /= 3;
+        unsigned short* image;
+        image = (unsigned short*)outPtr;
+        if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
+          {
+          for ( row = 0; row < (int)height; row ++ )
+            {
+            if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
+              {
+                vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
+                break;
+              }
+
+			unsigned char* buf2 = (unsigned char*)buf;
+			for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel)
+			  {
+				*image++ = (*buf2) * 256 + (*(buf2+1)) >> 4;
+				*image++ = ((*(buf2+1) & 0xf) << 8) + (*(buf2+2));
+				buf2 += 3;
+			  }
+            }
+		  _TIFFfree(buf);
+		  return;
+          }
+
+	}
   else if(this->GetInternalImage()->BitsPerSample==8) {
         unsigned char* image;
         image = (unsigned char*)outPtr;
