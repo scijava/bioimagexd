@@ -469,7 +469,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 	def getPointInsideCell(self):
 		x,y,z = self.parameters["X"],self.parameters["Y"], self.parameters["Z"]
 		while 1:
-			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
+			# Set couple pixel buffer
+			rx,ry,rz = random.randint(6,x-7), random.randint(6,y-7), random.randint(6,z-7)
 			if self.pointInsideEllipse((rx,ry,rz), self.majorAxis):
 				break
 		return rx,ry,rz
@@ -569,7 +570,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			rx += shiftx
 			ry += shifty
 			rz += shiftz
-				
+
 			(rx,ry,rz), realSize, intList = self.createObjectAt(image, rx,ry,rz, size, objInt)
 			objMean, objStd, objStdErr = lib.Math.meanstdeverr(intList)
 			# Change possible new size and com to object
@@ -643,8 +644,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Create an object in the image at the give position
 		@param imageData the image to modify
-		@param x0, y0, z0	 the coordinates of the object
-		@param size      the size of the object in pixels
+		@param x0, y0, z0 the coordinates of the object
+		@param size the size of the object in pixels
 		"""
 		origr = math.pow(size*0.23561944901923448, 0.333333)
 		#r = int(1+math.sqrt(size/math.pi))
@@ -663,12 +664,12 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		xe = x0+origr
 		ye = y0+origr
 		ze = z0+origr
-		xsInt = int(math.floor(xs))
-		ysInt = int(math.floor(ys))
-		zsInt = int(math.floor(zs))
-		xeInt = int(math.ceil(xe))
-		yeInt = int(math.ceil(ye))
-		zeInt = int(math.ceil(ze))
+		xsInt = int(math.ceil(xs))
+		ysInt = int(math.ceil(ys))
+		zsInt = int(math.ceil(zs))
+		xeInt = int(math.floor(xe))
+		yeInt = int(math.floor(ye))
+		zeInt = int(math.floor(ze))
 
 		# Be sure that whole object is inside image range
 		if xsInt < minx:
@@ -696,6 +697,16 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			zeInt = maxz
 			z0 = (zeInt + zsInt) / 2.0
 
+		# Create only core and randomize other voxels
+		coreSize = (xeInt-xsInt)*(yeInt-ysInt)*(zeInt-zsInt)
+		if coreSize > size:
+			xeInt -= 1
+			xsInt += 1
+			yeInt -= 1
+			ysInt += 1
+			zeInt -= 1
+			zsInt += 1
+
 		# Calculate approximation of area of object to be created
 		#a = ((xe-xs)/2.0) * self.voxelSize[0] * 1000000 # convert to um
 		#b = ((ye-ys)/2.0) * self.voxelSize[1] * 1000000 # convert to um
@@ -716,12 +727,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		maxInt = objInt + 20
 		if maxInt < 0: maxInt = 20
 		if maxInt > 255: maxInt = 255
-		
-		for x in range(xsInt,xeInt):
-			for y in range(ysInt,yeInt):
-				for z in range(zsInt,zeInt):
+
+		voxelList = []
+		for x in range(xsInt,xeInt+1):
+			for y in range(ysInt,yeInt+1):
+				for z in range(zsInt,zeInt+1):
 					# Do not use spacing to get real looking objects
-					d = math.sqrt((x0-(x+0.5))**2 + (y0-(y+0.5))**2 + (z0-(z+0.5))**2)
+					d = math.sqrt((x0-x)**2 + (y0-y)**2 + (z0-z)**2)
 					if d <= origr:
 						voxelInt = random.randint(minInt,maxInt)
 						imageData.SetScalarComponentFromDouble(x,y,z,0,voxelInt)
@@ -731,6 +743,25 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 						coms[0] += voxelInt * x
 						coms[1] += voxelInt * y
 						coms[2] += voxelInt * z
+						voxelList.append((x,y,z))
+
+		if count < size: # Mark some random pixels
+			maxTry = 100
+			while count < size and maxTry > 0:
+				maxTry -= 1
+				xRand = random.choice(range(xsInt-1,xeInt+2))
+				yRand = random.choice(range(ysInt-1,yeInt+2))
+				zRand = random.choice(range(zsInt-1,zsInt+2))
+				if (xRand,yRand,zRand) not in voxelList and xRand >= 0 and xRand <= maxx and yRand >= 0 and yRand <= maxy and zRand >= 0 and zRand <= maxz and ((xRand-1,yRand,zRand) in voxelList or (xRand+1,yRand,zRand) in voxelList or (xRand,yRand-1,zRand) in voxelList or (xRand,yRand+1,zRand) in voxelList or (xRand,yRand,zRand-1) in voxelList or (xRand,yRand,zRand+1) in voxelList):
+					voxelInt = random.randint(minInt,maxInt)
+					imageData.SetScalarComponentFromDouble(xRand,yRand,zRand,0,voxelInt)
+					count += 1
+					intList.append(voxelInt)
+					totalInt += voxelInt
+					coms[0] += voxelInt * xRand
+					coms[1] += voxelInt * yRand
+					coms[2] += voxelInt * zRand
+					voxelList.append((xRand,yRand,zRand))
 
 		x0, y0, z0 = [coms[i] / (totalInt) for i in range(3)]
 		return (x0,y0,z0), count, intList
@@ -748,13 +779,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		center = [0.0, 0.0, 0.0]
 		for point in points:
 			for i in range(3):
-				center[i] += point[i]
+				center[i] += point[i] / self.spacing[i]
 
 		for i in range(3):
-			center[i] /= 3
+			center[i] = center[i] / 3
 
 		sigma = self.parameters["SigmaDistSurface"]
-		randomCOM = [int(random.gauss(center[i], sigma) / self.spacing[i]) for i in range(3)]
+		randomCOM = [random.gauss(center[i], sigma / self.spacing[i]) for i in range(3)]
 		dims = (self.parameters["X"], self.parameters["Y"], self.parameters["Z"])
 
 		for i in range(3):
