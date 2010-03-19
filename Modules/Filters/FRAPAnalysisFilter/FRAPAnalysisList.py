@@ -50,6 +50,7 @@ class FRAPAnalysisList(wx.ListCtrl):
 		"""
 		Setup list ctrl
 		"""
+		self.quantities = []
 		self.quantities.append("Baseline intensity")
 		self.quantities.append("Lowest intensity")
 		self.quantities.append("Intensity after recovery")
@@ -58,6 +59,7 @@ class FRAPAnalysisList(wx.ListCtrl):
 		self.quantities.append("Recovery %")
 		self.quantities.append("Diffusion constant")
 
+		self.values = []
 		self.values.append(0.0)
 		self.values.append(0.0)
 		self.values.append(0.0)
