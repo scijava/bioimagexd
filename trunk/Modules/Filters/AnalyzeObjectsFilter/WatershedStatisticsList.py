@@ -34,47 +34,53 @@ class WatershedTotalsList(wx.ListCtrl):
 		"""
 		wx.ListCtrl.__init__(
 			self, parent, -1, 
-			size = (995, 60),
-			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_HRULES | wx.LC_VRULES
+			size = (400, 250),
+			style = wx.LC_REPORT | wx.LC_VIRTUAL | wx.BORDER_RAISED | wx.LC_VRULES
 			)
 
-		self.InsertColumn(0, "# of objects")
-		self.InsertColumn(1, u"Avg. Volume (px)")
-		self.InsertColumn(2, u"Avg. Volume (\u03BCm)")
-		self.InsertColumn(3, u"Sum of Volumes (\u03BCm)")
-		self.InsertColumn(4, u"Avg. Area (\u03BCm)")
-		self.InsertColumn(5, u"Sum of Areas (\u03BCm)")
-		self.InsertColumn(6, "Avg. intensity (obj)")
-		self.InsertColumn(7, "Avg. intensity (voxels in objs)")
-		self.InsertColumn(8, "Avg. intensity (outside objs)")
-		self.InsertColumn(9, "Avg. intensity (outside objs, non zero)")
-		self.InsertColumn(10, u"Avg. distance to other objs (\u03BCm)")
-		self.SetColumnWidth(0, 50)
-		self.SetColumnWidth(1, 70)
-		self.SetColumnWidth(2, 105)
-		self.SetColumnWidth(3, 70)
-		self.SetColumnWidth(4, 105)
-		self.SetColumnWidth(5, 70)
-		self.SetColumnWidth(6, 105)
-		self.SetColumnWidth(7, 105)
-		self.SetColumnWidth(8, 105)
-		self.SetColumnWidth(9, 105)
-		self.SetColumnWidth(10, 105)
+		self.quantities = []
 		self.stats = []
+		self.setupList()
+
+	def setupList(self):
+		"""
+		Setup list ctrl
+		"""
+		self.quantities = []
+		self.quantities.append("# of objects")
+		self.quantities.append(u"Avg. volume (px)")
+		self.quantities.append(u"Avg. volume (\u03BCm)")
+		self.quantities.append(u"Sum of volumes (\u03BCm)")
+		self.quantities.append(u"Avg. area (\u03BCm)")
+		self.quantities.append(u"Sum of areas (\u03BCm)")
+		self.quantities.append("Avg. intensity (obj)")
+		self.quantities.append("Avg. intensity (voxels in objs)")
+		self.quantities.append("Avg. intensity (outside objs)")
+		self.quantities.append("Avg. intensity (outside objs, non zero)")
+		self.quantities.append(u"Avg. distance to other objs (\u03BCm)")
+		self.quantities.append("Non zero voxels")
+		self.quantities.append("Avg. roundness (0.0-1.0)")
+
+		self.stats = []
+		for i in range(22):
+			self.stats.append(0.0)
 	
-		self.SetItemCount(1)
+		self.SetItemCount(13)
+		self.InsertColumn(0, "Quantity")
+		self.InsertColumn(1, "Value")
+		self.SetColumnWidth(0, 250)
+		self.SetColumnWidth(1, 150)
 
-		self.attr1 = wx.ListItemAttr()
-		self.attr1.SetBackgroundColour("white")
-
-		self.attr2 = wx.ListItemAttr()
-		self.attr2.SetBackgroundColour("light blue")
+		self.attr = wx.ListItemAttr()
+		self.color = wx.Colour(180,255,180)
+		self.attr.SetBackgroundColour(self.color)
 
 	def setStats(self, stats):
 		"""
 		set the averages to be shown in the listctrl
 		"""
 		self.stats = stats
+		self.Refresh()
 		
 	def getColumnText(self, index, col):
 		"""
@@ -84,51 +90,57 @@ class WatershedTotalsList(wx.ListCtrl):
 		return item.GetText()
 
 	def OnGetItemText(self, item, col):
+		if col == 0:
+			return self.quantities[item]
+		
 		if not self.stats:
 			return ""
-		if col > len(self.stats):
+		
+		if item > len(self.stats):
 			return ""
-		if col == 0:
-			return "%d" % self.stats[0]
-		elif col == 2:
-			return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[1],self.stats[2])
-		elif col == 1:
-			return u"%.3f\u00B1%.3f px"%(self.stats[3],self.stats[4])
-		elif col == 3:
-			return u"%.3f"%(self.stats[13])
-		elif col == 4:
-			return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[5],self.stats[6])
-		elif col == 5:
-			return u"%.3f"%(self.stats[14])
-		elif col == 6:
-			return u"%.3f\u00B1%.3f"%(self.stats[7],self.stats[8])
-		elif col == 7:
-			return u"%.3f\u00B1%.3f"%(self.stats[17],self.stats[18])
-		elif col == 8:
-			return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
-		elif col == 9:
-			return u"%.3f\u00B1%.3f"%(self.stats[15],self.stats[16])
-		elif col == 10:
-			return u"%.2f\u00B1%.2f"%(self.stats[11],self.stats[12])
+		
+		if col == 1:
+			if item == 0:
+				return "%d" % self.stats[0]
+			elif item == 2:
+				return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[1],self.stats[2])
+			elif item == 1:
+				return u"%.3f\u00B1%.3f px"%(self.stats[3],self.stats[4])
+			elif item == 3:
+				return u"%.3f \u03BCm"%(self.stats[13])
+			elif item == 4:
+				return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[5],self.stats[6])
+			elif item == 5:
+				return u"%.3f \u03BCm"%(self.stats[14])
+			elif item == 6:
+				return u"%.3f\u00B1%.3f"%(self.stats[7],self.stats[8])
+			elif item == 7:
+				return u"%.3f\u00B1%.3f"%(self.stats[17],self.stats[18])
+			elif item == 8:
+				return u"%.3f\u00B1%.3f"%(self.stats[9],self.stats[10])
+			elif item == 9:
+				return u"%.3f\u00B1%.3f"%(self.stats[15],self.stats[16])
+			elif item == 10:
+				return u"%.2f\u00B1%.2f \u03BCm"%(self.stats[11],self.stats[12])
+			elif item == 11:
+				return "%d"%self.stats[19]
+			elif item == 12:
+				return u"%.2f\u00B1%.2f"%(self.stats[20],self.stats[21])
 				
  
 	def OnGetItemImage(self, item):
 		return -1
 
 	def OnGetItemAttr(self, item):
-		if item % 2 == 1:
-			return self.attr1
-		elif item % 2 == 0:
-			return self.attr2
-		else:
-			return None
+		return self.attr
+
 
 class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 	"""
 	A list control object that is used to display a list of the results of
 				 a watershed segmentation or a connected components analysis
 	"""
-	def __init__(self, parent, wid, gsize = (470, 250)):
+	def __init__(self, parent, wid, gsize = (400, 250)):
 		wx.ListCtrl.__init__(
 			self, parent, wid, 
 			size = gsize,
@@ -142,6 +154,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.InsertColumn(4, "Center Of Mass")
 		self.InsertColumn(5, "Avg. intensity")
 		self.InsertColumn(6, u"Avg. dist to other objs (\u03BCm)")
+		self.InsertColumn(7, "Roundness")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 70)
@@ -149,6 +162,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.SetColumnWidth(4, 70)
 		self.SetColumnWidth(5, 70)
 		self.SetColumnWidth(6, 70)
+		self.SetColumnWidth(7, 70)
 
 		self.highlightSelected = 1
 		#self.SetItemCount(1000)
@@ -231,6 +245,17 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			if self.GetItemCount() < i:
 				self.InsertStringItem(i, "")		
 			self.SetStringItem(i, 5, u"%.3f\u00B1%.3f" %(avgint,avgIntStdErrs[i]))
+		self.Refresh()
+
+	def setRoundness(self, roundness):
+		"""
+		Set the list of roundness of the objects
+		"""
+		self.objRoundness = roundness
+		for i, oRound in enumerate(roundness):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 7, "%.3f"%(oRound))
 		self.Refresh()
 		
 	def OnItemFocused(self, event):

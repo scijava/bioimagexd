@@ -1111,7 +1111,7 @@ void vtkLIFReader::CalculateExtentAndSpacingAndOrigin(int *extent, double *spaci
     }
 
   // Normalize spacing
-  if (spacing[0] > std::numeric_limits<float>::epsilon())
+  if (spacing[0] > std::numeric_limits<double>::epsilon())
     {
 	  // If there is no y or z dimension, leave spacing as 1.0
       if (yDim) spacing[1] /= spacing[0];
