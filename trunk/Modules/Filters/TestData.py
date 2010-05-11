@@ -65,6 +65,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.imageCache = {}
 		self.spacing = (1.0, 1.0, 1.0)
 		self.voxelSize = (1.0, 1.0, 1.0)
+		self.cellCOM = None
 		self.modified = 1
 		self.descs = {"X":"X:", "Y":"Y:", "Z":"Z:","Time":"Number of timepoints",
 		"Coloc":"Create colocalization between channels", 
@@ -84,6 +85,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"NumberOfObjectsEnd":"# of objects (at most)",
 		"ObjSizeStart":"Min. size of object (in px)",
 		"ObjSizeEnd":"Max. size of object (in px)",
+		"ObjSizeDistribution":"Size distribution",
 		"ObjectFluctuationStart":"Min. change in object #",
 		"ObjectFluctuationEnd":"Max. change in object #",
 		"ObjMinInt":"Min. intensity of objects at the first time point",
@@ -91,6 +93,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"IntChange":"Max. intensity change (in %)",
 		"RandomMovement":"Move randomly",
 		"MoveTowardsPoint":"Move towards a point",
+		"MovePercentage":"% of objects move towards point",
 		"TargetPoints":"# of target points",
 		"Clustering":"Objects should cluster",
 		"SpeedStart":"Obj. min speed (in x,y px size)",
@@ -105,7 +108,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ReadObjects":"Read sizes and number from",
 		"ObjectsCreateSource":"Create objects close to surface from source",
 		"SigmaDistSurface":"Sigma of Gaussian distance to surface (in x,y px size)",
-		"TimeDifference":"Time difference between time points"}
+		"TimeDifference":"Time difference between time points",
+		"TargetPointsInside":"Target points inside radius (in x,y px size)"}
 	
 	def getParameters(self):
 		"""
@@ -113,9 +117,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
 			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","ShotNoiseMax","ShotNoiseDistribution","BackgroundNoiseMin","BackgroundNoiseMax")],
-			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","SizeChange","ObjMinInt","ObjMaxInt","IntChange","ObjectFluctuationStart","ObjectFluctuationEnd","ObjectsCreateSource", "SigmaDistSurface")],
+			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjSizeDistribution","SizeChange","ObjMinInt","ObjMaxInt","IntChange","ObjectFluctuationStart","ObjectFluctuationEnd","ObjectsCreateSource", "SigmaDistSurface")],
 			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
-			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","SpeedStart","SpeedEnd")],
+			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","TargetPointsInside","MovePercentage","SpeedStart","SpeedEnd")],
 			["Clustering",("Clustering","ClusterPercentage","ClusterDistance")],
 		]
 		
@@ -158,7 +162,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			return types.BooleanType
 		if parameter == "ReadObjects":
 			return GUI.GUIBuilder.FILENAME
-		if parameter == "ShotNoiseDistribution":
+		if parameter in ["ShotNoiseDistribution","ObjSizeDistribution"]:
 			return GUI.GUIBuilder.CHOICE
 			
 		return types.IntType
@@ -180,6 +184,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ClusterDistance":return 30
 		if parameter == "ColocAmountEnd": return 50
 		if parameter == "MoveTowardsPoint":return True
+		if parameter == "MovePercentage": return 30
 		if parameter == "ShotNoiseAmount": return 0.1
 		if parameter == "ShotNoiseMin": return 128
 		if parameter == "ShotNoiseMax": return 255
@@ -196,6 +201,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ObjectFluctuationEnd": return 0
 		if parameter == "ObjSizeStart": return 5
 		if parameter == "ObjSizeEnd": return 50
+		if parameter == "ObjSizeDistribution": return 0
 		if parameter == "ObjMinInt": return 200
 		if parameter == "ObjMaxInt": return 255
 		if parameter == "IntChange": return 5
@@ -203,6 +209,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "ObjectsCreateSource": return False
 		if parameter == "SigmaDistSurface": return 5.0
 		if parameter == "TimeDifference": return 300.0
+		if parameter == "TargetPointsInside": return 0
 		
 		# Shift of 1-5% per timepoint
 		if parameter == "ShiftStart": return 1
@@ -213,7 +220,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return range of list parameter
 		"""
-		if param == "ShotNoiseDistribution":
+		if param in ["ShotNoiseDistribution","ObjSizeDistribution"]:
 			return ("Uniform distribution", "Normal distribution","Positive normal distribution","Negative normal distribution")
 		
 	def createTimeSeries(self):
@@ -304,53 +311,97 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Create clustering of objects
 		"""
-		combine = []
+		#combine = []
 		clustered = {}
 		#clusteredObjN = {}
-		
-		for tp,objs in enumerate(objects):
-			if tp == 0: continue
-			for i, (objN, (x,y,z), size, objInt) in enumerate(objs):
-				for j, (objN2, (x2,y2,z2), size2, objInt2) in enumerate(objs):
-					if objN == objN2: continue
-					#if objN in clusteredObjN: continue
-					#if objN2 in clusteredObjN: continue
-					if (tp,objN) in clustered or (tp,objN2) in clustered: continue
-					d = math.sqrt(((x2-x) * self.spacing[0])**2 + ((y2-y) * self.spacing[1])**2 + ((z2-z) * self.spacing[2])**2)
-					if d < self.parameters["ClusterDistance"]:
-						if random.random()*100 < self.parameters["ClusterPercentage"]:
-							combine.append((tp,objN,i,objN2,j))
-							clustered[(tp,objN2)]=1
-							clustered[(tp,objN)]=1
-							#clusteredObjN[objN]=1
-							#clusteredObjN[objN2]=1
-
-		toremove=[]
-		for tp,objN,i,objN2,j in combine:
-			ob1 = objects[tp][i]
-			ob2 = objects[tp][j]
-			#if len(self.tracks[objN-1]) > tp and len(self.tracks[objN2-1]) > tp:
-			#	self.tracks[objN-1].remove(self.tracks[objN-1][tp])
-			#	self.tracks[objN2-1].remove(self.tracks[objN2-1][tp])
-			toremove.append((tp,ob1,ob2))
-			objN,(x1,y1,z1),s1,int1 = ob1
-			objN2,(x2,y2,z2),s2,int2 = ob2
-			s3 = int((s1+s2)*0.7)
-			x3 = (x1+x2)/2
-			y3 = (y1+y2)/2
-			z3 = (z1+z2)/2
-			int3 = int((int1+int2) * 0.7)
-			objects[tp].append((objN,(x3,y3,z3), s3, int3))
-			#self.tracks[objN-1].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, int3, objN))
-
 		removedByTP = []
 		for remtp in range(len(self.objects)):
 			removedByTP.append(0)
+		
+		for tp,objs in enumerate(objects):
+			if tp == 0: continue
+			toremove = []
+			toadd = []
+			combine = []
+			for i, (objN1, (x1,y1,z1), size1, objInt1) in enumerate(objs):
+				for j, (objN2, (x2,y2,z2), size2, objInt2) in enumerate(objs):
+					if objN1 == objN2: continue
+					#if objN in clusteredObjN: continue
+					#if objN2 in clusteredObjN: continue
+					if (tp,objN1) in clustered or (tp,objN2) in clustered: continue
+					d = math.sqrt(((x2-x1) * self.spacing[0])**2 + ((y2-y1) * self.spacing[1])**2 + ((z2-z1) * self.spacing[2])**2)
+					if d < self.parameters["ClusterDistance"]:
+						if random.random()*100 < self.parameters["ClusterPercentage"]:
+							# Mark as combined in this and coming time points
+							#for combTP in range(tp,len(objects)):
+							#	combine.append((combTP,objN,i,objN2,j))
+							#combine.append((tp,objN,i,objN2,j))
+							#combine.append((objN,i,objN2,j))
+							#clustered[(tp,objN2)] = 1
+							#clustered[(tp,objN)] = 1
+							#clusteredObjN[objN]=1
+							#clusteredObjN[objN2]=1
+							size3 = int((size1+size2)*0.7)
+							x3 = (x1+x2)/2
+							y3 = (y1+y2)/2
+							z3 = (z1+z2)/2
+							int3 = int((objInt1+objInt2) * 0.7)
+							toadd.append((objN1, (x3,y3,z3), size3, int3))
+							toremove.append(objN1)
+							toremove.append(objN2)
+							clustered[(tp,objN1)] = 1
+							clustered[(tp,objN2)] = 1
 
-		for tp,ob1,ob2 in toremove:
-			objects[tp].remove(ob1)
-			objects[tp].remove(ob2)
-			removedByTP[tp] += 1
+			for remTP in range(tp, len(objects)):
+				for remObj in objects[remTP]:
+					if remObj[0] in toremove:
+						objects[remTP].remove(remObj)
+						removedByTP[remTP] += 1
+
+			for addObj in toadd:
+				objects[tp].append(addObj)
+				removedByTP[tp] -= 1
+
+			#for objN,i,objN2,j in combine:
+			#	ob1 = objects[tp][i]
+			#	ob2 = objects[tp][j]
+			#	toremove.append((ob1,ob2))
+			#	objN,(x1,y1,z1),s1,int1 = ob1
+			#	objN2,(x2,y2,z2),s2,int2 = ob2
+			#	s3 = int((s1+s2)*0.7)
+			#	x3 = (x1+x2)/2
+			#	y3 = (y1+y2)/2
+			#	z3 = (z1+z2)/2
+			#	int3 = int((int1+int2) * 0.7)
+			#	objects[tp].append((objN,(x3,y3,z3), s3, int3))
+			
+			#for ob1,ob2 in toremove:
+			#	objects[tp].remove(ob1)
+			#	objects[tp].remove(ob2)
+			#	removedByTP[tp] += 1
+
+		#toremove=[]
+		#for tp,objN,i,objN2,j in combine:
+		#	ob1 = objects[tp][i]
+		#	ob2 = objects[tp][j]
+			#if len(self.tracks[objN-1]) > tp and len(self.tracks[objN2-1]) > tp:
+			#	self.tracks[objN-1].remove(self.tracks[objN-1][tp])
+			#	self.tracks[objN2-1].remove(self.tracks[objN2-1][tp])
+		#	toremove.append((tp,ob1,ob2))
+		#	objN,(x1,y1,z1),s1,int1 = ob1
+		#	objN2,(x2,y2,z2),s2,int2 = ob2
+		#	s3 = int((s1+s2)*0.7)
+		#	x3 = (x1+x2)/2
+		#	y3 = (y1+y2)/2
+		#	z3 = (z1+z2)/2
+		#	int3 = int((int1+int2) * 0.7)
+		#	objects[tp].append((objN,(x3,y3,z3), s3, int3))
+			#self.tracks[objN-1].insert(tp, lib.Particle.Particle((x3,y3,z3), (x3,y3,z3), tp, size, int3, objN))
+
+		#for tp,ob1,ob2 in toremove:
+		#	objects[tp].remove(ob1)
+		#	objects[tp].remove(ob2)
+		#	removedByTP[tp] += 1
 
 		for remtp in range(len(self.objects)):
 			print "Removed from timepoint %d: %d"%(remtp,removedByTP[remtp])
@@ -383,6 +434,10 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				for c in range(0, self.parameters["TargetPoints"]):
 					print "Getting point toward which to move"
 					rx, ry, rz = self.getPointInsideCell()
+					if self.parameters["TargetPointsInside"] > 0 and len(self.towardsPoints) > 0:
+						firstX,firstY,firstZ = self.towardsPoints[0]
+						while math.sqrt((rx-firstX)**2 + (ry-firstY)**2 + ((rz-firstZ)*self.spacing[2])**2) > self.parameters["TargetPointsInside"]:
+							rx, ry, rz = self.getPointInsideCell()
 					print "it's",rx,ry,rz
 					self.towardsPoints.append((rx,ry,rz))
 
@@ -394,12 +449,9 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			for obj in range(1, self.numberOfObjects+1):
 				self.createObject(obj,objs)
 		else:
-			for objN, (rx,ry,rz), size, objInt in self.objects[tp-1]:
-				if self.parameters["RandomMovement"]:
-					speedx = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
-					speedy = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
-					speedz = random.choice([-1,1])*coeff*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
-				elif self.parameters["MoveTowardsPoint"]:
+			for objN, objCom, size, objInt in self.objects[tp-1]:
+				rx,ry,rz = objCom
+				if self.parameters["MoveTowardsPoint"] and random.random() < self.parameters["MovePercentage"] / 100.0:
 					nearest = None
 					smallest = 2**31
 					for (x,y,z) in self.towardsPoints:
@@ -407,15 +459,45 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 						if d < smallest:
 							smallest = d
 							nearest = (x,y,z)
-					speedx = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
-					speedy = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
-					speedz = coeff*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
-					if rx > nearest[0]:
-						speedx *= -1
-					if ry > nearest[1]:
-						speedy *= -1
-					if ry > nearest[2]:
-						speedz *= -1
+
+					direction = [nearest[i] - objCom[i] for i in range(3)]
+					length = 0.0
+					for i in range(3):
+						length += direction[i]*direction[i]
+					length = math.sqrt(length)
+					direction = [i / length for i in direction]
+					speed = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					speedx = direction[0] * speed
+					speedy = direction[1] * speed
+					speedz = direction[2] * speed * coeff
+					
+					#speedx = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					#speedy = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					#speedz = coeff*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					#if rx > nearest[0]:
+					#	speedx *= -1
+					#if ry > nearest[1]:
+					#	speedy *= -1
+					#if rz > nearest[2]:
+					#	speedz *= -1
+				elif self.parameters["RandomMovement"] or self.parameters["MoveTowardsPoint"]:
+					#speedx = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					#speedy = random.choice([-1,1])*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					#speedz = random.choice([-1,1])*coeff*random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					direction = []
+					direction.append(random.choice([-1,1]) * random.random())
+					direction.append(random.choice([-1,1]) * random.random())
+					direction.append(random.choice([-1,1]) * coeff * random.random())
+					length = 0.0
+					for i in range(3):
+						length += direction[i]*direction[i]
+					length = math.sqrt(length)
+					direction = [i / length for i in direction]
+					speed = random.randint(self.parameters["SpeedStart"], self.parameters["SpeedEnd"])
+					speedx = direction[0] * speed
+					speedy = direction[1] * speed
+					speedz = direction[2] * speed
+				
 				rx += speedx
 				ry += speedy
 				rz += speedz
@@ -429,6 +511,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				if self.parameters["SizeChange"]:
 					negative = 1.0
 					maxchange = int(round(size*(self.parameters["SizeChange"]/100.0)))
+
 					if maxchange < 0:
 						negative = -1
 					change = random.randint(0, maxchange)
@@ -449,13 +532,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 	def createObject(self, objNum, objs):
 		print "Creating object %d"%objNum
-
 		if self.readObjects:
-			size = self.readObjects[objNum][0][0]
+			size = self.readObjects[objNum-1][0][0]
 		else:
 			sizeStart = self.parameters["ObjSizeStart"]
 			sizeEnd = self.parameters["ObjSizeEnd"]
-			size = random.randint(sizeStart, sizeEnd)
+			sizeDistr = self.parameters["ObjSizeDistribution"]
+			size = self.generateDistributionValue(sizeDistr, sizeStart, sizeEnd)
 
 		if self.parameters["ObjectsCreateSource"]:
 			rx, ry, rz = self.getPointCloseToSurface()
@@ -537,29 +620,10 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		shotNoiseMin = self.parameters["ShotNoiseMin"]
 		shotNoiseMax = self.parameters["ShotNoiseMax"]
 		shotNoiseDistr = self.parameters["ShotNoiseDistribution"]
-		mu = (shotNoiseMax + shotNoiseMin) / 2.0
-		sigma = (shotNoiseMax - mu) / 3.0
+
 		while noiseAmount > 0:
 			rx,ry,rz = random.randint(0,x-1), random.randint(0,y-1), random.randint(0,z-1)
-			if shotNoiseDistr == DIST_UNIFORM:
-				shotInt = random.randint(shotNoiseMin,shotNoiseMax)
-			else:
-				if shotNoiseDistr == DIST_NORM:
-					shotInt = random.gauss(mu,sigma)
-				elif shotNoiseDistr == DIST_POSNORM:
-					shotInt = random.gauss(0.0, 2*sigma)
-					shotInt = int(round(abs(shotInt) + shotNoiseMin))
-				elif shotNoiseDistr == DIST_NEGNORM:
-					shotInt = random.gauss(0.0, 2*sigma)
-					if shotInt > 0:
-						shotInt *= -1.0
-					shotInt = int(round(shotInt + shotNoiseMax))
-
-				if shotInt < shotNoiseMin:
-					shotInt = shotNoiseMin
-				elif shotInt > shotNoiseMax:
-					shotInt = shotNoiseMax
-				
+			shotInt = self.generateDistributionValue(shotNoiseDistr, shotNoiseMin, shotNoiseMax)				
 			image.SetScalarComponentFromDouble(rx,ry,rz,0,shotInt)
 			noiseAmount -= 1
 
@@ -571,10 +635,10 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			ry += shifty
 			rz += shiftz
 
-			(rx,ry,rz), realSize, intList = self.createObjectAt(image, rx,ry,rz, size, objInt)
+			(rx,ry,rz), realSize, intList, voxelList = self.createObjectAt(image, rx,ry,rz, size, objInt)
 			objMean, objStd, objStdErr = lib.Math.meanstdeverr(intList)
 			# Change possible new size and com to object
-			self.objects[currentTimepoint][oIter] = (objN, (rx,ry,rz), realSize, (objMean, objStdErr))
+			self.objects[currentTimepoint][oIter] = (objN, (rx,ry,rz), realSize, (objMean, objStdErr), voxelList)
 
 		if self.parameters["ObjectsCreateSource"]:
 			locator = vtk.vtkOBBTree()
@@ -584,7 +648,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			pointLocator.SetDataSet(self.polydata)
 			pointLocator.BuildLocator()
 			objPolyTP = []
-			for objN, (cx, cy, cz), size, meanInt in self.objects[currentTimepoint]:
+			for objN, (cx, cy, cz), size, meanInt, voxelList in self.objects[currentTimepoint]:
 				cxs = cx * self.spacing[0]
 				cys = cy * self.spacing[1]
 				czs = cz * self.spacing[2]
@@ -593,14 +657,27 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					inside = 1
 				else:
 					inside = 0
+				
+				percVoxelsInside = 0.0
+				numIn = 0
+				for (vx,vy,vz) in voxelList:
+					vxs = vx * self.spacing[0]
+					vys = vy * self.spacing[1]
+					vzs = vz * self.spacing[2]
+					locatorInside = locator.InsideOrOutside((vxs,vys,vzs))
+					if locatorInside == -1:
+						numIn += 1
+				percVoxelsInside = float(numIn) / len(voxelList)
 
 				objid = pointLocator.FindClosestPoint((cxs, cys, czs))
 				x2,y2,z2 = self.polydata.GetPoint(objid)
 				x2 /= self.spacing[0]
 				y2 /= self.spacing[1]
 				z2 /= self.spacing[2]
+
 				distToSurf = self.distance((cx,cy,cz), (x2,y2,z2), self.voxelSize)
-				objPolyTP.append((objN, (cx,cy,cz), distToSurf, inside))
+				distToCom = self.distance((cx,cy,cz), self.cellCOM, self.voxelSize)
+				objPolyTP.append((objN, (cx,cy,cz), distToSurf, distToCom, inside, percVoxelsInside))
 			self.objPolydata[currentTimepoint] = objPolyTP
 		
 		n = len(self.imageCache.items())
@@ -764,7 +841,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					voxelList.append((xRand,yRand,zRand))
 
 		x0, y0, z0 = [coms[i] / (totalInt) for i in range(3)]
-		return (x0,y0,z0), count, intList
+		return (x0,y0,z0), count, intList, voxelList
 
 	def getPointCloseToSurface(self):
 		"""
@@ -834,7 +911,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		
 		for i, obj in enumerate(self.objects[timepoint]):
-			objN, com, volume, meanInt = obj
+			objN, com, volume, meanInt = obj[0:4]
 			volumes.append(volume)
 			coms.append(com)
 			com = list(com)
@@ -892,10 +969,11 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			w = csv.writer(f, dialect = "excel", delimiter = ";")
 			if timepoint >= 0:
 				w.writerow(["Timepoint %d" % timepoint])
-			w.writerow(["Obj#","COM X", "COM Y", "COM Z", "Dist.(COM-surface)","COM inside surface"])
-			for i, (objN,(comx,comy,comz),dist,inside) in enumerate(self.objPolydata[timepoint]):
+			w.writerow(["Obj#","COM X", "COM Y", "COM Z", "Dist.(COM-surface)","Dist.(Obj COM-Cell COM)","COM inside surface","% of voxels inside"])
+			for i, (objN,(comx,comy,comz),dist,comdist,inside,insidePerc) in enumerate(self.objPolydata[timepoint]):
 				dist *= 1000000 # convert to um
-				w.writerow([i+1, int(round(comx)), int(round(comy)), int(round(comz)), dist, inside])
+				comdist *= 1000000 # convert to um
+				w.writerow([i+1, int(round(comx)), int(round(comy)), int(round(comz)), dist, comdist, inside, insidePerc])
 			f.close()
 		
 		if timepoint == self.parameters["Time"]-1:
@@ -944,6 +1022,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.parameters["ObjectsCreateSource"] and self.modified:
 			# Update first dims of result data
 			wholeExtent = inputImage.GetWholeExtent()
+			inputDataUnit = self.getInputDataUnit(1)
 			x = wholeExtent[1] - wholeExtent[0] + 1
 			y = wholeExtent[3] - wholeExtent[2] + 1
 			z = wholeExtent[5] - wholeExtent[4] + 1
@@ -953,6 +1032,19 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				self.parameters["Z"] = z
 				self.dataUnit.setModifiedDimensions((x, y, z))
 				lib.messenger.send(None, "update_dataset_info")
+
+			# Read com of the largest object from input data
+			particleFile = inputDataUnit.getSettings().get("StatisticsFile")
+			if particleFile is None or not os.path.exists(particleFile):
+				path = inputDataUnit.getDataSource().path
+				for fileName in os.listdir(path):
+					if ".csv" in fileName:
+						particleFile = os.path.join(path,fileName)
+			
+			if not particleFile is None and os.path.exists(particleFile):
+				reader = lib.ParticleReader.ParticleReader(particleFile, 0)
+				comObjs = reader.read()
+				self.cellCOM = comObjs[0][0].getCenterOfMass()
 
 			polydata = self.getPolyDataInput(1)
 			if polydata:
@@ -971,4 +1063,31 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		distanceY = (com1[1] - com2[1]) * voxelSize[1]
 		distanceZ = (com1[2] - com2[2]) * voxelSize[2]
 		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
+	
+	def generateDistributionValue(self, distr, minValue, maxValue):
+		"""
+		Generate value for specified distribution inside specified range
+		"""
+		mu = (maxValue + minValue) / 2.0
+		sigma = (maxValue - mu) / 3.0
+		if distr == DIST_UNIFORM:
+			value = random.randint(minValue,maxValue)
+		else:
+			if distr == DIST_NORM:
+				value = random.gauss(mu,sigma)
+			elif distr == DIST_POSNORM:
+				value = random.gauss(0.0, 2*sigma)
+				value = int(round(abs(value) + minValue))
+			elif distr == DIST_NEGNORM:
+				value = random.gauss(0.0, 2*sigma)
+				if value > 0:
+					value *= -1.0
+				value = int(round(value + maxValue))
+
+			if value < minValue:
+				value = minValue
+			elif value > maxValue:
+				value = maxValue
+
+		return value
 	

@@ -422,6 +422,7 @@ class FilterEditor(wx.Panel):
 				name = ".".join(os.path.basename(file).split(".")[:-1])
 				fileId = wx.NewId()
 				fileItem = wx.MenuItem(self.presetMenu, fileId, name)
+				file = file.replace("\\", "\\\\")
 				do_cmd = "%s.loadPreset('%s')" % (self.scriptingId, file)
 			   
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \

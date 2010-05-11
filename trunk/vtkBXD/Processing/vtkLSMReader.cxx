@@ -305,7 +305,6 @@ void vtkLSMReader::Clean()
   this->VoxelSizes[0] = this->VoxelSizes[1] = this->VoxelSizes[2] = 0.0;
   this->Identifier = 0;
    
-   
   this->LaserNames = vtkStringArray::New();
   this->TrackWavelengths = vtkDoubleArray::New();
   this->DataSpacing[0] = this->DataSpacing[1] = this->DataSpacing[2] =  1.0f;
@@ -683,6 +682,7 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
 {
   unsigned long offset;
   vtkDebugMacro("ReadLSMSpecificInfo(stream,"<<pos<<")\n");
+
   pos += 2 * 4; // skip over the start of the LSMInfo
                 // first 4 byte entry if magic number
                 // second is number of bytes in this structure
@@ -775,7 +775,6 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // Read timestamp information
   offset = this->ReadUnsignedInt(f,&pos);
   this->ReadTimeStampInformation(f,offset);
-
   
   return 1;
 }
@@ -954,7 +953,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
    if(tag == TIF_STRIPOFFSETS ||tag == TIF_STRIPBYTECOUNTS) {
       // vtkDebugMacro(<<"Reading actual value from "<<startPos<<"to " << startPos+readSize);
         if( !this->ReadFile(f,&startPos,readSize,actualValue) ) {
-            vtkErrorMacro(<<"Failde to get strip offsets\n");
+            vtkErrorMacro(<<"Failed to get strip offsets\n");
             return 0;
         }
     }

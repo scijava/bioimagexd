@@ -27,10 +27,7 @@ import codecs
 import csv
 import GUI.GUIBuilder as GUIBuilder
 import GUI.Dialogs
-try:
-	import itk
-except:
-	pass
+import itk
 import lib.ImageOperations
 import lib.messenger
 import Logging
@@ -391,8 +388,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image)
-		uc3 = itk.Image.UC3
-		self.itkfilter = itk.ConfidenceConnectedImageFilter.IUC3IUC3.New()
+		self.itkfilter = itk.ConfidenceConnectedImageFilter[image,image].New()
 		self.itkfilter.SetInput(image)
 		
 		pixelidx = itk.Index[3]()
@@ -475,7 +471,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
 
-		self.itkfilter = itk.ConnectedThresholdImageFilter.IUC3IUC3.New()
+		self.itkfilter = itk.ConnectedThresholdImageFilter[image,image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
 		self.itkfilter.SetUpper(self.parameters["Upper"])
@@ -495,9 +491,6 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter.Update()
 			
 		data = self.itkfilter.GetOutput()
-		#if last:
-		#	 return self.convertITKtoVTK(data,cast="UC3")
-			
 		return data		 
 
 		
@@ -574,7 +567,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		image = self.getInput(1)
 #		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
-		self.itkfilter = itk.NeighborhoodConnectedImageFilter.IUC3IUC3.New()
+		self.itkfilter = itk.NeighborhoodConnectedImageFilter[image,image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
 		self.itkfilter.SetUpper(self.parameters["Upper"])
@@ -598,7 +591,4 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			self.itkfilter.Update()
 			
 		data = self.itkfilter.GetOutput()
-		#if last:
-		#	 return self.convertITKtoVTK(data,imagetype="UC3")
-			
 		return data			   
