@@ -140,7 +140,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Performing morphological watershed segmentation"
 		self.itkfilter.SetInput(image)
 		Logging.info("Using watershed level %.3f"%self.parameters["Level"])
-		self.itkfilter.SetLevel(self.parameters["Level"])
+		self.itkfilter.SetLevel(int(self.parameters["Level"]))
 		
 		self.setImageType("UL%d"%dim)
 		self.itkfilter.Update()

@@ -63,6 +63,7 @@ int vtkImageSimpleMIP::RequestInformation (
   int numComponents = scalarInfo->Get(vtkDataObject::FIELD_NUMBER_OF_COMPONENTS());
   int scalarType = scalarInfo->Get(vtkDataObject::FIELD_ARRAY_TYPE());
   inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
+  ext[4] = 0;
   ext[5] = 0;
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
   //printf("Setting whole extent of output to %d,%d,%d,%d,%d,%d\n",PRT_EXT(ext));
@@ -106,6 +107,7 @@ void vtkImageSimpleMIPExecute(vtkImageSimpleMIP *self, int id,int NumberOfInputs
     
   
   memcpy(uExt,outExt,6*sizeof(int));
+  uExt[4] = uExt2[4];
   uExt[5] = uExt2[5];
 
 
@@ -343,7 +345,3 @@ void vtkImageSimpleMIP::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os,indent);
 
 }
-
-
-
-

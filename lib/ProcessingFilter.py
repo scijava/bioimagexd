@@ -149,25 +149,37 @@ class ProcessingFilter:
 		"""
 		return self.resultVariables.keys()
 		
-	def getResultVariableDict(self):
+	def getResultVariableDict(self, tp = None):
 		"""
 		@return the result varible dictionar
 		"""
-		return self.resultVar
+		if tp is None:
+			tp = self.getCurrentTimepoint()
+		return self.resultVar.get(tp, None)
 		
-	def setResultVariable(self, variable, value):
+	def setResultVariable(self, variable, value, tp = None):
 		"""
 		set a result variable to a value
 		"""
 		if variable not in self.getResultVariables():
 			raise Exception("No such result variable '%s'"%(variable))
-		self.resultVar[variable] = value
+		if tp is None:
+			tp = self.getCurrentTimepoint()
+		if not self.resultVar.has_key(tp):
+			self.resultVar[tp] = {}
 		
-	def getResultVariable(self, variable):
+		self.resultVar[tp][variable] = value
+		
+	def getResultVariable(self, variable, tp = None):
 		"""
 		return a value of a result variable
 		"""
-		return self.resultVar.get(variable, None)
+		if tp is None:
+			tp = self.getCurrentTimepoint()
+		try:
+			return self.resultVar.get(tp).get(variable, None)
+		except:
+			return None
 		
 	def getResultVariableDesc(self, variable):
 		"""

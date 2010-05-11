@@ -78,6 +78,7 @@ class LIFDataSource(DataSource):
 					self.reader.SetCurrentChannel(self.channelNum)
 					self.imageName = self.reader.GetImageName(self.imageNum)
 					self.createTimeStamps()
+					self.originalDimensions = self.internalGetDimensions()[0:3]
 				else:
 					Logging.error("Failed to read the header of the LIF file correctly",
 								  "Error in LIFDataSource.py in __init__, failed to read the header of the LIF file: %s" %(self.filename))

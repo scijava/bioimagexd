@@ -61,14 +61,14 @@ class FilterList:
 			self.filtersByName[currfilter.getName()] = currfilter
 			self.registerFilter(currfilter.getCategory(), currfilter)
 			
-	def getResultVariable(self, var, nth = 0):
+	def getResultVariable(self, var, nth = 0, tp = None):
 		"""
 		return the value of a result variable
 		"""
 		i = 0
 		for f in self.filters:
 			if var in f.getResultVariables() and i == nth:
-				return f.getResultVariable(var)
+				return f.getResultVariable(var, tp)
 			elif var in f.getResultVariables():
 				i += 1
 			

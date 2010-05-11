@@ -332,10 +332,8 @@ int RequestData(
   vtkUnsignedIntArray *ImageOffsets;
   vtkUnsignedIntArray *ReadSizes;
   vtkDoubleArray* DetectorOffsetFirstImage;
-  vtkDoubleArray* DetectorOffsetLastImage;
-  
+  vtkDoubleArray* DetectorOffsetLastImage;  
   vtkStringArray* LaserNames;
-  
   
   double DataSpacing[3];
   int DataExtent[6];
@@ -364,7 +362,6 @@ int RequestData(
   double ReadDouble(ifstream *,unsigned long *);
   int ReadFile(ifstream *,unsigned long *,int,char *,bool swap=0);
   int ReadData(ifstream *,unsigned long *,int,char *);
- 
 
 private:
   vtkLSMReader(const vtkLSMReader&);  // Not implemented.

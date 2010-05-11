@@ -133,7 +133,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		del invdistance
 
 		mws = itk.MorphologicalWatershedImageFilter[data,ul].New()
-		mws.SetLevel(self.parameters["Level"])
+		mws.SetLevel(int(self.parameters["Level"]))
 		mws.SetInput(data)
 		data = mws.GetOutput()
 

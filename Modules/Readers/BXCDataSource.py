@@ -144,6 +144,8 @@ class BXCDataSource(DataSource):
 		
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
+		if not self.originalScalarRange:
+			self.originalScalarRange = 0, (2**self.getBitDepth()) - 1
 		#self.scalarRange = data.GetScalarRange()
 		if raw:
 			return data

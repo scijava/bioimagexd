@@ -250,7 +250,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		# user given names
 		varHeaders = variables.keys()
 		# we also write the filename and channels used to produce each of the variables
-		csvwriter.writerow(["Filename","Channels"]+varHeaders)
+		csvwriter.writerow(["Filename","Channels","Timepoint"]+varHeaders)
 		
 		writtenOutDataunits = []
 		# Go through each procedure list
@@ -288,7 +288,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 				if self.channelProcessing == PROCESS_TOGETHER:
 					nameBase = procListName+"_"+os.path.basename(dataUnits[0].getFileName())
 
-				else:				
+				else:
 					filenames = "_".join([x.getName().split("_")[-1] for x in dataUnits])
 					nameBase = procListName+"_"+os.path.basename(dataUnits[0].getFileName())+"_"+filenames
 
@@ -307,7 +307,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 				# padding is the filename and channel information
 				padding = [", ".join([os.path.basename(x.getFileName()) for x in dataUnits]), ", ".join(x.getName().split("_")[-1] for x in dataUnits)]
-				self.writeResults(padding, csvwriter, procListName, procList, varHeaders)
+				self.writeResults(padding, csvwriter, procListName, procList, varHeaders, timepoints)
 
 		# If the channels are processed so that all the channels of a file are given as input
 		# to a procedure list, and the results should be grouped  so that the output of the
@@ -321,30 +321,31 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		ftime = time.time()
 		print "BBA took %f secs"%(ftime - stime)
 	
-	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders):
+	def writeResults(self, fileNames, csvwriter, procListName, procedureList, varHeaders, timepoints):
 		"""
 		write the csv results out
 		"""
 		selectedVars = self.getSelectedVariables(procListName)
 		row=[""]*len(varHeaders)
 
-		for var in selectedVars.keys():
-			varName = selectedVars[var]
-			if var in varHeaders:
-				i = varHeaders.index(var)
+		for tp in timepoints:
+			for var in selectedVars.keys():
+				varName = selectedVars[var]
+				if var in varHeaders:
+					i = varHeaders.index(var)
 
-				reg = re.compile("#([0-9]+)$")
-				try:
-					match = reg.search(var)
-					n = int(match.groups(0)[0])
-				except:
-					n = 1
+					reg = re.compile("#([0-9]+)$")
+					try:
+						match = reg.search(var)
+						n = int(match.groups(0)[0])
+					except:
+						n = 1
 
-				value = procedureList.getResultVariable(varName, nth = n-1)
-				row[i] = value
-			else:
-				print var,"not found"
-		csvwriter.writerow(fileNames + row)
+					value = procedureList.getResultVariable(varName, nth = n-1, tp = tp)
+					row[i] = value
+				else:
+					print var,"not found"
+			csvwriter.writerow(fileNames + [tp+1] + row)
 		
 		
 	def getDataUnit(self):

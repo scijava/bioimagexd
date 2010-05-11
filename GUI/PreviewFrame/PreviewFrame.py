@@ -483,15 +483,14 @@ class PreviewFrame(InteractivePanel):
 
 		if ncomps == 1:
 			Logging.info("Mapping trough ctf", kw = "preview")
-			
 			self.mapToColors = vtk.vtkImageMapToColors()
 			self.mapToColors.SetInput(data)
 			self.updateColor()
 			colorImage = self.mapToColors.GetOutput()
-			
+
 			outdata  = colorImage
 			return outdata
-			
+
 		return data
 
 	def saveSnapshot(self, filename):

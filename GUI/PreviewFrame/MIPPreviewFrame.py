@@ -92,4 +92,5 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 			self.mip.RemoveAllInputs()
 		self.mip.SetInput(data)
 		data = self.mip.GetOutput()
+
 		return PreviewFrame.PreviewFrame.processOutputData(self, data)

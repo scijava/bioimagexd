@@ -181,7 +181,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 
 	def onRenderEnd(self, event = None, e2 = None):
 		"""
-		Called when rendering begins
+		Called when rendering ends
 		"""
 		self.rendering = 0
 		if self.rubberband:
