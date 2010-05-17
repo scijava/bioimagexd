@@ -67,8 +67,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.avgIntList = None
 		self.objAreasUm = None
 		self.objRoundness = None
+		self.intSums = None
 		self.descs = {"StatisticsFile": "Results file:",
-					  "AvgInt": "Calculate average intensities",
+					  "AvgInt": "Calculate intensity averages and sums",
 					  "AvgDist": "Calculate average distances",
 					  "Area": "Calculate areas and roundness",
 					  "NonZero": "Calculate non-zero voxels"}
@@ -87,6 +88,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"AvgIntOutsideObjsNonZeroStdErr": "Standard error of average intensity outside objects, excluding voxels of zero intensity",
 								"AvgIntInsideObjs":		"Average intensity of voxels inside the objects",
 								"AvgIntInsideObjsStdErr": "Standard error of average intensity inside objects",
+								"ObjIntensitySum": "Sum of intensities of objects",
 								"NonZeroVoxels":		"The number of non-zero voxels",
 								"AverageDistance":		"Average distance between objects",
 								"AvgDistanceStdErr":	"Standard error of the average distance between objects",
@@ -174,6 +176,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		writer.setObjectValue('avgdist', self.avgDistList)
 		writer.setObjectValue('avgdiststderr', self.avgDistStdErrList)
 		writer.setObjectValue('areaum', self.objAreasUm)
+		writer.setObjectValue('intsum', self.intSums)
 		writer.writeObjects(filename,timepoint)
 
 	def getGUI(self, parent, taskPanel):
@@ -309,6 +312,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		umcentersofmass = []
 		avgints = []
 		avgintsstderrs = []
+		objIntSums = []
 		avgDists = []
 		avgDistsStdErrs = []
 		objAreasUm = []
@@ -367,10 +371,12 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				avgIntStdErr = 0.0
 				areaInUm = 0.0
 				roundness = 0.0
+				objIntSum = 0.0
 				
 				if self.parameters["AvgInt"]:
 					avgInt = avgintCalc.GetMean(i)
 					avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
+					objIntSum = avgintCalc.GetSum(i)
 				c = []
 				c2 = []
 				for k in range(0, 3):
@@ -404,6 +410,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				values.append((volume, volume * vol))
 				avgints.append(avgInt)
 				avgintsstderrs.append(avgIntStdErr)
+				objIntSums.append(objIntSum)
 				objAreasUm.append(areaInUm)
 				objRoundness.append(roundness)
 
@@ -429,6 +436,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.umcentersofmass = umcentersofmass
 		self.avgIntList = avgints
 		self.avgIntStdErrList = avgintsstderrs
+		self.intSums = objIntSums
 		self.avgDistList = avgDists
 		self.avgDistStdErrList = avgDistsStdErrs
 		self.objAreasUm = objAreasUm
@@ -436,6 +444,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		n = len(self.values)
 		avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
+		intSum = sum(self.intSums, 0.0)
 		ums = [x[1] for x in values]
 		avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
 		sumums = sum(ums, 0.0)
@@ -534,6 +543,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setResultVariable("AvgIntOutsideObjsStdErr",avgIntOutsideObjsStdErr)
 		self.setResultVariable("AvgIntOutsideObjsNonZeroStdErr",avgIntOutsideObjsNonZeroStdErr)
 		self.setResultVariable("AvgIntInsideObjsStdErr",avgIntInsideObjsStdErr)
+		self.setResultVariable("ObjIntensitySum", intSum)
 		self.setResultVariable("ObjAvgRoundness",avground)
 		self.setResultVariable("ObjAvgRoundnessStdErr",avgroundstderr)
 		
@@ -542,9 +552,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setVolumes(values)
 			self.reportGUI.setCentersOfMass(centersofmass)
 			self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
+			self.reportGUI.setIntensitySums(self.intSums)
 			self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
 			self.reportGUI.setAreasUm(objAreasUm)
 			self.reportGUI.setRoundness(objRoundness)
-			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm, avgIntOutsideObjsNonZero, avgIntOutsideObjsNonZeroStdErr, avgIntInsideObjs, avgIntInsideObjsStdErr, nonZeroVoxels, avground, avgroundstderr])
+			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm, avgIntOutsideObjsNonZero, avgIntOutsideObjsNonZeroStdErr, avgIntInsideObjs, avgIntInsideObjsStdErr, nonZeroVoxels, avground, avgroundstderr, intSum])
 			
 		return self.getInput(1)
