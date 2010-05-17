@@ -1,0 +1,3 @@
+WRAP_CLASS("itk::BinaryThinning3DImageFilter" POINTER)
+  WRAP_IMAGE_FILTER_INT(2 3)
+END_WRAP_CLASS()
