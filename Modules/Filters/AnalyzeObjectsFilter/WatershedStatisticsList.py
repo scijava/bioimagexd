@@ -57,6 +57,7 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.quantities.append("Avg. intensity (voxels in objs)")
 		self.quantities.append("Avg. intensity (outside objs)")
 		self.quantities.append("Avg. intensity (outside objs, non zero)")
+		self.quantities.append("Sum of intensities")
 		self.quantities.append(u"Avg. distance to other objs (\u03BCm)")
 		self.quantities.append("Non zero voxels")
 		self.quantities.append("Avg. roundness (0.0-1.0)")
@@ -65,7 +66,7 @@ class WatershedTotalsList(wx.ListCtrl):
 		for i in range(22):
 			self.stats.append(0.0)
 	
-		self.SetItemCount(13)
+		self.SetItemCount(14)
 		self.InsertColumn(0, "Quantity")
 		self.InsertColumn(1, "Value")
 		self.SetColumnWidth(0, 250)
@@ -121,10 +122,12 @@ class WatershedTotalsList(wx.ListCtrl):
 			elif item == 9:
 				return u"%.3f\u00B1%.3f"%(self.stats[15],self.stats[16])
 			elif item == 10:
-				return u"%.2f\u00B1%.2f \u03BCm"%(self.stats[11],self.stats[12])
+				return "%.2f"%(self.stats[22])
 			elif item == 11:
-				return "%d"%self.stats[19]
+				return u"%.2f\u00B1%.2f \u03BCm"%(self.stats[11],self.stats[12])
 			elif item == 12:
+				return "%d"%self.stats[19]
+			elif item == 13:
 				return u"%.2f\u00B1%.2f"%(self.stats[20],self.stats[21])
 				
  
@@ -155,6 +158,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.InsertColumn(5, "Avg. intensity")
 		self.InsertColumn(6, u"Avg. dist to other objs (\u03BCm)")
 		self.InsertColumn(7, "Roundness")
+		self.InsertColumn(8, "Sum of intensity")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 70)
@@ -163,6 +167,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.SetColumnWidth(5, 70)
 		self.SetColumnWidth(6, 70)
 		self.SetColumnWidth(7, 70)
+		self.SetColumnWidth(8, 70)
 
 		self.highlightSelected = 1
 		#self.SetItemCount(1000)
@@ -177,6 +182,9 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.centersOfMassList = []
 		self.avgIntList = []
 		self.areaUmList = []
+		self.avgDistList = []
+		self.objRoundness = []
+		self.objIntensities = []
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
 		self.Bind(wx.EVT_LIST_ITEM_FOCUSED, self.OnItemFocused)
@@ -256,6 +264,17 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			if self.GetItemCount() < i:
 				self.InsertStringItem(i, "")
 			self.SetStringItem(i, 7, "%.3f"%(oRound))
+		self.Refresh()
+
+	def setIntensitySums(self, intsums):
+		"""
+		Set the list of intensity sums of the objects
+		"""
+		self.objIntensities = intsums
+		for i, oInt in enumerate(intsums):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 8, "%.2f"%(oInt))
 		self.Refresh()
 		
 	def OnItemFocused(self, event):

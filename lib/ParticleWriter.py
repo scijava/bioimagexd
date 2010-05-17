@@ -107,7 +107,7 @@ class ParticleWriter:
 		w.writerow(["Timepoint %d" % timepoint])
 		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
 					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
-					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)"])
+					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)", "Intensity sum"])
 		
 		for i, volume in enumerate(self.objects['volume']):
 			volumeum = self.objects['volumeum'][i]
@@ -118,6 +118,7 @@ class ParticleWriter:
 			avgdist = self.objects['avgdist'][i]
 			avgdiststderr = self.objects['avgdiststderr'][i]
 			areaUm = self.objects['areaum'][i]
-			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm)])
+			intSum = self.objects['intsum'][i]
+			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm), str(intSum)])
 		
 		f.close()
