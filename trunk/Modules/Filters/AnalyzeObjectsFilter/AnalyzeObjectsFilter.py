@@ -204,13 +204,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				avgareaums, avgareaumsstd, avgareaumsstderr = lib.Math.meanstdeverr(self.objAreasUm)
 				sumareaums = sum(self.objAreasUm, 0.0)
 				
-				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums, self.avgIntOutsideObjsNonZero, self.avgIntOutsideObjsNonZeroStdErr, self.avgIntInsideObjs, self.avgIntInsideObjsStdErr, self.avgRoundness, self.avgRoundnessStdErr])
+				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums, self.avgIntOutsideObjsNonZero, self.avgIntOutsideObjsNonZeroStdErr, self.avgIntInsideObjs, self.avgIntInsideObjsStdErr, self.avgRoundness, self.avgRoundnessStdErr, self.intSum])
 				self.reportGUI.setVolumes(self.values)
 				self.reportGUI.setAreasUm(self.objAreasUm)
 				self.reportGUI.setCentersOfMass(self.centersofmass)
 				self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
 				self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
 				self.reportGUI.setRoundness(self.objRoundness)
+				self.reportGUI.setIntensitySums(self.intSums)
 
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.reportGUI, 1, wx.EXPAND)
@@ -522,6 +523,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.distStdErr = distStdErr
 		self.avgRoundness = avground
 		self.avgRoundnessStdErr = avgroundstderr
+		self.intSum = intSum
 
 		self.setResultVariable("NumberOfObjects",len(values))
 		self.setResultVariable("ObjAvgVolInVoxels",avgpxs)

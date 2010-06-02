@@ -177,6 +177,7 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 		psf.SetUpdateExtent(psf.GetWholeExtent())
 		print psf.GetScalarRange()
 		minval, maxval = psf.GetScalarRange()
+
 #		ctf = vtk.vtkColorTransferFunction()
 		#ctf.AddRGBPoint(0, 0,0,0)
 		#ctf.AddRGBPoint(maxval, 0,255,0)
