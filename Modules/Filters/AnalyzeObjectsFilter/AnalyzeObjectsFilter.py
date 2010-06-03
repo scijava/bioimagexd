@@ -279,7 +279,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		# Cannot have two convertVTKtoITK in same filter
 		if self.parameters["AvgInt"] or self.parameters["Area"]:
 			labelVTK = self.convertITKtoVTK(labelImage)
-		
+
 		if "itkImage" not in str(labelImage.__class__):
 			extent = labelImage.GetWholeExtent()
 			if extent[5] - extent[4] == 0:
@@ -305,6 +305,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		x *= 1000000
 		y *= 1000000
 		z *= 1000000
+		if z == 0: z = 1.0
 		vol = x * y * z
 		
 		voxelSizes = [x, y, z]

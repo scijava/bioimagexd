@@ -63,7 +63,7 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.quantities.append("Avg. roundness (0.0-1.0)")
 
 		self.stats = []
-		for i in range(22):
+		for i in range(23):
 			self.stats.append(0.0)
 	
 		self.SetItemCount(14)
