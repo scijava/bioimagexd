@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
 #Change PROJECT_NAME to the name of your project
 PROJECT(itkBXD)
+INCLUDE(CPack)
 
 IF(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)

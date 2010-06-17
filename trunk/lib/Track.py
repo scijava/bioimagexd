@@ -32,10 +32,10 @@ __date__ = "$Date: 2005/01/13 13:42:03 $"
 import math
 import csv
 import os
-import lib.Particle
 import lib.Math
 import re
 import scripting
+import vtk
 
 class Track:
 	"""
@@ -45,25 +45,26 @@ class Track:
 	def __init__(self):
 		self.points = {}
 		self.values = {}
+		self.fronts = {}
+		self.rears = {}
 		self.mintp, self.maxtp = 1000, 0
-		self.length = -1
 		self.voxelSize = (1.0,1.0,1.0) # In um
 		self.timeStamps = [] # Seconds between time points
 
 	def __len__(self):
 		return len(self.points)
 	
-	def distance(self, tp1, tp2):
+	def distance(self, tp1, tp2, points):
 		"""
 		return the distance between objects at tp1 and tp2 in um
 		"""
-		if tp1 not in self.points:
+		if tp1 not in points:
 			return 0
-		if tp2 not in self.points:
+		if tp2 not in points:
 			return 0
 
-		pt = list(self.points[tp1])
-		pt2 = list(self.points[tp2])
+		pt = list(points[tp1])
+		pt2 = list(points[tp2])
 		for i,size in enumerate(self.voxelSize):
 			pt[i] *= size
 			pt2[i] *= size
@@ -73,15 +74,17 @@ class Track:
 		dz = pt[2] - pt2[2]
 		return math.sqrt(dx * dx + dy * dy + dz * dz)
 
-	def getLength(self):
+	def getLength(self, points = None):
 		"""
 		return the length of this track in um
 		"""
-		if self.length < 0:
-			self.length = 0.0
-			for i in range(self.mintp, self.maxtp):
-				self.length += self.distance(i, i + 1)
-		return self.length
+		if points is None:
+			points = self.points
+		
+		length = 0.0
+		for i in range(self.mintp, self.maxtp):
+			length += self.distance(i, i + 1, points)
+		return length
 
 	def getSpeed(self):
 		"""
@@ -97,7 +100,7 @@ class Track:
 		if length == 0.0:
 			return 1.0
 		
-		return self.distance(self.mintp, self.maxtp) / self.getLength()
+		return self.distance(self.mintp, self.maxtp, self.points) / self.getLength()
 
 	def getAverageAngle(self):
 		"""
@@ -132,27 +135,62 @@ class Track:
 				vec1[i] /= lenVec1
 				vec2[i] /= lenVec2
 
-			angle = lib.Particle.ParticleTracker.angle(vec1,vec2)
+			angle = lib.Math.angle(vec1,vec2)
 			angles.append(angle)
-			#vec1 = list(self.points[i])
-			#vec2 = list(self.points[i + 1])
-			# Create unit vectors in real space
-			#lenVec1 = 0.0
-			#lenVec2 = 0.0
-			#for i,size in enumerate(self.voxelSize):
-			#	vec1[i] *= self.voxelSize[i]
-			#	vec2[i] *= self.voxelSize[i]
-			#	lenVec1 += vec1[i]
-			#	lenVec2 += vec2[i]
-
-			#for i in range(3):
-			#	vec1[i] /= lenVec1
-			#	vec2[i] /= lenVec2
-
-			#angle = lib.Particle.ParticleTracker.angle(vec1,vec2)
-			#angles.append(angle)
 
 		return lib.Math.meanstdeverr(angles)
+
+	def getFrontCoordinates(self):
+		"""
+		Return object front coordinates
+		"""
+		frontPoints = []
+		for tp in range(self.mintp, self.maxtp + 1):
+			frontPoints.append(self.fronts[tp])
+
+		return frontPoints
+
+	def getFrontCoordinatesAtTime(self, tp):
+		"""
+		Return front coordinates for tp
+		"""
+		try:
+			fPos = self.fronts[tp]
+		except:
+			fPos = (-1,-1,-1)
+		return fPos
+
+	def getRearCoordinates(self):
+		"""
+		Return object rear coordinates
+		"""
+		rearPoints = []
+		for tp in range(self.mintp, self.maxtp + 1):
+			rearPoints.append(self.rears[tp])
+
+		return rearPoints
+
+	def getRearCoordinatesAtTime(self, tp):
+		"""
+		Return rear coordinates for tp
+		"""
+		try:
+			rPos = self.rears[tp]
+		except:
+			rPos = (-1,-1,-1)
+		return rPos
+
+	def getFrontSpeed(self):
+		"""
+		Calculate and return object front speed
+		"""
+		return self.getLength(points = self.fronts) / (self.timeStamps[self.maxtp] - self.timeStamps[self.mintp])
+
+	def getRearSpeed(self):
+		"""
+		Calculate and return object rear speed
+		"""
+		return self.getLength(points = self.rears) / (self.timeStamps[self.maxtp] - self.timeStamps[self.mintp])
 		
 	def addTrackPoint(self, timepoint, objval, position):
 		"""
@@ -167,8 +205,6 @@ class Track:
 			self.maxtp = timepoint
 		self.points[timepoint] = position
 		self.values[timepoint] = objval
-		# Set the length to -1 so it will be re-calculated
-		self.length = -1
 
 	def getTimeRange(self):
 		"""
@@ -203,6 +239,116 @@ class Track:
 		if len(voxelSize) == 3:
 			self.voxelSize = voxelSize
 
+	def calculateFrontAndRear(self, reader, maxPush, minPush):
+		"""
+		Method to calculate front and rear of objects in the track
+		Image parameter must be vtkImageData
+		"""
+		spacing = []
+		for i in range(len(self.voxelSize)):
+			spacing.append(self.voxelSize[i] / self.voxelSize[0])
+		
+		for tp in range(self.mintp, self.maxtp + 1):
+			label = self.values[tp]
+			com1 = self.points[tp]
+
+			if tp == self.maxtp: # Use latest direction
+				for i in range(len(direction)):
+					direction[i] *= -1.0
+			else:
+				com2 = self.points[tp+1]
+				direction = []
+				for i in range(len(com1)):
+					direction.append(com2[i] - com1[i])
+
+			# Polygon data
+			image = reader.getDataSet(tp)
+			objThreshold = vtk.vtkImageThreshold()
+			objThreshold.SetInput(image)
+			objThreshold.SetOutputScalarTypeToUnsignedChar()
+			objThreshold.SetInValue(255)
+			objThreshold.SetOutValue(0)
+			objThreshold.ThresholdBetween(label,label)
+			marchingCubes = vtk.vtkMarchingCubes()
+			marchingCubes.SetInput(objThreshold.GetOutput())
+			marchingCubes.SetValue(0, 255)
+			marchingCubes.Update()
+			polydata = marchingCubes.GetOutput()
+			polydata.Update()
+
+			front = self.locateOutmostPoint(polydata, com1, direction, maxPush, minPush)
+			for i in range(len(direction)):
+				direction[i] *= -1.0
+			rear = self.locateOutmostPoint(polydata, com1, direction, maxPush, minPush)
+			for i in range(len(front)):
+				front[i] /= spacing[i]
+				rear[i] /= spacing[i]
+			
+			self.fronts[tp] = tuple(front)
+			self.rears[tp] = tuple(rear)
+		
+	def locateOutmostPoint(self, polydata, com, direction, maxPushDistance, minPushDistance):
+		"""
+		Locates the outmost point of an object depending on the direction parameter.
+
+		A plane is created to clip the data in the direction of the variable
+		'direction' until there's a minimum of polygons left. The precision,
+		measured in number of polygons, depends on the max and minimum of the push
+		distance (specified by maxPushDistance and minPushDistance).
+
+		The remaining polygons' points are processed for an average, which is then
+		returned.
+		"""
+		# Plane setup
+		plane = vtk.vtkPlane()
+		plane.SetOrigin(com[0], com[1], com[2])
+		plane.SetNormal(direction[0], direction[1], direction[2])
+
+		# Clipped data
+		clipPolyData = vtk.vtkClipPolyData()
+		clipPolyData.SetInput(polydata)
+		clipPolyData.SetClipFunction(plane)
+		clippedData = clipPolyData.GetOutput()
+		clippedData.Update()
+		polygons = clippedData.GetNumberOfPolys()
+
+		# Push the plane until it cuts the volume
+		pushDistance = maxPushDistance
+		while (pushDistance > minPushDistance):
+			while (polygons > 0):
+				plane.Push(pushDistance)
+				clippedData.Update()
+				polygons = clippedData.GetNumberOfPolys()
+		
+			plane.Push(-pushDistance)
+			clippedData.Update()
+			polygons = clippedData.GetNumberOfPolys()
+			pushDistance = pushDistance / 2.0
+    
+		polyData = clippedData.GetPolys().GetData()
+		id = 0
+		points = []
+		for poly in range(polygons):
+			numOfPoints = int(polyData.GetTuple1(id))
+			id += 1
+			for pid in range(id, id + numOfPoints):
+				pointID = polyData.GetTuple1(pid)
+				points.append(clippedData.GetPoint(pointID))
+				id += 1
+
+		numOfPts = len(points)
+		xAvg, yAvg, zAvg = 0.0, 0.0, 0.0
+		for point in points:
+			xAvg += point[0]
+			yAvg += point[1]
+			zAvg += point[2]
+
+		xAvg = xAvg/numOfPts
+		yAvg = yAvg/numOfPts
+		zAvg = zAvg/numOfPts
+
+		return [xAvg, yAvg, zAvg]
+
 
 class TrackReader:
 	"""
@@ -233,11 +379,11 @@ class TrackReader:
 			pat = re.compile('.%s'%ext)
 			iniFilename = pat.sub('.ini',filename)
 			self.parser.read([iniFilename])
-			
 		except IOError, ioError:
 			print ioError
 			self.reader = None
 			self.parser = None
+		
 		if self.reader and self.parser:
 			self.tracks = self.readTracks(self.reader)
 			try:
@@ -300,7 +446,7 @@ class TrackReader:
 	def readTracks(reader):
 		"""
 		Read tracks from the given file
-		"""   
+		"""
 		tracks = []
 		ctrack = Track()
 

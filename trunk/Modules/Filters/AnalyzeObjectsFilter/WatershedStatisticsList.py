@@ -61,16 +61,22 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.quantities.append(u"Avg. distance to other objs (\u03BCm)")
 		self.quantities.append("Non zero voxels")
 		self.quantities.append("Avg. roundness (0.0-1.0)")
+		self.quantities.append(u"Avg. major axis length (\u03BCm)")
+		self.quantities.append(u"Avg. minor axis length (\u03BCm)")
+		self.quantities.append("Avg. elongation")
+		self.quantities.append("Avg. angle between major and (x,y,z) axes")
+		self.quantities.append("Avg. angle between minor and (x,y,z) axes")
+		self.quantities.append("Avg. smoothness")
 
 		self.stats = []
-		for i in range(23):
+		for i in range(43):
 			self.stats.append(0.0)
 	
-		self.SetItemCount(14)
+		self.SetItemCount(20)
 		self.InsertColumn(0, "Quantity")
 		self.InsertColumn(1, "Value")
-		self.SetColumnWidth(0, 250)
-		self.SetColumnWidth(1, 150)
+		self.SetColumnWidth(0, 300)
+		self.SetColumnWidth(1, 250)
 
 		self.attr = wx.ListItemAttr()
 		self.color = wx.Colour(180,255,180)
@@ -129,6 +135,18 @@ class WatershedTotalsList(wx.ListCtrl):
 				return "%d"%self.stats[19]
 			elif item == 13:
 				return u"%.2f\u00B1%.2f"%(self.stats[20],self.stats[21])
+			elif item == 14:
+				return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[23],self.stats[24])
+			elif item == 15:
+				return u"%.3f\u00B1%.3f \u03BCm"%(self.stats[25],self.stats[26])
+			elif item == 16:
+				return u"%.2f\u00B1%.2f"%(self.stats[27],self.stats[28])
+			elif item == 17:
+				return u"(%.2f\u00B1%.2f, %.2f\u00B1%.2f, %.2f\u00B1%.2f)"%(self.stats[29],self.stats[30],self.stats[31],self.stats[32],self.stats[33],self.stats[34])
+			elif item == 18:
+				return u"(%.2f\u00B1%.2f, %.2f\u00B1%.2f, %.2f\u00B1%.2f)"%(self.stats[35],self.stats[36],self.stats[37],self.stats[38],self.stats[39],self.stats[40])
+			elif item == 19:
+				return u"%.2f\u00B1%.2f"%(self.stats[41],self.stats[42])
 				
  
 	def OnGetItemImage(self, item):
@@ -159,6 +177,12 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.InsertColumn(6, u"Avg. dist to other objs (\u03BCm)")
 		self.InsertColumn(7, "Roundness")
 		self.InsertColumn(8, "Sum of intensity")
+		self.InsertColumn(9, u"Major axis length (\u03BCm)")
+		self.InsertColumn(10, u"Minor axis length (\u03BCm)")
+		self.InsertColumn(11, "Elongation")
+		self.InsertColumn(12, "Angle between major and (x,y,z) axes")
+		self.InsertColumn(13, "Angle between minor and (x,y,z) axes")
+		self.InsertColumn(14, "Smoothness")
 		self.SetColumnWidth(0, 50)
 		self.SetColumnWidth(1, 70)
 		self.SetColumnWidth(2, 70)
@@ -168,6 +192,12 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.SetColumnWidth(6, 70)
 		self.SetColumnWidth(7, 70)
 		self.SetColumnWidth(8, 70)
+		self.SetColumnWidth(9, 70)
+		self.SetColumnWidth(10, 70)
+		self.SetColumnWidth(11, 70)
+		self.SetColumnWidth(12, 100)
+		self.SetColumnWidth(13, 100)
+		self.SetColumnWidth(14, 70)
 
 		self.highlightSelected = 1
 		#self.SetItemCount(1000)
@@ -185,6 +215,12 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.avgDistList = []
 		self.objRoundness = []
 		self.objIntensities = []
+		self.objMajorAxisLen = []
+		self.objMinorAxisLen = []
+		self.objElongation = []
+		self.objAngleMajor = []
+		self.objAngleMinor = []
+		self.objSmoothness = []
 		
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected)
 		self.Bind(wx.EVT_LIST_ITEM_FOCUSED, self.OnItemFocused)
@@ -224,6 +260,8 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.Refresh()
 
 	def setAreasUm(self, areaList):
+		"""
+		"""
 		self.areaUmList = areaList
 		self.Freeze()
 		for i, area in enumerate(areaList):
@@ -275,6 +313,78 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			if self.GetItemCount() < i:
 				self.InsertStringItem(i, "")
 			self.SetStringItem(i, 8, "%.2f"%(oInt))
+		self.Refresh()
+
+	def setMajorAxisLengths(self, majorLen):
+		"""
+		Set the list of major axis lengths of the objects
+		"""
+		self.objMajorAxisLen = majorLen
+		for i, oLen in enumerate(majorLen):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 9, u"%.3f \u03BCm"%(oLen))
+		self.Refresh()
+
+	def setMinorAxisLengths(self, minorLen):
+		"""
+		Set the list of minor axis lengths of the objects
+		"""
+		self.objMinorAxisLen = minorLen
+		for i, oLen in enumerate(minorLen):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 10, u"%.3f \u03BCm"%(oLen))
+		self.Refresh()
+
+	def setElongations(self, elongation):
+		"""
+		Set the list of elongation of the objects
+		"""
+		self.objElongation = elongation
+		for i, oElon in enumerate(elongation):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 11, "%.2f"%(oElon))
+		self.Refresh()
+
+	def setMajorAngles(self, angleMajorX, angleMajorY, angleMajorZ):
+		"""
+		Set the list of angles between major axis and spatial axes
+		"""
+		self.objAngleMajor = []
+		for i in range(len(angleMajorX)):
+			self.objAngleMajor.append((angleMajorX[i], angleMajorY[i], angleMajorZ[i]))
+
+		for i, oAng in enumerate(self.objAngleMajor):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 12, "(%.2f, %.2f, %.2f)"%oAng)
+		self.Refresh()
+
+	def setMinorAngles(self, angleMinorX, angleMinorY, angleMinorZ):
+		"""
+		Set the list of angles between minor axis and spatial axes
+		"""
+		self.objAngleMinor = []
+		for i in range(len(angleMinorX)):
+			self.objAngleMinor.append((angleMinorX[i], angleMinorY[i], angleMinorZ[i]))
+
+		for i, oAng in enumerate(self.objAngleMinor):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 13, "(%.2f, %.2f, %.2f)"%oAng)
+		self.Refresh()
+		
+	def setSmoothness(self, smoothness):
+		"""
+		Set the list of smoothness of the objects
+		"""
+		self.objSmoothness = smoothness
+		for i, oSmooth in enumerate(smoothness):
+			if self.GetItemCount() < i:
+				self.InsertStringItem(i, "")
+			self.SetStringItem(i, 14, "%.3f"%(oSmooth))
 		self.Refresh()
 		
 	def OnItemFocused(self, event):

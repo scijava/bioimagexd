@@ -37,10 +37,7 @@ import math
 import codecs
 import copy
 import lib.ParticleReader
-try:
-	import psyco
-except ImportError:
-	psyco = None
+import lib.Math
 
 class Particle:
 	"""
@@ -166,12 +163,6 @@ class ParticleTracker:
 		self.tracks = []
 		self.timeStamps = []
 		self.useNew = 1
-
-		if psyco and sys.platform != 'darwin':
-			psyco.bind(self.getStats)
-			psyco.bind(self.angle)
-			psyco.bind(Particle.distance)
-			psyco.bind(self.track)
 		
 	def setMinimumTrackLength(self, minlen):
 		"""
@@ -405,22 +396,7 @@ class ParticleTracker:
 		intFactor /= self.intensityChange
 		intFactor = abs(intFactor - 1)
 		return (distFactor, sizeFactor, intFactor)
-				
-	@staticmethod
-	def angle(vector1, vector2):
-		"""
-		Measure the angle between two unit vectors
-		"""
-		inner = 0.0
-		for i in range(3):
-			inner += vector1[i] * vector2[i]
 
-		try: # There can be rounding problems
-			ang = abs(math.acos(inner) * 180 / math.pi)
-		except:
-			ang = 0.0
-		return ang
-		
 	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 0):
 		"""
 		Return a score that unifies the different factors into a single score
@@ -505,7 +481,7 @@ class ParticleTracker:
 		vector1 = tuple(vector1)
 		vector2 = tuple(vector2)
 		
-		angle = self.angle(vector1,vector2)
+		angle = lib.Math.angle(vector1,vector2)
 		
 		if  angle > self.angleChange:
 			return -1

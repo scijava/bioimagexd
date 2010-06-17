@@ -176,7 +176,7 @@ class MRCDataSource(DataSource):
 		dims = self.reader.GetImageDims()
 		dimList = list(dims)
 		dimList.append(1)
-		return dimList
+		return tuple(dimList)
 
 	def setOriginalScalarRange(self):
 		"""
