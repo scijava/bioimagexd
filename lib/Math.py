@@ -20,3 +20,18 @@ def averageValue(lst):
 	if len(lst) == 0:
 		return 0.0	
 	return sum(lst) / float(len(lst))
+
+def angle(vector1, vector2):
+	"""
+	Measure the angle between two unit vectors
+	"""
+	inner = 0.0
+	dim = min(len(vector1), len(vector2))
+	for i in range(dim):
+		inner += vector1[i] * vector2[i]
+
+	try: # There can be rounding problems
+		ang = abs(math.acos(inner) * 180 / math.pi)
+	except:
+		ang = 0.0
+	return ang

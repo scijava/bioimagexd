@@ -120,7 +120,6 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		values = []
 
 		itkOrig = self.convertVTKtoITK(imagedata)
-
 		for mask in rois:
 			if not mask:
 				return imagedata

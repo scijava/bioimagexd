@@ -107,7 +107,7 @@ class ParticleWriter:
 		w.writerow(["Timepoint %d" % timepoint])
 		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
 					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
-					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)", "Intensity sum"])
+					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)", "Roundness", "Intensity sum", "Major axis length (micrometers)", "Minor axis length (micrometers)", "Elongation", "Angle between major and X axes", "Angle between major and Y axes", "Angle between major and Z axes", "Angle between minor and X axes", "Angle between minor and Y axes", "Angle between minor and Z axes", "Smoothness"])
 		
 		for i, volume in enumerate(self.objects['volume']):
 			volumeum = self.objects['volumeum'][i]
@@ -118,7 +118,18 @@ class ParticleWriter:
 			avgdist = self.objects['avgdist'][i]
 			avgdiststderr = self.objects['avgdiststderr'][i]
 			areaUm = self.objects['areaum'][i]
+			roundness = self.objects['roundness'][i]
 			intSum = self.objects['intsum'][i]
-			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm), str(intSum)])
+			majorLen = self.objects['majorlen'][i]
+			minorLen = self.objects['minorlen'][i]
+			elongation = self.objects['elongation'][i]
+			angleMajX = self.objects['anglemajx'][i]
+			angleMajY = self.objects['anglemajy'][i]
+			angleMajZ = self.objects['anglemajz'][i]
+			angleMinX = self.objects['angleminx'][i]
+			angleMinY = self.objects['angleminy'][i]
+			angleMinZ = self.objects['angleminz'][i]
+			smoothness = self.objects['smoothness'][i]
+			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm), str(roundness), str(intSum), str(majorLen), str(minorLen), str(elongation), str(angleMajX), str(angleMajY), str(angleMajZ), str(angleMinX), str(angleMinY), str(angleMinZ), str(smoothness)])
 		
 		f.close()

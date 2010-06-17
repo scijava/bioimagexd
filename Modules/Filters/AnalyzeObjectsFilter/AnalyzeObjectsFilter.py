@@ -60,7 +60,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""		   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.itkFlag = 1
-		self.descs = {}		 
+		self.descs = {}
+		self.stats = None
 		self.values = None
 		self.centersofmass = None
 		self.umcentersofmass = None
@@ -68,11 +69,22 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.objAreasUm = None
 		self.objRoundness = None
 		self.intSums = None
+		self.objMinorLength = None
+		self.objMajorLength = None
+		self.objElongation = None
+		self.objAngleMinX = None
+		self.objAngleMinY = None
+		self.objAngleMinZ = None
+		self.objAngleMajX = None
+		self.objAngleMajY = None
+		self.objAngleMajZ = None
 		self.descs = {"StatisticsFile": "Results file:",
 					  "AvgInt": "Calculate intensity averages and sums",
 					  "AvgDist": "Calculate average distances",
 					  "Area": "Calculate areas and roundness",
-					  "NonZero": "Calculate non-zero voxels"}
+					  "NonZero": "Calculate non-zero voxels",
+					  "Axes": "Calculate major and minor axes",
+					  "Smoothness": "Calculate smoothness factor"}
 		self.reportGUI = None		
 		
 		self.resultVariables = {"NumberOfObjects":		"Number of discrete objects in the image",
@@ -97,7 +109,27 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"ObjVolSumInUm":        "Sum of volumes of all objects in micrometers",
 								"ObjAreaSumInUm":       "Sum of areas of all objects in micrometers",
 								"ObjAvgRoundness":      "Average roundness of the objects",
-								"ObjAvgRoundnessStdErr": "Standard error of average roundness of the objects"
+								"ObjAvgRoundnessStdErr": "Standard error of average roundness of the objects",
+								"ObjAvgMajorAxisLen": "Average major axis length of the objects",
+								"ObjAvgMajorAxisLenStdErr": "Standard error of average major axis length",
+								"ObjAvgMinorAxisLen": "Average minor axis length of the objects",
+								"ObjAvgMinorAxisLenStdErr": "Standard error of average minor axis length",
+								"ObjAvgElongation": "Average elongation of the objects",
+								"ObjAvgElongationStdErr": "Standard error of average elongation",
+								"ObjAvgAngleXMajorAxis": "Average angle between X and major axis",
+								"ObjAvgAngleXMajorAxisStdErr": "Standard error of average angle between X and major axis",
+								"ObjAvgAngleYMajorAxis": "Average angle between Y and major axis",
+								"ObjAvgAngleYMajorAxisStdErr": "Standard error of average angle between Y and major axis",
+								"ObjAvgAngleZMajorAxis": "Average angle between Z and major axis",
+								"ObjAvgAngleZMajorAxisStdErr": "Standard error of average angle between Z and major axis",
+								"ObjAvgAngleXMinorAxis": "Average angle between X and minor axis",
+								"ObjAvgAngleXMinorAxisStdErr": "Standard error of average angle between X and minor axis",
+								"ObjAvgAngleYMinorAxis": "Average angle between Y and minor axis",
+								"ObjAvgAngleYMinorAxisStdErr": "Standard error of average angle between Y and minor axis",
+								"ObjAvgAngleZMinorAxis": "Average angle between Z and minor axis",
+								"ObjAvgAngleZMinorAxisStdErr": "Standard error of average angle between Z and minor axis",
+								"ObjAvgSmoothness": "Average smoothness of the objects",
+								"ObjAvgSmoothnessStdErr": "Standard error of average smoothness"
 								}
 		
 	def getInputName(self, n):
@@ -120,7 +152,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter == "StatisticsFile":
 			return "statistics.csv"
-		if parameter == "Area":
+		if parameter in ["Area", "Axes", "Smoothness"]:
 			return False
 		return True
 		
@@ -132,14 +164,13 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			return GUI.GUIBuilder.FILENAME
 		return types.BooleanType
 		
-		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
 		return [["Measurement results",
 		(("StatisticsFile", "Select the file to which the statistics will be written", "*.csv"), )],
-				["Analyses", ("AvgInt", "AvgDist", "Area", "NonZero")]]
+				["Analyses", ("AvgInt", "AvgDist", "Area", "NonZero", "Axes", "Smoothness")]]
 		
 	def writeOutput(self, dataUnit, timepoint):
 		"""
@@ -176,7 +207,18 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		writer.setObjectValue('avgdist', self.avgDistList)
 		writer.setObjectValue('avgdiststderr', self.avgDistStdErrList)
 		writer.setObjectValue('areaum', self.objAreasUm)
+		writer.setObjectValue('roundness', self.objRoundness)
 		writer.setObjectValue('intsum', self.intSums)
+		writer.setObjectValue('majorlen', self.objMajorLength)
+		writer.setObjectValue('minorlen', self.objMinorLength)
+		writer.setObjectValue('elongation', self.objElongation)
+		writer.setObjectValue('anglemajx', self.objAngleMajX)
+		writer.setObjectValue('anglemajy', self.objAngleMajY)
+		writer.setObjectValue('anglemajz', self.objAngleMajZ)
+		writer.setObjectValue('angleminx', self.objAngleMinX)
+		writer.setObjectValue('angleminy', self.objAngleMinY)
+		writer.setObjectValue('angleminz', self.objAngleMinZ)
+		writer.setObjectValue('smoothness', self.objSmoothness)
 		writer.writeObjects(filename,timepoint)
 
 	def getGUI(self, parent, taskPanel):
@@ -193,18 +235,19 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
 			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
 			
-			if self.values:
-				n = len(self.values)
-				avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
-				ums = [x[1] for x in self.values]
-				sumums = sum(ums, 0.0)
-				avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
-				pxs = [x[0] for x in self.values]
-				avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
-				avgareaums, avgareaumsstd, avgareaumsstderr = lib.Math.meanstdeverr(self.objAreasUm)
-				sumareaums = sum(self.objAreasUm, 0.0)
+			if self.stats:
+				#n = len(self.values)
+				#avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
+				#ums = [x[1] for x in self.values]
+				#sumums = sum(ums, 0.0)
+				#avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
+				#pxs = [x[0] for x in self.values]
+				#avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
+				#avgareaums, avgareaumsstd, avgareaumsstderr = lib.Math.meanstdeverr(self.objAreasUm)
+				#sumareaums = sum(self.objAreasUm, 0.0)
 				
-				self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums, self.avgIntOutsideObjsNonZero, self.avgIntOutsideObjsNonZeroStdErr, self.avgIntInsideObjs, self.avgIntInsideObjsStdErr, self.avgRoundness, self.avgRoundnessStdErr, self.intSum])
+				#self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgareaums, avgareaumsstderr, avgints, avgintsstderr, self.avgIntOutsideObjs, self.avgIntOutsideObjsStdErr, self.distMean, self.distStdErr, sumums, sumareaums, self.avgIntOutsideObjsNonZero, self.avgIntOutsideObjsNonZeroStdErr, self.avgIntInsideObjs, self.avgIntInsideObjsStdErr, self.avgRoundness, self.avgRoundnessStdErr, self.intSum])
+				self.totalGUI.setStats(self.stats)
 				self.reportGUI.setVolumes(self.values)
 				self.reportGUI.setAreasUm(self.objAreasUm)
 				self.reportGUI.setCentersOfMass(self.centersofmass)
@@ -221,7 +264,6 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			sizer.AddSpacer((5,5))
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 		return gui
-
 
 	def onExportStatistics(self, evt):
 		"""
@@ -246,7 +288,6 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Export segmented object statistics")
 			cmd.run()
-
 		
 	def exportStatistics(self, filename):
 		"""
@@ -300,7 +341,16 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			labelITK.Update()
 		else:
 			labelITK = labelImage
+			dim = labelITK.GetLargestPossibleRegion().GetSize().GetSizeDimension()
 
+		diritk = dir(itk)
+		if "LabelImageToStatisticsLabelMapFilter" in diritk and "LabelMap" in diritk and "StatisticsLabelObject" and "LabelGeometryImageFilter" in diritk:
+			newITKStatistics = 1
+		else:
+			newITKStatistics = 0
+
+		# Initializations
+		spacing = self.dataUnit.getSpacing()
 		x, y, z = self.dataUnit.getVoxelSize()
 		x *= 1000000
 		y *= 1000000
@@ -319,6 +369,16 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		avgDistsStdErrs = []
 		objAreasUm = []
 		objRoundness = []
+		objMinorLength = []
+		objMajorLength = []
+		objElongation = []
+		objAngleMinX = []
+		objAngleMinY = []
+		objAngleMinZ = []
+		objAngleMajX = []
+		objAngleMajY = []
+		objAngleMajZ = []
+		objSmoothness = []
 
 		ignoreLargest = 1
 		currFilter = self
@@ -329,18 +389,47 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
+
+		if newITKStatistics: # Change spacing for correct results, or not
+			#changeInfoLabel = itk.ChangeInformationImageFilter[labelITK].New()
+			#changeInfoLabel.SetInput(labelITK)
+			#changeInfoLabel.ChangeSpacingOn()
+
+			#changeInfoOrig = itk.ChangeInformationImageFilter[origITK].New()
+			#changeInfoOrig.SetInput(origITK)
+			#changeInfoOrig.ChangeSpacingOn()
+
+			if dim == 3:
+				lm = itk.LabelMap._3.New()
+				#changeInfoLabel.SetOutputSpacing(voxelSizes)
+				#changeInfoOrig.SetOutputSpacing(voxelSizes)
+			else:
+				lm = itk.LabelMap._2.New()
+				#changeInfoLabel.SetOutputSpacing(voxelSizes[:2])
+				#changeInfoOrig.SetOutputSpacing(voxelSizes[:2])
+			
+			labelStatistics = itk.LabelImageToStatisticsLabelMapFilter[labelITK,origITK,lm].New()
+			#labelStatistics.SetInput1(changeInfoLabel.GetOutput())
+			#labelStatistics.SetInput2(changeInfoOrig.GetOutput())
+			labelStatistics.SetInput1(labelITK)
+			labelStatistics.SetInput2(origITK)
+			if self.parameters["Area"]:
+				labelStatistics.ComputePerimeterOn()
+			labelStatistics.Update()
+			labelMap = labelStatistics.GetOutput()
+			numberOfLabels = labelMap.GetNumberOfLabelObjects()
+		else:
+			labelShape = itk.LabelShapeImageFilter[labelITK].New()
+			labelShape.SetInput(labelITK)
+			data = labelShape.GetOutput()
+			data.Update()
+			numberOfLabels = labelShape.GetNumberOfLabels()
 		
-		labelShape = itk.LabelShapeImageFilter[labelITK].New()
-		labelShape.SetInput(labelITK)
-		data = labelShape.GetOutput()
-		data.Update()
-		numberOfLabels = labelShape.GetNumberOfLabels()
-		
-		if self.parameters["AvgInt"]:
-			avgintCalc = itk.LabelStatisticsImageFilter[origITK,labelITK].New()
-			avgintCalc.SetInput(origITK)
-			avgintCalc.SetLabelInput(labelITK)
-			avgintCalc.Update()
+			if self.parameters["AvgInt"]:
+				avgintCalc = itk.LabelStatisticsImageFilter[origITK,labelITK].New()
+				avgintCalc.SetInput(origITK)
+				avgintCalc.SetLabelInput(labelITK)
+				avgintCalc.Update()
 
 		# Area calculation pipeline
 		if self.parameters["Area"]:
@@ -360,37 +449,76 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				massProperties = vtk.vtkMassProperties()
 				massProperties.SetInput(marchingCubes.GetOutput())
 				areaDiv = (areaSpacing[0] / x)**2
+				
+				if self.parameters["Smoothness"]:
+					smoothDecimate = vtk.vtkDecimatePro()
+					smoothProperties = vtk.vtkMassProperties()
+					smoothDecimate.SetTargetReduction(0.9)
+					smoothDecimate.PreserveTopologyOff()
+					smoothDecimate.SetInput(marchingCubes.GetOutput())
+					smoothProperties.SetInput(smoothDecimate.GetOutput())
 
-		tott=0
+		# Filter needed for axes calculations
+		if self.parameters["Axes"] and newITKStatistics:
+			labelGeometry = itk.LabelGeometryImageFilter[labelITK,labelITK].New()
+			labelGeometry.SetCalculateOrientedBoundingBox(1)
+			labelGeometry.SetInput(labelITK)
+			labelGeometry.Update()
+
+		# Get results and do some calculations for each object
+		tott = 0
 		voxelSize = voxelSizes[0] * voxelSizes[1] * voxelSizes[2]
 		for i in range(startIntensity, numberOfLabels+1):
-			if not labelShape.HasLabel(i):
-				pass
-			else:
-				volume = labelShape.GetVolume(i)
-				centerOfMass = labelShape.GetCenterOfGravity(i)
-				avgInt = 0.0
-				avgIntStdErr = 0.0
-				areaInUm = 0.0
-				roundness = 0.0
-				objIntSum = 0.0
+			areaInUm = 0.0
+			avgInt = 0
+			avgIntStdErr = 0.0
+			roundness = 0.0
+			objIntSum = 0.0
+			minorLength = 0.0
+			majorLength = 0.0
+			elongation = 0.0
+			angleMinX = 0.0
+			angleMinY = 0.0
+			angleMinZ = 0.0
+			angleMajX = 0.0
+			angleMajY = 0.0
+			angleMajZ = 0.0
+			smoothness = 0.0
+			
+			if newITKStatistics:
+				try:
+					labelObj = labelMap.GetLabelObject(i)
+				except:
+					continue
+				volume = labelObj.GetSize()
+				#com = labelObj.GetCenterOfGravity()
+				com = labelObj.GetCentroid()
 				
-				if self.parameters["AvgInt"]:
-					avgInt = avgintCalc.GetMean(i)
-					avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
-					objIntSum = avgintCalc.GetSum(i)
 				c = []
 				c2 = []
-				for k in range(0, 3):
-					v = centerOfMass.GetElement(k)
+				for k in range(0,com.GetPointDimension()):
+					v = com[k]
+					v /= spacing[k]
 					c.append(v)
 					c2.append(v * voxelSizes[k])
+				if com.GetPointDimension() == 2:
+					c.append(0)
+					c2.append(0.0)
 
-				# Get area of object
+				if self.parameters["AvgInt"]:
+					avgInt = labelObj.GetMean()
+					avgIntStdErr = math.sqrt(labelObj.GetVariance()) / math.sqrt(volume)
+					objIntSum = avgInt * volume
+
+				#if self.parameters["Area"]:
+				#	areaInUm = labelObj.GetPerimeter()
+				#	roundness = labelObj.GetRoundness()
+
+				# Get area of object, copied old way because roundness is not
+				# working
 				if self.parameters["Area"]:
 					if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
 						objectThreshold.ThresholdBetween(i,i)
-						#marchingCubes.SetValue(0,i)
 						marchingCubes.SetValue(0,255)
 						polydata = marchingCubes.GetOutput()
 						polydata.Update()
@@ -399,24 +527,140 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 							areaInUm = massProperties.GetSurfaceArea() / areaDiv
 						else:
 							areaInUm = voxelArea
+
+						# Calculate roundness
+						hypersphereR = ((3*volume*vol)/(4*math.pi))**(1/3.0)
+						hypersphereArea = 3 * volume * vol / hypersphereR
+						roundness = hypersphereArea / areaInUm
+					
+						# Calculate surface smoothness
+						if self.parameters["Smoothness"]:
+							# Smooth surface with vtkDecimatePro.
+							polydata = smoothDecimate.GetOutput()
+							polydata.Update()
+							if polydata.GetNumberOfPolys() > 0:
+								smoothProperties.Update()
+								smoothArea = smoothProperties.GetSurfaceArea() / areaDiv
+								smoothness = smoothArea / areaInUm
 					else:
 						areaInUm = volume * x * y
 
-					# Calculate roundness
-					hypersphereR = ((3*volume*vol)/(4*math.pi))**(1/3.0)
-					hypersphereArea = 3 * volume * vol / hypersphereR
-					roundness = hypersphereArea / areaInUm
+				if self.parameters["Axes"]:
+					vert = labelGeometry.GetOrientedBoundingBoxVertices(i)
+					vertices = []
+					for vNum in range(vert.size()):
+						vertices.append(vert.pop())
+					
+					boxVect = []
+					if dim == 3:
+						vertNums = [1,2,4]
+					else:
+						vertNums = [1,2]
+					
+					for vertNum in vertNums:
+						vertex1 = vertices[0]
+						vertex2 = vertices[vertNum]
+						boxVect.append([abs(vertex2[dimN]-vertex1[dimN]) * voxelSizes[dimN] for dimN in range(dim)])
+
+					boxVectLen = []
+					minAxNum = -1
+					majAxNum = -1
+					minorLength = -1
+					majorLength = -1
+					for num,vect in enumerate(boxVect):
+						length = 0.0
+						for vectComp in vect:
+							length += vectComp**2
+						length = math.sqrt(length)
+						boxVectLen.append(length)
+						if length > majorLength:
+							majorLength = length
+							majAxNum = num
+						if length < minorLength or minorLength < 0:
+							minorLength = length
+							minAxNum = num
+
+					elongation = majorLength / minorLength
+
+					# Calculate angle between major, minor axes and x,y,z axes
+					for dimN in range(dim):
+						boxVect[minAxNum][dimN] /= minorLength
+						boxVect[majAxNum][dimN] /= majorLength
+					
+					vecX = (1.0, 0.0, 0.0)
+					vecY = (0.0, 1.0, 0.0)
+					vecZ = (0.0, 0.0, 1.0)
+
+					angleMinX = lib.Math.angle(boxVect[minAxNum], vecX)
+					angleMinY = lib.Math.angle(boxVect[minAxNum], vecY)
+					angleMinZ = lib.Math.angle(boxVect[minAxNum], vecZ)
+					angleMajX = lib.Math.angle(boxVect[majAxNum], vecX)
+					angleMajY = lib.Math.angle(boxVect[majAxNum], vecY)
+					angleMajZ = lib.Math.angle(boxVect[majAxNum], vecZ)
+						
+			else:
+				if not labelShape.HasLabel(i):
+					continue
+				else:
+					volume = labelShape.GetVolume(i)
+					centerOfMass = labelShape.GetCenterOfGravity(i)
 				
-				centersofmass.append(tuple(c))
-				umcentersofmass.append(tuple(c2))
-				values.append((volume, volume * vol))
-				avgints.append(avgInt)
-				avgintsstderrs.append(avgIntStdErr)
-				objIntSums.append(objIntSum)
-				objAreasUm.append(areaInUm)
-				objRoundness.append(roundness)
+					if self.parameters["AvgInt"]:
+						avgInt = avgintCalc.GetMean(i)
+						avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
+						objIntSum = avgintCalc.GetSum(i)
+					
+					c = []
+					c2 = []
+					for k in range(0, dim):
+						v = centerOfMass.GetElement(k)
+						c.append(v)
+						c2.append(v * voxelSizes[k])
+					if dim == 2:
+						c.append(0)
+						c2.append(0.0)
 
+				# Get area of object
+				if self.parameters["Area"]:
+					if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
+						objectThreshold.ThresholdBetween(i,i)
+						marchingCubes.SetValue(0,255)
+						polydata = marchingCubes.GetOutput()
+						polydata.Update()
+						if polydata.GetNumberOfPolys() > 0:
+							massProperties.Update()
+							areaInUm = massProperties.GetSurfaceArea() / areaDiv
+						else:
+							areaInUm = voxelArea
 
+						# Calculate roundness
+						hypersphereR = ((3*volume*vol)/(4*math.pi))**(1/3.0)
+						hypersphereArea = 3 * volume * vol / hypersphereR
+						roundness = hypersphereArea / areaInUm
+					else:
+						areaInUm = volume * x * y
+
+			# Add object results to result arrays
+			centersofmass.append(tuple(c))
+			umcentersofmass.append(tuple(c2))
+			values.append((volume, volume * vol))
+			avgints.append(avgInt)
+			avgintsstderrs.append(avgIntStdErr)
+			objIntSums.append(objIntSum)
+			objAreasUm.append(areaInUm)
+			objRoundness.append(roundness)
+			objMinorLength.append(minorLength)
+			objMajorLength.append(majorLength)
+			objElongation.append(elongation)
+			objAngleMinX.append(angleMinX)
+			objAngleMinY.append(angleMinY)
+			objAngleMinZ.append(angleMinZ)
+			objAngleMajX.append(angleMajX)
+			objAngleMajY.append(angleMajY)
+			objAngleMajZ.append(angleMajZ)
+			objSmoothness.append(smoothness)
+
+		# Do distance calculations
 		t0 = time.time()
 		for i, cm in enumerate(umcentersofmass):
 			distList = []
@@ -433,30 +677,31 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			avgDistsStdErrs.append(avgDistStdErr)
 		print "Distance calculations took", time.time()-t0
 		
-		self.values = values
-		self.centersofmass = centersofmass
-		self.umcentersofmass = umcentersofmass
-		self.avgIntList = avgints
-		self.avgIntStdErrList = avgintsstderrs
-		self.intSums = objIntSums
-		self.avgDistList = avgDists
-		self.avgDistStdErrList = avgDistsStdErrs
-		self.objAreasUm = objAreasUm
-		self.objRoundness = objRoundness
-
-		n = len(self.values)
-		avgints, avgintsstd, avgintsstderr = lib.Math.meanstdeverr(self.avgIntList)
-		intSum = sum(self.intSums, 0.0)
+		# Calculate average values and errors
+		n = len(values)
+		avgint, avgintstd, avgintstderr = lib.Math.meanstdeverr(avgints)
+		intSum = sum(objIntSums, 0.0)
 		ums = [x[1] for x in values]
 		avgums, avgumsstd, avgumsstderr = lib.Math.meanstdeverr(ums)
 		sumums = sum(ums, 0.0)
 		pxs = [x[0] for x in values]
 		avgpxs, avgpxsstd, avgpxsstderr = lib.Math.meanstdeverr(pxs)
-		distMean, distStd, distStdErr = lib.Math.meanstdeverr(self.avgDistList)
-		avground, avgroundstd, avgroundstderr = lib.Math.meanstdeverr(self.objRoundness)
+		distMean, distStd, distStdErr = lib.Math.meanstdeverr(avgDists)
+		avground, avgroundstd, avgroundstderr = lib.Math.meanstdeverr(objRoundness)
 		avgAreaUm, avgAreaUmStd, avgAreaUmStdErr = lib.Math.meanstdeverr(objAreasUm)
 		areaSumUm = sum(objAreasUm, 0.0)
+		avgminlen, avgminlenstd, avgminlenstderr = lib.Math.meanstdeverr(objMinorLength)
+		avgmajlen, avgmajlenstd, avgmajlenstderr = lib.Math.meanstdeverr(objMajorLength)
+		avgelon, avgelonstd, avgelonstderr = lib.Math.meanstdeverr(objElongation)
+		avgangminx, avgangminxstd, avgangminxstderr = lib.Math.meanstdeverr(objAngleMinX)
+		avgangminy, avgangminystd, avgangminystderr = lib.Math.meanstdeverr(objAngleMinY)
+		avgangminz, avgangminzstd, avgangminzstderr = lib.Math.meanstdeverr(objAngleMinZ)
+		avgangmajx, avgangmajxstd, avgangmajxstderr = lib.Math.meanstdeverr(objAngleMajX)
+		avgangmajy, avgangmajystd, avgangmajystderr = lib.Math.meanstdeverr(objAngleMajY)
+		avgangmajz, avgangmajzstd, avgangmajzstderr = lib.Math.meanstdeverr(objAngleMajZ)
+		avgsmooth, avgsmoothstd, avgsmoothstderr = lib.Math.meanstdeverr(objSmoothness)
 
+		# Calculate average intensity outside objects
 		avgIntOutsideObjs = 0.0
 		avgIntOutsideObjsStdErr = 0.0
 		avgIntOutsideObjsNonZero = 0.0
@@ -467,11 +712,21 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			variances = 0.0
 			allVoxels = 0
 			for i in range(0,startIntensity):
-				if labelShape.HasLabel(i):
-					voxelAmount = labelShape.GetVolume(i)
-					allVoxels += voxelAmount
-					avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
-					variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+				if newITKStatistics:
+					try:
+						labelObj = labelMap.GetLabelObject(i)
+						voxelAmount = labelObj.GetSize()
+						allVoxels += voxelAmount
+						avgIntOutsideObjs += labelObj.GetMean() * voxelAmount
+						variances += voxelAmount * abs(labelObj.GetVariance())
+					except:
+						pass
+				else:
+					if labelShape.HasLabel(i):
+						voxelAmount = labelShape.GetVolume(i)
+						allVoxels += voxelAmount
+						avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
+						variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 
 			if allVoxels > 0:
 				avgIntOutsideObjs /= allVoxels
@@ -489,23 +744,34 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			# Get also non zero voxels here that there is no need to recalculate
 			nonZeroVoxels = labelAverage.GetNonZeroVoxels()
 			
-		
+		# Calculate average intensity inside objects
 		avgIntInsideObjs = 0.0
 		avgIntInsideObjsStdErr = 0.0
 		if self.parameters["AvgInt"]:
 			variances = 0.0
 			allVoxels = 0
 			for i in range(startIntensity, numberOfLabels):
-				if labelShape.HasLabel(i):
-					voxelAmount = labelShape.GetVolume(i)
-					allVoxels += voxelAmount
-					avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
-					variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+				if newITKStatistics:
+					try:
+						labelObj = labelMap.GetLabelObject(i)
+						voxelAmount = labelObj.GetSize()
+						allVoxels += voxelAmount
+						avgIntInsideObjs += labelObj.GetMean() * voxelAmount
+						variances += voxelAmount * abs(labelObj.GetVariance())
+					except:
+						pass
+				else:
+					if labelShape.HasLabel(i):
+						voxelAmount = labelShape.GetVolume(i)
+						allVoxels += voxelAmount
+						avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
+						variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 
 			if allVoxels > 0:
 				avgIntInsideObjs /= allVoxels
 				avgIntInsideObjsStdErr = math.sqrt(variances / allVoxels) / math.sqrt(allVoxels)
 
+		# Calculate non-zero voxels
 		if self.parameters["NonZero"] and nonZeroVoxels < 0:
 			labelShape = itk.LabelShapeImageFilter[origITK].New()
 			labelShape.SetInput(origITK)
@@ -513,18 +779,39 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			for i in range(1, int(origRange[1]) + 1):
 				if labelShape.HasLabel(i):
 					nonZeroVoxels += labelShape.GetVolume(i)
-		
-		self.avgIntInsideObjs = avgIntInsideObjs
-		self.avgIntInsideObjsStdErr = avgIntInsideObjsStdErr
-		self.avgIntOutsideObjs = avgIntOutsideObjs
-		self.avgIntOutsideObjsStdErr = avgIntOutsideObjsStdErr
-		self.avgIntOutsideObjsNonZero = avgIntOutsideObjsNonZero
-		self.avgIntOutsideObjsNonZeroStdErr = avgIntOutsideObjsNonZeroStdErr
-		self.distMean = distMean
-		self.distStdErr = distStdErr
-		self.avgRoundness = avground
-		self.avgRoundnessStdErr = avgroundstderr
+
+		# Set results
+		self.values = values
+		self.centersofmass = centersofmass
+		self.umcentersofmass = umcentersofmass
+		self.avgIntList = avgints
+		self.avgIntStdErrList = avgintsstderrs
+		self.intSums = objIntSums
+		self.avgDistList = avgDists
+		self.avgDistStdErrList = avgDistsStdErrs
+		self.objAreasUm = objAreasUm
+		self.objRoundness = objRoundness
+		self.objMinorLength = objMinorLength
+		self.objMajorLength = objMajorLength
+		self.objElongation = objElongation
+		self.objAngleMinX = objAngleMinX
+		self.objAngleMinY = objAngleMinY
+		self.objAngleMinZ = objAngleMinZ
+		self.objAngleMajX = objAngleMajX
+		self.objAngleMajY = objAngleMajY
+		self.objAngleMajZ = objAngleMajZ
 		self.intSum = intSum
+		self.objSmoothness = objSmoothness
+		#self.distMean = distMean
+		#self.distStdErr = distStdErr
+		#self.avgRoundness = avground
+		#self.avgRoundnessStdErr = avgroundstderr
+		#self.avgIntInsideObjs = avgIntInsideObjs
+		#self.avgIntInsideObjsStdErr = avgIntInsideObjsStdErr
+		#self.avgIntOutsideObjs = avgIntOutsideObjs
+		#self.avgIntOutsideObjsStdErr = avgIntOutsideObjsStdErr
+		#self.avgIntOutsideObjsNonZero = avgIntOutsideObjsNonZero
+		#self.avgIntOutsideObjsNonZeroStdErr = avgIntOutsideObjsNonZeroStdErr
 
 		self.setResultVariable("NumberOfObjects",len(values))
 		self.setResultVariable("ObjAvgVolInVoxels",avgpxs)
@@ -532,7 +819,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setResultVariable("ObjVolSumInUm",sumums)
 		self.setResultVariable("ObjAvgAreaInUm",avgAreaUm)
 		self.setResultVariable("ObjAreaSumInUm",areaSumUm)
-		self.setResultVariable("ObjAvgIntensity",avgints)
+		self.setResultVariable("ObjAvgIntensity",avgint)
 		self.setResultVariable("AvgIntOutsideObjs", avgIntOutsideObjs)
 		self.setResultVariable("AvgIntOutsideObjsNonZero", avgIntOutsideObjsNonZero)
 		self.setResultVariable("AvgIntInsideObjs", avgIntInsideObjs)
@@ -542,23 +829,51 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.setResultVariable("ObjAvgVolInVoxelsStdErr",avgpxsstderr)
 		self.setResultVariable("ObjAvgVolInUmStdErr",avgumsstderr)
 		self.setResultVariable("ObjAvgAreaInUmStdErr",avgAreaUmStdErr)
-		self.setResultVariable("ObjAvgIntensityStdErr",avgintsstderr)
+		self.setResultVariable("ObjAvgIntensityStdErr",avgintstderr)
 		self.setResultVariable("AvgIntOutsideObjsStdErr",avgIntOutsideObjsStdErr)
 		self.setResultVariable("AvgIntOutsideObjsNonZeroStdErr",avgIntOutsideObjsNonZeroStdErr)
 		self.setResultVariable("AvgIntInsideObjsStdErr",avgIntInsideObjsStdErr)
 		self.setResultVariable("ObjIntensitySum", intSum)
 		self.setResultVariable("ObjAvgRoundness",avground)
 		self.setResultVariable("ObjAvgRoundnessStdErr",avgroundstderr)
+		self.setResultVariable("ObjAvgMajorAxisLen",avgmajlen)
+		self.setResultVariable("ObjAvgMajorAxisLenStdErr",avgmajlenstderr)
+		self.setResultVariable("ObjAvgMinorAxisLen",avgminlen)
+		self.setResultVariable("ObjAvgMinorAxisLenStdErr",avgminlenstderr)
+		self.setResultVariable("ObjAvgElongation",avgelon)
+		self.setResultVariable("ObjAvgElongationStdErr",avgelonstderr)
+		self.setResultVariable("ObjAvgAngleXMajorAxis",avgangmajx)
+		self.setResultVariable("ObjAvgAngleXMajorAxisStdErr",avgangmajxstderr)
+		self.setResultVariable("ObjAvgAngleYMajorAxis",avgangmajy)
+		self.setResultVariable("ObjAvgAngleYMajorAxisStdErr",avgangmajystderr)
+		self.setResultVariable("ObjAvgAngleZMajorAxis",avgangmajz)
+		self.setResultVariable("ObjAvgAngleZMajorAxisStdErr",avgangmajzstderr)
+		self.setResultVariable("ObjAvgAngleXMinorAxis",avgangminx)
+		self.setResultVariable("ObjAvgAngleXMinorAxisStdErr",avgangminxstderr)
+		self.setResultVariable("ObjAvgAngleYMinorAxis",avgangminy)
+		self.setResultVariable("ObjAvgAngleYMinorAxisStdErr",avgangminystderr)
+		self.setResultVariable("ObjAvgAngleZMinorAxis",avgangminz)
+		self.setResultVariable("ObjAvgAngleZMinorAxisStdErr",avgangminzstderr)
+		self.setResultVariable("ObjAvgSmoothness",avgsmooth)
+		self.setResultVariable("ObjAvgSmoothnessStdErr",avgsmoothstderr)
+
+		self.stats = [n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgint, avgintstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm, avgIntOutsideObjsNonZero, avgIntOutsideObjsNonZeroStdErr, avgIntInsideObjs, avgIntInsideObjsStdErr, nonZeroVoxels, avground, avgroundstderr, intSum, avgmajlen, avgmajlenstderr, avgminlen, avgminlenstderr, avgelon, avgelonstderr, avgangmajx, avgangmajxstderr, avgangmajy, avgangmajystderr, avgangmajz, avgangmajzstderr, avgangminx, avgangminxstderr, avgangminy, avgangminystderr, avgangminz, avgangminzstderr, avgsmooth, avgsmoothstderr]
 		
 		if self.reportGUI:
 			self.reportGUI.DeleteAllItems()
 			self.reportGUI.setVolumes(values)
 			self.reportGUI.setCentersOfMass(centersofmass)
-			self.reportGUI.setAverageIntensities(self.avgIntList, self.avgIntStdErrList)
-			self.reportGUI.setIntensitySums(self.intSums)
-			self.reportGUI.setAverageDistances(self.avgDistList, self.avgDistStdErrList)
+			self.reportGUI.setAverageIntensities(avgints, avgintsstderrs)
+			self.reportGUI.setIntensitySums(objIntSums)
+			self.reportGUI.setAverageDistances(avgDists, avgDistsStdErrs)
 			self.reportGUI.setAreasUm(objAreasUm)
 			self.reportGUI.setRoundness(objRoundness)
-			self.totalGUI.setStats([n, avgums, avgumsstderr, avgpxs, avgpxsstderr, avgAreaUm, avgAreaUmStdErr, avgints, avgintsstderr, avgIntOutsideObjs, avgIntOutsideObjsStdErr, distMean, distStdErr, sumums, areaSumUm, avgIntOutsideObjsNonZero, avgIntOutsideObjsNonZeroStdErr, avgIntInsideObjs, avgIntInsideObjsStdErr, nonZeroVoxels, avground, avgroundstderr, intSum])
-			
+			self.reportGUI.setMajorAxisLengths(objMajorLength)
+			self.reportGUI.setMinorAxisLengths(objMinorLength)
+			self.reportGUI.setElongations(objElongation)
+			self.reportGUI.setMajorAngles(objAngleMajX, objAngleMajY, objAngleMajZ)
+			self.reportGUI.setMinorAngles(objAngleMinX, objAngleMinY, objAngleMinZ)
+			self.reportGUI.setSmoothness(objSmoothness)
+			self.totalGUI.setStats(self.stats)
+
 		return self.getInput(1)
