@@ -210,7 +210,7 @@ class MainWindow(wx.Frame):
 		self.taskWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.taskWin.SetAlignment(wx.LAYOUT_RIGHT)
 		self.taskWin.SetSashVisible(wx.SASH_LEFT, True)
-		self.taskWin.SetSashBorder(wx.SASH_LEFT, True)
+		#self.taskWin.SetSashBorder(wx.SASH_LEFT, True)
 		self.taskWin.SetDefaultSize((0, 768))
 		self.taskWin.origSize = (360, 768)
 		conf = Configuration.getConfiguration()

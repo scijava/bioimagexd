@@ -206,7 +206,7 @@ class PreviewFrame(InteractivePanel):
 		
 		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
 		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
-		dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
+		dc.SetBrush(wx.Brush(wx.Colour(*self.bgcolor)))
 
 		dc.DrawRectangle(0,0,newX,newY)
 		dc.EndDrawing()
@@ -651,7 +651,7 @@ class PreviewFrame(InteractivePanel):
 		
 		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
 		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
-		dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
+		dc.SetBrush(wx.Brush(wx.Colour(*self.bgcolor)))
 		x0, y0 = 0, 0
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		

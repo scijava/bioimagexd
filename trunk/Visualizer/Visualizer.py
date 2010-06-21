@@ -132,7 +132,7 @@ class Visualizer:
 		self.sidebarWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.sidebarWin.SetAlignment(wx.LAYOUT_LEFT)
 		self.sidebarWin.SetSashVisible(wx.SASH_RIGHT, True)
-		self.sidebarWin.SetSashBorder(wx.SASH_RIGHT, True)
+		#self.sidebarWin.SetSashBorder(wx.SASH_RIGHT, True)
 		self.sidebarWin.SetDefaultSize((200, 768))
 		self.sidebarWin.origSize = (200, 768)
 
