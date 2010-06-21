@@ -426,7 +426,7 @@ class GalleryPanel(InteractivePanel):
 		dc.BeginDrawing()
 		dc.SetBackground(wx.Brush(wx.Colour(*self.bgcolor)))
 		dc.SetPen(wx.Pen(wx.Colour(*self.bgcolor), 0))
-		dc.SetBrush(wx.Brush(wx.Color(*self.bgcolor)))
+		dc.SetBrush(wx.Brush(wx.Colour(*self.bgcolor)))
 		w, h = self.buffer.GetWidth(), self.buffer.GetHeight()
 		#dc.DrawRectangle(0,0,self.paintSize[0],self.paintSize[1])
 		xs, ys, x1, y1 = self.GetClientRect()

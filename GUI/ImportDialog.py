@@ -695,7 +695,7 @@ enter the information below.""")
 					 based on the filenames given. The selection is done based on the image dimensions and file names
 		"""
 		r = re.compile("[0-9]+")
-		pattern = r.sub("[0-9]+",filenames[0])
+		pattern = r.sub("[0-9]+",re.escape(filenames[0]))
 		r = re.compile(pattern)
 		for filename in filenames:
 			if not r.match(filename):
