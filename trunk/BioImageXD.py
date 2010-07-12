@@ -48,8 +48,8 @@ if platform.system() == "Linux":
 		curdir = os.path.abspath(os.path.curdir)
 
 	if os.path.exists(curdir + "/VTK") and os.path.exists(curdir + "/ITK"):
-		sys.path.append(curdir + '/VTK/lib/python2.5/site-packages/vtk')
-		sys.path.append(curdir + '/VTK/lib/python2.5/site-packages')
+		sys.path.append(curdir + '/VTK/lib/python2.6/site-packages/VTK-5.6.0-py2.6.egg')
+		sys.path.append(curdir + '/VTK/lib/python2.6/site-packages')
 		sys.path.append(curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
 
 

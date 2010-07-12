@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
- Unit: AnalyzePolydata
+ Unit: CountLabels.py
  Project: BioImageXD
  Description:
 
@@ -44,7 +44,6 @@ import vtkbxd
 import math
 import codecs
 import csv
-
 import lib.Math
 
 class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):

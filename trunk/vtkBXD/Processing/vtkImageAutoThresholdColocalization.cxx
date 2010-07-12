@@ -147,14 +147,11 @@ template <class T> void calculateThreshold
     double tolerance = 0.01;        
     double ch1threshmax = 0, ch2threshmax = 0;
     vtkIdType inIncX, inIncY, inIncZ;
-    
-    
     vtkIdType maxX, maxY, maxZ;
     vtkIdType idxX, idxY, idxZ;
     
     T* inPtr1, *inPtr2;
     char progressText[200];
-    
     
     *ch1BestThresh = 0;
     inData[0]->GetScalarRange(range);
@@ -229,15 +226,11 @@ template <class T> void calculateThreshold
                             Nzero++;
                         //calc pearsons
                         sumX = sumX + ch1;
-                        sumXY =
-                            sumXY + (ch1 * ch2);
-                        sumXX =
-                            sumXX + (ch1 * ch1);
-                        sumYY =
-                            sumYY + (ch2 * ch2);
+                        sumXY = sumXY + (ch1 * ch2);
+                        sumXX = sumXX + (ch1 * ch1);
+                        sumYY = sumYY + (ch2 * ch2);
                         sumY = sumY + ch2;
                         N++;
-
                     }
                     inPtr1 += inIncY;
                     inPtr2 += inIncY;
@@ -246,7 +239,6 @@ template <class T> void calculateThreshold
                 inPtr2 += inIncZ;
             }
         }
-
 
         if (!self->GetIncludeZeroPixels())
             N = N - Nzero;
@@ -571,7 +563,7 @@ template < class T >
     self->SetIntercept(b);
 
     calculate_pearson(&pearsons1, &pearsons2, &pearsons3,
-    sumX, sumY, sumXX,sumYY,sumXY,N);   
+    sumX, sumY, sumXX,sumYY,sumXY,Ncoloc);   
 
     //Pearsons for colocalised volume
     double Rcoloc = pearsons1 / (sqrt(pearsons2 * pearsons3));
