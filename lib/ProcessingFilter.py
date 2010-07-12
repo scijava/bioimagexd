@@ -717,7 +717,7 @@ class ProcessingFilter:
 			# Only retrieve variables from enabled filters
 			if currentFilter.getEnabled():
 				value = currentFilter.getResultVariable(variable)
-				if value:
+				if value is not None:
 					return value
 			currentFilter = currentFilter.prevFilter
 		return None
@@ -842,3 +842,63 @@ class ProcessingFilter:
 			type = "D"
 
 		return (type,dim)
+
+	def splitITKImageIntoSlices(self, image = None, true2D = False):
+		"""
+		Split ITK image to slices and return as list of slices
+		"""
+		if image is None:
+			return None
+		
+		imageType = self.getITKImageType(image)
+		size = image.GetLargestPossibleRegion().GetSize()
+		extractRegion = itk.ImageRegion._3()
+		extractSize = itk.Size._3()
+		extractIndex = itk.Index._3()
+		for i in range(3):
+			extractSize[i] = size[i]
+			extractIndex[i] = 0
+		if true2D:
+			extractSize[2] = 0
+			dim = 2
+		else:
+			extractSize[2] = 1
+			dim = 3
+
+		sliceType = eval("itk.Image.%s%d"%(imageType[0],dim))
+		slices = []
+		for z in range(0, size[2]):
+			extractRegion.SetSize(extractSize)
+			extractIndex[2] = z
+			extractRegion.SetIndex(extractIndex)
+			if dim == 3:
+				crop = itk.RegionOfInterestImageFilter[sliceType,sliceType].New()
+				crop.SetRegionOfInterest(extractRegion)
+			else:
+				crop = itk.ExtractImageFilter[image,sliceType].New()
+				crop.SetExtractionRegion(extractRegion)
+			crop.SetInput(image)
+			crop.Update()
+			imgSlice = crop.GetOutput()
+			imgSlice.DisconnectPipeline()
+			slices.append(imgSlice)
+
+		return slices
+
+	def pasteITKImageSlice(self, origImage, translatedImage, sliceIndex):
+		"""
+		Paste single slice into ITK 3D image stack
+		"""
+		destIndex = itk.Index._3()
+		destIndex[0] = 0
+		destIndex[1] = 0
+		destIndex[2] = sliceIndex
+		paste = itk.PasteImageFilter[origImage].New()
+		paste.SetDestinationImage(origImage)
+		paste.SetSourceImage(translatedImage)
+		paste.SetSourceRegion(translatedImage.GetLargestPossibleRegion())
+		paste.SetDestinationIndex(destIndex)
+		paste.Update()
+		origImage = paste.GetOutput()
+		origImage.DisconnectPipeline()
+		return origImage

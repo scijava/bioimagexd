@@ -50,7 +50,6 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.setInputChannel(i, i)
 		self.colocAutoThreshold = vtkbxd.vtkImageAutoThresholdColocalization()
 		self.colocAutoThreshold.SetCalculateThreshold(1)
-		self.done = False
 		self.colocAutoThreshold.GetOutput().ReleaseDataFlagOn()
 		self.colocAutoThreshold.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.colocAutoThreshold, "ProgressEvent", self.updateProgress)
@@ -92,7 +91,6 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Set the dataunit that is the input of this filter
 		"""
-		self.done = False
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		
 	def getType(self, parameter):
@@ -116,35 +114,29 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 		images = [self.getInput(x) for x in range(1,3)]
 		self.eventDesc="Calculating colocalization thresholds"
-		
 		self.colocAutoThreshold.RemoveAllInputs()
 
-		if not self.done:
-			self.done = True
-			images[0].SetUpdateExtent(images[0].GetWholeExtent())
-			images[1].SetUpdateExtent(images[1].GetWholeExtent())
-			images[0].Update()
-			images[1].Update()
-			maxval = int(max([x.GetScalarRange()[1] for x in images]))
-			Logging.info("Maximum value = %d"%maxval, kw="processing") 
+		images[0].SetUpdateExtent(images[0].GetWholeExtent())
+		images[1].SetUpdateExtent(images[1].GetWholeExtent())
+		images[0].Update()
+		images[1].Update()
+		maxval = int(max([x.GetScalarRange()[1] for x in images]))
+		Logging.info("Maximum value = %d"%maxval, kw="processing") 
 		
-			self.colocAutoThreshold.AddInput(images[0])
-			self.colocAutoThreshold.AddInput(images[1])
-			
-				
-			self.colocAutoThreshold.SetUpperThresholdCh1(maxval)
-			self.colocAutoThreshold.SetUpperThresholdCh2(maxval)
-			self.colocAutoThreshold.Update()
-			slope = self.colocAutoThreshold.GetSlope()
-			intercept = self.colocAutoThreshold.GetIntercept()
-			ch1th = self.colocAutoThreshold.GetCh1ThresholdMax()
-			ch2th = self.colocAutoThreshold.GetCh2ThresholdMax()
-			self.setResultVariable("Slope", slope)
-			self.setResultVariable("Intercept", intercept)
-			self.setResultVariable("Ch1ThresholdMax", int(ch1th))
-			self.setResultVariable("Ch2ThresholdMax", int(ch2th))
-		else:
-			Logging.info("Automated threshold already calculated")
+		self.colocAutoThreshold.AddInput(images[0])
+		self.colocAutoThreshold.AddInput(images[1])
+					
+		self.colocAutoThreshold.SetUpperThresholdCh1(maxval)
+		self.colocAutoThreshold.SetUpperThresholdCh2(maxval)
+		self.colocAutoThreshold.Update()
+		slope = self.colocAutoThreshold.GetSlope()
+		intercept = self.colocAutoThreshold.GetIntercept()
+		ch1th = self.colocAutoThreshold.GetCh1ThresholdMax()
+		ch2th = self.colocAutoThreshold.GetCh2ThresholdMax()
+		self.setResultVariable("Slope", slope)
+		self.setResultVariable("Intercept", intercept)
+		self.setResultVariable("Ch1ThresholdMax", int(ch1th))
+		self.setResultVariable("Ch2ThresholdMax", int(ch2th))
 			
 		Logging.info("Auto threshold ch1 = %d, ch2 = %d"%(self.getResultVariable("Ch1ThresholdMax"),self.getResultVariable("Ch2ThresholdMax")))
 		return self.getInput(1)

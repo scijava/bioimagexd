@@ -131,8 +131,8 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		if dataUnit:
 			sourceDataUnits = dataUnit.getSourceDataUnits()
 			if sourceDataUnits:
-				min, self.defaultUpper = sourceDataUnits[0].getScalarRange()
-				self.defaultLower = (self.defaultUpper + min) / 2
+				minV, self.defaultUpper = sourceDataUnits[0].getScalarRange()
+				self.defaultLower = (self.defaultUpper + minV) / 2
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		
 
@@ -143,9 +143,9 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.origCtf:
 			self.dataUnit.getSettings().set("ColorTransferFunction", self.origCtf)
 			
-	def setInputChannel(self, inputNum,n):
+	def setInputChannel(self, inputNum, n):
 		"""
-		
+		Set input channel and update threshold histogram
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
 

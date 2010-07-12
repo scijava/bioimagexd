@@ -274,7 +274,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
-		
+
 		images = [self.getInput(x) for x in range(1,3)]
 		self.eventDesc="Calculating colocalization"
 		self.colocFilter.RemoveAllInputs()
