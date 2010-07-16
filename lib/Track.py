@@ -146,7 +146,7 @@ class Track:
 		"""
 		frontPoints = []
 		for tp in range(self.mintp, self.maxtp + 1):
-			frontPoints.append(self.fronts[tp])
+			frontPoints.append(self.getFrontCoordinatesAtTime(tp))
 
 		return frontPoints
 
@@ -166,7 +166,7 @@ class Track:
 		"""
 		rearPoints = []
 		for tp in range(self.mintp, self.maxtp + 1):
-			rearPoints.append(self.rears[tp])
+			rearPoints.append(self.getRearCoordinatesAtTime(tp))
 
 		return rearPoints
 

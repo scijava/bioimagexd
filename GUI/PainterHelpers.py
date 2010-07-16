@@ -33,6 +33,7 @@ import scripting
 import lib.messenger
 import math
 import wx
+import GUI
 
 def registerHelpers(interactivePanel):
 	"""
@@ -199,8 +200,10 @@ class AnnotationHelper(PainterHelper):
 		"""
 		Paint the annotations on a DC
 		"""
-		self.parent.diagram.Redraw(dc)
-		
+		polygons = filter(lambda x:isinstance(x, GUI.OGLAnnotations.MyPolygon), self.parent.diagram.GetShapeList())
+		for polygon in polygons:
+			polygon.Show(0 if polygon.sliceNumber != scripting.visualizer.zslider.GetValue() else 1)
+		self.parent.diagram.Redraw(dc)	
 		
 	def setParent(self, parent):
 		"""

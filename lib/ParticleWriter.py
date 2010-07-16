@@ -99,6 +99,7 @@ class ParticleWriter:
 	def writeObjects(self, filename, timepoint):
 		"""
 		Write analyzed objects
+		TODO: Change that it only writes what is defined
 		"""
 		f = codecs.open(filename, "ab", "latin1")
 		Logging.info("Saving statistics to file %s"%filename, kw="processing")
@@ -108,7 +109,7 @@ class ParticleWriter:
 		w.writerow(["Object #", "Volume (micrometers)", "Volume (voxels)", "Center of Mass X", \
 					"Center of Mass Y", "Center of Mass Z", "Center of Mass X (micrometers)", \
 					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)", "Roundness", "Intensity sum", "Major axis length (micrometers)", "Minor axis length (micrometers)", "Elongation", "Angle between major and X axes", "Angle between major and Y axes", "Angle between major and Z axes", "Angle between minor and X axes", "Angle between minor and Y axes", "Angle between minor and Z axes", "Smoothness"])
-		
+
 		for i, volume in enumerate(self.objects['volume']):
 			volumeum = self.objects['volumeum'][i]
 			cog = self.objects['centerofmass'][i]
@@ -118,18 +119,54 @@ class ParticleWriter:
 			avgdist = self.objects['avgdist'][i]
 			avgdiststderr = self.objects['avgdiststderr'][i]
 			areaUm = self.objects['areaum'][i]
-			roundness = self.objects['roundness'][i]
-			intSum = self.objects['intsum'][i]
-			majorLen = self.objects['majorlen'][i]
-			minorLen = self.objects['minorlen'][i]
-			elongation = self.objects['elongation'][i]
-			angleMajX = self.objects['anglemajx'][i]
-			angleMajY = self.objects['anglemajy'][i]
-			angleMajZ = self.objects['anglemajz'][i]
-			angleMinX = self.objects['angleminx'][i]
-			angleMinY = self.objects['angleminy'][i]
-			angleMinZ = self.objects['angleminz'][i]
-			smoothness = self.objects['smoothness'][i]
+			try:
+				roundness = self.objects.get('roundness')[i]
+			except:
+				roundness = 0.0
+			try:
+				intSum = self.objects['intsum'][i]
+			except:
+				intSum = 0
+			try:
+				majorLen = self.objects['majorlen'][i]
+			except:
+				majorLen = 0.0
+			try:
+				minorLen = self.objects['minorlen'][i]
+			except:
+				minorLen = 0.0
+			try:
+				elongation = self.objects['elongation'][i]
+			except:
+				elongation = 0.0
+			try:
+				angleMajX = self.objects['anglemajx'][i]
+			except:
+				angleMajX = 0.0
+			try:
+				angleMajY = self.objects['anglemajy'][i]
+			except:
+				angleMajY = 0.0
+			try:
+				angleMajZ = self.objects['anglemajz'][i]
+			except:
+				angleMajZ = 0.0
+			try:
+				angleMinX = self.objects['angleminx'][i]
+			except:
+				angleMinX = 0.0
+			try:
+				angleMinY = self.objects['angleminy'][i]
+			except:
+				angleMinY = 0.0
+			try:
+				angleMinZ = self.objects['angleminz'][i]
+			except:
+				angleMinZ = 0.0
+			try:
+				smoothness = self.objects['smoothness'][i]
+			except:
+				smoothness = 0.0
 			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm), str(roundness), str(intSum), str(majorLen), str(minorLen), str(elongation), str(angleMajX), str(angleMajY), str(angleMajZ), str(angleMinX), str(angleMinY), str(angleMinZ), str(smoothness)])
 		
 		f.close()

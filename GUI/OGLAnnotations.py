@@ -769,7 +769,7 @@ class MyCircle(OGLAnnotation, ogl.CircleShape):
 class MyPolygon(OGLAnnotation, ogl.PolygonShape):	 
 
 	AnnotationType = "FINISHED_POLYGON"
-	def __init__(self, zoomFactor = 1.0):
+	def __init__(self, zoomFactor = 1.0, sliceNumber = -1, parent = None):
 		"""
 		Initialization
 		"""
@@ -777,13 +777,16 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		OGLAnnotation.__init__(self)
 		ogl.PolygonShape.__init__(self)
 		self.scaleFactor = zoomFactor
+		self.sliceNumber = sliceNumber
+		self.parent = parent
 		self._isROI = 1
 		global count
 		if not self.__class__ in count:
 			count[self.__class__] = 1
-		self.name = "Polygon #%d" % count[self.__class__]
+		else:
+			count[self.__class__] += 1
+		self.name = "Polygon #%d" % count[self.__class__] if not self.parent else "3D Polygon #%d.%d" % (self.parent.GetCount(), self.sliceNumber)
 		self.setName(self.name)
-		count[self.__class__] += 1
 
 	def OnDraw(self, dc):
 		"""
@@ -989,7 +992,32 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 			self.GetEventHandler().OnDraw(dc, self.GetX(), self.GetY())
 			
 		dc.DrawBitmap(self.GetCanvas().buffer, x0, y0)
-		self.UpdateOriginalPoints() 
+		self.UpdateOriginalPoints()
+
+class My3DPolygon():
+	"""
+	"""
+	AnnotationType = "3D_POLYGON"
+	def __init__(self, polygons = []):
+		"""
+		Initialization
+		"""
+		self.polygons = polygons
+		global count
+		if not self.__class__ in count:
+			count[self.__class__] = 1
+		else:
+			count[self.__class__] += 1
+
+	def GetCount(self):
+		return count[self.__class__]
+
+	def AddPolygon(self, polygon):
+		self.polygons.append(polygon)
+
+	def GetPolygons(self):
+		return self.polygons
+
 	 
 class MyPolygonControlPoint(ogl.PolygonControlPoint):
 

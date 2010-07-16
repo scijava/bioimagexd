@@ -54,7 +54,7 @@ class AnnotationToolbar(wx.Window):
 		self.annotateColor = (0, 255, 0)
 		self.interactor = None
 		
-		self.sizer = wx.GridBagSizer(2, 2)
+		self.sizer = wx.GridBagSizer(3, 2)
 		self.SetSizer(self.sizer)
 		self.eventRecorder = vtk.vtkInteractorEventRecorder()
 		self.SetAutoLayout(1)
@@ -104,6 +104,9 @@ class AnnotationToolbar(wx.Window):
 		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "scale.gif", "Draw a scale bar on the image")
 		self.sizer.Add(self.scaleBtn, (1, 1))
 
+		self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.gif", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
+ 		self.sizer.Add(self.threeDPolygonBtn, (2, 0))
+
 		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		#self.sizer.Add(self.textBtn, (2, 0))
 
@@ -113,7 +116,7 @@ class AnnotationToolbar(wx.Window):
 		self.deleteAnnotationBtn.SetBestSize((32,32))
 		self.deleteAnnotationBtn.SetToolTipString("Delete an annotation")
 		
-		self.sizer.Add(self.deleteAnnotationBtn, (2, 0))   
+		self.sizer.Add(self.deleteAnnotationBtn, (2, 1))   
 
 		#self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
 		#								"Convert the selected Region of Interest to a Mask", \
@@ -181,6 +184,7 @@ class AnnotationToolbar(wx.Window):
 		self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+		self.threeDPolygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		#self.roiToMaskBtn.Bind(wx.EVT_BUTTON, self.roiToMask)
 #		wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
 		self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON, self.deleteAnnotation)
@@ -292,6 +296,9 @@ class AnnotationToolbar(wx.Window):
 		elif eid == MenuManager.ID_ROI_POLYGON:
 			annclass = "POLYGON"
 			multiple = 1
+		elif eid == MenuManager.ID_ROI_THREE_D_POLYGON:
+			annclass = "3D_POLYGON"
+			multiple = 1
 		else:
 			Logging.info("BOGUS ANNOTATION SELECTED!", kw = "visualizer")
 						
@@ -313,7 +320,7 @@ class AnnotationToolbar(wx.Window):
 		self.circleBtn.SetToggle(False)
 		self.rectangleBtn.SetToggle(False)
 		self.polygonBtn.SetToggle(False)
-				
+		self.threeDPolygonBtn.SetToggle(False)		
 				
 	def roiToMask(self, evt):
 		"""
