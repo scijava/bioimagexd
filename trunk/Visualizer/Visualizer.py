@@ -605,6 +605,14 @@ class Visualizer:
 			cam.SetParallelProjection(flag)
 			self.currentWindow.Render()
 
+	def get3DRegionsOfInterest(self):
+		"""
+		Return all the 3D regions of interest
+		"""
+		if hasattr(self.currentWindow, "get3DRegionsOfInterest"):
+			return self.currentWindow.get3DRegionsOfInterest()
+		return []
+
 	def getRegionsOfInterest(self):
 		"""
 		Return all the regions of interest

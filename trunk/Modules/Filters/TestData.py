@@ -264,7 +264,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					shiftAmnt = random.randint(2, 4)
 					# There's a 50% chance that there's no shift, and 2x25% chance of the shift being
 					# in either direction
-					shiftDir[0] = random.choice([-1,0,0.1])
+					shiftDir[0] = random.choice([-1,0,0,1])
 					shiftDir[1] = random.choice([-1,0,0,1])
 					# there's 60% chance of having shift in z dir
 					shiftDir[2] = random.choice([-1,-1,-1,0,0,0,0,1,1,1])
@@ -545,7 +545,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			rx, ry, rz = self.getPointInsideCell()
 
-		# Select intensity for object, voxel intensity will be -20 to +20
+		# Select intensity for object, voxel intensity will be -5% to +5%
 		objInt = random.randint(self.parameters["ObjMinInt"],self.parameters["ObjMaxInt"])
 		objs.append((objNum, (rx,ry,rz), size, objInt))
 		
@@ -797,11 +797,11 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		intList = []
 		totalInt = 0.0
 		coms = [0.0, 0.0, 0.0]
-		# Select intensity for object, voxel intensity will be -20 to +20
-		minInt = objInt - 20
+		# Select intensity for object, voxel intensity will be -5% to +5%
+		minInt = int(round(0.95 * objInt))
 		if minInt < 0: minInt = 0
-		if minInt > 255: minInt = 235
-		maxInt = objInt + 20
+		if minInt > 255: minInt = 255
+		maxInt = int(round(1.05 * objInt))
 		if maxInt < 0: maxInt = 20
 		if maxInt > 255: maxInt = 255
 

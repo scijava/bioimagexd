@@ -96,7 +96,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.dataDimX = self.dataDimY = self.dataDimZ = 0
 		self.listeners = {}
 		self.annotationClass = None
-		
+		self.polygon3DMode = False
 		self.voxelSize = (1, 1, 1) 
 		self.bgColor = kws.get("bgColor", (0, 0, 0))
 		self.action = 0
@@ -426,7 +426,24 @@ class InteractivePanel(ogl.ShapeCanvas):
 		n, maskImage = lib.ImageOperations.getMaskFromROIs(rois, mx, my, mz)
 		
 		return maskImage, names
-		
+
+	def create3DPolygon(self, points, zoomFactor = -1, nrOfPolygons = 0):
+		"""
+		Create a 3D polygon
+		"""
+		my3DPolygon = GUI.OGLAnnotations.My3DPolygon()
+		for i in range(0, nrOfPolygons):
+			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor, sliceNumber = i + 1, parent = my3DPolygon)
+			shape._offset = (self.xoffset, self.yoffset)
+			pts = []
+			mx, my = shape.polyCenter(points)
+			for x, y in points:
+				pts.append((((x - mx)), ((y - my))))
+			shape.Create(pts)
+			shape.SetX(mx)
+			shape.SetY(my)
+			my3DPolygon.AddPolygon(shape)
+			self.addNewShape(shape)
 		
 	def createPolygon(self, points, zoomFactor = -1):
 		"""
@@ -434,18 +451,22 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		if zoomFactor == -1:
 			zoomFactor = self.zoomFactor
-		shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor)
-		shape._offset = (self.xoffset, self.yoffset)		
+
+		if self.polygon3DMode:
+			self.create3DPolygon(points, zoomFactor, self.dataUnit.getDimensions()[2])
+		else:
+			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor)
+			shape._offset = (self.xoffset, self.yoffset)		
 		
-		pts = []
-		mx, my = shape.polyCenter(points)
+			pts = []
+			mx, my = shape.polyCenter(points)
 		
-		for x, y in points:
-			pts.append((((x - mx)), ((y - my))))
-		shape.Create(pts)
-		shape.SetX(mx)
-		shape.SetY(my)
-		self.addNewShape(shape)
+			for x, y in points:
+				pts.append((((x - mx)), ((y - my))))
+			shape.Create(pts)
+			shape.SetX(mx)
+			shape.SetY(my)
+			self.addNewShape(shape)
 		
 		self.paintPreview()
 		self.Refresh()
@@ -774,7 +795,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		elif annotationClass == "FINISHED_POLYGON":
 			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = scaleFactor)
 			
-		elif annotationClass == "POLYGON":
+		elif annotationClass == "POLYGON" or annotationClass == "3D_POLYGON":
+			self.polygon3DMode = (annotationClass == "3D_POLYGON")
 			if not self.currentSketch:
 				shape = GUI.OGLAnnotations.MyPolygonSketch(zoomFactor = scaleFactor)
 				shape.SetCentreResize(0)
