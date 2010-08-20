@@ -50,10 +50,11 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.descs = {"3D ROI": "3D region of interest",
-					  "Interpolate:": "ROI interpolation",
+					  "Interpolate": "ROI interpolation",
 					  "StartOfROIInterpolation": "From where the ROI interpolation starts:",
 					  "EndOfROIInterpolation": "The end of the ROI interpolation:",
-					  "InvertROI": "Invert the ROI"}
+					  "InvertROI": "Invert the ROI",
+					  "SmallestPossibleROI": "Crop to smallest possible ROI"}
 
 	def getDefaultValue(self, param):
 		"""
@@ -66,7 +67,7 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			return 0
 		if param == "StartOfROIInterpolation" or param == "EndOfROIInterpolation":
 			return 1
-		if param == "InvertROI" or param == "Interpolate":
+		if param == "InvertROI" or param == "Interpolate" or param == "SmallestPossibleROI":
 			return False
 
 	def getRange(self, param):
@@ -86,14 +87,15 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		if parameter == "StartOfROIInterpolation" or parameter == "EndOfROIInterpolation":
 			return GUI.GUIBuilder.SLICE
-		if parameter == "InvertROI" or parameter == "Interpolate":
+
+		if parameter == "InvertROI" or parameter == "Interpolate" or parameter == "SmallestPossibleROI":
 			return types.BooleanType
 
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["", ("3D ROI",)], ["Interpolation", ("Interpolate", "StartOfROIInterpolation", "EndOfROIInterpolation")], ["", ("InvertROI",)]]
+		return [["", ("3D ROI",)], ["Interpolation", ("Interpolate", "StartOfROIInterpolation", "EndOfROIInterpolation")], ["", ("InvertROI",)], ["", ("SmallestPossibleROI",)]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -102,12 +104,20 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
+		# Get the data.
+		scripting.wantWholeDataset = 1
 		input = self.getInput(1)
 		input.SetUpdateExtent(input.GetWholeExtent())
 		input.Update()
+		
+		# Sliders start from 1, list starts from 0. Interpolation code.
+		print ":::::::::::::::::::::::", self.parameters["3D ROI"][1].parent
+		print ":::::::::::::::::::::::", len(self.parameters["3D ROI"][1].parent.GetAnnotations())
+		annotations = self.parameters["3D ROI"][1].parent.GetAnnotations()
+		for annotation in annotations:
+			print annotation.parent
 
-		# Sliders start from 1, list starts from 0.
-		polygons = self.parameters["3D ROI"][1].parent.GetPolygons()
+
 		if self.parameters["Interpolate"]:
 			start = self.parameters["StartOfROIInterpolation"] - 1
 			end = self.parameters["EndOfROIInterpolation"] - 1
@@ -115,16 +125,16 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			if diff < 0:
 				raise Exception("The starting point for the ROI interpolation must be greater than its end point.")
 
-			startPolygon = polygons[start]
-			endPolygon = polygons[end]
+			startAnnotation = annotations[start]
+			endAnnotation = annotations[end]
 
-			startPoints = startPolygon._points
-			endPoints = endPolygon._points
+			startPoints = startAnnotation._points
+			endPoints = endAnnotation._points
 
-			x1 = startPolygon.GetX()
-			y1 = startPolygon.GetY()
-			x2 = endPolygon.GetX()
-			y2 = endPolygon.GetY()
+			x1 = startAnnotation.GetX()
+			y1 = startAnnotation.GetY()
+			x2 = endAnnotation.GetX()
+			y2 = endAnnotation.GetY()
 
 			crop1 = []
 			crop2 = []
@@ -142,45 +152,93 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			points = self.InterpolateBetweenCrops(crop1, crop2, diff - 1)
 			for i in range(0, len(points)):
 				point = points[i]
-				polygon = polygons[start + i]
+				annotation = annotations[start + i]
 				# shape._offset = (self.xoffset, self.yoffset)
-				for p in range(len(polygon.GetPoints())):
-					polygon.DeletePolygonPoint(p)
+				for p in range(len(annotation.GetPoints())):
+					annotation.DeletePolygonPoint(p)
 				pts = []
-				mx, my = polygon.polyCenter(point)
+				mx, my = annotation.polyCenter(point)
 				for x, y in point:
 					pts.append((((x - mx)), ((y - my))))
-				polygon.Create(pts)
-				polygon.SetX(mx)
-				polygon.SetY(my)
+				annotation.Create(pts)
+				annotation.SetX(mx)
+				annotation.SetY(my)
 
+		# Split the image into slices, easier to process the ROI.
 		slices = self.SplitIntoSlices(input)
 
-		if len(slices) != len(polygons):
-			errorString = "The number of slices, %d, are unequal to the number of polygons (annotations), %d. Cannot proceed with the 3D crop." % (len(slices), len(polygons))
+		# Number of slices must be equal to the number of polygons.
+		if len(annotations) != len(slices):
+			errorString = "The number of slices, %d, are unequal to the number of polygons (annotations), %d. Cannot proceed with the 3D crop." % (len(slices), len(annotations))
 			raise Exception(errorString)
 
 		outsideValue = 0
 		insideValue = 1
 		lowerThreshold = 1
 		upperThreshold = 255
-		for i in range(0, len(polygons)):
+		for i in range(0, len(annotations)):
 			# The result of the getAsMaskImage is an 1 and 0 image,
 			# and we want to invert those values so the mask
 			# excludes the pixels inside the crop.
-			polygonMask = polygons[i].getAsMaskImage()
-			invertedPolygonMask = self.ApplyThreshold(polygons[i].getAsMaskImage(), outsideValue = insideValue, insideValue = outsideValue, lowerThreshold = lowerThreshold, upperThreshold = upperThreshold)
-			vtkMaskFilter = vtk.vtkImageMask()
+			annotationMask = annotations[i].getAsMaskImage()
+			vtkImageMask = vtk.vtkImageMask()
 			if self.parameters["InvertROI"]:
-				vtkMaskFilter.SetMaskInput(invertedPolygonMask)
+				invertedAnnotationMask = self.ApplyThreshold(annotations[i].getAsMaskImage(), outsideValue = insideValue, insideValue = outsideValue, lowerThreshold = lowerThreshold, upperThreshold = upperThreshold)
+				vtkImageMask.SetMaskInput(invertedAnnotationMask)
 			else:
-				vtkMaskFilter.SetMaskInput(polygonMask)
-			vtkMaskFilter.SetImageInput(slices[i])
-			slices[i] = vtkMaskFilter.GetOutput()
+				vtkImageMask.SetMaskInput(annotationMask)
+			vtkImageMask.SetImageInput(slices[i])
+			slices[i] = vtkImageMask.GetOutput()
 			slices[i].Update()
-			del vtkMaskFilter
+			del vtkImageMask
 
-		return self.CreateVolumeFromSlices(slices, input.GetSpacing())
+		# Create the volume from the processed slices.
+		volume = self.CreateVolumeFromSlices(slices, input.GetSpacing())
+
+		# Calculate the smallest possible rectangle that encapsulates
+		# the ROI.
+		if self.parameters["SmallestPossibleROI"]:
+			north, east, south, west = 0, 0, 100000, 100000
+			for i in range(0, len(annotations)):
+				annotation = annotations[i]
+				minX, minY, maxX, maxY = annotation.getMinMaxXY()
+				centerX, centerY = annotation.GetX(), annotation.GetY()
+				offsetX, offsetY = annotation.GetCanvas().getOffset()
+				centerX -= offsetX
+				centerY -= offsetY
+				minX += centerX
+				minY += centerY
+				maxX += centerX
+				maxY += centerY
+				minX //= annotation.scaleFactor
+				minY //= annotation.scaleFactor
+				maxX //= annotation.scaleFactor
+				maxY //= annotation.scaleFactor
+				if minX < west:
+					west = minX
+				if maxX > east:
+					east = maxX
+				if minY < south:
+					south = minY
+				if maxY > north:
+					north = maxY
+
+			vtkExtractVOI = vtk.vtkExtractVOI()
+			vtkExtractVOI.SetInput(volume)
+			# Cast to int. All these floats are always x.0, so no
+			# round off is necessary.
+			vtkExtractVOI.SetVOI(int(west), int(east), int(south), int(north), 0, volume.GetDimensions()[2] - 1)
+			voi = vtkExtractVOI.GetOutput()
+			vtkImageChangeInformation = vtk.vtkImageChangeInformation()
+			vtkImageChangeInformation.SetOutputOrigin(0, 0, 0)
+			vtkImageChangeInformation.SetInput(voi)
+			output = vtkImageChangeInformation.GetOutput()
+			output.Update()
+			del vtkExtractVOI
+			del vtkImageChangeInformation
+			return  output
+		else:
+			return volume
 
 	def CheckCrops(self, crops):
 		"""
@@ -276,10 +334,10 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		slices = []
 		for z in range(0, dimensions[2]):
 			vtkClipFilter.SetOutputWholeExtent(0, dimensions[0], 0, dimensions[1], z, z)
-			singleSlice = vtk.vtkImageData()
+			slice = vtk.vtkImageData()
 			vtkClipFilter.Update()
-			singleSlice.DeepCopy(vtkClipFilter.GetOutput())
-			slices.append(singleSlice)
+			slice.DeepCopy(vtkClipFilter.GetOutput())
+			slices.append(slice)
 		del vtkClipFilter
 		return slices
 

@@ -432,6 +432,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		Create a 3D polygon
 		"""
 		my3DPolygon = GUI.OGLAnnotations.My3DPolygon()
+		print "INTERACTIVE PANEL (after init):", my3DPolygon
 		for i in range(0, nrOfPolygons):
 			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor, sliceNumber = i + 1, parent = my3DPolygon)
 			shape._offset = (self.xoffset, self.yoffset)
@@ -442,7 +443,9 @@ class InteractivePanel(ogl.ShapeCanvas):
 			shape.Create(pts)
 			shape.SetX(mx)
 			shape.SetY(my)
-			my3DPolygon.AddPolygon(shape)
+			print "INTERACTIVE PANEL (before add):", my3DPolygon
+			my3DPolygon.AddAnnotation(shape)
+			print "INTERACTIVE PANEL (after add):", my3DPolygon
 			self.addNewShape(shape)
 		
 	def createPolygon(self, points, zoomFactor = -1):
@@ -792,6 +795,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
 			shape.SetY( ey + (y - ey) / 2 )
+
 		elif annotationClass == "FINISHED_POLYGON":
 			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = scaleFactor)
 			
@@ -817,6 +821,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
 			shape.SetY( ey + (y - ey) / 2 )
+
 		elif annotationClass == "TEXT":
 			dx = abs(x - ex)
 			dy = abs(y - ey)
@@ -895,8 +900,16 @@ class InteractivePanel(ogl.ShapeCanvas):
 		shapeList = self.diagram.GetShapeList()
 		for shape in shapeList:
 			if shape.Selected():
-				self.RemoveShape(shape)
-				shape.Delete()
+				if shape.parent != None:
+					parent = shape.parent
+					annotations = parent.GetAnnotations()
+					for annotation in annotations:
+						self.RemoveShape(annotation)
+						annotation.Delete()
+					del parent
+				else:
+					self.RemoveShape(shape)
+					shape.Delete()
 				self.paintPreview()
 				self.Refresh()
 			

@@ -44,10 +44,11 @@ class OGLAnnotation(ogl.Shape):
 	A base class for all OGL based annotations
 	"""
 	AnnotationType = ""
-	def __init__(self, canvas = None):
+	def __init__(self, canvas = None, parent = None):
 		"""
 		initialize the annotation
 		"""
+		self.parent = parent
 		self.eraseRect = None
 		ogl.Shape.__init__(self, canvas)
 		self._offset = (0,0)
@@ -774,18 +775,21 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		Initialization
 		"""
 		self.attrList = ["_points", "_xpos", "_ypos"]
-		OGLAnnotation.__init__(self)
+		OGLAnnotation.__init__(self, parent)
 		ogl.PolygonShape.__init__(self)
+		self._isROI = 1
 		self.scaleFactor = zoomFactor
 		self.sliceNumber = sliceNumber
 		self.parent = parent
-		self._isROI = 1
 		global count
-		if not self.__class__ in count:
-			count[self.__class__] = 1
+		if self.parent != None:
+			self.name = "3D Polygon #%d" % count[self.parent.__class__]
 		else:
-			count[self.__class__] += 1
-		self.name = "Polygon #%d" % count[self.__class__] if not self.parent else "3D Polygon #%d.%d" % (self.parent.GetCount(), self.sliceNumber)
+			if not self.__class__ in count:
+				count[self.__class__] = 1
+			else:
+				count[self.__class__] += 1
+			self.name = "Polygon #%d" % count[self.__class__]
 		self.setName(self.name)
 
 	def OnDraw(self, dc):
@@ -994,31 +998,40 @@ class MyPolygon(OGLAnnotation, ogl.PolygonShape):
 		dc.DrawBitmap(self.GetCanvas().buffer, x0, y0)
 		self.UpdateOriginalPoints()
 
-class My3DPolygon():
+class My3DAnnotation():
 	"""
+	Parent class for all 3D annotations.
+	"""
+	AnnotationType = "3D_ANNOTATION"
+	def __init__(self, annotations = []):
+		"""
+		Initialization
+		"""
+		self.annotations = annotations
+
+	def AddAnnotation(self, annotation):
+		print "ADD ANNOTATION:", self
+		self.annotations.append(annotation)
+
+	def GetAnnotations(self):
+		return self.annotations
+
+class My3DPolygon(My3DAnnotation):
+	"""
+	3D polygon. A list containing MyPolygon objects.
 	"""
 	AnnotationType = "3D_POLYGON"
 	def __init__(self, polygons = []):
 		"""
 		Initialization
 		"""
-		self.polygons = polygons
+		My3DAnnotation.__init__(self, polygons)
 		global count
 		if not self.__class__ in count:
 			count[self.__class__] = 1
 		else:
 			count[self.__class__] += 1
 
-	def GetCount(self):
-		return count[self.__class__]
-
-	def AddPolygon(self, polygon):
-		self.polygons.append(polygon)
-
-	def GetPolygons(self):
-		return self.polygons
-
-	 
 class MyPolygonControlPoint(ogl.PolygonControlPoint):
 
 	AnnotationType = "POLYGONCONTROLPOINT"

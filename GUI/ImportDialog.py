@@ -728,15 +728,20 @@ enter the information below.""")
 			return		
 
 		self.sourceListbox.InsertItems(files, 0)
-		n = len(files)
-		print "Setting number of images to ",n
-		self.setNumberOfImages(n)
+
 		try:
 			self.dataSource.setFilenames(files)
 		except Logging.GUIError, ex:
 			ex.show()
 			self.sourceListbox.Clear()
 			return
+
+		n = len(files)
+		if self.dataSource.is3DImage():
+			n = self.dataSource.getNumberOfImages()
+
+		print "Setting number of images to ",n
+		self.setNumberOfImages(n)
 		
 	def matchSingleDigitPattern(self, fileList, pattern, startFrom, endTo):
 		"""
