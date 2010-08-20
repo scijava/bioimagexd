@@ -726,7 +726,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 						voxelAmount = labelShape.GetVolume(i)
 						allVoxels += voxelAmount
 						avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
-						variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+						if voxelAmount > 1:
+							variances += voxelAmount * abs(avgintCalc.GetVariance(i))
 
 			if allVoxels > 0:
 				avgIntOutsideObjs /= allVoxels
@@ -757,7 +758,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 						voxelAmount = labelObj.GetSize()
 						allVoxels += voxelAmount
 						avgIntInsideObjs += labelObj.GetMean() * voxelAmount
-						variances += voxelAmount * abs(labelObj.GetVariance())
+						if voxelAmount > 1:
+							variances += voxelAmount * abs(labelObj.GetVariance())
 					except:
 						pass
 				else:

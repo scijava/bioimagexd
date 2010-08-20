@@ -187,6 +187,10 @@ int vtkExtTIFFReaderInternal::Initialize()
 			  {
 				if (subfiletype == 0 || subfiletype == 2) this->SubFiles->InsertNextValue(page);
 			  }
+			else 
+			  { // Add image as it is
+				this->SubFiles->InsertNextValue(page);
+			  }
 			TIFFReadDirectory(this->Image);
 		  }
 		TIFFSetDirectory(this->Image,0);
