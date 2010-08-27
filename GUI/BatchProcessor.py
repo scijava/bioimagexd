@@ -575,9 +575,13 @@ class ProcedurePanel(wx.ScrolledWindow):
 		"""
 		remove a procedure list from the list box
 		"""
-		item = self.procedureListBox.FindItem(0, self.analysis.getSelectedProcedureList())
+		name = self.analysis.getSelectedProcedureList()
+		item = self.procedureListBox.FindItem(0, name)
 		if item != -1:
 			self.procedureListBox.DeleteItem(item)
+			self.filterEditor.cleanFilterListBox()
+			self.analysis.removeProcedureList(name)
+			
 
 	def populateListBox(self):
 		"""

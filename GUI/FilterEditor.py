@@ -238,11 +238,12 @@ class FilterEditor(wx.Panel):
 		if index == n - 1:
 			GUI.Dialogs.showerror(self, "Cannot move last filter down", "Cannot move filter")
 			return
-			
+		
 		lbl = self.filterListbox.GetString(index)
 		chk = self.filterListbox.IsChecked(index)
 		self.filterListbox.InsertItems([lbl], index + 2)
 		self.filterListbox.Check(index + 2, chk)
+		self.filterListbox.SetSelection(index + 2)
 		self.filterListbox.Delete(index)
 		self.filterList.moveDown(index)
 		
@@ -262,8 +263,8 @@ class FilterEditor(wx.Panel):
 		chk = self.filterListbox.IsChecked(index)
 		self.filterListbox.InsertItems([lbl], index - 1)
 		self.filterListbox.Check(index - 1, chk)
+		self.filterListbox.SetSelection(index -1)
 		self.filterListbox.Delete(index + 1)
-
 		self.filterList.moveUp(index)
 		
 	def onRemoveFilter(self, event):
@@ -523,3 +524,10 @@ class FilterEditor(wx.Panel):
 		"""
 		pass
 
+	def cleanFilterListBox(self):
+		"""
+		Empties filter list and resets GUI
+		"""
+		self.filterListbox.Clear()
+		self.resetGUI()
+		
