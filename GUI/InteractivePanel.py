@@ -96,7 +96,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.dataDimX = self.dataDimY = self.dataDimZ = 0
 		self.listeners = {}
 		self.annotationClass = None
-		self.polygon3DMode = False
+		self.threeDMode = False
 		self.voxelSize = (1, 1, 1) 
 		self.bgColor = kws.get("bgColor", (0, 0, 0))
 		self.action = 0
@@ -427,52 +427,75 @@ class InteractivePanel(ogl.ShapeCanvas):
 		
 		return maskImage, names
 
+	def create3DCircle(self, x, ex, y, ey, scaleFactor, nrOfCircles):
+		my3DCircle = GUI.OGLAnnotations.My3DCircle()
+		for i in range(0, nrOfCircles):
+		    circle = self.createCircle(x, ex, y, ey, scaleFactor)
+		    my3DCircle.AddAnnotation(circle)
+		return my3DCircle
+
+	def createCircle(self, x, ex, y, ey, scaleFactor):
+		diff = max(abs(x - ex), abs(y - ey))
+		if diff < 2:diff = 2
+		shape = GUI.OGLAnnotations.MyCircle(2 * diff, zoomFactor = scaleFactor)
+		shape._offset = (self.xoffset, self.yoffset)
+		shape.SetCentreResize(0)
+		shape.SetX( ex )
+		shape.SetY( ey )
+		return shape
+
+	def create3DRectangle(self, x, ex, y, ey, scaleFactor, nrOfRectangles):
+		my3DRectangle = GUI.OGLAnnotations.My3DRectangle()
+		for i in range(0, nrOfRectangles):
+			rectangle = self.createRectangle(x, ex, y, ey, scaleFactor)
+			my3DRectangle.AddAnnotation(rectangle)
+		return my3DRectangle
+
+	def createRectangle(self, x, ex, y, ey, scaleFactor):
+		dx = abs(x - ex)
+		dy = abs(y - ey)
+		shape = GUI.OGLAnnotations.MyRectangle(dx, dy, zoomFactor = scaleFactor)
+		shape._offset = (self.xoffset, self.yoffset)
+		shape.SetCentreResize(0)
+		shape.SetX( ex + (x - ex) / 2 )
+		shape.SetY( ey + (y - ey) / 2 )
+		return shape
+
 	def create3DPolygon(self, points, zoomFactor = -1, nrOfPolygons = 0):
 		"""
 		Create a 3D polygon
 		"""
 		my3DPolygon = GUI.OGLAnnotations.My3DPolygon()
-		print "INTERACTIVE PANEL (after init):", my3DPolygon
 		for i in range(0, nrOfPolygons):
-			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor, sliceNumber = i + 1, parent = my3DPolygon)
-			shape._offset = (self.xoffset, self.yoffset)
-			pts = []
-			mx, my = shape.polyCenter(points)
-			for x, y in points:
-				pts.append((((x - mx)), ((y - my))))
-			shape.Create(pts)
-			shape.SetX(mx)
-			shape.SetY(my)
-			print "INTERACTIVE PANEL (before add):", my3DPolygon
-			my3DPolygon.AddAnnotation(shape)
-			print "INTERACTIVE PANEL (after add):", my3DPolygon
-			self.addNewShape(shape)
-		
-	def createPolygon(self, points, zoomFactor = -1):
+			polygon = self.createPolygon(points, zoomFactor)
+			my3DPolygon.AddAnnotation(polygon)
+		return my3DPolygon
+
+	def createPolygon(self, points, zoomFactor):
+		shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor)
+		shape._offset = (self.xoffset, self.yoffset)
+		pts = []
+		mx, my = shape.polyCenter(points)
+		for x, y in points:
+			pts.append((((x - mx)), ((y - my))))
+		shape.Create(pts)
+		shape.SetX(mx)
+		shape.SetY(my)
+		self.addNewShape(shape)
+		return shape
+
+	def initPolygon(self, points, zoomFactor = -1):
 		"""
 		Create a polygon
 		"""
 		if zoomFactor == -1:
 			zoomFactor = self.zoomFactor
 
-		if self.polygon3DMode:
+		if self.threeDMode:
 			self.create3DPolygon(points, zoomFactor, self.dataUnit.getDimensions()[2])
 		else:
-			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = self.zoomFactor)
-			shape._offset = (self.xoffset, self.yoffset)		
-		
-			pts = []
-			mx, my = shape.polyCenter(points)
-		
-			for x, y in points:
-				pts.append((((x - mx)), ((y - my))))
-			shape.Create(pts)
-			shape.SetX(mx)
-			shape.SetY(my)
-			self.addNewShape(shape)
-		
+			self.createPolygon(points, zoomFactor)
 		self.paintPreview()
-		self.Refresh()
 		
 	def OnSize(self, evt):
 		"""
@@ -548,7 +571,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			self.RemoveShape(self.currentSketch)
 			del self.currentSketch
 			self.currentSketch = None
-			self.createPolygon(pts)
+			self.initPolygon(pts)
 			self.repaintHelpers()
 			self.Refresh()
 			self.action = 0
@@ -778,29 +801,24 @@ class InteractivePanel(ogl.ShapeCanvas):
 		ex,ey = self.getScrolledXY(ex, ey)
 		ex,ey = int(scaleFactor * ex), int(scaleFactor * ey)
 
-		if annotationClass == "CIRCLE":
-			diff = max(abs(x - ex), abs(y - ey))
-			if diff < 2:diff = 2
-			
-			shape = GUI.OGLAnnotations.MyCircle(2 * diff, zoomFactor = scaleFactor)
-			shape.SetCentreResize(0)
-			
-			shape.SetX( ex )
-			shape.SetY( ey )
+		self.threeDMode = ("3D" in annotationClass)
 
-		elif annotationClass == "RECTANGLE":
-			dx = abs(x - ex)
-			dy = abs(y - ey)
-			shape = GUI.OGLAnnotations.MyRectangle(dx, dy, zoomFactor = scaleFactor)
-			shape.SetCentreResize(0)  
-			shape.SetX( ex + (x - ex) / 2 )
-			shape.SetY( ey + (y - ey) / 2 )
+		if "CIRCLE" in annotationClass:
+			if self.threeDMode:
+				shape = self.create3DCircle(x, ex, y, ey, scaleFactor, self.dataUnit.getDimensions()[2])
+			else:
+				shape = self.createCircle(x, ex, y, ey, scaleFactor)
+
+		elif "RECTANGLE" in annotationClass:
+			if self.threeDMode:
+				shape = self.create3DRectangle(x, ex, y, ey, scaleFactor, self.dataUnit.getDimensions()[2])
+			else:
+				shape = self.createRectangle(x, ex, y, ey, scaleFactor)
 
 		elif annotationClass == "FINISHED_POLYGON":
 			shape = GUI.OGLAnnotations.MyPolygon(zoomFactor = scaleFactor)
 			
 		elif annotationClass == "POLYGON" or annotationClass == "3D_POLYGON":
-			self.polygon3DMode = (annotationClass == "3D_POLYGON")
 			if not self.currentSketch:
 				shape = GUI.OGLAnnotations.MyPolygonSketch(zoomFactor = scaleFactor)
 				shape.SetCentreResize(0)
@@ -831,9 +849,16 @@ class InteractivePanel(ogl.ShapeCanvas):
 			shape.SetY( ey + (y - ey) / 2 )
 		
 		if shape:
-			shape._offset = (self.xoffset, self.yoffset)		
-			self.addNewShape(shape, noUpdate = noUpdate)
-			
+			# The reason for this is that polygons are handled differently
+			# than the other annotations.
+			if self.threeDMode and annotationClass != "3D_POLYGON":
+				annotations = shape.GetAnnotations()
+				for annotation in annotations:
+					self.addNewShape(annotation, noUpdate = noUpdate)
+			else:
+				shape._offset = (self.xoffset, self.yoffset)
+				self.addNewShape(shape, noUpdate = noUpdate)
+
 		self.saveAnnotations()
 		if not noUpdate:
 			lib.messenger.send(None, "update_annotations")
@@ -1085,6 +1110,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 				if self.action == ZOOM_TO_BAND or self.annotationClass == "RECTANGLE" or self.annotationClass == "SCALEBAR":
 					dc.DrawRectangle(x1+xr, y1+yr, d1, d2)
+
 				elif self.annotationClass == "CIRCLE":
 					rad = max(d1,d2)
 					dc.DrawCircle(x1+xr,y1+yr,rad)
