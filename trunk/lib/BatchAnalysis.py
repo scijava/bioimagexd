@@ -471,6 +471,12 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		filterList = lib.FilterBasedModule.FilterList()
 		filterList.setDataUnit(self.dataUnit)
 		self.procedureLists[name] = filterList
+
+	def removeProcedureList(self, name):
+		"""
+		Remove a procedure list from the list of analysis
+		"""
+		del self.procedureLists[name]
 		
 	def getProcedureList(self, name = ""):
 		"""
