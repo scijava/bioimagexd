@@ -508,11 +508,17 @@ class GUIBuilder(wx.Panel):
 		label = wx.StaticText(self, -1, text)
 		box.Add(label)
 		regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
-		choices = [x.getName() for x in regionsOfInterest]
+		choices = []
+		for roi in regionsOfInterest:
+			if roi.getName() not in choices:
+				choices.append(roi.getName())
 		
 		def updateROIs(currentFilter, itemName, choice):
 			regionsOfInterest = scripting.visualizer.getRegionsOfInterest()
-			choices = [x.getName() for x in regionsOfInterest]		
+			choices = []
+			for roi in regionsOfInterest:
+				if roi.getName() not in choices:
+					choices.append(roi.getName())
 			choice.Clear()
 			choice.AppendItems(choices)
 			
