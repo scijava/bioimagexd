@@ -200,13 +200,16 @@ class AnnotationHelper(PainterHelper):
 		"""
 		Paint the annotations on a DC
 		"""
-		polygons = filter(lambda x:isinstance(x, GUI.OGLAnnotations.MyPolygon), self.parent.diagram.GetShapeList())
-		for polygon in polygons:
-			polygon.Show(0 if polygon.sliceNumber != scripting.visualizer.zslider.GetValue() else 1)
+		shapeAnnotations = filter(lambda x:isinstance(x, GUI.OGLAnnotations.ShapeAnnotation), self.parent.diagram.GetShapeList())
+		for shapeAnnotation in shapeAnnotations:
+			if shapeAnnotation.parent != None:
+				shapeAnnotation.Show(0 if shapeAnnotation.sliceNumber != scripting.visualizer.zslider.GetValue() else 1)
+			else:
+				shapeAnnotation.Show(1)
 		self.parent.diagram.Redraw(dc)	
 		
 	def setParent(self, parent):
 		"""
 		set the parent
 		"""		   
-		self.parent = parent		
+		self.parent = parent
