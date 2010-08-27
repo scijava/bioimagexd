@@ -134,7 +134,7 @@ class WatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		n = self.relabelFilter.GetNumberOfObjects()
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
-		if not self.origCtf or not ncolors or ncolors != n or not self.data or self.data != data:
+		if not self.origCtf or not ncolors or ncolors < n:
 			ctf = lib.ImageOperations.watershedPalette(2, n)
 			self.data = data
 			if not self.origCtf:
