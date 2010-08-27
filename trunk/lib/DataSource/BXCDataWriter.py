@@ -151,6 +151,10 @@ class BXCDataWriter(DataWriter):
 			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" % (self.filename, str(ex)))
 			return
 
+		# Don't write annotations, can cause problems in Windows
+		if parser.has_section("Annotations"):
+			parser.remove_section("Annotations")
+		
 		parser.write(fp)
 		fp.close()
 		self.sync()
