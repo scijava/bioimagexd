@@ -474,7 +474,7 @@ class FilterBasedModule(lib.Module.Module):
 
 			data = currfilter.execute(data, update=0, last=flag)
 			polydata = currfilter.getPolyDataOutput()
-			
+
 			if not flag:
 				nextfilter = enabledFilters[i+1]
 				if not currfilter.itkFlag and nextfilter.itkFlag:

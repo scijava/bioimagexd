@@ -139,7 +139,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
 
-		if not self.origCtf or not ncolors or ncolors != n or not self.data or self.data != data:
+		if not self.origCtf or not ncolors or ncolors < n:
 			if not self.origCtf:
 				self.origCtf = settings.get("ColorTransferFunction")
 			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)

@@ -161,7 +161,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Number of objects",n
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
-		if not self.origCtf or not ncolors or ncolors != n or not self.data or self.data != data:
+		if not self.origCtf or not ncolors or ncolors < n:
 			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
