@@ -54,7 +54,7 @@ class AnnotationToolbar(wx.Window):
 		self.annotateColor = (0, 255, 0)
 		self.interactor = None
 		
-		self.sizer = wx.GridBagSizer(3, 2)
+		self.sizer = wx.GridBagSizer(4, 2)
 		self.SetSizer(self.sizer)
 		self.eventRecorder = vtk.vtkInteractorEventRecorder()
 		self.SetAutoLayout(1)
@@ -107,6 +107,12 @@ class AnnotationToolbar(wx.Window):
 		self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.gif", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
  		self.sizer.Add(self.threeDPolygonBtn, (2, 0))
 
+		self.threeDCircleBtn = createBtn(MenuManager.ID_ROI_THREE_D_CIRCLE, "three_d_circle.gif", "Select one or several circle areas of the image in different slices to perform a 3D crop")
+ 		self.sizer.Add(self.threeDCircleBtn, (2, 1))
+
+		self.threeDRectangleBtn = createBtn(MenuManager.ID_ROI_THREE_D_RECTANGLE, "three_d_rectangle.gif", "Select one or several rectangle areas of the image in different slices to perform a 3D crop")
+ 		self.sizer.Add(self.threeDRectangleBtn, (3, 0))
+
 		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		#self.sizer.Add(self.textBtn, (2, 0))
 
@@ -116,7 +122,7 @@ class AnnotationToolbar(wx.Window):
 		self.deleteAnnotationBtn.SetBestSize((32,32))
 		self.deleteAnnotationBtn.SetToolTipString("Delete an annotation")
 		
-		self.sizer.Add(self.deleteAnnotationBtn, (2, 1))   
+		self.sizer.Add(self.deleteAnnotationBtn, (3, 1))
 
 		#self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
 		#								"Convert the selected Region of Interest to a Mask", \
@@ -128,7 +134,7 @@ class AnnotationToolbar(wx.Window):
 		#self.sizer.Add(self.fontBtn, (3,1))
 
 		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65, -1))
-		self.sizer.Add(self.colorSelect, (4, 0), span = (1, 2))
+		self.sizer.Add(self.colorSelect, (5, 0), span = (1, 2))
 		
 		#self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", \
 		#								"Enable or disable the resampling of image data")
@@ -185,6 +191,8 @@ class AnnotationToolbar(wx.Window):
 		self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.threeDPolygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+		self.threeDCircleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
+		self.threeDRectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		#self.roiToMaskBtn.Bind(wx.EVT_BUTTON, self.roiToMask)
 #		wx.EVT_TOOL(self.parent,MenuManager.ID_ADD_SCALE,self.addAnnotation)
 		self.deleteAnnotationBtn.Bind(wx.EVT_BUTTON, self.deleteAnnotation)
@@ -299,6 +307,10 @@ class AnnotationToolbar(wx.Window):
 		elif eid == MenuManager.ID_ROI_THREE_D_POLYGON:
 			annclass = "3D_POLYGON"
 			multiple = 1
+		elif eid == MenuManager.ID_ROI_THREE_D_CIRCLE:
+			annclass = "3D_CIRCLE"
+		elif eid == MenuManager.ID_ROI_THREE_D_RECTANGLE:
+			annclass = "3D_RECTANGLE"
 		else:
 			Logging.info("BOGUS ANNOTATION SELECTED!", kw = "visualizer")
 						
@@ -320,7 +332,9 @@ class AnnotationToolbar(wx.Window):
 		self.circleBtn.SetToggle(False)
 		self.rectangleBtn.SetToggle(False)
 		self.polygonBtn.SetToggle(False)
-		self.threeDPolygonBtn.SetToggle(False)		
+		self.threeDPolygonBtn.SetToggle(False)
+		self.threeDCircleBtn.SetToggle(False)
+		self.threeDRectangleBtn.SetToggle(False)
 				
 	def roiToMask(self, evt):
 		"""

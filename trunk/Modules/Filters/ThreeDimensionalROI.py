@@ -111,13 +111,8 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		input.Update()
 		
 		# Sliders start from 1, list starts from 0. Interpolation code.
-		print ":::::::::::::::::::::::", self.parameters["3D ROI"][1].parent
-		print ":::::::::::::::::::::::", len(self.parameters["3D ROI"][1].parent.GetAnnotations())
 		annotations = self.parameters["3D ROI"][1].parent.GetAnnotations()
-		for annotation in annotations:
-			print annotation.parent
-
-
+		
 		if self.parameters["Interpolate"]:
 			start = self.parameters["StartOfROIInterpolation"] - 1
 			end = self.parameters["EndOfROIInterpolation"] - 1
@@ -128,41 +123,71 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			startAnnotation = annotations[start]
 			endAnnotation = annotations[end]
 
-			startPoints = startAnnotation._points
-			endPoints = endAnnotation._points
-
-			x1 = startAnnotation.GetX()
-			y1 = startAnnotation.GetY()
-			x2 = endAnnotation.GetX()
-			y2 = endAnnotation.GetY()
-
 			crop1 = []
 			crop2 = []
 
-			for point in startPoints:
-				crop1.append((point[0] + x1, point[1] + y1))
+			if isinstance(startAnnotation, GUI.OGLAnnotations.MyCircle) or isinstance(startAnnotation, GUI.OGLAnnotations.MyRectangle):
+				startW, startH = startAnnotation.GetBoundingBoxMin()
+				startX, startY = startAnnotation.GetX(), startAnnotation.GetY()
 
-			for point in endPoints:
-				crop2.append((point[0] + x2, point[1] + y2))
+				endW, endH = endAnnotation.GetBoundingBoxMin()
+				endX, endY = endAnnotation.GetX(), endAnnotation.GetY()
 
-			# diff - 1, because the InterpolateBetweenCrops function
-			# takes as its third parameter a "points inbetween" integer.
-			# If we want to interpolate between 1 and 15, then that's 13
-			# points inbetween, not 14.
-			points = self.InterpolateBetweenCrops(crop1, crop2, diff - 1)
-			for i in range(0, len(points)):
-				point = points[i]
-				annotation = annotations[start + i]
-				# shape._offset = (self.xoffset, self.yoffset)
-				for p in range(len(annotation.GetPoints())):
-					annotation.DeletePolygonPoint(p)
-				pts = []
-				mx, my = annotation.polyCenter(point)
-				for x, y in point:
-					pts.append((((x - mx)), ((y - my))))
-				annotation.Create(pts)
-				annotation.SetX(mx)
-				annotation.SetY(my)
+				sizes = self.InterpolateBetweenCrops([(startW, startH)], [(endW, endH)], diff - 1)
+				coordinates = self.InterpolateBetweenCrops([(startX, startY)], [(endX, endY)], diff - 1)
+
+				if len(sizes) != len(coordinates):
+					errorString = "The number of size dimensions (%d) and coordinates (%d) are different. Cannot proceed with the 3D crop." % (len(sizes), len(coordinates))
+					raise Exception(errorString)
+
+				for i in range(0, len(sizes)):
+					annotation = annotations[i]
+					# The difference between handling interpolation with polygons and rectangles/circles,
+					# is that polygons can have several points, (x, y)-pairs, that define a single polygon.
+					# Rectangles/circles only have one (x, y)-pair per crop (what we define as "crop" in
+					# the method at least). These pairs are size (width and height) and coordinates (x and y).
+					# And since the "crops" only have one pair, we can safely access the [0] element all the time.
+					x, y = coordinates[i][0]
+					w, h = sizes[i][0]
+					annotation.SetX(x)
+					annotation.SetY(y)
+					annotation.SetWidth(w)
+					annotation.SetHeight(h)
+
+			elif isinstance(startAnnotation, GUI.OGLAnnotations.MyPolygon):
+			        startPoints = startAnnotation._points
+				endPoints = endAnnotation._points
+
+				x1 = startAnnotation.GetX()
+				y1 = startAnnotation.GetY()
+
+				x2 = endAnnotation.GetX()
+				y2 = endAnnotation.GetY()
+
+				for point in startPoints:
+					crop1.append((point[0] + x1, point[1] + y1))
+
+				for point in endPoints:
+					crop2.append((point[0] + x2, point[1] + y2))
+
+				# diff - 1, because the InterpolateBetweenCrops function
+				# takes as its third parameter a "points inbetween" integer.
+				# If we want to interpolate between 1 and 15, then that's 13
+				# points inbetween, not 14.
+				points = self.InterpolateBetweenCrops(crop1, crop2, diff - 1)
+				for i in range(0, len(points)):
+					point = points[i]
+					annotation = annotations[start + i]
+					# shape._offset = (self.xoffset, self.yoffset)
+					for p in range(len(annotation.GetPoints())):
+						annotation.DeletePolygonPoint(p)
+					pts = []
+					mx, my = annotation.polyCenter(point)
+					for x, y in point:
+						pts.append((((x - mx)), ((y - my))))
+					annotation.Create(pts)
+					annotation.SetX(mx)
+					annotation.SetY(my)
 
 		# Split the image into slices, easier to process the ROI.
 		slices = self.SplitIntoSlices(input)
@@ -201,19 +226,11 @@ class ThreeDimensionalROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			north, east, south, west = 0, 0, 100000, 100000
 			for i in range(0, len(annotations)):
 				annotation = annotations[i]
-				minX, minY, maxX, maxY = annotation.getMinMaxXY()
-				centerX, centerY = annotation.GetX(), annotation.GetY()
-				offsetX, offsetY = annotation.GetCanvas().getOffset()
-				centerX -= offsetX
-				centerY -= offsetY
-				minX += centerX
-				minY += centerY
-				maxX += centerX
-				maxY += centerY
-				minX //= annotation.scaleFactor
-				minY //= annotation.scaleFactor
-				maxX //= annotation.scaleFactor
-				maxY //= annotation.scaleFactor
+				if isinstance(annotation, GUI.OGLAnnotations.ShapeAnnotation):
+					minX, minY, maxX, maxY = annotation.getROICoordinates()
+				else:
+					errorString = "Invalid annotation chosen for 3D crop. Cannot proceed."
+					raise Exception(errorString)				
 				if minX < west:
 					west = minX
 				if maxX > east:
