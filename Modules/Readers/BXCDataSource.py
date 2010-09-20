@@ -141,7 +141,7 @@ class BXCDataSource(DataSource):
 			i = 0
 		elif i >= len(self.dataSets):
 			i = len(self.dataSets) - 1
-		
+
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
 		if not self.originalScalarRange:

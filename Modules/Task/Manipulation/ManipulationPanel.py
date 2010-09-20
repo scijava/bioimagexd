@@ -134,7 +134,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 	def createItemToolbar(self):
 		"""
 		Method to create a toolbar for the window that allows use to select processed channel
-		"""      
+		"""
 		# Pass flag force which indicates that we do want an item toolbar
 		# although we only have one input channel
 		n = GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createItemToolbar(self, force = 1)
@@ -142,12 +142,10 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 			self.dataUnit.setOutputChannel(i, 0)
 			self.toolMgr.toggleTool(tid, 0)
 		
-		
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)
 		ctf.AddRGBPoint(255, 1, 1, 1)
 		imagedata = self.itemMips[0]
-		
 		
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0, 0, 0, 0)

@@ -136,9 +136,6 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 									choices = ["Slices", "Timepoints"], \
 									majorDimension = 2, \
 									style = wx.RA_SPECIFY_COLS)
-		z = 1
-		#if visualizer.dataUnit:
-		#	x, y, z = visualizer.dataUnit.getDimensions()
 
 		self.okbutton = wx.Button(self, -1, "Update")
 		self.okbutton.Bind(wx.EVT_BUTTON, self.onSetViewMode)
@@ -209,8 +206,8 @@ class GalleryMode(VisualizationMode):
 		scripting.wantWholeDataset = 0
 		self.sidebarWin = sidebarwin
 
+		x, y = self.visualizer.visWin.GetSize()
 		if not self.galleryPanel:
-			x, y = self.visualizer.visWin.GetSize()
 			self.galleryPanel = GalleryPanel(self.parent, self.visualizer, size = (x, y))
 			self.iactivePanel = self.galleryPanel
 
