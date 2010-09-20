@@ -88,8 +88,6 @@ class Module:
 		Set the dataunit that is controlling the execution of this module
 		"""
 		return self.controlUnit
-	
- 
 
 	def updateProgress(self, obj, evt):
 		"""
@@ -179,4 +177,9 @@ class Module:
 		"""
 		return self.images[0]
 
-
+	def getNumberOfOutputs(self):
+		"""
+		Returns number of output datas
+		"""
+		return 1
+	

@@ -256,7 +256,7 @@ class TaskPanel(ScrolledPanel):
 		sourceUnits = self.dataUnit.getSourceDataUnits()
 		if not force and len(sourceUnits) == 1:
 			return
-		merge = vtkbxd.vtkImageColorMerge()
+
 		self.itemMips = []
 		for i, dataunit in enumerate(sourceUnits):
 			#color = dataunit.getColor()

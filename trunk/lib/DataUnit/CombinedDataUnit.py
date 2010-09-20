@@ -39,7 +39,8 @@ import vtkbxd
 import Logging
 import lib.messenger
 import scripting
-import os.path	
+import os.path
+import types
 
 class CombinedDataUnit(DataUnit):
 	"""
@@ -126,8 +127,7 @@ class CombinedDataUnit(DataUnit):
 
 	def setModule(self, module):
 		"""
-		Sets the module that does the calculations for
-					 this dataunit
+		Sets the module that does the calculations for this dataunit
 		"""
 		self.module = module
 
@@ -187,22 +187,44 @@ class CombinedDataUnit(DataUnit):
 		# We create the vtidatasource with the name of the dataunit file
 		# so it knows where to store the vtkImageData objects
 
+		numberOfDatasets = self.module.getNumberOfOutputs()
+		bxdWriters = []
+		dataWriters = []
+		
 		if not settings_only:
-			bxdwriter = BXDDataWriter(bxdFile)
-			bxcFile = bxdwriter.getBXCFileName(bxdFile)
+			if numberOfDatasets > 1:
+				for i in range(numberOfDatasets):
+					channelBXDFile = bxdFile
+					if bxdFile[-4:] == ".bxd":
+						channelBXDFile = bxdFile[:-4] + "_" + self.sourceunits[i].getName() + ".bxd"
+					bxdwriter = BXDDataWriter(channelBXDFile)
+					bxdWriters.append(bxdwriter)
+					bxcFile = bxdwriter.getBXCFileName(channelBXDFile)
+					dataWriter = BXCDataWriter(bxcFile)
+					dataWriters.append(dataWriter)
+					bxdwriter.addChannelWriter(dataWriter)
+			else:
+				bxdwriter = BXDDataWriter(bxdFile)
+				bxcFile = bxdwriter.getBXCFileName(bxdFile)
+				bxdWriters.append(bxdwriter)
+				dataWriter = BXCDataWriter(bxcFile)
+				dataWriters.append(dataWriter)
+				bxdwriter.addChannelWriter(dataWriter)
 
 		else:
 			bxcFile = bxdFile
 			bxdwriter = None
 			bxcFile = bxcFile[:-1] + "p"
+			bxdWriters.append(bxdwriter)
+			dataWriter = BXCDataWriter(bxcFile)
+			dataWriters.append(dataWriter)
 			
-		self.outputDirectory = os.path.dirname(bxcFile)
-		self.dataWriter = BXCDataWriter(bxcFile)
+		self.outputDirectory = os.path.dirname(bxdFile)
+		#self.dataWriter = BXCDataWriter(bxcFile)
 		
-		if bxdwriter:
-			bxdwriter.addChannelWriter(self.dataWriter)
+		#if bxdwriter:
+		#	bxdwriter.addChannelWriter(self.dataWriter)
 
-		#imageList = []
 		n = 1
 		self.guicallback = callback
 		self.module.setControlDataUnit(self)
@@ -224,33 +246,57 @@ class CombinedDataUnit(DataUnit):
 					self.module.addInput(dataunit, image)
 				# Get the vtkImageData containing the results of the operation 
 				# for this time point
-				imageData = self.module.doOperation()
-				polydata = self.module.getPolyDataOutput()
+				imageDatas = self.module.doOperation()
+				polydatas = self.module.getPolyDataOutput()
+				# Convert output to tuples if aren't already
+				if type(imageDatas) is not types.TupleType:
+					imageDatas = (imageDatas,)
+				if type(polydatas) is not types.TupleType and polydatas is not None:
+					polydatas = (polydatas,)
+				
 				Logging.info("Executing with optimizations",kw="processing")
-				imageData = optimize.optimize(image = imageData)
-				Logging.info("Processing done",kw="processing")
-				lib.messenger.send(None, "update_processing_progress", timePoint, n, len(timepoints))
-				n += 1
-				# Write the image data to disk
-				if not settings_only:
-					Logging.info("Writing timepoint %d"%timePoint,kw="processing")
-					self.dataWriter.addImageData(imageData)
-					if polydata:
-						self.dataWriter.addPolyData(polydata)
-					self.dataWriter.sync()
-					dims = self.dataWriter.getOutputDimensions()
-					self.settings.set("Dimensions", str(dims))
+				for i, imageData in enumerate(imageDatas):
+					imageData = optimize.optimize(image = imageData)
+					Logging.info("Processing done",kw="processing")
+					lib.messenger.send(None, "update_processing_progress", timePoint, n, len(timepoints) * len(imageDatas))
+					n += 1
+					# Write the image data to disk
+					if not settings_only:
+						Logging.info("Writing timepoint %d"%timePoint,kw="processing")
+						dataWriters[i].addImageData(imageData)
+						if polydatas is not None and i < len(polydatas):
+							dataWriters[i].addPolyData(polydatas[i])
+						dataWriters[i].sync()
+						dims = dataWriters[i].getOutputDimensions()
+						self.settings.set("Dimensions", str(dims))
 					
 		scripting.processingTimepoint = -1
 		if settings_only:
 			self.settings.set("SettingsOnly", "True")
 		else:
 			self.settings.set("SettingsOnly", "False")
-		
-		self.createDataUnitFile(self.dataWriter)
+
+		for dataWriter in dataWriters:
+			self.createDataUnitFile(dataWriter)
+
 		if not settings_only:
-			bxdwriter.write()
-			return bxdwriter.getFilename()
+			for bxdwriter in bxdWriters:
+				bxdwriter.write()
+
+			if len(bxdWriters) == 1:
+				return bxdWriters[0].getFilename()
+			else:
+				# Write references to channels in BXD file
+				try:
+					fp = open(bxdFile, "w")
+					print "Writing output to",bxdFile
+					for dataWriter in dataWriters:
+						channelBXCFile = dataWriter.getFilename()
+						fp.write("%s\n"%channelBXCFile)
+				except IOError, ex:
+					Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))
+				fp.close()
+				return bxdFile
 
 	def setMask(self, mask):
 		"""
@@ -421,11 +467,12 @@ class CombinedDataUnit(DataUnit):
 			Logging.info("Getting preview from module %s"%str(self.module), kw="dataunit")
 			preview = self.module.getPreview(depth)
 
-		# isMultiComponent = preview.GetNumberOfScalarComponents()>1 doesn't work when preview isn't updated
-		for unit in self.sourceunits:
-			isMultiComponent = unit.getBitDepth() > unit.getSingleComponentBitDepth()
-			if isMultiComponent:
-				break
+		isMultiComponent = preview.GetNumberOfScalarComponents()>1 # doesn't work when preview isn't updated
+		if not isMultiComponent:
+			for unit in self.sourceunits:
+				isMultiComponent = unit.getBitDepth() > unit.getSingleComponentBitDepth()
+				if isMultiComponent:
+					break
 
 		if not self.merging and self.outputChannels:
 			if preview:

@@ -1304,7 +1304,7 @@ class Visualizer:
 			return
 		self.depthT = time.time()
 
-		if arg:
+		if arg is not None:
 			newz = arg
 			self.zslider.SetValue(arg + 1)
 		elif (not event and not arg) and obj:

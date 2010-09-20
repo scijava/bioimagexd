@@ -233,6 +233,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 					bxcFile = ".".join(parts[:-1])+".bxc"
 				
 				fp.write("%s\n"%os.path.join(bxcDir,bxcFile))
+			fp.close()
 			
 	def execute(self, csvfile, directory, timepoints):
 		"""
