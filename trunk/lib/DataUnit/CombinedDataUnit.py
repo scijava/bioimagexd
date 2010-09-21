@@ -276,8 +276,18 @@ class CombinedDataUnit(DataUnit):
 		else:
 			self.settings.set("SettingsOnly", "False")
 
-		for dataWriter in dataWriters:
+		# Check if we have multiple outputs
+		# If we do, make sure ctf is correct
+		updateCTF = 0
+		origCTF = self.settings.get("ColorTransferFunction")
+		if len(dataWriters) > 1:
+			updateCTF = 1
+
+		for i, dataWriter in enumerate(dataWriters):
+			if updateCTF:
+				self.settings.set("ColorTransferFunction", self.sourceunits[i].getColorTransferFunction())
 			self.createDataUnitFile(dataWriter)
+		self.settings.set("ColorTransferFunction", origCTF)
 
 		if not settings_only:
 			for bxdwriter in bxdWriters:
