@@ -293,20 +293,17 @@ class CombinedDataUnit(DataUnit):
 			for bxdwriter in bxdWriters:
 				bxdwriter.write()
 
-			if len(bxdWriters) == 1:
-				return bxdWriters[0].getFilename()
-			else:
-				# Write references to channels in BXD file
-				try:
-					fp = open(bxdFile, "w")
-					print "Writing output to",bxdFile
-					for dataWriter in dataWriters:
-						channelBXCFile = dataWriter.getFilename()
-						fp.write("%s\n"%channelBXCFile)
-				except IOError, ex:
-					Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))
-				fp.close()
-				return bxdFile
+			# Write references to channels in BXD file
+			try:
+				fp = open(bxdFile, "w")
+				print "Writing output to",bxdFile
+				for dataWriter in dataWriters:
+					channelBXCFile = dataWriter.getFilename()
+					fp.write("%s\n"%channelBXCFile)
+			except IOError, ex:
+				Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))
+			fp.close()
+			return bxdFile
 
 	def setMask(self, mask):
 		"""
