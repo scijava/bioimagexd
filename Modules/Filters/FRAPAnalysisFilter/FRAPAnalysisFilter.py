@@ -159,6 +159,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 				itkMask = self.convertVTKtoITK(mask)
 				min, maskValue = mask.GetScalarRange()
 
+			maskValue = int(maskValue)
 			labelStats = itk.LabelStatisticsImageFilter[itkImage, itkMask].New()
 			labelStats.SetInput(0, itkImage)
 			labelStats.SetLabelInput(itkMask)

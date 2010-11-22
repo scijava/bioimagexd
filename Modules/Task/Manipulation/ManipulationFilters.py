@@ -144,10 +144,11 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		dims = self.parameters["Dimensionality"]
 		self.vtkfilter.SetRadiusFactors(x, y, z)
 		self.vtkfilter.SetDimensionality(dims)
-		
+		self.vtkfilter.SetNumberOfThreads(1)
 		if update:
 			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()			   
+		
+		return self.vtkfilter.GetOutput()
 
 
 #class GradientFilter(ProcessingFilter.ProcessingFilter):

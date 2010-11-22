@@ -41,7 +41,8 @@ vtkImageColorMerge::vtkImageColorMerge()
     this->AverageMode = 0;
     this->MaximumMode = 0;
     this->LuminanceMode = 0;
-    this->AverageThreshold = 10;    
+    this->AverageThreshold = 10;
+	this->SetNumberOfThreads(1);
 }
 
 //----------------------------------------------------------------------------

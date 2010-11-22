@@ -171,12 +171,16 @@ class SlicesTranslationRegistrationFilter(lib.ProcessingFilter.ProcessingFilter)
 		resample = itk.ResampleImageFilter[orgSliceType,orgSliceType].New()
 		interpolator = itk.NearestNeighborInterpolateImageFunction.IUC3D.New()
 		resample.SetInterpolator(interpolator)
+
 		for sliceIndex, slices in enumerate(self.slices):
 			if self.coms[sliceIndex] is None:
 				translatedImage = origSlice
 			else:
 				labelSlice, origSlice = slices
-				translation.SetParameters((self.coms[sliceIndex][0] - self.coms[fixedSlice][0], self.coms[fixedSlice][1] - self.coms[sliceIndex][1], 0))
+				try:
+					translation.SetParameters((self.coms[sliceIndex][0] - self.coms[fixedSlice][0], self.coms[fixedSlice][1] - self.coms[sliceIndex][1], 0))
+				except:
+					translation.SetParameters((0.0, 0.0, 0))
 				resample.SetTransform(translation)
 				resample.SetInput(origSlice)
 				resample.SetSize(origSlice.GetLargestPossibleRegion().GetSize())

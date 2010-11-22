@@ -295,6 +295,7 @@ class PreviewFrame(InteractivePanel):
 		if y >= self.dataDimY:
 			y = self.dataDimY - 1
 		Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
+                lib.messenger.send(None, "one_click_center", (rx, ry, rz))
 		ncomps = self.rawImage.GetNumberOfScalarComponents()
 		Logging.info("Number of scalar components in image = %d"%ncomps, kw="preview")
 
@@ -386,7 +387,7 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("PreviewFrame not enabled, won't update on DataUnit setting", kw="preview")
 
 	def updatePreview(self, renew = 1):
-		"""
+                """
 		Update the preview
 		@param renew    A boolean flag indicating whether the method should recalculate the images
 		"""
