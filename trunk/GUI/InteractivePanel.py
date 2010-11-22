@@ -198,7 +198,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		keyCode = event.GetKeyCode()
 		if keyCode in [wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE, wx.WXK_BACK]:
-			self.deleteAnnotation()
+			ctrl = event.ControlDown()
+			self.deleteAnnotation(ctrl)
 		elif keyCode in [wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER]:
 			if len(self.measurementPoints)>1:
 				totalDistance=0
@@ -423,9 +424,32 @@ class InteractivePanel(ogl.ShapeCanvas):
 		mx, my, mz = self.dataUnit.getDimensions()
 		rois = self.getRegionsOfInterest()
 		names = [roi.getName() for roi in rois]
-		n, maskImage = lib.ImageOperations.getMaskFromROIs(rois, mx, my, mz)
-		
-		return maskImage, names
+		# This is a bit tricky. If the ROI is a 3D one, then we need
+		# to create one mask for every slice and then merge them
+		# together. We need to group the 3D ROIs together based on their
+		# parent.
+		parents = []
+		threeDimROIs = filter(lambda x:isinstance(x, GUI.OGLAnnotations.ShapeAnnotation), rois)
+		for threeDimROI in threeDimROIs:
+			if threeDimROI.parent not in parents and threeDimROI.parent != None:
+				parents.append(threeDimROI.parent)
+
+		# Finished mask volumes.
+		masks = []
+		for parent in parents:
+			annotations = parent.GetAnnotations()
+			maskFromROIs = []
+			# All children of a parent form one mask volume.
+			for annotation in annotations:
+				maskFromROIs.append(lib.ImageOperations.getMaskFromROIs([annotation], mx, my, 1)[1])
+			masks.append(lib.ImageOperations.CreateVolumeFromSlices(maskFromROIs, self.dataUnit.getSpacing()))
+
+		for roi in rois:
+			if roi.parent == None:
+				masks.append(lib.ImageOperations.getMaskFromROIs(roi, mx, my, mz)[1])
+
+		# Return all the masks and names.
+		return masks, names
 
 	def create3DCircle(self, x, ex, y, ey, scaleFactor, nrOfCircles):
 		my3DCircle = GUI.OGLAnnotations.My3DCircle()
@@ -918,7 +942,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		self.action = ZOOM_TO_BAND
 		
-	def deleteAnnotation(self):
+	def deleteAnnotation(self, ctrl = False):
 		"""
 		Delete annotations on the scene
 		"""
@@ -927,11 +951,15 @@ class InteractivePanel(ogl.ShapeCanvas):
 			if shape.Selected():
 				if shape.parent != None:
 					parent = shape.parent
-					annotations = parent.GetAnnotations()
-					for annotation in annotations:
-						self.RemoveShape(annotation)
-						annotation.Delete()
-					del parent
+					if not ctrl:
+						annotations = parent.GetAnnotations()
+						for annotation in annotations:
+							self.RemoveShape(annotation)
+					parent.RemoveAnnotation(shape)
+					self.RemoveShape(shape)
+					shape.Delete()
+					if not ctrl:
+						del parent
 				else:
 					self.RemoveShape(shape)
 					shape.Delete()

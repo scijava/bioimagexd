@@ -83,9 +83,9 @@ class PadFilter(lib.ProcessingFilter.ProcessingFilter):
 		@param param Parameter name
 		"""
 		if param in ["OutputX", "OutputY"]:
-			return 256
+			return 0
 		if param == "OutputZ":
-			return 25
+			return 0
 		if param in ["IndexX", "IndexY", "IndexZ", "PadIntensity"]:
 			return 0
 

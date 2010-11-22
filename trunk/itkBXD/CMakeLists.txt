@@ -35,7 +35,10 @@ ENDFOREACH(Package)
 SET(Libraries
   ITKCommon
   ITKBasicFilters
+  ITKAlgorithms
   ITKIO
+  ITKStatistics
+  ITKNumerics
 )
 
 

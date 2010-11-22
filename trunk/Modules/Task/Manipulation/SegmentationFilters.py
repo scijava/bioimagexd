@@ -261,7 +261,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	Description: Invert the intensity of the image
 	"""		
 	name = "Invert intensity"
-	category = MISCFILTERING
+	category = MATH
 	
 	def __init__(self, inputs = (1, 1)):
 		"""

@@ -1192,3 +1192,117 @@ def rescaleDataUnits(dataunits, min, max):
 		ds.setIntensityScale(shift, scale)
 		ds.resetColorTransferFunction()
 		dataunit.resetColorTransferFunction()
+
+def CreateVolumeFromSlices(vtkImages, spacing):
+        """
+        Creates a volume from a set of slices (2D vtkImage objects).
+        """
+        vtkImageAppend = vtk.vtkImageAppend()
+        vtkImageAppend.SetAppendAxis(2)
+        for sliceIndex in range(0, len(vtkImages)):
+                vtkImageAppend.SetInput(sliceIndex, vtkImages[sliceIndex])
+        output = vtkImageAppend.GetOutput()
+        output.SetSpacing(spacing)
+        output.Update()
+        return output
+
+def SplitIntoSlices(vtkImage):
+        vtkImageClip = vtk.vtkImageClip()
+        vtkImageClip.SetInput(vtkImage)
+        vtkImageClip.ClipDataOn()
+        dimensions = vtkImage.GetDimensions()
+        slices = []
+        for z in range(0, dimensions[2]):
+                vtkImageClip.SetOutputWholeExtent(0, dimensions[0], 0, dimensions[1], z, z)
+                slice = vtk.vtkImageData()
+                vtkImageClip.Update()
+                slice.DeepCopy(vtkImageClip.GetOutput())
+                slices.append(slice)
+        del vtkImageClip
+        return slices
+
+def CheckCrops(crops):
+        """
+        crop
+        - crop1
+        .- point1 = (x1, y1)
+        -- point2 = (x2, y2)
+        -- point3 = (x3, y3)
+        ...
+        """
+        # First we need to check that are an equal amount of points in every crop.		# We only do this once.
+        for crop in crops:
+                if len(crop) != len(crops[0]):
+                        raise Exception
+                for point in crop:
+                        # The points needs to contain two components only (x and y).
+                        if len(point) != 2:
+                                raise Exception
+                        # They cannot be negative either.
+                        for p in point:
+                                if p < 0:
+                                        raise Exception
+
+def CreateCropsFromInterpolatedPoints(points):
+        """
+        points
+        - interpolated points (Z direction)
+        -- point1 = (x1, y1)
+        -- ...
+        -- pointN = (xN, yN)
+        ...
+
+        So we want to pair every point1 in all the inpolated points.
+        Thus we create a polygon, that can be used for cropping at a
+        certain Z level.
+        """
+        crops = []
+        for i in range(0, len(points[0])):
+                crop = []
+                for k in range(0, len(points)):
+                        crop.append(points[k][i])
+                crops.append(crop)
+        return crops
+
+def InterpolateBetweenCrops(crop1, crop2, pointsInBetween):
+        if pointsInBetween < 0 or type(pointsInBetween) != int:
+                raise Exception("Invalid amount of points (%d)inbetween crops." % pointsInBetween)
+        CheckCrops([crop1, crop2])
+        # We know they're equal in length if they passed CheckCrops().
+        interpolatedPoints = []
+        for i in range(0, len(crop1)):
+                interpolatedPoints.append(InterpolateBetweenPoints(crop1[i], crop2[i], pointsInBetween))
+        return CreateCropsFromInterpolatedPoints(interpolatedPoints)
+
+# Notice that this is done in Z direction.
+def InterpolateBetweenPoints(point1, point2, pointsInBetween):
+        # Make sure we're using float.
+        x1, y1 = float(point1[0]), float(point1[1])
+        x2, y2 = float(point2[0]), float(point2[1])
+        pointsInBetween = float(pointsInBetween)
+
+        if pointsInBetween == 1:
+                x = round(0.5 * (x1 + x2))
+                y = round(0.5 * (y1 + y2))
+                return [(x, y)]
+
+        # Differences between the two points.
+        xDiff = math.fabs(x1 - x2)
+        yDiff = math.fabs(y1 - y2)
+
+        # Increments.
+        xInc = xDiff / (pointsInBetween + 1.0)
+        yInc = yDiff / (pointsInBetween + 1.0)
+
+        # Store the points.
+        inBetweenPoints = []
+        inBetweenPoints.append(point1)
+
+        # Add the increment to the x and y coordinates with a lesser value.
+        for i in range(1, int(pointsInBetween) + 1):
+                x = round(x1 + float(i) * xInc) if (x1 < x2) else round(x1 - float(i) * xInc)
+                y = round(y1 + float(i) * yInc) if (y1 < y2) else round(y1 - float(i) * yInc)
+                inBetweenPoints.append((x, y))
+
+        inBetweenPoints.append(point2)
+        return inBetweenPoints

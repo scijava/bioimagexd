@@ -33,6 +33,8 @@ import Logging
 from Visualizer.VisualizationMode import VisualizationMode
 from GUI.PreviewFrame.MIPPreviewFrame import MIPPreviewFrame
 import scripting
+import wx.lib.scrolledpanel as scrolled
+import wx
 
 def getName():
 	"""
@@ -116,6 +118,43 @@ def showZoomToolbar():
 	return a boolean indicating whether the visualizer toolbars (zoom, annotation) should be visible 
 	"""
 	return True
+
+
+class SimpleConfigurationPanel(scrolled.ScrolledPanel):
+	"""
+	A configuration panel for the projection view
+	"""
+	def __init__(self, parent, visualizer, mode, **kws):
+		"""
+		Initialization
+		"""
+		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (230,500))
+		self.visualizer = visualizer
+		self.mode = mode
+		self.sizer = wx.GridBagSizer()
+		self.projectionBox = wx.RadioBox(self, -1, "View projection",
+										 choices = ["Maximum intensity projection",
+													"Average intensity projection"],
+										 majorDimension = 1,
+										 style = wx.RA_SPECIFY_COLS)
+
+		self.updateButton = wx.Button(self, -1, "Update")
+		self.updateButton.Bind(wx.EVT_BUTTON, self.onSetProjectionMode)
+		self.sizer.Add(self.projectionBox, (0,0))
+		self.sizer.Add(self.updateButton, (2,0))
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.SetupScrolling()
+
+	def onSetProjectionMode(self, event):
+		"""
+		Configure what projection to show
+		"""
+		pos = self.projectionBox.GetSelection()
+		if pos == 0:
+			self.mode.iactivePanel.setShowMaximum()
+		else:
+			self.mode.iactivePanel.setShowAverage()
 	
 class SimpleMode(VisualizationMode):
 
@@ -128,13 +167,14 @@ class SimpleMode(VisualizationMode):
 		self.visualizer = visualizer
 		self.iactivePanel = None
 		self.dataUnit = None
+		self.configPanel = None
 		
 	def showSideBar(self):
 		"""
 		Method that is queried to determine whether
 					 to show the sidebar
 		"""
-		return False
+		return True
 		
 	def Render(self):
 		"""
@@ -161,10 +201,20 @@ class SimpleMode(VisualizationMode):
 		Set the mode of visualization
 		"""
 		scripting.wantWholeDataset = 1
+		self.sidebarWin = sidebarwin
 
+		x,y = self.visualizer.visWin.GetSize()
 		if not self.iactivePanel:
 			Logging.info("Generating preview", kw = "visualizer")
 			self.iactivePanel = MIPPreviewFrame(self.parent)
+
+		if not self.configPanel:
+			self.container = wx.SashLayoutWindow(self.sidebarWin)
+			self.configPanel = SimpleConfigurationPanel(self.container, self.visualizer, self, size = (x,y))
+
+		self.configPanel.Show()
+		self.container.Show()
+
 		return self.iactivePanel
 		
 	def setDataUnit(self, dataUnit):

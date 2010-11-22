@@ -68,7 +68,7 @@ class TaskPanel(ScrolledPanel):
 		self.wantNotebook = wantNotebook
 		# Unbind to not get annoying behaviour of scrolling
 		# when clicking on the panel
-		self.Unbind(wx.EVT_CHILD_FOCUS)
+		self.Bind(wx.EVT_CHILD_FOCUS, self.onChildFocus)
 		self.buttonPanel = wx.Panel(self, -1)
 		self.root = root
 		self.preview = None
@@ -288,7 +288,7 @@ class TaskPanel(ScrolledPanel):
 		self.buttonPanel.SetSizer(self.buttonSizer)
 		#self.buttonPanel.SetAutoLayout(1)		
 		#self.buttonsSizer2 = wx.BoxSizer(wx.HORIZONTAL)
-		self.previewButton = wx.Button(self.buttonPanel, -1, "View result")
+		self.previewButton = wx.Button(self.buttonPanel, -1, "View &result")
 		self.previewButton.Bind(wx.EVT_BUTTON, self.doPreviewCallback)
 		#self.buttonSizer.AddSpacer((5,5))
 		self.buttonSizer.Add(self.previewButton, 0, wx.RIGHT | wx.TOP | wx.ALIGN_CENTER, 10)
@@ -446,3 +446,7 @@ class TaskPanel(ScrolledPanel):
 		"""
 		pass
 	
+	def onChildFocus(self, event):
+		"""
+		"""
+		pass

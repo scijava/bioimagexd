@@ -42,6 +42,7 @@ import time
 import vtk
 import vtkbxd
 import wx
+import itk
 
 ZOOM_TO_FIT = -1
 
@@ -57,6 +58,8 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 		Initialize the panel
 		"""
 		self.mip = None
+		self.pif = None
+		self.mode = 0
 		PreviewFrame.PreviewFrame.__init__(self, parent, **kws)
 		self.z = -1
 
@@ -86,11 +89,43 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 		Process the data before it's send to the preview
 		"""
 		data.UpdateInformation()
-		if not self.mip:
-			self.mip = vtkbxd.vtkImageSimpleMIP()
-		else:
-			self.mip.RemoveAllInputs()
-		self.mip.SetInput(data)
-		data = self.mip.GetOutput()
+		if self.mode == 0: # MIP mode
+			if not self.mip:
+				self.mip = vtkbxd.vtkImageSimpleMIP()
+			else:
+				self.mip.RemoveAllInputs()
+			self.mip.SetInput(data)
+			data = self.mip.GetOutput()
+		else: # AIP mode
+			self.convVTKtoITK = itk.VTKImageToImageFilter.IUC3.New()
+			self.convVTKtoITK.SetInput(data)
+			self.convVTKtoITK.Update()
+			itkImg = self.convVTKtoITK.GetOutput()
+			
+			self.pif = itk.MeanProjectionImageFilter.IUC3IUC2.New()
+			self.pif.SetInput(itkImg)
+			output = self.pif.GetOutput()
+			
+			self.convITKtoVTK = itk.ImageToVTKImageFilter[output].New()
+			self.convITKtoVTK.SetInput(output)
+			self.convITKtoVTK.Update()
+			data = self.convITKtoVTK.GetOutput()
 
 		return PreviewFrame.PreviewFrame.processOutputData(self, data)
+
+	def setShowMaximum(self):
+		"""
+		Show maximum intensity projection
+		"""
+		self.mode = 0
+		self.updatePreview()
+		self.Refresh()
+
+	def setShowAverage(self):
+		"""
+		Show average intensity projection
+		"""
+		self.mode = 1
+		self.updatePreview()
+		self.Refresh()
+	

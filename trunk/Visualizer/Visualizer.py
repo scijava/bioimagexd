@@ -254,7 +254,11 @@ class Visualizer:
 		"""
 		Add mask in masks list
 		"""
-		self.masks.insert(0, mask)
+                if type(mask) == list:
+                        for m in mask:
+                                self.masks.insert(0, m)
+		else:
+                        self.masks.insert(0, mask)
 
 	def createSliders(self):
 		"""
@@ -604,14 +608,6 @@ class Visualizer:
 			cam = self.currentWindow.getRenderer().GetActiveCamera()
 			cam.SetParallelProjection(flag)
 			self.currentWindow.Render()
-
-	def get3DRegionsOfInterest(self):
-		"""
-		Return all the 3D regions of interest
-		"""
-		if hasattr(self.currentWindow, "get3DRegionsOfInterest"):
-			return self.currentWindow.get3DRegionsOfInterest()
-		return []
 
 	def getRegionsOfInterest(self):
 		"""

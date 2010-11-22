@@ -32,7 +32,7 @@ do
 done
 
 # Next copy ITKCommon.dll
-cp /cygdrive/c/BioImageXD/ITK-3.18/bin/Release/ITKCommon.dll lib/Release
+cp /cygdrive/c/BioImageXD/ITK-3.20/bin/Release/ITKCommon.dll lib/Release
 # Next copy every pyd file from the directory where ITK was build
 cp /cygdrive/c/BioImageXD/wrapITK/lib/Release/*.pyd lib/Release
 # Copy specific manifest file from BioImageXD/bin directory

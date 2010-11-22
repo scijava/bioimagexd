@@ -132,11 +132,11 @@ class VisualizeTracksHelper(PainterHelper):
 							ang2 = ang
 							#if ang<0:ang=180+ang
 							return ang
-							
+
 						if x0 != x1:
 							dc.DrawLine(x0, y0, x1, y1)
 							a1 = angle(x0, y0, x1, y1)
-							
+
 						x0, y0 = x1, y1
 						
 	def drawTimepoint(self, dc, tp, x, y):
@@ -201,15 +201,15 @@ class AnnotationHelper(PainterHelper):
 		Paint the annotations on a DC
 		"""
 		shapeAnnotations = filter(lambda x:isinstance(x, GUI.OGLAnnotations.ShapeAnnotation), self.parent.diagram.GetShapeList())
+		parentForSelected = None
 		for shapeAnnotation in shapeAnnotations:
 			if shapeAnnotation.parent != None:
+				if shapeAnnotation.Selected():
+					parentForSelected = shapeAnnotation.parent
 				shapeAnnotation.Show(0 if shapeAnnotation.sliceNumber != scripting.visualizer.zslider.GetValue() else 1)
 			else:
 				shapeAnnotation.Show(1)
-		self.parent.diagram.Redraw(dc)	
-		
-	def setParent(self, parent):
-		"""
-		set the parent
-		"""		   
-		self.parent = parent
+			if parentForSelected:
+				for shapeAnnotation in parentForSelected.GetAnnotations():
+					shapeAnnotation.Select(0 if shapeAnnotation.sliceNumber != scripting.visualizer.zslider.GetValue() else 1)
+		self.parent.diagram.Redraw(dc)

@@ -1049,6 +1049,16 @@ class My3DAnnotation():
 	def GetAnnotations(self):
 		return self.annotations
 
+	def RemoveAnnotation(self, annotation):
+		"""
+		"""
+		annoPos = -1
+		for i, anno in enumerate(self.annotations):
+			if anno == annotation:
+				annoPos = i
+		if annoPos >= 0:
+			self.annotations[annoPos] = None
+
 class My3DPolygon(My3DAnnotation):
 	"""
 	3D polygon. A list containing MyPolygon objects.
