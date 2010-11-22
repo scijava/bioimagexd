@@ -105,13 +105,13 @@ class AnnotationToolbar(wx.Window):
 		self.sizer.Add(self.scaleBtn, (1, 1))
 
 		self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.gif", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
- 		self.sizer.Add(self.threeDPolygonBtn, (2, 0))
+ 		#self.sizer.Add(self.threeDPolygonBtn, (2, 0))
 
 		self.threeDCircleBtn = createBtn(MenuManager.ID_ROI_THREE_D_CIRCLE, "three_d_circle.gif", "Select one or several circle areas of the image in different slices to perform a 3D crop")
- 		self.sizer.Add(self.threeDCircleBtn, (2, 1))
+ 		#self.sizer.Add(self.threeDCircleBtn, (2, 1))
 
 		self.threeDRectangleBtn = createBtn(MenuManager.ID_ROI_THREE_D_RECTANGLE, "three_d_rectangle.gif", "Select one or several rectangle areas of the image in different slices to perform a 3D crop")
- 		self.sizer.Add(self.threeDRectangleBtn, (3, 0))
+ 		#self.sizer.Add(self.threeDRectangleBtn, (3, 0))
 
 		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		#self.sizer.Add(self.textBtn, (2, 0))
