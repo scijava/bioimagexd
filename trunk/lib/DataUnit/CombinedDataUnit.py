@@ -474,7 +474,11 @@ class CombinedDataUnit(DataUnit):
 			Logging.info("Getting preview from module %s"%str(self.module), kw="dataunit")
 			preview = self.module.getPreview(depth)
 
-		isMultiComponent = preview.GetNumberOfScalarComponents()>1 # doesn't work when preview isn't updated
+		if preview is not None:
+			isMultiComponent = preview.GetNumberOfScalarComponents()>1 # doesn't work when preview isn't updated
+		else:
+			isMultiComponent = False
+		
 		if not isMultiComponent:
 			for unit in self.sourceunits:
 				isMultiComponent = unit.getBitDepth() > unit.getSingleComponentBitDepth()

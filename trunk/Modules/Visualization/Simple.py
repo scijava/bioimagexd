@@ -128,13 +128,13 @@ class SimpleConfigurationPanel(scrolled.ScrolledPanel):
 		"""
 		Initialization
 		"""
-		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (230,500))
+		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (150,500))
 		self.visualizer = visualizer
 		self.mode = mode
 		self.sizer = wx.GridBagSizer()
 		self.projectionBox = wx.RadioBox(self, -1, "View projection",
-										 choices = ["Maximum intensity projection",
-													"Average intensity projection"],
+										 choices = ["Max. IP",
+													"Avg. IP"],
 										 majorDimension = 1,
 										 style = wx.RA_SPECIFY_COLS)
 
@@ -250,5 +250,4 @@ class SimpleMode(VisualizationMode):
 		Save a snapshot of the scene
 		"""		 
 		self.iactivePanel.saveSnapshot(filename)
-		
 		

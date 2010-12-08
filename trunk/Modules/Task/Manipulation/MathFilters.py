@@ -104,23 +104,48 @@ def getFilters():
             CosFilter, ExpFilter, LogFilter, SQRTFilter]
 
 
-class LogicFilter(MathFilter):
+class LogicFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A base class for image mathematics filters
+	A base class for logic filters
 	"""     
 	name = "Logic filter"
 	category = LOGIC
 	
 	def __init__(self, inputs = (2, 2)):
 		"""
-		Method: __init__()
 		Initialization
 		"""        
-		MathFilter.__init__(self, inputs)
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageLogic()
 		self.vtkfilter.SetOutputTrueValue(255)
+
+	def getParameters(self):
+		"""
+		Return the list of parameters needed for configuring this GUI
+		"""
+		return []
+
+	def execute(self, inputs, update = 0, last = 0):
+		"""
+		Execute the filter with given inputs and return the output
+		"""
+		lib.ProcessingFilter.ProcessingFilter.execute(self, inputs)
+		image = self.getInput(1)
 	
+		if self.numberOfInputs[0] > 1:
+			self.vtkfilter.SetInput1(image)
+			self.vtkfilter.SetInput2(self.getInput(2))
+		else:
+			self.vtkfilter.SetInput1(image)
+			self.vtkfilter.SetInput2(image)
+			self.vtkfilter.SetInput(image)    
+		f = "self.vtkfilter.SetOperationTo%s()" % self.operation
+		eval(f)
+		
+		if update:
+			self.vtkfilter.Update()
+		return self.vtkfilter.GetOutput() 
+
 		
 class AndFilter(LogicFilter):
 	"""
