@@ -312,9 +312,15 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Input for label shape=",self.getInputDataUnit(1)
 		print "Orig. dataunit = ",self.getInputDataUnit(2)
 
+		diritk = dir(itk)
+		if "LabelImageToStatisticsLabelMapFilter" in diritk and "LabelMap" in diritk and "StatisticsLabelObject" and "LabelGeometryImageFilter" in diritk:
+			newITKStatistics = 1
+		else:
+			newITKStatistics = 0
+
 		# Do necessary conversions of datatype
 		origVTK = origImage
-		if self.parameters["AvgInt"] or self.parameters["NonZero"]:
+		if self.parameters["AvgInt"] or self.parameters["NonZero"] or newITKStatistics:
 			origITK = self.convertVTKtoITK(origVTK)
 
 		# Cannot have two convertVTKtoITK in same filter
@@ -342,12 +348,6 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		else:
 			labelITK = labelImage
 			dim = labelITK.GetLargestPossibleRegion().GetSize().GetSizeDimension()
-
-		diritk = dir(itk)
-		if "LabelImageToStatisticsLabelMapFilter" in diritk and "LabelMap" in diritk and "StatisticsLabelObject" and "LabelGeometryImageFilter" in diritk:
-			newITKStatistics = 1
-		else:
-			newITKStatistics = 0
 
 		# Initializations
 		spacing = self.dataUnit.getSpacing()

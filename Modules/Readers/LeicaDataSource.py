@@ -140,6 +140,14 @@ class LeicaDataSource(DataSource):
 		if not self.voxelsize:
 			self.voxelsize = self.reader.GetVoxelSize(self.experiment)
 		return self.voxelsize
+
+	def getScalarRange(self):
+		"""
+		Return scalar range of data
+		"""
+		self.getBitDepth()
+		self.scalarRange = (0, 2 ** self.bitdepth - 1)
+		return self.scalarRange
 	
 	def loadFromFile(self, filename):
 		"""
@@ -747,9 +755,16 @@ class LeicaExperiment:
 			TIFFReader.SetDataScalarTypeToUnsignedChar()
 		else:
 			raise "Only 8-bit data supported"
+
+		spacingX,spacingY,spacingZ = 1.0,1.0,1.0
+		if XSpace != 0.0 and YSpace != 0.0:
+			spacingY = YSpace / XSpace
+		if XSpace != 0.0 and ZSpace != 0.0:
+			spacingZ = ZSpace / XSpace
+		
 		TIFFReader.FileLowerLeftOff()
 		TIFFReader.SetDataExtent(0, XYDim, 0, XYDim, 0, NumSect)
-		TIFFReader.SetDataSpacing(XSpace, YSpace, ZSpace)
+		TIFFReader.SetDataSpacing(spacingX, spacingY, spacingZ)
 		TIFFReader.Update()
 		return TIFFReader
 		
@@ -777,9 +792,15 @@ class LeicaExperiment:
 		elif Series_Info['Bit_Depth'] == 12:
 			RAWReader.SetDataScalarTypeToUnsignedShort()
 		RAWReader.FileLowerLeftOff()
+
+		spacingX,spacingY,spacingZ = 1.0,1.0,1.0
+		if XSpace != 0.0 and YSpace != 0.0:
+			spacingY = YSpace / XSpace
+		if XSpace != 0.0 and ZSpace != 0.0:
+			spacingZ = ZSpace / XSpace
 		
 		RAWReader.SetDataExtent(0, XYDim, 0, XYDim, 0, NumSect)
-		RAWReader.SetDataSpacing(XSpace, YSpace, ZSpace)
+		RAWReader.SetDataSpacing(spacingX, spacingY, spacingZ)
 		RAWReader.Update()
 		return RAWReader
 

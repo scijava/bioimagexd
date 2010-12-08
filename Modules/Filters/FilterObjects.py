@@ -117,8 +117,10 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Filtering objects"
 		inputImage = self.getInput(1)
 		inputImage = self.convertVTKtoITK(inputImage)
+		region = inputImage.GetLargestPossibleRegion()
+		dim = region.GetImageDimension()
 
-		shapeFilter = itk.LabelImageToShapeLabelMapFilter.IUL2LM2.New()
+		shapeFilter = eval("itk.LabelImageToShapeLabelMapFilter.IUL%dLM%d.New()"%(dim,dim))
 		if self.parameters["FilterRoundness"]:
 			shapeFilter.ComputePerimeterOn()
 		shapeFilter.SetInput(inputImage)
@@ -128,14 +130,14 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.parameters["FilterSize"]:
 			minSize = self.parameters["MinSize"]
 			maxSize = self.parameters["MaxSize"]
-			shapeOpeningMinSize = itk.ShapeOpeningLabelMapFilter.LM2.New()
+			shapeOpeningMinSize = eval("itk.ShapeOpeningLabelMapFilter.LM%d.New()"%dim)
 			shapeOpeningMinSize.InPlaceOn()
 			shapeOpeningMinSize.SetAttribute('Size')
 			shapeOpeningMinSize.SetInput(self.labelMap)
 			shapeOpeningMinSize.SetLambda(minSize)
 			shapeOpeningMinSize.Update()
 
-			shapeOpeningMaxSize = itk.ShapeOpeningLabelMapFilter.LM2.New()
+			shapeOpeningMaxSize = eval("itk.ShapeOpeningLabelMapFilter.LM%d.New()"%dim)
 			shapeOpeningMaxSize.InPlaceOn()
 			shapeOpeningMaxSize.SetAttribute('Size')
 			shapeOpeningMaxSize.SetInput(shapeOpeningMinSize.GetOutput())
@@ -145,7 +147,7 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.labelMap = shapeOpeningMaxSize.GetOutput()
 
 		if self.parameters["FilterBorder"]:
-			shapeOpeningBorder = itk.ShapeOpeningLabelMapFilter.LM2.New()
+			shapeOpeningBorder = eval("itk.ShapeOpeningLabelMapFilter.LM%d.New()"%dim)
 			shapeOpeningBorder.InPlaceOn()
 			shapeOpeningBorder.SetAttribute('SizeOnBorder')
 			shapeOpeningBorder.SetInput(self.labelMap)
@@ -155,7 +157,7 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.labelMap = shapeOpeningBorder.GetOutput()
 
 		if self.parameters["FilterRoundness"]:
-			shapeOpeningMinRoundness = itk.ShapeOpeningLabelMapFilter.LM2.New()
+			shapeOpeningMinRoundness = eval("itk.ShapeOpeningLabelMapFilter.LM%d.New()"%dim)
 			shapeOpeningMinRoundness.InPlaceOn()
 			shapeOpeningMinRoundness.SetAttribute('Roundness')
 			shapeOpeningMinRoundness.SetInput(self.labelMap)
@@ -163,7 +165,7 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			shapeOpeningMinRoundness.Update()
 			self.labelMap = shapeOpeningMinRoundness.GetOutput()
 
-			shapeOpeningMaxRoundness = itk.ShapeOpeningLabelMapFilter.LM2.New()
+			shapeOpeningMaxRoundness = eval("itk.ShapeOpeningLabelMapFilter.LM%d.New()"%dim)
 			shapeOpeningMaxRoundness.InPlaceOn()
 			shapeOpeningMaxRoundness.SetAttribute('Roundness')
 			shapeOpeningMaxRoundness.SetInput(self.labelMap)
@@ -172,13 +174,13 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			shapeOpeningMaxRoundness.Update()
 			self.labelMap = shapeOpeningMaxRoundness.GetOutput()
 
-		relabelSize = itk.ShapeRelabelLabelMapFilter.LM2.New()
+		relabelSize = eval("itk.ShapeRelabelLabelMapFilter.LM%d.New()"%dim)
 		relabelSize.SetInput(self.labelMap)
 		relabelSize.SetAttribute('Size')
 		relabelSize.Update()
 		self.labelMap = relabelSize.GetOutput()
 
-		shapeToImage = itk.LabelMapToLabelImageFilter.LM2IUL2.New()
+		shapeToImage = eval("itk.LabelMapToLabelImageFilter.LM%dIUL%d.New()"%(dim,dim))
 		shapeToImage.SetInput(self.labelMap)
 		outputImage = shapeToImage.GetOutput()
 		outputImage.Update()
