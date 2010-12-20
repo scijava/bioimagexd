@@ -81,7 +81,7 @@ def getIcon():
 	"""
 	return the icon name for this visualization mode
 	"""
-	return "view_rendering_3d.jpg"
+	return "Vis_3D.png"
 
 def getShortDesc():
 	"""
@@ -177,6 +177,12 @@ class RenderingMode(VisualizationMode):
 					 to show the sidebar
 		"""
 		return True
+
+	def getSidebarWinOrigSize(self):
+		"""
+		Return default size of sidebar win
+		"""
+		return (200,500)
 
 	def showViewAngleCombo(self):
 		"""

@@ -267,10 +267,10 @@ class Visualizer:
 		self.sliderPanel = wx.Panel(self.sliderWin, -1)
 		self.setCurrentSliderPanel(self.sliderPanel)
 		iconpath = scripting.get_icon_dir()
-		leftarrow = wx.Image(os.path.join(iconpath, "leftarrow.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-		rightarrow = wx.Image(os.path.join(iconpath, "rightarrow.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-		uparrow = wx.Image(os.path.join(iconpath, "uparrow.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-		downarrow = wx.Image(os.path.join(iconpath, "downarrow.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		leftarrow = wx.Image(os.path.join(iconpath, "Arrow_Left.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		rightarrow = wx.Image(os.path.join(iconpath, "Arrow_Right.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		uparrow = wx.Image(os.path.join(iconpath, "Arrow_Up.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		downarrow = wx.Image(os.path.join(iconpath, "Arrow_Down.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 
 		self.prev = wx.BitmapButton(self.sliderPanel, -1, leftarrow)
 		self.prev.SetSize((64, 64))
@@ -517,8 +517,8 @@ class Visualizer:
 
 		wx.EVT_COMBOBOX(self.parent, GUI.MenuManager.ID_SET_VIEW, self.onSetView)
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OUT,
-							wx.Image(os.path.join(icondir, "zoom-out.gif"),
-									wx.BITMAP_TYPE_GIF).ConvertToBitmap(),
+							wx.Image(os.path.join(icondir, "Zoom_Out.png"),
+									wx.BITMAP_TYPE_PNG).ConvertToBitmap(),
 							"Zoom out",
 							"Zoom out on the optical slice")
 
@@ -539,29 +539,29 @@ class Visualizer:
 		self.tb.AddControl(self.zoomCombo)
 
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_IN, \
-								wx.Image(os.path.join(icondir, "zoom-in.gif"), \
-										wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+								wx.Image(os.path.join(icondir, "Zoom_In.png"), \
+										wx.BITMAP_TYPE_PNG).ConvertToBitmap(), \
 								"Zoom in", \
 								"Zoom in on the slice")
 
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_TO_FIT, \
-								wx.Image(os.path.join(icondir, "zoom-to-fit.gif"), \
-											wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+								wx.Image(os.path.join(icondir, "Zoom_ToFit.png"), \
+											wx.BITMAP_TYPE_PNG).ConvertToBitmap(), \
 								"Zoom to Fit", \
 								"Zoom the slice so that it fits in the window")
 
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OBJECT, \
-								wx.Image(os.path.join(icondir, "zoom-object.gif"), \
-											wx.BITMAP_TYPE_GIF).ConvertToBitmap(), \
+								wx.Image(os.path.join(icondir, "Zoom_ToRegion.png"), \
+											wx.BITMAP_TYPE_PNG).ConvertToBitmap(), \
 								"Zoom object", \
 								"Zoom user selected portion of the slice")
 
 
 
-		icon = wx.Image(os.path.join(icondir, "original.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		icon = wx.Image(os.path.join(icondir, "Original.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		self.tb.AddSeparator()
 		#self.origBtn = wx.BitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
-		self.origBtn = wx.lib.buttons.GenBitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
+		self.origBtn = wx.lib.buttons.GenBitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon, style = wx.BORDER_NONE, size = (32,32))
 		self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
 		self.origBtn.Bind(wx.EVT_LEFT_DOWN, lambda x: self.onShowOriginal(x, 1))
 		self.origBtn.Bind(wx.EVT_LEFT_UP, lambda x: self.onShowOriginal(x, 0))
@@ -581,7 +581,7 @@ class Visualizer:
 		self.dimInfo = GUI.UIElements.DimensionInfo(self.tb, -1, size = (160, 50))
 		self.tb.AddControl(self.dimInfo)
 		
-		resampleBmp = wx.Image(os.path.join(icondir, "resample.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		resampleBmp = wx.Image(os.path.join(icondir, "Resample.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		self.resamplingBtn = wx.lib.buttons.GenBitmapToggleButton(self.tb, GUI.MenuManager.ID_RESAMPLING, resampleBmp)
 		self.resamplingBtn.SetBestSize((32, 32))
 		self.resamplingBtn.SetToolTipString("Enable or disable the resampling of image data")
@@ -790,7 +790,6 @@ class Visualizer:
 		"""
 		Restore the window sizes from settings
 		"""
-
 		item = "%s_SidebarSize" % self.mode
 		ssize = self.conf.getConfigItem(item, "Sizes")
 		if not ssize:
@@ -1000,7 +999,7 @@ class Visualizer:
 				if not flag:
 					# If restoring the size from settings failed or this is not the first time, then
 					# use the sidebarWin.origSize
-					self.sidebarWin.SetDefaultSize(self.sidebarWin.origSize)
+					self.sidebarWin.SetDefaultSize(self.currentMode.getSidebarWinOrigSize())
 		wx.LayoutAlgorithm().LayoutWindow(self.parent, self.visWin)
 
 		self.currentWindow.enable(0)

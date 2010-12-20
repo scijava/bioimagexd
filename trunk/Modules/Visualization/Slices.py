@@ -73,7 +73,7 @@ def getIcon():
 	"""
 	return the icon name for this visualization mode
 	"""
-	return "view_slices.jpg"
+	return "Vis_Slices.png"
 		
 def getShortDesc():
 	"""

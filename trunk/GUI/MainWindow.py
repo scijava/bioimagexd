@@ -672,28 +672,28 @@ class MainWindow(wx.Frame):
 		self.taskIds = []
 		self.visIds = []
 		Logging.info("Creating toolbar", kw = "init")
-		bmp = wx.Image(os.path.join(iconpath, "open_dataset.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_OpenDataset.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_OPEN, "Open", bmp, shortHelp = "Open dataset series")
 		wx.EVT_TOOL(self, MenuManager.ID_OPEN, self.onMenuOpen)
 
-		bmp = wx.Image(os.path.join(iconpath, "save_snapshot.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_Snapshot.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SAVE_DATASET, "Save dataset", bmp, \
 						shortHelp = "Write the processed dataset to disk")
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_DATASET, self.onSaveDataset)
 
 		
-		bmp = wx.Image(os.path.join(iconpath, "open_settings.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_OpenSettings.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_OPEN_SETTINGS, "Open settings", bmp, shortHelp = "Open settings")
 		wx.EVT_TOOL(self, MenuManager.ID_OPEN_SETTINGS, self.onMenuOpenSettings)
-		bmp = wx.Image(os.path.join(iconpath, "save_settings.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_SaveSettings.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SAVE_SETTINGS, "Save settings", bmp, shortHelp = "Save settings")
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_SETTINGS, self.onMenuSaveSettings)
 
-		bmp = wx.Image(os.path.join(iconpath, "camera.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_Snapshot.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT, "Save rendered image", bmp, \
 						shortHelp = "Save a snapshot of the rendered scene")
 
-		bmp = wx.Image(os.path.join(iconpath, "tree.jpg"), wx.BITMAP_TYPE_JPEG).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_Tree.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SHOW_TREE, "File manager", bmp, kind = wx.ITEM_CHECK, \
 						shortHelp = "Show file management tree")
 		wx.EVT_TOOL(self, MenuManager.ID_SHOW_TREE, self.onMenuShowTree)
@@ -744,7 +744,7 @@ class MainWindow(wx.Frame):
 				tb.ToggleTool(vid, 1)
 
 		
-		bmp = wx.Image(os.path.join(iconpath, "help.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "Help.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		
 		tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP, "Help", bmp, \
 						shortHelp = "Get help for current task / visualization")

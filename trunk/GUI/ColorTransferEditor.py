@@ -31,7 +31,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 import wx.lib.buttons as buttons
 import wx.lib.colourselect as csel
-import GUI.Dialogs	
+import GUI.Dialogs
 import lib.ImageOperations
 import Logging
 import scripting
@@ -603,31 +603,47 @@ class ColorTransferEditor(wx.Panel):
 		self.itemBox = wx.BoxSizer(wx.HORIZONTAL)
 		
 		self.alphaMode = 0
-		
-		self.redBtn = buttons.GenToggleButton(self, -1, "", size = (32, 32))
+
+		iconpath = scripting.get_icon_dir()
+		redbmp = wx.Image(os.path.join(iconpath, "CTF_Red.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		self.redBtn = buttons.GenBitmapToggleButton(self, -1, None)
+		self.redBtn.SetBestSize((32,32))
 		self.redBtn.SetValue(1)
-		self.redBtn.SetBackgroundColour((255, 0, 0))
-		self.greenBtn = buttons.GenToggleButton(self, -1, "", size = (32, 32))
-		self.greenBtn.SetBackgroundColour((0, 255, 0))
-		self.blueBtn = buttons.GenToggleButton(self, -1, "", size = (32, 32))
-		self.blueBtn.SetBackgroundColour((0, 0, 255))
+		self.redBtn.SetBitmapLabel(redbmp)
+
+		greenbmp = wx.Image(os.path.join(iconpath, "CTF_Green.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		self.greenBtn = buttons.GenBitmapToggleButton(self, -1, None)
+		self.greenBtn.SetBestSize((32,32))
+		self.greenBtn.SetBitmapLabel(greenbmp)
+
+		bluebmp = wx.Image(os.path.join(iconpath, "CTF_Blue.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		self.blueBtn = buttons.GenBitmapToggleButton(self, -1, None)
+		self.blueBtn.SetBestSize((32,32))
+		self.blueBtn.SetBitmapLabel(bluebmp)
 		
 		if self.alpha:
-			self.alphaBtn = buttons.GenToggleButton(self, -1, "Alpha", size = (32, 32))
+			alphabmp = wx.Image(os.path.join(iconpath, "CTF_Alpha.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+			self.alphaBtn = buttons.GenBitmapToggleButton(self, -1, None)
+			self.alphaBtn.SetBestSize((32,32))
 			self.alphaBtn.Bind(wx.EVT_BUTTON, self.onEditAlpha)
-			self.alphaBtn.SetBackgroundColour((255, 255, 255))
-		iconpath = scripting.get_icon_dir()		   
+			self.alphaBtn.SetBitmapLabel(alphabmp)
+
 		self.freeBtn = buttons.GenBitmapToggleButton(self, -1, None)
 		self.freeBtn.SetBestSize((32, 32))
-		bmp = wx.Image(os.path.join(iconpath, "draw.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "CTF_Freehand.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		self.freeBtn.SetBitmapLabel(bmp)
 		self.colorBtn = csel.ColourSelect(self, -1, "", size = (32, 32))
 		self.colorBtn.Bind(csel.EVT_COLOURSELECT, self.onSetToColor)
 
-		openGif = wx.Image(os.path.join(iconpath, "open.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-		saveGif = wx.Image(os.path.join(iconpath, "save.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
-		self.openBtn = wx.BitmapButton(self, -1, openGif, size = (32, 32))
-		self.saveBtn = wx.BitmapButton(self, -1, saveGif, size = (32, 32))
+		openbmp = wx.Image(os.path.join(iconpath, "CTF_OpenPalette.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		self.openBtn = buttons.GenBitmapButton(self, -1, None)
+		self.openBtn.SetBestSize((32,32))
+		self.openBtn.SetBitmapLabel(openbmp)
+
+		savebmp = wx.Image(os.path.join(iconpath, "CTF_SavePalette.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		self.saveBtn = buttons.GenBitmapButton(self, -1, None)
+		self.saveBtn.SetBestSize((32,32))
+		self.saveBtn.SetBitmapLabel(savebmp)
 		
 		self.maxNodes = wx.SpinCtrl(self, -1, "20", min = 2, max = 9999, size = (54, -1), style = wx.TE_PROCESS_ENTER)
 		self.maxNodes.SetToolTip(wx.ToolTip("Set the maximum number of nodes in the graph."))

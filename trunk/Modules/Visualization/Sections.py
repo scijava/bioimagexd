@@ -72,7 +72,7 @@ def getIcon():
 	"""
 	return the icon name for this visualization mode
 	"""
-	return "view_sections.jpg"
+	return "Vis_Ortho.png"
 
 def getShortDesc():
 	"""

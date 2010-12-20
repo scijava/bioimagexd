@@ -17,7 +17,7 @@ def getDesc():
 	return "Adjust the brightness, contrast and gamma of a dataset"
 
 def getIcon():
-	return "task_adjust.jpg"
+	return "Task_Adjust.png"
 
 def getInputLimits():
 	return (1, 1)

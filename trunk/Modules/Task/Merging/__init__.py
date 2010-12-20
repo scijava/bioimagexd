@@ -17,7 +17,7 @@ def getDesc():
 	return "Merge multiple channels to form one RGB dataset"
 
 def getIcon():
-	return "task_merge.jpg"    
+	return "Task_Merge.png"
 
 def getInputLimits():
 	return (2, -1)    

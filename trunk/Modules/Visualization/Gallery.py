@@ -64,7 +64,7 @@ def getIcon():
 	"""
 	return the icon name for this visualization mode
 	"""
-	return "view_gallery.jpg"
+	return "Vis_Gallery.png"
 
 def getToolbarPos():
 	return 1
@@ -197,7 +197,13 @@ class GalleryMode(VisualizationMode):
 		Method that is queried to determine whether
 					 to show the sidebar
 		"""
-		return True  
+		return True
+
+	def getSidebarWinOrigSize(self):
+		"""
+		Return default size of sidebar win
+		"""
+		return (150,500)
 
 	def activate(self, sidebarwin):
 		"""
