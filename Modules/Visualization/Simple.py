@@ -79,13 +79,13 @@ def getShortDesc():
 	"""
 	return a short description (used as menu items etc.) of this visualization mode
 	"""
-	return "Maximum Intensity Projection mode"
+	return "Projection mode"
 
 def getDesc():
 	"""
 	return a description (used as tooltips etc.) of this visualization mode
 	"""
-	return "Create a Maximum Intensity Projection of the dataset"
+	return "Create a projection of the dataset"
 
 def getClass():
 	"""
@@ -128,7 +128,7 @@ class SimpleConfigurationPanel(scrolled.ScrolledPanel):
 		"""
 		Initialization
 		"""
-		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (150,500))
+		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (100,500))
 		self.visualizer = visualizer
 		self.mode = mode
 		self.sizer = wx.GridBagSizer()
@@ -175,7 +175,13 @@ class SimpleMode(VisualizationMode):
 					 to show the sidebar
 		"""
 		return True
-		
+
+	def getSidebarWinOrigSize(self):
+		"""
+		Return default size of sidebar win
+		"""
+		return (100,500)
+	
 	def Render(self):
 		"""
 		Update the rendering
@@ -203,7 +209,7 @@ class SimpleMode(VisualizationMode):
 		scripting.wantWholeDataset = 1
 		self.sidebarWin = sidebarwin
 
-		x,y = self.visualizer.visWin.GetSize()
+		x,y = self.getSidebarWinOrigSize()
 		if not self.iactivePanel:
 			Logging.info("Generating preview", kw = "visualizer")
 			self.iactivePanel = MIPPreviewFrame(self.parent)

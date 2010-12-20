@@ -27,7 +27,7 @@ def getDesc():
 	return "Calculate the colocalization between channels and create a corresponding colocalization map"
 
 def getIcon():
-	return "task_colocalization.jpg"
+	return "Task_Colocalization.png"
 
 def getInputLimits():
 	return (2, 2)

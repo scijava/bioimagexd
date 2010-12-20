@@ -20,7 +20,7 @@ def getDesc():
 	return "Process a dataset with different filters"
 
 def getIcon():
-	return "task_process.jpg"
+	return "Task_Process.png"
 
 def getInputLimits():
 	return (1, -1)    

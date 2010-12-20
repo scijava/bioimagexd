@@ -194,8 +194,8 @@ class AnnotationToolbar(wx.Window):
 		Method to create a toolbar for the annotations
 		"""		   
 		icondir = scripting.get_icon_dir()
-		def createBtn(bid, gifname, tooltip, btnclass = buttons.GenBitmapToggleButton):
-			bmp = wx.Image(os.path.join(icondir, gifname), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		def createBtn(bid, pngname, tooltip, btnclass = buttons.GenBitmapToggleButton):
+			bmp = wx.Image(os.path.join(icondir, pngname), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 			
 			btn = btnclass(self, bid, bmp)
 			
@@ -204,28 +204,28 @@ class AnnotationToolbar(wx.Window):
 			btn.SetToolTipString(tooltip)
 			return btn
 		
-		self.circleBtn = createBtn(MenuManager.ID_ROI_CIRCLE, "circle.gif", "Select a circular area of the image")
+		self.circleBtn = createBtn(MenuManager.ID_ROI_CIRCLE, "Annotation_Circle.png", "Select a circular area of the image")
 		self.sizer.Add(self.circleBtn, (0, 0))
 		
-		self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE, "rectangle.gif", \
+		self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE, "Annotation_Rectangle.png", \
 										"Select a circular area of the image")
 		self.sizer.Add(self.rectangleBtn, (0, 1))
 		
-		self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON, "polygon.gif", \
+		self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON, "Annotation_Polygon.png", \
 										"Select a polygonal area of the image")
 		self.sizer.Add(self.polygonBtn, (1, 0))
 		
-		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "scale.gif", "Draw a scale bar on the image")
+		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "Annotation_Scalebar.png", "Draw a scale bar on the image")
 		self.sizer.Add(self.scaleBtn, (1, 1))
 
 		if INCLUDE3D:
-			self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.gif", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
+			self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.png", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
 			self.sizer.Add(self.threeDPolygonBtn, (2, 0))
 
-			self.threeDCircleBtn = createBtn(MenuManager.ID_ROI_THREE_D_CIRCLE, "three_d_circle.gif", "Select one or several circle areas of the image in different slices to perform a 3D crop")
+			self.threeDCircleBtn = createBtn(MenuManager.ID_ROI_THREE_D_CIRCLE, "three_d_circle.png", "Select one or several circle areas of the image in different slices to perform a 3D crop")
 			self.sizer.Add(self.threeDCircleBtn, (2, 1))
 
-			self.threeDRectangleBtn = createBtn(MenuManager.ID_ROI_THREE_D_RECTANGLE, "three_d_rectangle.gif", "Select one or several rectangle areas of the image in different slices to perform a 3D crop")
+			self.threeDRectangleBtn = createBtn(MenuManager.ID_ROI_THREE_D_RECTANGLE, "three_d_rectangle.png", "Select one or several rectangle areas of the image in different slices to perform a 3D crop")
 			self.sizer.Add(self.threeDRectangleBtn, (3, 0))
 
 		# Interpolation stuff. :)
@@ -246,7 +246,7 @@ class AnnotationToolbar(wx.Window):
 		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
 		#self.sizer.Add(self.textBtn, (2, 0))
 
-		icon = wx.Image(os.path.join(icondir, "delete_annotation.gif"), wx.BITMAP_TYPE_GIF).ConvertToBitmap()
+		icon = wx.Image(os.path.join(icondir, "Annotation_Delete.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		
 		self.deleteAnnotationBtn = buttons.GenBitmapButton(self, MenuManager.ID_DEL_ANNOTATION, icon)
 		self.deleteAnnotationBtn.SetBestSize((32,32))

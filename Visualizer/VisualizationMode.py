@@ -119,6 +119,12 @@ class VisualizationMode:
 					 to show the sidebar
 		"""
 		return False
+
+	def getSidebarWinOrigSize(self):
+		"""
+		Return default size of sidebar win
+		"""
+		return (200,500)
 		
 	def showSliceSlider(self):
 		"""

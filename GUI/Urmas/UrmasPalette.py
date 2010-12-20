@@ -120,18 +120,18 @@ class UrmasPalette(wx.Panel):
 		self.ID_NEWTIMEPOINTTRACK = wx.NewId()
 		toolTip = wx.ToolTip("Click to add a track for controlling animated timepoints.")
 		self.addNormalItem(self.ID_NEWTIMEPOINTTRACK,
-		"timepoint_track.JPG", self.onToolNewTimepointTrack, toolTip)        
+		"Animator_TrackTimepoint.png", self.onToolNewTimepointTrack, toolTip)        
 		
 		self.ID_NEWSPLINETRACK = wx.NewId()
 		toolTip = wx.ToolTip("Click to add a track for controlling the camera movement using a spline curve.")
 		self.addNormalItem(self.ID_NEWSPLINETRACK,
-		"spline_track.JPG", self.onToolNewSplineTrack, toolTip)        
+		"Animator_TrackCameraPath.png", self.onToolNewSplineTrack, toolTip)        
 
 		
 		self.ID_NEWKEYFRAMETRACK = wx.NewId()
 		toolTip = wx.ToolTip("Click to the timeline to add a track for controlling the camera movement by creating keyframes.")
 		self.addNormalItem(self.ID_NEWKEYFRAMETRACK,
-		"keyframe_track.JPG", self.onToolNewKeyframeTrack, toolTip)        
+		"Animator_TrackKeyframe.png", self.onToolNewKeyframeTrack, toolTip)        
 		
 		p = wx.Panel(self, -1, size = (50, 1))
 		self.sizer.Add(p, flag = wx.RIGHT, border = 2)
@@ -139,33 +139,33 @@ class UrmasPalette(wx.Panel):
 		self.ID_NEWTIMEPOINT = wx.NewId()
 		toolTip = wx.ToolTip("Drag this on to a timepoint track to select visualized timepoints.")
 		self.addDragDropItem(self.ID_NEWTIMEPOINT,
-		"timepoint.jpg", self.onToolNewTimepoint, toolTip)        
+		"Animator_Timepoint.png", self.onToolNewTimepoint, toolTip)        
 
 		self.ID_NEWSPLINE = wx.NewId()                
 		toolTip = wx.ToolTip("Drag this on to a camera path track to add a random camera path.")
 		self.addDragDropItem(self.ID_NEWSPLINE,
-		"spline_random.jpg", self.onToolNewSpline, toolTip)        
+		"Animator_CameraPath.png", self.onToolNewSpline, toolTip)        
 		
 		self.ID_NEWCIRCULAR = wx.NewId()
 		toolTip = wx.ToolTip("Drag this on to a camera path track to make camera rotate around X axis.")
 		self.addDragDropItem(self.ID_NEWCIRCULAR,
-		"spline_rotate_x.jpg", self.onToolNewCircular, toolTip)        
+		"Animator_CameraPathX.png", self.onToolNewCircular, toolTip)        
 		
 		self.ID_NEWPERPENDICULAR = wx.NewId()
 		toolTip = wx.ToolTip("Drag this on to a camera path track to make camera rotate around Y axis.")
 		self.addDragDropItem(self.ID_NEWPERPENDICULAR,
-		"spline_rotate_y.jpg", self.onToolNewPerpendicular, toolTip)        
+		"Animator_CameraPathY.png", self.onToolNewPerpendicular, toolTip)        
 		
 		self.ID_STOP_CAMERA = wx.NewId()        
 		toolTip = wx.ToolTip("Drag this on to a camera path to add a pause in camera movement.")
 		self.addDragDropItem(self.ID_STOP_CAMERA,
-		"spline_stop.gif", self.onToolNewStop, toolTip)        
+		"Animator_Pause.png", self.onToolNewStop, toolTip)        
 		
 		
 		self.ID_ADD_KEYFRAME = wx.NewId()
 		toolTip = wx.ToolTip("Drag this on to a keyframe track to add a keyframe at the current camera position.")        
 		self.addDragDropItem(self.ID_ADD_KEYFRAME,
-		"add_keyframe.gif", self.onToolNewKeyframe, toolTip)     
+		"Animator_Keyframe.png", self.onToolNewKeyframe, toolTip)     
 		
 		self.zoomLevels = [0.25, 0.3333, 0.5, 0.6667, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0, 6.0]
 		self.zoomCombo = wx.ComboBox(self, GUI.MenuManager.ID_ANIM_ZOOM_COMBO,
@@ -179,7 +179,7 @@ class UrmasPalette(wx.Panel):
 		self.ID_RENDER = wx.NewId()
 		toolTip = wx.ToolTip("Click to render the project.")
 		self.addNormalItem(self.ID_RENDER,
-		"render.gif", self.parent.onMenuRender, toolTip)         
+		"Animator_Render.png", self.parent.onMenuRender, toolTip)         
 		
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)

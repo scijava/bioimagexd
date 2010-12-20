@@ -58,7 +58,7 @@ def getIcon():
 	"""
 	return the icon name for this visualization mode
 	"""
-	return "task_animator.jpg"
+	return "Animator.png"
 
 def isDefaultMode():
 	"""
