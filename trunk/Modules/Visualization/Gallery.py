@@ -127,14 +127,14 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		"""
 		Initialization
 		"""
-		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (200, 500))
+		scrolled.ScrolledPanel.__init__(self, parent, -1, size = (100, 500))
 		self.visualizer = visualizer
 		self.mode = mode	
 
 		self.sizer = wx.GridBagSizer()
 		self.radiobox = wx.RadioBox(self, -1, "View in gallery", \
 									choices = ["Slices", "Timepoints"], \
-									majorDimension = 2, \
+									majorDimension = 1, \
 									style = wx.RA_SPECIFY_COLS)
 
 		self.okbutton = wx.Button(self, -1, "Update")
@@ -203,7 +203,7 @@ class GalleryMode(VisualizationMode):
 		"""
 		Return default size of sidebar win
 		"""
-		return (150,500)
+		return (100,500)
 
 	def activate(self, sidebarwin):
 		"""
