@@ -17,7 +17,10 @@ def getName():
 	return "Process"
 
 def getDesc():
-	return "Process a dataset with different filters"
+	return "Process a dataset through procedure list"
+
+def getShortDesc():
+	return "Procedure list"
 
 def getIcon():
 	return "Task_Process.png"

@@ -26,6 +26,9 @@ def getName():
 def getDesc():
 	return "Calculate the colocalization between channels and create a corresponding colocalization map"
 
+def getShortDesc():
+	return "Colocalization"
+
 def getIcon():
 	return "Task_Colocalization.png"
 
