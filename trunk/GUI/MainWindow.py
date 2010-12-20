@@ -705,10 +705,11 @@ class MainWindow(wx.Frame):
 		
 		for (moduletype, windowtype, mod) in modules:
 			name = mod.getName()
+			shortDesc = mod.getShortDesc()
 			bmp = wx.Image(os.path.join(iconpath, mod.getIcon())).ConvertToBitmap()
 			
 			tid = self.taskToId[name]
-			tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = name)
+			tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = shortDesc)
 			wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
 			self.taskIds.append(tid)
 			

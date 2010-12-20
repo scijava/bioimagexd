@@ -16,6 +16,9 @@ def getName():
 def getDesc():
 	return "Adjust the brightness, contrast and gamma of a dataset"
 
+def getShortDesc():
+	return "Adjust"
+
 def getIcon():
 	return "Task_Adjust.png"
 
