@@ -97,12 +97,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.listeners = {}
 		self.annotationClass = None
 		self.threeDMode = False
-		self.voxelSize = (1, 1, 1) 
+		self.voxelSize = (1, 1, 1)
 		self.bgColor = kws.get("bgColor", (0, 0, 0))
 		self.action = 0
 		self.imagedata = None
 		self.bmp = None
-		
+
+		self.annotationColor = wx.Colour(0, 255, 0)
 		self.actionstart = (0, 0)
 		self.actionend = (0, 0)
 		self.prevPolyEnd = None
@@ -805,8 +806,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 				return 1
 		elif self.action == SET_THRESHOLD:
 			self.setThreshold()
-				
-		
+
 		self.action = 0
 		self.actionstart = (0, 0)
 		self.actionend = (0, 0)
@@ -859,7 +859,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		elif annotationClass == "SCALEBAR":
 			dx = abs(x - ex)
 			dy = abs(y - ey)
-			shape = GUI.OGLAnnotations.MyScalebar(dx, dy, voxelsize = self.voxelSize, zoomFactor = scaleFactor)
+			shape = GUI.OGLAnnotations.MyScalebar(dx, dy, voxelsize = self.voxelSize, zoomFactor = scaleFactor, color = self.annotationColor)
 			shape.SetCentreResize(0)  
 			shape.SetX( ex + (x - ex) / 2 )
 			shape.SetY( ey + (y - ey) / 2 )
@@ -912,7 +912,13 @@ class InteractivePanel(ogl.ShapeCanvas):
 		shape.SetDraggable(True, True)
 		shape.SetCanvas(self)
 		shape.SetBrush(wx.TRANSPARENT_BRUSH)
-		shape.SetPen(wx.Pen((0, 255, 0), 1))
+		shape.SetPen(wx.Pen(self.annotationColor, 1))
+
+		# Change color for annotation name
+		# Unfortunately needs to be done in this not so handy way
+		colordb = wx.TheColourDatabase
+		colordb.AddColour('AnnotationColor_' + shape.getName(), self.annotationColor)
+		shape.SetTextColour('AnnotationColor_' + shape.getName())
 		
 		self.AddShape( shape )
 		
@@ -972,7 +978,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		self.action = ADD_ANNOTATION
 		self.annotationClass = annClass
-		
+		self.annotationColor = kws.get('color', self.annotationColor)
 		
 	def zoomToRubberband(self, event):
 		"""
@@ -1142,7 +1148,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 				elif self.annotationClass == "CIRCLE":
 					rad = max(d1,d2)
 					dc.DrawCircle(x1+xr,y1+yr,rad)
-
 		
 	def setScrollbars(self, xdim, ydim):
 		"""

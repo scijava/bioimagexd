@@ -29,7 +29,7 @@ def getInputLimits():
 	return (1, -1)    
 
 def getToolbarPos():
-	return 999
+	return 4
 
 def getDataUnit():
 	return ManipulationDataUnit.ManipulationDataUnit

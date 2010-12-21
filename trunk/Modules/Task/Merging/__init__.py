@@ -26,7 +26,7 @@ def getInputLimits():
 	return (2, -1)    
 
 def getToolbarPos():
-	return -999
+	return 2
 
 def getDataUnit():
 	return MergingDataUnit

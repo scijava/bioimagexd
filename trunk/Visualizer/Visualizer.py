@@ -505,44 +505,24 @@ class Visualizer:
 
 		#toolSize = self.tb.GetToolSize()[0]
 
-		self.viewCombo = wx.ComboBox(self.tb,
-									GUI.MenuManager.ID_SET_VIEW,
-									"Isometric",
-									choices = ["+X", "-X", "+Y", "-Y", "+Z", "-Z", "Isometric"],
-									size = (130, -1),
-									style = wx.CB_DROPDOWN)
-		self.viewCombo.SetSelection(6)
-		self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
-		self.tb.AddControl(self.viewCombo)
-
 		wx.EVT_COMBOBOX(self.parent, GUI.MenuManager.ID_SET_VIEW, self.onSetView)
-		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OUT,
-							wx.Image(os.path.join(icondir, "Zoom_Out.png"),
-									wx.BITMAP_TYPE_PNG).ConvertToBitmap(),
-							"Zoom out",
-							"Zoom out on the optical slice")
-
 
 		self.zoomLevels = [0.1, 0.125, 0.25, 0.3333, 0.5, 0.6667, 0.75, 
 		1.0, 1.25, 1.5, 2.0, 3.0, 4.0,  6.0,  8.0, -1]
 		choices = ["10%", "12.5%", "25%", "33.33%", "50%", "66.67%", "75%", "100%", "125%",
 					"150%", "200%",  "300%", "400%", "600%", "800%", "Zoom to fit"]
 
-		self.zoomCombo = wx.ComboBox(self.tb,
-									GUI.MenuManager.ID_ZOOM_COMBO,
-									"Zoom to fit",
-									choices = choices,
-									size = (120, -1),
-									style = wx.CB_DROPDOWN)
-		self.zoomCombo.SetSelection(len(choices)-1)
-		self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")
-		self.tb.AddControl(self.zoomCombo)
-
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_IN, \
 								wx.Image(os.path.join(icondir, "Zoom_In.png"), \
 										wx.BITMAP_TYPE_PNG).ConvertToBitmap(), \
 								"Zoom in", \
 								"Zoom in on the slice")
+
+		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_OUT,
+							wx.Image(os.path.join(icondir, "Zoom_Out.png"),
+									wx.BITMAP_TYPE_PNG).ConvertToBitmap(),
+							"Zoom out",
+							"Zoom out on the optical slice")
 
 		self.tb.AddSimpleTool(GUI.MenuManager.ID_ZOOM_TO_FIT, \
 								wx.Image(os.path.join(icondir, "Zoom_ToFit.png"), \
@@ -556,18 +536,27 @@ class Visualizer:
 								"Zoom object", \
 								"Zoom user selected portion of the slice")
 
+		self.zoomCombo = wx.ComboBox(self.tb,
+									GUI.MenuManager.ID_ZOOM_COMBO,
+									"Zoom to fit",
+									choices = choices,
+									size = (120, -1),
+									style = wx.CB_DROPDOWN)
+		self.zoomCombo.SetSelection(len(choices)-1)
+		self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")
+		self.tb.AddControl(self.zoomCombo)
 
-
-		icon = wx.Image(os.path.join(icondir, "Original.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		self.tb.AddSeparator()
-		#self.origBtn = wx.BitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon)
-		self.origBtn = wx.lib.buttons.GenBitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon, style = wx.BORDER_NONE, size = (32,32))
-		self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
-		self.origBtn.Bind(wx.EVT_LEFT_DOWN, lambda x: self.onShowOriginal(x, 1))
-		self.origBtn.Bind(wx.EVT_LEFT_UP, lambda x: self.onShowOriginal(x, 0))
 
-		self.tb.AddControl(self.origBtn)
-		iconpath = scripting.get_icon_dir()
+		self.viewCombo = wx.ComboBox(self.tb,
+									GUI.MenuManager.ID_SET_VIEW,
+									"Isometric",
+									choices = ["+X", "-X", "+Y", "-Y", "+Z", "-Z", "Isometric"],
+									size = (130, -1),
+									style = wx.CB_DROPDOWN)
+		self.viewCombo.SetSelection(6)
+		self.viewCombo.SetHelpText("This controls the view angle of 3D view mode.")
+		self.tb.AddControl(self.viewCombo)
 
 		self.pitch = wx.SpinButton(self.tb, GUI.MenuManager.PITCH, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.pitch)
@@ -577,6 +566,16 @@ class Visualizer:
 		self.tb.AddControl(self.roll)
 		self.elevation = wx.SpinButton(self.tb, -1, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.elevation)
+		self.tb.AddSeparator()
+
+		icon = wx.Image(os.path.join(icondir, "Original.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+
+		self.origBtn = wx.lib.buttons.GenBitmapButton(self.tb, GUI.MenuManager.ORIG_BUTTON, icon, style = wx.BORDER_NONE, size = (32,32))
+		self.origBtn.SetHelpText("Use this button to show how the unprocessed dataset looks like.")
+		self.origBtn.Bind(wx.EVT_LEFT_DOWN, lambda x: self.onShowOriginal(x, 1))
+		self.origBtn.Bind(wx.EVT_LEFT_UP, lambda x: self.onShowOriginal(x, 0))
+
+		self.tb.AddControl(self.origBtn)
 
 		self.dimInfo = GUI.UIElements.DimensionInfo(self.tb, -1, size = (160, 50))
 		self.tb.AddControl(self.dimInfo)
@@ -598,6 +597,10 @@ class Visualizer:
 		self.tb.Realize()
 
 		self.viewCombo.Enable(0)
+		self.pitch.Enable(0)
+		self.yaw.Enable(0)
+		self.roll.Enable(0)
+		self.elevation.Enable(0)
 
 	def onPerspectiveRendering(self, evt):
 		"""
@@ -974,8 +977,17 @@ class Visualizer:
 
 		if self.currentMode.showViewAngleCombo():
 			self.viewCombo.Enable(1)
+			self.pitch.Enable(1)
+			self.yaw.Enable(1)
+			self.roll.Enable(1)
+			self.elevation.Enable(1)
 		else:
 			self.viewCombo.Enable(0)
+			self.pitch.Enable(0)
+			self.yaw.Enable(0)
+			self.roll.Enable(0)
+			self.elevation.Enable(0)
+		
 		if self.zoomToFitFlag:
 			self.currentMode.zoomToFit()
 		else:

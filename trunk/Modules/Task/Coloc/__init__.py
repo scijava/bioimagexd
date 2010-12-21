@@ -36,7 +36,7 @@ def getInputLimits():
 	return (2, 2)
 
 def getToolbarPos():
-	return 2
+	return 3
 
 def getDataUnit():
 	return ColocalizationDataUnit

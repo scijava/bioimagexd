@@ -26,7 +26,7 @@ def getInputLimits():
 	return (1, 1)
 
 def getToolbarPos():
-	return 3
+	return 1
 
 def getDataUnit():
 	return AdjustDataUnit
