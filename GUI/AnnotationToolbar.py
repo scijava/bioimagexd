@@ -218,41 +218,44 @@ class AnnotationToolbar(wx.Window):
 		self.scaleBtn = createBtn(MenuManager.ID_ADD_SCALE, "Annotation_Scalebar.png", "Draw a scale bar on the image")
 		self.sizer.Add(self.scaleBtn, (1, 1))
 
-		if INCLUDE3D:
-			self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.png", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
-			self.sizer.Add(self.threeDPolygonBtn, (2, 0))
-
-			self.threeDCircleBtn = createBtn(MenuManager.ID_ROI_THREE_D_CIRCLE, "three_d_circle.png", "Select one or several circle areas of the image in different slices to perform a 3D crop")
-			self.sizer.Add(self.threeDCircleBtn, (2, 1))
-
-			self.threeDRectangleBtn = createBtn(MenuManager.ID_ROI_THREE_D_RECTANGLE, "three_d_rectangle.png", "Select one or several rectangle areas of the image in different slices to perform a 3D crop")
-			self.sizer.Add(self.threeDRectangleBtn, (3, 0))
-
-		# Interpolation stuff. :)
-			self.interpolationStart = wx.SpinCtrl(self, wx.ID_ANY, size = (64, -1), min = 1, max = self.visualizer.dataUnit.getDimensions()[2] if self.visualizer.dataUnit != None else 1)
-			self.interpolationStart.SetValue(1)
-			self.sizer.Add(self.interpolationStart, (4, 0), span = (1, 2))
-			self.interpolationEnd = wx.SpinCtrl(self, wx.ID_ANY, size = (64, -1), min = 1, max = self.visualizer.dataUnit.getDimensions()[2] if self.visualizer.dataUnit != None else 1)
-			self.interpolationEnd.SetValue(1)
-			self.sizer.Add(self.interpolationEnd, (5, 0), span = (1, 2))
-			self.interpolateButton = wx.Button(self, wx.ID_ANY, "Interpolate", size = (64, 24))
-			self.sizer.Add(self.interpolateButton, (6, 0), span = (1, 2))
-			self.interpolateButton.Bind(wx.EVT_BUTTON, self.onInterpolate)
-
-			self.copyToAllButton = wx.Button(self, wx.ID_ANY, "Copy to all", size = (64, 24))
-			self.sizer.Add(self.copyToAllButton, (7, 0), span = (1, 2))
-			self.copyToAllButton.Bind(wx.EVT_BUTTON, self.onCopyAll)
-
-		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
-		#self.sizer.Add(self.textBtn, (2, 0))
-
 		icon = wx.Image(os.path.join(icondir, "Annotation_Delete.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		
 		self.deleteAnnotationBtn = buttons.GenBitmapButton(self, MenuManager.ID_DEL_ANNOTATION, icon)
 		self.deleteAnnotationBtn.SetBestSize((32,32))
 		self.deleteAnnotationBtn.SetToolTipString("Delete an annotation")
 		
-		self.sizer.Add(self.deleteAnnotationBtn, (3, 1))
+		self.sizer.Add(self.deleteAnnotationBtn, (2, 0))
+
+		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (32, 32))
+		self.sizer.Add(self.colorSelect, (2, 1))
+
+		if INCLUDE3D:
+			self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.png", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
+			self.sizer.Add(self.threeDPolygonBtn, (3, 0))
+
+			self.threeDCircleBtn = createBtn(MenuManager.ID_ROI_THREE_D_CIRCLE, "three_d_circle.png", "Select one or several circle areas of the image in different slices to perform a 3D crop")
+			self.sizer.Add(self.threeDCircleBtn, (3, 1))
+
+			self.threeDRectangleBtn = createBtn(MenuManager.ID_ROI_THREE_D_RECTANGLE, "three_d_rectangle.png", "Select one or several rectangle areas of the image in different slices to perform a 3D crop")
+			self.sizer.Add(self.threeDRectangleBtn, (4, 0))
+
+		# Interpolation stuff. :)
+			self.interpolationStart = wx.SpinCtrl(self, wx.ID_ANY, size = (64, -1), min = 1, max = self.visualizer.dataUnit.getDimensions()[2] if self.visualizer.dataUnit != None else 1)
+			self.interpolationStart.SetValue(1)
+			self.sizer.Add(self.interpolationStart, (5, 0), span = (1, 2))
+			self.interpolationEnd = wx.SpinCtrl(self, wx.ID_ANY, size = (64, -1), min = 1, max = self.visualizer.dataUnit.getDimensions()[2] if self.visualizer.dataUnit != None else 1)
+			self.interpolationEnd.SetValue(1)
+			self.sizer.Add(self.interpolationEnd, (6, 0), span = (1, 2))
+			self.interpolateButton = wx.Button(self, wx.ID_ANY, "Interpolate", size = (64, 24))
+			self.sizer.Add(self.interpolateButton, (7, 0), span = (1, 2))
+			self.interpolateButton.Bind(wx.EVT_BUTTON, self.onInterpolate)
+
+			self.copyToAllButton = wx.Button(self, wx.ID_ANY, "Copy to all", size = (64, 24))
+			self.sizer.Add(self.copyToAllButton, (8, 0), span = (1, 2))
+			self.copyToAllButton.Bind(wx.EVT_BUTTON, self.onCopyAll)
+
+		#self.textBtn = createBtn(MenuManager.ID_ANNOTATION_TEXT, "text.gif", "Add a text annotation")
+		#self.sizer.Add(self.textBtn, (2, 0))
 
 		#self.roiToMaskBtn = createBtn(MenuManager.ID_ROI_TO_MASK, "roitomask.gif", \
 		#								"Convert the selected Region of Interest to a Mask", \
@@ -263,9 +266,6 @@ class AnnotationToolbar(wx.Window):
 		#							"Set the font for annotations", btnclass=buttons.GenBitmapButton)
 		#self.sizer.Add(self.fontBtn, (3,1))
 
-		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (65, -1))
-		self.sizer.Add(self.colorSelect, (8, 0), span = (1, 2))
-		
 		#self.resamplingBtn = createBtn(MenuManager.ID_RESAMPLING, "resample.gif", \
 		#								"Enable or disable the resampling of image data")
 		#self.resamplingBtn.SetToggle(1)
@@ -444,9 +444,8 @@ class AnnotationToolbar(wx.Window):
 			annclass = "3D_RECTANGLE"
 		else:
 			Logging.info("BOGUS ANNOTATION SELECTED!", kw = "visualizer")
-						
-		self.visualizer.getCurrentMode().annotate(annclass, multiple = multiple)
-		
+
+		self.visualizer.getCurrentMode().annotate(annclass, multiple = multiple, color = self.colorSelect.GetColour())
 		
 	def deleteAnnotation(self, event):
 		"""

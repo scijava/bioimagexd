@@ -289,7 +289,7 @@ class RenderingMode(VisualizationMode):
 		"""
 		adjust the elevation of the 3D scene upwards
 		"""
-		self.currMode.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
+		self.getRenderer().GetActiveCamera().Elevation(self.ElevationStep)
 		self.Render()
 
 	def onElevationDown(self, evt):

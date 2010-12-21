@@ -650,9 +650,11 @@ class MainWindow(wx.Frame):
 				text += " with alpha %d" % a
 		self.colorLbl.setLabel(text)
 		self.colorLbl.SetToolTip(wx.ToolTip(text))
-		fg = 255 - r, 255 - g, 255 - b
-			
-		bg = r, g, b
+
+		#fg = 255 - r, 255 - g, 255 - b
+		#bg = r, g, b
+		bg = 0, 0, 0 # Black
+		fg = 255, 255, 255 # White
 		self.colorLbl.setColor(fg, bg)
 		wx.GetApp().Yield(1)
 		#wx.SafeYield()
@@ -673,10 +675,10 @@ class MainWindow(wx.Frame):
 		self.visIds = []
 		Logging.info("Creating toolbar", kw = "init")
 		bmp = wx.Image(os.path.join(iconpath, "FileIO_OpenDataset.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-		tb.DoAddTool(MenuManager.ID_OPEN, "Open", bmp, shortHelp = "Open dataset series")
+		tb.DoAddTool(MenuManager.ID_OPEN, "Open dataset", bmp, shortHelp = "Open dataset series")
 		wx.EVT_TOOL(self, MenuManager.ID_OPEN, self.onMenuOpen)
 
-		bmp = wx.Image(os.path.join(iconpath, "FileIO_Snapshot.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		bmp = wx.Image(os.path.join(iconpath, "FileIO_SaveDataset.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SAVE_DATASET, "Save dataset", bmp, \
 						shortHelp = "Write the processed dataset to disk")
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_DATASET, self.onSaveDataset)
@@ -697,7 +699,7 @@ class MainWindow(wx.Frame):
 		tb.DoAddTool(MenuManager.ID_SHOW_TREE, "File manager", bmp, kind = wx.ITEM_CHECK, \
 						shortHelp = "Show file management tree")
 		wx.EVT_TOOL(self, MenuManager.ID_SHOW_TREE, self.onMenuShowTree)
-		
+
 		modules = self.taskPanels.values()
 		modules.sort(self.sortModes)
 

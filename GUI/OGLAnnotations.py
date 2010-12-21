@@ -102,7 +102,6 @@ class OGLAnnotation(ogl.Shape):
 		"""
 		return self._offset
 
-
 	def OnDrawControlPoints(self, dc):
 
 		dc.SetBrush(wx.BLACK_BRUSH)
@@ -134,7 +133,6 @@ class OGLAnnotation(ogl.Shape):
 		"""
 		self._name = name
 		self.ClearText()
-		self.SetTextColour("#00ff00")
 		lines = name.split("\n")
 		for line in lines:
 			self.AddText(line)
@@ -154,11 +152,11 @@ class OGLAnnotation(ogl.Shape):
 		if not hasattr(self, "_name"):
 			self._name = ""
 		return self._name
+	
 	def isROI(self):
 		if not hasattr(self, "_isROI"):
 			self._isROI = 0
 		return self._isROI
-
 
 	def __getstate__(self):
 		"""
@@ -290,10 +288,14 @@ class MyText(OGLAnnotation, ogl.TextShape):
 class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 
 	AnnotationType = "SCALEBAR"
-	def __init__(self, w, h, voxelsize = (1e-7, 1e-7, 1e-7), zoomFactor = 1.0):
+	def __init__(self, w, h, voxelsize = (1e-7, 1e-7, 1e-7), zoomFactor = 1.0, color = None):
 		OGLAnnotation.__init__(self)
 		ogl.RectangleShape.__init__(self, w, h)
-		self.bgColor = (127, 127, 127)
+		self.parent = None
+		if color is None:
+			self.bgColor = wx.Colour(255, 255, 255)
+		else:
+			self.bgColor = color
 		self.voxelSize = voxelsize
 		self.createSnapToList()
 		self.widthMicro = -0
@@ -473,10 +475,10 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 		#dc.BeginDrawing()
 		dc.SetBackground(wx.Brush(bg))
 		dc.SetBrush(wx.Brush(bg))
-		dc.SetPen(wx.Pen(bg, 1))
+		#dc.SetPen(wx.Pen(bg, 1))
 		#dc.DrawRectangle(x1+0,y1+0,x1+bmpw,y1+bmph)
 
-		dc.SetPen(wx.Pen((255, 255, 255), 2))
+		dc.SetPen(wx.Pen(bg, 2))
 		if not self.vertical:
 			dc.DrawLine(x1, y1 + 6, x1 + self._width, y1 + 6)
 			dc.DrawLine(x1 + 1, y1 + 3, x1 + 1, y1 + 9)
@@ -486,7 +488,7 @@ class MyScalebar(OGLAnnotation, ogl.RectangleShape):
 			dc.DrawLine(x1 + 3, y1 + 1, x1 + 9, y1 + 1)
 			dc.DrawLine(x1 + 3, y1 + self._height - 1, x1 + 9, y1 + self._height - 1)
 
-		dc.SetTextForeground((255, 255, 255))
+		dc.SetTextForeground(bg)
 		if not self.vertical:
 			x = bmpw / 2
 			x -= (w / 2)
