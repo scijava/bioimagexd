@@ -17,7 +17,7 @@ def getDesc():
 	return "Merge multiple channels to form one RGB dataset"
 
 def getShortDesc():
-	return "Merging"
+	return "Merge"
 
 def getIcon():
 	return "Task_Merge.png"

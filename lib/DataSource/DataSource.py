@@ -138,14 +138,19 @@ class DataSource:
 		Set the timepoint that this datasource is reading
 		"""
 		self.currentTimepoint = timepoint
-		
-		
+
 	def setResampling(self, status):
 		"""
 		enable / disable resampling
 		"""
 		self.resampling = status
-			
+
+	def getResampling(self):
+		"""
+		get resampling status
+		"""
+		return self.resampling
+
 	def destroy(self):
 		"""
 		destroy self
