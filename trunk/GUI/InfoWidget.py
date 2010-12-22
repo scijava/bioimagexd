@@ -44,6 +44,7 @@ import lib.messenger
 smX = "<font size=\"-1\">x</font>"
 infoString = """<html><body bgcolor=%(bgcolor)s>
 <table>
+<tr><td>Dataunit Name:</td><td>%(dunitname)s</td></tr>
 <tr><td>Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
 <tr><td>Voxel Size:</td><td>%(nf)s%(voxelX).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelY).3f%(fe)s&mu;m %(smX)s %(nf)s%(voxelZ).3f%(fe)s&mu;m</td></tr>
@@ -57,6 +58,7 @@ infoString = """<html><body bgcolor=%(bgcolor)s>
 """
 infoStringResample = """<html><body bgcolor=%(bgcolor)s">
 <table>
+<tr><td>Dataunit Name:</td><td>%(dunitname)s</td></tr>
 <tr><td>Resampled Dimensions:</td><td>%(xdim)d %(smX)s %(ydim)d %(smX)s %(zdim)d (%(nf)s%(xdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(zdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Original Dimensions::</td><td>%(oxdim)d %(smX)s %(oydim)d %(smX)s %(ozdim)d (%(nf)s%(oxdimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(oydimm).2f%(fe)s&mu;m %(smX)s %(nf)s%(ozdimm).2f%(fe)s&mu;m)</td></tr>
 <tr><td>Time Points:</td><td>%(tps)d</td></tr>
@@ -69,7 +71,7 @@ infoStringResample = """<html><body bgcolor=%(bgcolor)s">
 </table>
 </body></html>
 """
-#"
+
 class InfoWidget(wx.Panel):
 	"""
 	Created: 03.11.2004, KP
@@ -171,7 +173,8 @@ class InfoWidget(wx.Panel):
 				self.colorBtn.Enable(1)
 
 			self.dataUnit = unit
-			self.taskName.SetValue(dataunit.getName())
+			#self.taskName.SetLabel(dataunit.getName())
+			dunitname = dataunit.getName()
 			# The 0 tells preview to view source dataunit 0
 			#self.preview.setDataUnit(self.dataUnit,0)
 			tps = dataunit.getNumberOfTimepoints()
@@ -204,7 +207,7 @@ class InfoWidget(wx.Panel):
 			intlower = str(intlower)
 			intupper = str(intupper)
 			bgcol = "#%2x%2x%2x"%(col.Red(),col.Green(),col.Blue())
-			dict={"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
+			dict={"dunitname":dunitname,"smX":smX,"xdim":xdim,"ydim":ydim,"zdim":zdim,
 				  "voxelX":voxelX,"voxelY":voxelY,"voxelZ":voxelZ,
 				  "rxdim":rxdim,"rydim":rydim,"rzdim":rzdim,
 				  "rxdimm":rxdim*voxelX,"rydimm":rydim*voxelY,"rzdimm":rzdim*voxelZ,
@@ -232,13 +235,13 @@ class InfoWidget(wx.Panel):
 		#self.commonSettingsSizer=wx.GridBagSizer()
 
 		n = 0
-		self.namesizer = wx.BoxSizer(wx.VERTICAL)
-		self.infoSizer.Add(self.namesizer, (n, 0))
-		n += 1
-		self.taskNameLbl = wx.StaticText(self.infoPanel, -1, "Dataunit Name:")
-		self.taskName = wx.TextCtrl(self.infoPanel, -1, size = (250, -1))
-		self.namesizer.Add(self.taskNameLbl)
-		self.namesizer.Add(self.taskName)
+		#self.namesizer = wx.BoxSizer(wx.VERTICAL)
+		#self.infoSizer.Add(self.namesizer, (n, 0))
+		#n += 1
+		#self.taskNameLbl = wx.StaticText(self.infoPanel, -1, "Dataunit Name:")
+		#self.taskName = wx.StaticText(self.infoPanel, -1, size = (250, -1))
+		#self.namesizer.Add(self.taskNameLbl)
+		#self.namesizer.Add(self.taskName)
 
 		#self.commonSettingsPanel.SetSizer(self.commonSettingsSizer)
 		#self.commonSettingsPanel.SetAutoLayout(1)
@@ -270,7 +273,7 @@ class InfoWidget(wx.Panel):
 		Clears the information from the info widget.
 		"""
 		self.htmlpage.SetPage("")
-		self.taskName.SetValue("")
+		#self.taskName.SetLabel("")
 		ctf = vtk.vtkColorTransferFunction()
 		ctf.AddRGBPoint(0,0,0,0)
 		ctf.AddRGBPoint(255,1,1,1)

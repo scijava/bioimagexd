@@ -585,6 +585,7 @@ class Visualizer:
 		self.resamplingBtn.SetBestSize((32, 32))
 		self.resamplingBtn.SetToolTipString("Enable or disable the resampling of image data")
 		self.resamplingBtn.SetToggle(0)
+		self.resamplingBtn.Enable(0)
 		self.resamplingBtn.Bind(wx.EVT_BUTTON, self.onResampleData)
 		self.tb.AddControl(self.resamplingBtn)
 

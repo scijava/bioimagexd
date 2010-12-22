@@ -34,7 +34,6 @@ from bxdversion import VERSION
 
 import AboutDialog
 import BatchProcessor
-
 import BugDialog
 import scripting
 import Configuration
@@ -475,11 +474,20 @@ class MainWindow(wx.Frame):
 									undo_cmd, desc = "Unselect all in file tree")
 		cmd.run(recordOnly = 1)
 
-		tb = self.GetToolBar()
-		if data.dataSource.getResampleDimensions() != None:
-			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)
+		if data.dataSource.getResampling():
+			if scripting.resamplingDisabled:
+				self.visualizer.resamplingBtn.SetToggle(False)
+				self.menuManager.check(MenuManager.ID_MENU_RESAMPLING, False)
+			else:
+				self.visualizer.resamplingBtn.SetToggle(True)
+				self.menuManager.check(MenuManager.ID_MENU_RESAMPLING, True)
+			self.visualizer.resamplingBtn.Enable(1)
+			self.menuManager.enable(MenuManager.ID_MENU_RESAMPLING)
 		else:
-			tb.EnableTool(MenuManager.ID_RESAMPLING, 0)
+			self.visualizer.resamplingBtn.SetToggle(False)
+			self.visualizer.resamplingBtn.Enable(0)
+			self.menuManager.check(MenuManager.ID_MENU_RESAMPLING, False)
+			self.menuManager.disable(MenuManager.ID_MENU_RESAMPLING)
 
 		# If no task window has been loaded, then we will update the visualizer
 		# with the selected dataset
@@ -675,12 +683,12 @@ class MainWindow(wx.Frame):
 		self.visIds = []
 		Logging.info("Creating toolbar", kw = "init")
 		bmp = wx.Image(os.path.join(iconpath, "FileIO_OpenDataset.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
-		tb.DoAddTool(MenuManager.ID_OPEN, "Open dataset", bmp, shortHelp = "Open dataset series")
+		tb.DoAddTool(MenuManager.ID_OPEN, "Open dataset", bmp, shortHelp = "Open dataset")
 		wx.EVT_TOOL(self, MenuManager.ID_OPEN, self.onMenuOpen)
 
 		bmp = wx.Image(os.path.join(iconpath, "FileIO_SaveDataset.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SAVE_DATASET, "Save dataset", bmp, \
-						shortHelp = "Write the processed dataset to disk")
+						shortHelp = "Save dataset")
 		wx.EVT_TOOL(self, MenuManager.ID_SAVE_DATASET, self.onSaveDataset)
 
 		
@@ -693,11 +701,11 @@ class MainWindow(wx.Frame):
 
 		bmp = wx.Image(os.path.join(iconpath, "FileIO_Snapshot.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SAVE_SNAPSHOT, "Save rendered image", bmp, \
-						shortHelp = "Save a snapshot of the rendered scene")
+						shortHelp = "Save snapshot image")
 
 		bmp = wx.Image(os.path.join(iconpath, "FileIO_Tree.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		tb.DoAddTool(MenuManager.ID_SHOW_TREE, "File manager", bmp, kind = wx.ITEM_CHECK, \
-						shortHelp = "Show file management tree")
+						shortHelp = "View file tree")
 		wx.EVT_TOOL(self, MenuManager.ID_SHOW_TREE, self.onMenuShowTree)
 
 		modules = self.taskPanels.values()
@@ -736,7 +744,7 @@ class MainWindow(wx.Frame):
 			if sepBefore:
 				tb.AddSeparator()
 			
-			tb.DoAddTool(vid, module.getShortDesc(), bmp, kind = wx.ITEM_CHECK, shortHelp = module.getDesc())
+			tb.DoAddTool(vid, module.getShortDesc(), bmp, kind = wx.ITEM_CHECK, shortHelp = module.getShortDesc())
 			
 			if sepAfter:
 				tb.AddSeparator()
@@ -745,12 +753,11 @@ class MainWindow(wx.Frame):
 			self.visIds.append(vid)
 			if module.isDefaultMode():
 				tb.ToggleTool(vid, 1)
-
 		
 		bmp = wx.Image(os.path.join(iconpath, "Help.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 		
 		tb.DoAddTool(MenuManager.ID_TOOLBAR_HELP, "Help", bmp, \
-						shortHelp = "Get help for current task / visualization")
+						shortHelp = "Help")
 		wx.EVT_TOOL(self, MenuManager.ID_TOOLBAR_HELP, self.onToolbarHelp)
 		
 		#self.visIds.append(MenuManager.ID_VIS_ANIMATOR)
@@ -765,7 +772,7 @@ class MainWindow(wx.Frame):
 		if self.currentTaskWindow:
 			lib.messenger.send(None, "view_help", self.currentTaskWindowName)
 		else:
-			lib.messenger.send(None, "view_help", scripting.currentVisualizationModeName)
+			lib.messenger.send(None, "view_help", scripting.currentVisualizationMode)
 
 	def onSaveDataset(self, *args):
 		"""
@@ -910,7 +917,7 @@ class MainWindow(wx.Frame):
 		mgr.addMenuItem("edit", MenuManager.ID_NO_RENDER, "&No view panel updating", \
 						"Toggle view panel updating on or off.", self.onMenuNoRender, check = 1, checked = 0)
 		mgr.addMenuItem("edit", MenuManager.ID_MENU_RESAMPLING, "Use &resampled image", self.onResampleData, check = 1, checked = 0)
-
+		mgr.disable(MenuManager.ID_MENU_RESAMPLING)
 
 		##### View menu #####
 		mgr.addMenuItem("view", MenuManager.ID_VIEW_TREE, "&File tree", "Show or hide the file tree", \
@@ -956,11 +963,10 @@ class MainWindow(wx.Frame):
 		for (moduletype, windowtype, mod) in modules:
 			name = mod.getName()
 			desc = mod.getDesc()
+			shortdesc = mod.getShortDesc()
 			tid = self.taskToId[name]
 			#tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = name)
-			if name == "Process":
-				name = "Procedure list"
-			mgr.addMenuItem("processing", tid, "&" + name, desc, self.onMenuShowTaskWindow, check = 1, checked = 0)
+			mgr.addMenuItem("processing", tid, "&" + shortdesc, desc, self.onMenuShowTaskWindow, check = 1, checked = 0)
 			#wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
 			
 		mgr.addSeparator("processing")
@@ -1249,10 +1255,10 @@ class MainWindow(wx.Frame):
 			unit = self.visualizer.dataUnit
 			self.visualizer.closeVisualizer()
 			self.loadVisualizer(mode, dataunit = unit)
-			tb = self.GetToolBar()
-			tb.EnableTool(MenuManager.ID_RESAMPLING, 1)
 			self.visualizer.resamplingBtn.SetToggle(True)
+			self.visualizer.resamplingBtn.Enable(1)
 			self.menuManager.check(MenuManager.ID_MENU_RESAMPLING, True)
+			self.menuManager.enable(MenuManager.ID_MENU_RESAMPLING)
 			self.infoWidget.updateInfo(None, None, None)
 			self.visualizer.updateRendering()
 		
@@ -2037,6 +2043,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		A method that shows a help of some item
 		"""
+		"""
 		if not self.help:
 			self.help = wx.html.HtmlHelpController()
 			helppath = os.path.join(scripting.get_help_dir(), "help.hhp")
@@ -2046,6 +2053,14 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			self.help.DisplayContents()
 		else:
 			self.help.Display(args)
+		"""
+		filename = os.path.join(scripting.get_help_dir(), "BioImageXD_GettingStarted.pdf")
+		ftype = wx.TheMimeTypesManager.GetFileTypeFromExtension('pdf')
+		if ftype is not None:
+			cmd = ftype.GetOpenCommand(filename)
+			wx.Execute(cmd)
+		else:
+			wx.MessageBox("No application to open %s"%filename)
 			
 	def onMenuHelp(self, evt):
 		"""
