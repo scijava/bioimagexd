@@ -114,13 +114,22 @@ class GUIBuilder(wx.Panel):
 		self.sizer.Add(staticBoxSizer, (0, 0))
 		sizer = wx.GridBagSizer()
 		staticBoxSizer.Add(sizer)
+
+		# If filter description available, add to filter GUI
+		filterDesc = self.currentFilter.getFilterDesc()
+		if filterDesc != "":
+			filterDescText = wx.StaticText(self, -1, filterDesc)
+			filterDescText.SetBackgroundColour("Yellow")
+			filterDescText.Wrap(300)
+			sizer.Add(filterDescText, (gy,0), span = (1,2))
+			gy += 2
 		
 		# If necessary, create the channel selection GUI
 		if currentFilter.canSelectChannels():
 			channelSelection = self.buildChannelSelection()
 			sizer.Add(channelSelection, (gy, 0), span = (1, 2))
-		
 			gy += 1
+		
 		keepOnSameRow = 0
 		cx = 0
 

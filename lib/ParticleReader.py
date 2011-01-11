@@ -98,7 +98,7 @@ class ParticleReader:
 		ret = []
 		skipNext = 0
 		curr = []
-		voxelSize = None
+		voxelSize = [1.0, 1.0, 1.0]
 		for line in self.rdr:
 			if skipNext:
 				skipNext = 0
@@ -129,10 +129,11 @@ class ParticleReader:
 			obj = int(obj)
 			umcog = [float(umcogX), float(umcogY), float(umcogZ)]
 			cog = [float(cogX), float(cogY), float(cogZ)]
-			if not voxelSize and cog[0] > 0 and cog[1] > 0 and cog[2] > 0:
-				voxelSize = [1.0, 1.0, 1.0]
-				for i in range(3):
+
+			for i in range(3):
+				if cog[i] > 0.0:
 					voxelSize[i] = umcog[i] / cog[i]
+
 			#cog = map(int, cog)
 			avgint = float(avgint)
 			avgintstderr = float(avgintstderr)

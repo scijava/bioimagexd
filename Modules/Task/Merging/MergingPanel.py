@@ -90,7 +90,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		self.editIntensitySizer.Add(self.intensityTransferEditor, (0, 0), span = (1, 2))        
 
 		self.box = wx.BoxSizer(wx.HORIZONTAL)
-		self.editIntensitySizer.Add(self.box, (3, 0))
+		self.editIntensitySizer.Add(self.box, (2, 0))
 		
 		self.restoreBtn = wx.Button(self.editIntensityPanel, -1, "Reset")
 		self.restoreBtn.Bind(wx.EVT_BUTTON, self.intensityTransferEditor.restoreDefaults)
@@ -118,7 +118,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		box.Add(self.averageLbl)
 		box.Add(self.averageEdit)
 		self.editAlphaSizer.Add(self.alphaModeBox, (0, 0))
-		self.editAlphaSizer.Add(box, (1, 0))
+		self.editAlphaSizer.Add(box, (2, 0))
 		
 		self.editAlphaPanel.SetSizer(self.editAlphaSizer)
 		self.editAlphaSizer.Fit(self.editAlphaPanel)

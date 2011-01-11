@@ -129,7 +129,7 @@ class FilterEditor(wx.Panel):
 		self.filterLbl = wx.StaticText(self, -1, "Procedure list:")
 		self.filterListbox = wx.CheckListBox(self, -1, size = self.filterBoxSize)
 		self.filterListbox.Bind(wx.EVT_LISTBOX, self.onSelectFilter)
-		self.filterListbox.Bind(wx.EVT_CHECKLISTBOX, self.onCheckFilter)        
+		self.filterListbox.Bind(wx.EVT_CHECKLISTBOX, self.onCheckFilter)
 		self.addFilteringBtn = wx.Button(self, -1, u"Filtering \u00BB")
 		self.addArithmeticsBtn = wx.Button(self, -1, u"Arithmetics \u00BB")
 		self.addSegmentationBtn = wx.Button(self, -1, u"Segmentation \u00BB")

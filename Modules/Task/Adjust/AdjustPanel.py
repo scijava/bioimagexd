@@ -141,15 +141,15 @@ class AdjustPanel(TaskPanel):
 		self.editIntensitySizer.Add(self.box, (2, 0))
 		self.createIntensityInterpolationPanel()
 
-		self.restoreBtn = wx.Button(self.editIntensityPanel, -1, "Reset current")
+		self.restoreBtn = wx.Button(self.editIntensityPanel, -1, "Reset current timepoint")
 		self.restoreBtn.Bind(wx.EVT_BUTTON, self.iTFEditor.restoreDefaults)
 		self.box.Add(self.restoreBtn)
 
-		self.resetBtn = wx.Button(self.editIntensityPanel, -1, "Reset all")
+		self.resetBtn = wx.Button(self.editIntensityPanel, -1, "Reset all timepoints")
 		self.resetBtn.Bind(wx.EVT_BUTTON, self.resetTransferFunctions)
 		self.box.Add(self.resetBtn)
 
-		self.copyiTFBtn = wx.Button(self.editIntensityPanel, -1, "Copy to all")
+		self.copyiTFBtn = wx.Button(self.editIntensityPanel, -1, "Copy to all timepoints")
 		self.copyiTFBtn.Bind(wx.EVT_BUTTON, self.copyTransferFunctionToAll)
 		self.box.Add(self.copyiTFBtn)
 

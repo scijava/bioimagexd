@@ -299,6 +299,10 @@ class CombinedDataUnit(DataUnit):
 				print "Writing output to",bxdFile
 				for dataWriter in dataWriters:
 					channelBXCFile = dataWriter.getFilename()
+					try:
+						channelBXCFile = channelBXCFile.lstrip(os.path.dirname(bxdFile))
+					except:
+						pass
 					fp.write("%s\n"%channelBXCFile)
 			except IOError, ex:
 				Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))
