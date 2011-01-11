@@ -60,6 +60,8 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 					  "MinRoundness": "Minimum roundness",
 					  "MaxRoundness": "Maximum roundness"}
 
+		self.filterDesc = "Filters segmented objects on the basis of different parameters\nInput: Label image\nOutput: Label image"
+
 	def getParameters(self):
 		"""
 		Returns the parameters for GUI.

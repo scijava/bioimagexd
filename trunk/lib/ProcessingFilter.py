@@ -101,6 +101,7 @@ class ProcessingFilter:
 		self.executive = None
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
+		self.filterDesc = ""
 		
 		self.polyOutput = None
 		self.polyInput = None
@@ -902,3 +903,9 @@ class ProcessingFilter:
 		origImage = paste.GetOutput()
 		origImage.DisconnectPipeline()
 		return origImage
+
+	def getFilterDesc(self):
+		"""
+		Return description of the filter
+		"""
+		return self.filterDesc

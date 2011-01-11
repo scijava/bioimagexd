@@ -437,7 +437,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		self.addVarBtn = wx.Button(self, -1, "Place variables")
 		self.addVarBtn.Bind(wx.EVT_BUTTON, self.onPlaceVariables)
 		
-		self.executeBtn = wx.Button(self, -1, "Analyze!")
+		self.executeBtn = wx.Button(self, -1, "Run!")
 		self.executeBtn.Bind(wx.EVT_BUTTON, self.onExecuteAnalysis)
 		
 		btnSizer.Add(self.addBtn)

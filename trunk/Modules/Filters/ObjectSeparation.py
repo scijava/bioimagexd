@@ -47,6 +47,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def __init__(self, inputs = (1,1)):
 		"""
+		Initialize filter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.descs = {"Level": "Segmentation level", "ImageSpacing": "Use image spacing", "Threshold": "Remove objects with less voxels than:"}
@@ -55,9 +56,11 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.origCtf = None
 		self.data = None
 		self.ignoreObjects = 1
+		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Capable of separating objects touching each other\nInput: Binary image\nOutput: Label image";
 
 	def getDefaultValue(self, parameter):
 		"""
+		Return default value of parameter
 		"""
 		if parameter == "Level":
 			return 1
@@ -67,6 +70,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getType(self, parameter):
 		"""
+		Return type of parameter
 		"""
 		if parameter == "Threshold":
 			return types.IntType
@@ -76,6 +80,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 	def getParameters(self):
 		"""
+		Get parameters for GUI
 		"""
 		return [["", ("Level",)], ["", ("ImageSpacing",)], ["Minimum object size (in voxels)", ("Threshold",)]]
 

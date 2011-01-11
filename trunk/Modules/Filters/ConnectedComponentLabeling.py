@@ -52,6 +52,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.relabelFilter = None
 		self.itkfilter = None
 		self.data = None
+		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Objects touching each other become one object\nInput: Binary image\nOutput: Label image"
 		
 	def getParameterLevel(self, parameter):
 		"""
