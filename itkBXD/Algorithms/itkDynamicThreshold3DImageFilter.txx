@@ -117,23 +117,21 @@ void DynamicThreshold3DImageFilter<TInputImage,TOutputImage>
   typename TInputImage::SizeType radius;
   if (this->m_UseImageSpacing)
 	{
-	  if (this->m_UseImageSpacing)
-		{
-		  radius[0] = static_cast<unsigned long>(this->m_Radius[0] * (1.0 / spacing[0]) + 0.5);
-		  radius[1] = static_cast<unsigned long>(this->m_Radius[1] * (1.0 / spacing[1]) + 0.5);
-		  if (ImageDimension == 3) radius[2] = static_cast<unsigned long>(this->m_Radius[2] * (1.0 / spacing[2]) + 0.5);
-		}
-	  else
-		{
-		  radius[0] = this->m_Radius[0];
-		  radius[1] = this->m_Radius[1];
-		  if (ImageDimension == 3) radius[2] = this->m_Radius[2];
-		}
+	  radius[0] = static_cast<unsigned long>(this->m_Radius[0] * (1.0 / spacing[0]) + 0.5);
+	  radius[1] = static_cast<unsigned long>(this->m_Radius[1] * (1.0 / spacing[1]) + 0.5);
+	  if (ImageDimension == 3) radius[2] = static_cast<unsigned long>(this->m_Radius[2] * (1.0 / spacing[2]) + 0.5);
+	}
+  else
+	{
+	  radius[0] = this->m_Radius[0];
+	  radius[1] = this->m_Radius[1];
+	  if (ImageDimension == 3) radius[2] = this->m_Radius[2];
 	}
 
   ProgressAccumulator::Pointer pipelineProgress = ProgressAccumulator::New();
   pipelineProgress->SetMiniPipelineFilter(this);
   itkDebugMacro(<< "Using radius (" << radius[0] << "," << radius[1] << "," << radius[2] << ")");
+
   if (this->m_StatisticsType == Mean)
 	{
 	  typename MeanType::Pointer mean = MeanType::New();

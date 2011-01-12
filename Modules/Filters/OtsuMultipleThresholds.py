@@ -33,40 +33,48 @@ __date__ = "$Date$"
 import lib
 import itk
 import types
+import scripting
 
 class OtsuMultipleThresholdsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	"""
 	name = "Otsu multiple thresholds"
 	category = lib.FilterTypes.THRESHOLDING
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
+		Initialization
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,inputs)
 		self.descs = {"NumberOfThresholds": "Number of thresholds"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Automatically finds thresholds that separate the image pixels/voxels into the desired number of classes by maximazing the variance between them\nInput: Grayscale image\nOutput: Label image";
 
 	def getDefaultValue(self, parameter):
 		"""
+		Return default value of parameter
 		"""
 		if parameter == "NumberOfThresholds":
 			return 2
 
 	def getType(self, parameter):
 		"""
+		Return type of parameter
 		"""
 		if parameter == "NumberOfThresholds":
 			return types.IntType
 
 	def getParameters(self):
 		"""
+		Return parameters for GUI
 		"""
 		return [["", ("NumberOfThresholds",)]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
+		Execute filter
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None

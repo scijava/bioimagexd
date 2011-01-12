@@ -45,7 +45,7 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Dynamic threshold"
 	category = lib.FilterTypes.THRESHOLDING
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_BEGINNER
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -60,6 +60,8 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 		self.descs = {"X": "X:", "Y": "Y:", "Z": "Z", "StatisticsType": "Statistics type:", "Threshold": "Threshold over statistics", "UseImageSpacing": "Use image spacing"}
 		self.filter = None
+		self.filterDesc = "Separates the image pixels/voxels into two classes, foreground and background, using locally calculated threshold\nInput: Grayscale image\nOutput: Binary image"
+
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
 	
@@ -134,19 +136,20 @@ class DynamicThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		dynamicThresholdFilter = itk.DynamicThreshold3DImageFilter[inputImage,inputImage].New()
 		self.filter = dynamicThresholdFilter
 
-		dynamicThresholdFilter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
+		dynamicThresholdFilter.AddObserver(itk.ProgressEvent(),self.pc)
 		dynamicThresholdFilter.SetRadius(self.parameters["X"],self.parameters["Y"],self.parameters["Z"])
 		dynamicThresholdFilter.SetThreshold(self.parameters["Threshold"])
 		if self.parameters["StatisticsType"] == MEAN:
 			dynamicThresholdFilter.SetStatisticsTypeMean()
 		else:
 			dynamicThresholdFilter.SetStatisticsTypeMedian()
+		
 		if self.parameters["UseImageSpacing"]:
 			dynamicThresholdFilter.SetUseImageSpacingOn()
 		else:
 			dynamicThresholdFilter.SetUseImageSpacingOff()
-		dynamicThresholdFilter.SetInput(inputImage)
 
+		dynamicThresholdFilter.SetInput(inputImage)
 		outputImage = dynamicThresholdFilter.GetOutput()
 		if update:
 			outputImage.Update()

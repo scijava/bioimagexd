@@ -57,8 +57,7 @@ class RescaleDialog(wx.Dialog):
 		self.taskPanels = Modules.DynamicLoader.getTaskModules()
 		self.createRescale()
 		self.lbl = wx.StaticText(self, -1,
-"""BioImageXD uses 8-bit color depth (256 different intensity values). You are loading a file with a non-8-bit
-color depth. Use the histograms below to the select how the intensities in your file are mapped to range 0-255.
+"""BioImageXD recommends 8-bit images (intensity values between 0 and 255) for most purposes. This tool converts other bit depths to 8-bit. Use the histograms below to select how the intensities in your dataset are mapped to the range 0-255, then click "Convert". Click "Convert without mapping" to directly use only the values 0-255 in your original dataset for the resulting dataset.
 """)
 		lblbox = wx.BoxSizer(wx.VERTICAL)
 		
