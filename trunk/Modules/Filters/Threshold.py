@@ -39,7 +39,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Threshold"
 	category = lib.FilterTypes.THRESHOLDING
-	level = scripting.COLOR_BEGINNER
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -52,7 +52,6 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter = vtk.vtkImageThreshold()
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
-
 		self.origCtf = None
 		
 		self.ignoreObjects = 1
@@ -61,14 +60,15 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			"ReplaceIn": "Inside thresholds", "ReplaceOut": "Outside thresholds",
 			"LowerThreshold": "Lower Threshold", "UpperThreshold": "Upper threshold",
 			"Demonstrate": "Use lookup table to demonstrate effect"}
+		self.filterDesc = "Separates the image pixels/voxels into two classes, foreground and background, using thresholds specified by the user\nInput: Grayscale image\nOutput: Binary image"
 			
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["ReplaceInValue", "ReplaceOutValue"]:
-			return scripting.COLOR_INTERMEDIATE
-		return scripting.COLOR_BEGINNER
+		if parameter in ["LowerThreshold", "UpperThreshold"]:
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 	
 	def setParameter(self, parameter, value):
 		"""

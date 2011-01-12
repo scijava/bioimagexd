@@ -46,31 +46,32 @@ class OtsuThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""		   
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		
-		self.descs = {"Upper": "Upper threshold", "Lower": "Lower threshold"}
+		self.descs = {} #"Upper": "Upper threshold", "Lower": "Lower threshold"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Automatically finds a threshold that separates the image pixels/voxels into two classes, foreground and background, having maximum variance between them\nInput: Grayscale image\nOutput: Binary image";
 
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""
-		if parameter == 'Upper':
-			return 255
-		if parameter == 'Lower':
-			return 0
+#	def getDefaultValue(self, parameter):
+#		"""
+#		Return the default value of a parameter
+#		"""
+#		if parameter == 'Upper':
+#			return 255
+#		if parameter == 'Lower':
+#			return 0
 		
-	def getType(self, parameter):
-		"""
-		Return the type of the parameter
-		"""	   
-		if parameter in ["Lower", "Upper"]:
-			return GUI.GUIBuilder.THRESHOLD
+#	def getType(self, parameter):
+#		"""
+#		Return the type of the parameter
+#		"""	   
+#		if parameter in ["Lower", "Upper"]:
+#			return GUI.GUIBuilder.THRESHOLD
 				
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Threshold", (("Lower", "Upper"), )]]
+		return [] #[["Threshold", (("Lower", "Upper"), )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -91,6 +92,6 @@ class OtsuThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		data = self.itkfilter.GetOutput()
 		data.Update()
 		print "Threshold=", self.itkfilter.GetThreshold()
-		self.setParameter("Lower",self.itkfilter.GetThreshold())
+		#self.setParameter("Lower",self.itkfilter.GetThreshold())
 
 		return data 

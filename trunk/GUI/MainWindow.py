@@ -975,7 +975,7 @@ class MainWindow(wx.Frame):
 
 		mgr.addMenuItem("processing", MenuManager.ID_RESAMPLE, "Re&size dataset\tCtrl-R", \
 						"Resample data to a different resolution", self.onMenuResampleData)
-		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Change bit &depth\tCtrl-Shift-R", \
+		mgr.addMenuItem("processing", MenuManager.ID_RESCALE, "Con&vert to 8-bit\tCtrl-Shift-R", \
 						"Rescale data to 8-bit intensity range", self.onMenuRescaleData)
 		
 		
