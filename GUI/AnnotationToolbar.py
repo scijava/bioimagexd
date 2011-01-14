@@ -44,7 +44,7 @@ import scripting
 import vtk
 import wx
 
-INCLUDE3D = 1
+INCLUDE3D = 0
 
 class AnnotationToolbar(wx.Window):
 	"""
