@@ -38,10 +38,14 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 	def __init__(self, parent, ID, pos = wx.DefaultPosition,
 				 size = wx.DefaultSize, style = wx.BORDER_RAISED | wx.LC_REPORT):
 		wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
-		listmix.TextEditMixin.__init__(self) 
-		self.beginner = wx.Colour(180, 255, 180)
-		self.intermediate = wx.Colour(255, 255, 180)
-		self.expert = wx.Colour(0, 180, 255)
+		listmix.TextEditMixin.__init__(self)
+		#self.beginner = wx.Colour(180, 255, 180)
+		#self.intermediate = wx.Colour(255, 255, 180)
+		#self.expert = wx.Colour(0, 180, 255)
+		bRGB = scripting.COLOR_BEGINNER
+		eRGB = scripting.COLOR_EXPERIENCED
+		self.beginner = wx.Colour(bRGB[0], bRGB[1], bRGB[2])
+		self.expert = wx.Colour(eRGB[0], eRGB[1], eRGB[2])
 		self.populateListCtrl()
 		
 	def setChannelNames(self, n1, n2):
@@ -63,39 +67,40 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 		"""
 		Add information to the list control
 		"""
-		self.cols = [self.beginner, self.intermediate, self.expert]
-		self.headervals = [["%ch1% threshold (Lower / Upper)", "", "", 0],
+		#self.cols = [self.beginner, self.intermediate, self.expert]
+		self.cols = [self.beginner, self.expert]
+		self.headervals = [
+		["%ch1% threshold (Lower / Upper)", "", "", 0],
 		["%ch2% threshold (Lower / Upper)", "", "", 0],
-		["P-Value", "", "", 0],
+		["# of voxels > threshold (%ch1% / %ch2%)", "", "", 0],
 		["# of colocalized voxels", "", "", 0],
-		["% of volume colocalized", "", "", 0],
-		["% of %ch1% coloc. (voxels / intensity)", "", "", 1],
-		["% of %ch2% coloc. (voxels / intensity)", "", "", 1],
+		["% of %ch1% coloc. (voxels / intensity)", "", "", 0],
+		["% of %ch2% coloc. (voxels / intensity)", "", "", 0],
+		["M1", "", "", 0],
+		["M2", "", "", 0],
+		["P-Value", "", "", 0],
+		["% of volume colocalized", "", "", 1],
 		["% of %ch1% coloc. (total intensity)", "", "", 1],
 		["% of %ch2% coloc. (total intensity)", "", "", 1],
 		["Correlation", "", "", 1],
 		["Correlation (voxels > threshold)", "", "", 1],
 		["Correlation (voxels < threshold)", "", "", 1],
-		["M1", "", "", 1],
-		["M2", "", "", 1],
-		["Sum of %ch1% (total / over threshold)", "", "", 2],
-		["Sum of %ch2% (total / over threshold)", "", "", 2],
-		["# of non-zero voxels (%ch1% / %ch2%)", "", "", 2],
-		["# of voxels > threshold (%ch1% / %ch2%)", "", "", 2],
-		["Differ. stain of %ch1% to %ch2% (voxels / intensity)", "", "", 2],
-		["Differ. stain of %ch2% to %ch1% (voxels / intensity)", "", "", 2],
-		["% of diff. stain of %ch1% (voxels / intensity)", "", "", 2],
-		["% of diff. stain of %ch2% (voxels / intensity)", "", "", 2],
-		["R(obs)", "", "", 2],
-		[u"R(rand) (mean \u00B1 sd)", "", "", 2],
-		["R(rand) > R(obs)", "", "", 2]
+		["Sum of %ch1% (total / over threshold)", "", "", 1],
+		["Sum of %ch2% (total / over threshold)", "", "", 1],
+		["# of non-zero voxels (%ch1% / %ch2%)", "", "", 1],
+		["Differ. stain of %ch1% to %ch2% (voxels / intensity)", "", "", 1],
+		["Differ. stain of %ch2% to %ch1% (voxels / intensity)", "", "", 1],
+		["% of diff. stain of %ch1% (voxels / intensity)", "", "", 1],
+		["% of diff. stain of %ch2% (voxels / intensity)", "", "", 1],
+		["R(obs)", "", "", 1],
+		[u"R(rand) (mean \u00B1 sd)", "", "", 1],
+		["R(rand) > R(obs)", "", "", 1]
 		]
 		
 		#if scripting.TFLag:
 			# Remove diff stain & r(obs) from non-tekes version
 		#	self.headervals = self.headervals[:-7]
 			#+ self.headervals[-3:]
-
 
 		self.InsertColumn(0, "Quantity")
 		self.InsertColumn(1, "Value")
@@ -121,28 +126,26 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 		n = 2
 		mapping = { "Ch1Th":(n, 0, ss),
 				  "Ch2Th":(n + 1, 0, ss),
-				  "PValue":(n + 2, 0, fs2),
+				  "OverThresholdCh1":(n + 2, 0, ss),
 				  "ColocAmount":(n + 3, 0, ds),
-				  "ColocPercent":(n + 4, 0, fs, 100),
+				  "PercentageVolumeCh1":(n + 4, 0, ss),
+				  "PercentageVolumeCh2":(n + 5, 0, ss),
+				  "ThresholdM1":(n + 6, 0, fs2),
+				  "ThresholdM2":(n + 7, 0, fs2),
+				  "PValue":(n + 8, 0, fs2),
+				  "ColocPercent":(n + 9, 0, fs, 100),
 # volume = number of voxels (Imaris)
 # material = intensity
-				  "PercentageVolumeCh1":(n + 5, 0, ss),
-#				   "PercentageMaterialCh1":(n+5,1,fs,100),
-				  "PercentageVolumeCh2":(n + 6, 0, ss),
-#				   "PercentageMaterialCh2":(n+6,1,fs,100),
-				  "PercentageTotalCh1":(n + 7, 0, fs, 100),
-				  "PercentageTotalCh2":(n + 8, 0, fs, 100),
-				  "PearsonWholeImage":(n + 9, 0, fs2),
-				  "PearsonImageAbove":(n + 10, 0, fs2),
-				  "PearsonImageBelow":(n + 11, 0, fs2),
+				  "PercentageTotalCh1":(n + 10, 0, fs, 100),
+				  "PercentageTotalCh2":(n + 11, 0, fs, 100),
+				  "PearsonWholeImage":(n + 12, 0, fs2),
+				  "PearsonImageAbove":(n + 13, 0, fs2),
+				  "PearsonImageBelow":(n + 14, 0, fs2),
 #				   "M1":(9,0,fs2),
 #				   "M2":(10,0,fs2),
-				  "ThresholdM1":(n + 12, 0, fs2),
-				  "ThresholdM2":(n + 13, 0, fs2),
-				  "SumCh1":(n + 14, 0, ss),
-				  "SumCh2":(n + 15, 0, ss),
-				  "NonZeroCh1":(n + 16, 0, ss),
-				  "OverThresholdCh1":(n + 17, 0, ss),
+				  "SumCh1":(n + 15, 0, ss),
+				  "SumCh2":(n + 16, 0, ss),
+				  "NonZeroCh1":(n + 17, 0, ss),
 				  "DiffStainVoxelsCh1":(n + 18, 0, ss),
 				  "DiffStainVoxelsCh2":(n + 19, 0, ss),
 

@@ -54,6 +54,7 @@ class ExtractSubsetFilter(lib.ProcessingFilter.ProcessingFilter):
 						"ROI": "Region of Interest Used in Cutting", \
 						"FirstSlice": "First Slice in Resulting Stack", \
 						"LastSlice": "Last Slice in Resulting Stack"}
+		self.filterDesc = "Extracts a subset from a dataset by removing slices from the top and/or bottom and/or by using a ROI to specify the subset in X and Y.\nInput: Any image\nOutput: Extracted image"
 	
 	def getParameters(self):
 		"""

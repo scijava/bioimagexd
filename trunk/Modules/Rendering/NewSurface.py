@@ -119,9 +119,10 @@ class SurfaceModule(VisualizationModule):
 				["Smoothing options", \
 					("Gaussian", "Normals", "FeatureAngle", "Simplify", "PreserveTopology") ], \
 	   			["Iso-Surface", ("IsoValue", "SolidColor")], \
+				["Surface transparency", ("Transparency",)],
 				["Multiple Surfaces", \
 					("MultipleSurfaces", "SurfaceRangeBegin", GUI.GUIBuilder.NOBR, \
-					"SurfaceRangeEnd", "SurfaceAmnt", "Transparency")],
+					"SurfaceRangeEnd", "SurfaceAmnt")],
 		]
 		
 	def getRange(self, parameter):

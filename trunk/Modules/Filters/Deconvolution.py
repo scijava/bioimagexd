@@ -34,7 +34,7 @@ class DeconvolutionFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Iterative Deconvolution 3D
 	"""		
-	name = "Iterative Deconvolution 3D"
+	name = "Iterative Deconvolution"
 	category = lib.FilterTypes.DECONVOLUTION
 	
 	def __init__(self):

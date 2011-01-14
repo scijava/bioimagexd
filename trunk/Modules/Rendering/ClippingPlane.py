@@ -72,15 +72,14 @@ class ClippingPlaneModule(VisualizationModule):
 		self.planeWidget.SetInteractor(iactor)
 		VisualizationModule.__init__(self, parent, visualizer, **kws)
 		
-		self.descs = {"ShowControl": "Show plane controls","AllModules": "Clip all modules","ClippedModule": "Clip the module"}
-		#self.updateRendering()
-
+		self.descs = {"ShowControl": "Show controls","AllModules": "Clip all modules","ClippedModule": "Module to clip"}
+		self.filterDesc = "Clipping plane desc"
 		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["", ("ClippedModule",)], ["Bools", ("ShowControl","AllModules")]]        
+		return [["", ("ClippedModule", "AllModules", "ShowControl")]]
 
 	def getDefaultValue(self, parameter):
 		"""

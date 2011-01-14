@@ -44,6 +44,7 @@ class SubtractROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		self.descs = {"ROI": "Region of Interest used in subtraction"}
 		self.itkFlag = 1
+		self.filterDesc = "Subtracts the average intensity of a ROI from every pixel/voxel of the image.\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""

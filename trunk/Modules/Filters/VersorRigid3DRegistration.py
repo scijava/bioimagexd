@@ -48,13 +48,13 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 	"""
 	VersorRigid3dRegistrationFilter class
 	"""
-	name = "Versor Rigid Registration 3D"
+	name = "Versor rigid registration"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
-		Initializes Versor Rigid 3d Registration object
+		Initializes Versor Rigid 3D Registration object
 		"""
 		RegistrationFilters.RegistrationFilter.__init__(self,inputs)
 		self.descs["RotateAround"] = "Rotate around"

@@ -44,7 +44,7 @@ def getConfigPanel():
 	return PDBConfigurationPanel
 
 def getName():
-	return "Protein Data Bank"
+	return "Visualize Protein Data Bank file"
 
 class PDBModule(VisualizationModule):
 	"""
@@ -57,7 +57,7 @@ class PDBModule(VisualizationModule):
 		self.actorsInitialized = False
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"FileName": "PDB File Name",
+		self.descs = {"FileName": "PDB file",
 					  "SphereRadius": "Sphere radius",
 					  "TubeRadius": "Tube radius"}
 		self.mapper = vtk.vtkPolyDataMapper()

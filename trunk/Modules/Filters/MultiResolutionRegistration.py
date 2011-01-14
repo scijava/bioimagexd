@@ -47,7 +47,7 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 	"""
 	MultiResolutionRegistrationFilter class
 	"""
-	name = "Multi Resolution Translation Registration 3D"
+	name = "Multi resolution translation registration"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 

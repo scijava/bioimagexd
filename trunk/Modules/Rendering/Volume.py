@@ -422,7 +422,6 @@ class VolumeModule(VisualizationModule):
 			self.volumeProperty.IndependentComponentsOn()
 			
 		Logging.info("Rendering using, ", self.mapper.__class__, kw = "rendering")
-		
 		self.mapper.SetInput(input)
 		if self.mapperUpdated:
 			self.volume.SetMapper(self.mapper)

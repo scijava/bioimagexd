@@ -107,6 +107,8 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the level of knowledge for using parameter
 		@param param Parameter name
 		"""
+		if parameter in ["MinRoundness", "MaxRoundness"]:
+			return scripting.COLOR_EXPERIENCED
 		return scripting.COLOR_BEGINNER
 
 	def execute(self, inputs = (1,1), update = 0, last = 0):

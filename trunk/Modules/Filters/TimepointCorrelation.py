@@ -49,6 +49,7 @@ class TimepointCorrelationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {"Timepoint1": "First timepoint:", "Timepoint2": "Second timepoint:"}
 		self.resultVariables = {"Correlation": "Correlation between timepoints", 
 		"Timepoint1": "First timepoint", "Timepoint2":"Second timepoint"}
+		self.filterDesc = "Analyzes correlation between two timepoints in a timeseries\nInputs: Any image, any image\nOutput: Result (first input for pipeline)";
 	
 	def getParameters(self):
 		"""

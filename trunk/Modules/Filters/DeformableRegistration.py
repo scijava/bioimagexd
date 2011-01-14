@@ -48,7 +48,7 @@ class DeformableRegistrationFilter(RegistrationFilters.RegistrationFilter):
 	"""
 	DeformableRegistrationFilter class
 	"""
-	name = "Deformable Registration"
+	name = "Deformable registration"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 

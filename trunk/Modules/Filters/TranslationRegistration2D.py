@@ -45,7 +45,7 @@ class TranslationRegistration2DFilter(RegistrationFilters.RegistrationFilter):
 	"""
 	TranslationRegistration2DFilter class
 	"""
-	name = "Translation Registration 2D"
+	name = "Translation registration 2D"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 

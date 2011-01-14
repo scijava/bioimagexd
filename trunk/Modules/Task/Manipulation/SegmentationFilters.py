@@ -198,7 +198,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Re-label image"
 	category = OBJECT
-	level = scripting.COLOR_BEGINNER
+	level = scripting.COLOR_EXPERIENCED
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Initialization
@@ -207,6 +207,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"Threshold": "Remove objects with less voxels than:"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Remaps labels in label image, order by size\nInput: Label image\nOutput: Label image"
 		
 	def getParameterLevel(self, parameter):
 		"""
@@ -260,8 +261,9 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	Created: 05.07.2006, KP
 	Description: Invert the intensity of the image
 	"""		
-	name = "Invert intensity"
+	name = "Invert"
 	category = MATH
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -272,7 +274,8 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {}
 		self.itkFlag = 1
 		self.itkfilter = None
-			
+		self.filterDesc = "Inverts the intensities of an image for every pixel/voxel\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
+
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
@@ -305,11 +308,8 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 			self.itkfilter = itk.InvertIntensityImageFilter[image, image].New()
 			
 		self.itkfilter.SetInput(image)
-		
-		#self.setImageType("UL3")
 
 		data = self.itkfilter.GetOutput()			 
-				
 		self.itkfilter.Update()
 		
 		return data

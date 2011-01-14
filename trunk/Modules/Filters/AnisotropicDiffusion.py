@@ -35,7 +35,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""
 	An edge preserving smoothing filter
 	"""     
-	name = "Anisotropic diffusion 3D"
+	name = "Anisotropic diffusion"
 	category = lib.FilterTypes.FILTERING
 	
 	def __init__(self):
