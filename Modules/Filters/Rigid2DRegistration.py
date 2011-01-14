@@ -48,7 +48,7 @@ class Rigid2DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 	"""
 	Rigid2dRegistrationFilter class
 	"""
-	name = "Rigid Registration 2D"
+	name = "Rigid registration 2D"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 

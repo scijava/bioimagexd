@@ -48,7 +48,7 @@ def getConfigPanel():
 	return VisualizeTrackConfigurationPanel
 
 def getName():
-	return "Visualize tracks"
+	return "Visualize motion tracks"
 
 class VisualizeTrackModule(VisualizationModule):
 	"""
@@ -60,10 +60,10 @@ class VisualizeTrackModule(VisualizationModule):
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"TrackFile": "Select the track file", "AllTracks": "Show all tracks", \
-					"MinLength": "Minimum length of track",
-					"SphereRadius": "Radius of spheres",
-					"TubeRadius": "Radius of tubes"}
+		self.descs = {"TrackFile": "Tracks file", "AllTracks": "Show all tracks", \
+					"MinLength": "Min. length of track (# of timepoints)",
+					"SphereRadius": "Sphere radius",
+					"TubeRadius": "Tube radius"}
 					#"SameStartingPoint":"Tracks start at same point"}
 		
 		self.showTracks = []
@@ -104,7 +104,7 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",("AllTracks",)], ["Tracks",("MinLength",)], ["Drawing",("SphereRadius","TubeRadius")]]
+		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",("AllTracks",)], ["Settings",("MinLength","SphereRadius","TubeRadius")]]
 
 		
 	def getDefaultValue(self, parameter):
@@ -128,7 +128,7 @@ class VisualizeTrackModule(VisualizationModule):
 		If a parameter has a certain range of valid values, the values can be queried with this function
 		"""
 		if parameter == "MinLength":
-			return 1, 100
+			return 1, 1000
 		return 1, 1
 		
 	def getType(self, parameter):
@@ -138,7 +138,7 @@ class VisualizeTrackModule(VisualizationModule):
 		if parameter == "TrackFile":
 			return GUIBuilder.FILENAME
 		if parameter == "MinLength":
-			return GUIBuilder.SLICE
+			return GUIBuilder.SPINCTRL
 		if parameter in ["AllTracks","SameStartingPoint"]:
 			return types.BooleanType
 		if parameter in ["SphereRadius","TubeRadius"]:

@@ -52,7 +52,7 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Object colocalization"
 	category = lib.FilterTypes.COLOCALIZATION
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (2,2)):
 		"""
@@ -78,29 +78,13 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"PercentOfObjectVoxelsColocalized":"Percentage of voxels in foreground objects that are colocalized with background"}
 		self.headers = ["Background object","# of objects inside", "% of voxels colocalized"]
 		self.aggregateHeaders = ["Bg#","Fg#","Coloc % of fg voxels","Coloc % (bg)","Coloc % (fg)",u"Mean \u00B1 SD (fg objs in bg)", "Mode (fg objs in bg)"]
+		self.filterDesc = "Analyzes colocalization between two sets of segmented objects\nInputs: Label image, Label image\nOutput: Results (first input for pipeline)"
 		
 	def getParameters(self):
 		"""
 		Returns the parameters for GUI.
 		"""
-		return [
-			]
-
-	def getType(self, parameter):
-		"""
-		Returns the types of parameters for GUI.
-		"""
-		if parameter in ["DistanceToSurface","InsideSurface"]:
-			return types.BooleanType
-			
-			
-	def getDefaultValue(self, parameter):
-		"""
-		Description:
-		"""
-		if parameter in ["DistanceToSurface","InsideSurface"]:
-			return True
-		return 0
+		return []
 
 	def getParameterLevel(self, param):
 		"""
@@ -147,17 +131,17 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 			sizer.Add(box)
 			pos = (0, 0)
-			item = gui.sizer.FindItemAtPosition(pos)
-			if item.IsWindow():
-				win = item.GetWindow()
-			elif item.IsSizer():
-				win = item.GetSizer()
-			elif item.IsSpacer():
-				win = item.GetSpacer()
+			#item = gui.sizer.FindItemAtPosition(pos)
+			#if item.IsWindow():
+			#	win = item.GetWindow()
+			#elif item.IsSizer():
+			#	win = item.GetSizer()
+			#elif item.IsSpacer():
+			#	win = item.GetSpacer()
 
-			gui.sizer.Detach(win)
-			gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-			gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
+			#gui.sizer.Detach(win)
+			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+			#gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
 			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
 			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
 			sizer.AddSpacer((5,5))
@@ -217,8 +201,8 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the name of the input #n
 		"""			 
-		if n == 2: return "Counted objects"
-		return "Background objects" 
+		if n == 2: return "Foreground objects"
+		return "Background objects"
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""

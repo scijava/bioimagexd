@@ -43,7 +43,7 @@ def getConfigPanel():
 	return CutBoxConfigurationPanel
 
 def getName():
-	return "Cut with box"
+	return "Clipping box"
 
 class CutBoxModule(VisualizationModule):
 	"""
@@ -56,8 +56,8 @@ class CutBoxModule(VisualizationModule):
 		self.boxWidget = None
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"ShowControls": "Show the controls", "ClippedModule": "Clip the module", \
-						"AllModules": "Clip all modules", "InsideOut": "Clip from the outside"}
+		self.descs = {"ShowControls": "Show controls", "ClippedModule": "Module to clip", \
+						"AllModules": "Clip all modules", "InsideOut": "Clip from outside"}
 		boxWidget = self.boxWidget = vtk.vtkBoxWidget()
 		self.cut = 0
 	  
@@ -114,9 +114,7 @@ class CutBoxModule(VisualizationModule):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""            
-		# return [ ["Smoothing",("Normals","FeatureAngle")],
-		#["Warping",("Slice","Scale")] ]
-		return [["", ("ShowControls", "ClippedModule", "AllModules", "InsideOut")]]
+		return [["", ("ClippedModule", "AllModules", "InsideOut", "ShowControls")]]
 		
 	def getDefaultValue(self, parameter):
 		"""

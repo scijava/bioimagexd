@@ -108,7 +108,7 @@ class ErodeFilter(MorphologicalFilter):
 	"""
 	Description: An erosion filter
 	"""     
-	name = "Erode 3D"
+	name = "Erode"
 	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
@@ -124,7 +124,7 @@ class VarianceFilter(MorphologicalFilter):
 	"""
 	Variance filter
 	"""
-	name = "Variance 3D"
+	name = "Variance"
 	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
@@ -140,7 +140,7 @@ class DilateFilter(MorphologicalFilter):
 	"""
 	A 3D dilation filter
 	"""      
-	name = "Dilate 3D"
+	name = "Dilate"
 	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
@@ -156,7 +156,7 @@ class RangeFilter(MorphologicalFilter):
 	"""
 	A filter that sets the value of the neighborhood to be the max-min of that nbh
 	"""     
-	name = "Range 3D"
+	name = "Range"
 	category = lib.FilterTypes.MORPHOLOGICAL
 	
 	def __init__(self):
@@ -172,7 +172,7 @@ class SobelFilter(MorphologicalFilter):
 	"""
 	A sobel filter in 3D
 	"""     
-	name = "Sobel 3D"
+	name = "Sobel"
 	category = lib.FilterTypes.FEATUREDETECTION
 	
 	def __init__(self):
@@ -207,7 +207,7 @@ class MedianFilter(MorphologicalFilter):
 	"""
 	A median filter
 	"""     
-	name = "Median 3D"
+	name = "Median"
 	category = lib.FilterTypes.FILTERING
 	level = scripting.COLOR_BEGINNER
 	

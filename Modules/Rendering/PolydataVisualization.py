@@ -59,7 +59,7 @@ class PolydataVisualization(VisualizationModule):
 	def __init__(self, parent, visualizer, **kws):
 		"""
 		Initialization
-		"""     
+		"""
 		self.init = False
 		VisualizationModule.__init__(self, parent, visualizer, numberOfInputs = (2,2), **kws)   
 		#self.name = "Surface Rendering"
@@ -134,9 +134,7 @@ class PolydataVisualization(VisualizationModule):
 		if parameter == "PreserveTopology":
 			return scripting.COLOR_INTERMEDIATE
 		
-		
-		return scripting.COLOR_BEGINNER            
-		
+		return scripting.COLOR_BEGINNER
 
 	def setScalarRange(self, min, max):
 		"""
@@ -163,7 +161,7 @@ class PolydataVisualization(VisualizationModule):
 	def getRange(self, parameter):
 		"""
 		If a parameter has a certain range of valid values, the values can be queried with this function
-		"""     
+		"""
 		if parameter in ["Simplify", "Transparency"]:
 			return 0, 100
 		if parameter == "FeatureAngle":
@@ -193,8 +191,7 @@ class PolydataVisualization(VisualizationModule):
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
-		"""   
-
+		"""
 		if parameter in ["Gaussian", "Normals", "PreserveTopology", "MultipleSurfaces", "SavePolyData","MarkColor"]: 
 			return types.BooleanType
 		if parameter in ["Simplify", "IsoValue", "Transparency","Distance"]: 
@@ -202,7 +199,6 @@ class PolydataVisualization(VisualizationModule):
 		if parameter in ["SurfaceRangeBegin", "SurfaceRangeEnd", "SurfaceAmnt", "FeatureAngle"]: 
 			return GUI.GUIBuilder.SPINCTRL
 
-		
 	def setDataUnit(self, dataunit):
 		"""
 		Sets the dataunit this module uses for visualization
@@ -222,7 +218,7 @@ class PolydataVisualization(VisualizationModule):
 				
 	def setLookupTableBasedOnDistance(self, distance):
 		"""
-		Set the color lookup table of channel 2  to be based on the given distance
+		Set the color lookup table of channel 2 to be based on the given distance
 		"""
 		inputDataUnit2 = self.getInputDataUnit(2)
 		print "inputDataUnit2=",inputDataUnit2
@@ -260,7 +256,7 @@ class PolydataVisualization(VisualizationModule):
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""           
+		"""
 		self.mapper.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.mapper, 'ProgressEvent', self.updateProgress)
 		dataUnit = self.getInputDataUnit(1)
@@ -300,8 +296,7 @@ class PolydataVisualization(VisualizationModule):
 			input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 			self.contour.SetInput(input)
 			polyinput = self.contour.GetOutput()
-		
-		
+
 		input2 = self.getInput(2)
 		minval, maxval = input2.GetScalarRange()
 		

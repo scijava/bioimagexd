@@ -345,7 +345,7 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
    //printf("update extent=%d,%d,%d,%d,%d,%d\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   long pixSize = data->GetNumberOfScalarComponents()*sizeof(OT);  
 
-  printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
+  //printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
   outPtr2 = outPtr;
   int idx2;
   char progressText[100];

@@ -44,7 +44,7 @@ class SlicesTranslationRegistrationFilter(lib.ProcessingFilter.ProcessingFilter)
 	"""
 	SlicesTranslationRegistrationFilter class
 	"""
-	name = "Slices Translation Registration"
+	name = "Slices translation registration 2D"
 	category = lib.FilterTypes.REGISTRATION
 	level = scripting.COLOR_EXPERIENCED
 

@@ -55,7 +55,7 @@ class RenderingConfigPanel:
 		#wx.wizard.WizardPageSimple.__init__(self,parent)
 		self.control.setTimelineConfig(self)
 		self.sizer = wx.GridBagSizer(5, 5)
-		self.fps = 15.00
+		self.fps = 25.00
 		self.secs = 10
 		self.parent = parent
 		self.updated = 0
@@ -69,10 +69,9 @@ class RenderingConfigPanel:
 		self.totalFramesLabel = wx.StaticText(self.parent, -1, "Frames:")
 		self.durationLabel = wx.StaticText(self.parent, -1, "Duration:")
 
-		self.totalFrames = wx.TextCtrl(self.parent, -1, "120", size = (50, -1), style = wx.TE_PROCESS_ENTER)
+		self.totalFrames = wx.TextCtrl(self.parent, -1, "250", size = (50, -1), style = wx.TE_PROCESS_ENTER)
 		self.spin = wx.SpinButton( self.parent, -1, style = wx.SP_VERTICAL , size = (-1, 25))
 		self.duration = TimeCtrl(self.parent, -1, "00:00:10", fmt24hr = True, size = (50, 25), style = wx.TE_PROCESS_ENTER, spinButton = self.spin)
-		
 		
 		self.totalFrames.Bind(wx.EVT_TEXT, self.updateFrameCount)
 		self.duration.Bind(wx.EVT_TEXT, self.updateDuration)
@@ -92,8 +91,8 @@ be the same size as the final frame.""")
 		self.frameSizeLbl = wx.StaticText(self.parent, -1, "Frame size:")
 		self.resLst = [(0, 0), (320, 240), (512, 512), (640, 480), (720, 576), (800, 600)]
 		self.frameSize = wx.Choice(self.parent, -1,
-		choices = ["Custom", "320 x 240", "512 x 512", "640 x 480", "720x576 (PAL)", "800 x 600"])
-		self.frameSize.SetSelection(3)		  
+		choices = ["Custom", "320 x 240", "512 x 512", "640 x 480", "720x576 (PAL)", "720x480 (NTSC)", "800 x 600"])
+		self.frameSize.SetSelection(4)		  
 		self.frameSize.Bind(wx.EVT_CHOICE, self.onUpdateFrameSize)
 		self.outputsizer.Add(self.durationLabel, (0, 0))
 		self.outputsizer.Add(box, (0, 1))	

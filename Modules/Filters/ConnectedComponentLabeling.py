@@ -37,6 +37,7 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Connected component labeling"
 	category = lib.FilterTypes.OBJECT
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -58,6 +59,8 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the level of the given parameter
 		"""
+		if parameter == "FullyConnected":
+			return scripting.COLOR_EXPERIENCED
 		return scripting.COLOR_BEGINNER
 			
 	def getDefaultValue(self, parameter):

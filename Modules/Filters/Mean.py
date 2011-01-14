@@ -40,7 +40,7 @@ class MeanFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A mean filter. Uses itk's MeanImageFilter.
 	"""
-	name = "Mean 3D"
+	name = "Mean"
 	category = lib.FilterTypes.FILTERING
 	level = scripting.COLOR_BEGINNER
 

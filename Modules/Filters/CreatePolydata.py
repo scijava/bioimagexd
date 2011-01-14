@@ -36,7 +36,6 @@ import GUI.GUIBuilder
 import lib.FilterTypes
 import vtk
 import Logging
-
 import optimize
 
 class CreatePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
@@ -44,19 +43,21 @@ class CreatePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for converting imagedata to polydata
 	"""
 	name = "Convert to polygonal data"
-	category = lib.FilterTypes.POLYDATA
-	level = scripting.COLOR_INTERMEDIATE
+	category = lib.FilterTypes.CONVERSION
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
 		Initialization
 		"""
-		self.scalarRange = 0,255
+		self.defaultLower = 0
+		self.defaultUpper = 255
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
 		self.contour = vtk.vtkMarchingCubes()
 		self.decimate = vtk.vtkDecimatePro()
 		self.descs = {"Simplify": "Simplify surface", "IsoValue":"Iso-surface value", 
 		"PreserveTopology":"PreserveTopology"}
+		self.filterDesc = "Creates iso-surface as polygons\nInput: Binary image (Grayscale image)\nOutput: Surface mesh";
 	
 	def getParameters(self):
 		"""
@@ -83,7 +84,7 @@ class CreatePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Description:
 		"""
-		if param == "IsoValue":return 255
+		if param == "IsoValue": return self.defaultUpper
 		if param == "Simplify": return 65
 		if param == "PreserveTopology": return True
 		if param == "PolyDataFile": return "surface.pol"
@@ -93,16 +94,26 @@ class CreatePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Description:
 		"""
-		return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 
 	def getRange(self, param):
 		"""
 		Description:
 		"""
 		if param == "Simplify": return (0,100)
-		if param == "IsoValue": return self.scalarRange
+		if param == "IsoValue": return self.defaultLower, self.defaultUpper
 
 		return (0,999)
+
+	def setDataUnit(self, dataUnit):
+		"""
+		Set the dataunit used as input for this filter
+		"""
+		if dataUnit:
+			sourceDataUnits = dataUnit.getSourceDataUnits()
+			if sourceDataUnits:
+				self.defaultLower, self.defaultUpper = sourceDataUnits[0].getScalarRange()
+		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""

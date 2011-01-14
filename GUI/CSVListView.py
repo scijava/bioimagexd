@@ -75,7 +75,6 @@ class CSVListView(wx.ListCtrl):
 			w.writerow(line)
 		return w
 
-		
 	def importFromCsv(self, filename):
 		"""
 		read a .csv file and show it in the list box
@@ -86,7 +85,6 @@ class CSVListView(wx.ListCtrl):
 		self.currentItem = event.m_itemIndex
 		lib.messenger.send(self, "item_activated", event.m_itemIndex)
 
-		
 	def setContents(self, data):
 		"""
 		Set the contents of the list view

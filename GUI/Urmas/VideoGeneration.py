@@ -687,7 +687,7 @@ class VideoGeneration(wx.Panel):
 		self.outputstaticbox = wx.StaticBoxSizer(box, wx.HORIZONTAL)
 		self.outputstaticbox.Add(self.outputsizer)
 
-		self.formatLabel = wx.StaticText(self, -1, "Output Format")
+		self.formatLabel = wx.StaticText(self, -1, "Output format")
 		self.formatMenu = wx.Choice(self, -1, choices = ["Images", "Video"])
 		self.formatMenu.SetSelection(1)
 		self.formatMenu.Bind(wx.EVT_CHOICE, self.onUpdateFormat)
@@ -716,7 +716,7 @@ class VideoGeneration(wx.Panel):
 		self.qualitySlider = wx.Slider(self, -1, value = 10, minValue = 1, maxValue = 10, \
 										style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (250, -1))
 		
-		self.presetLbl = wx.StaticText(self, -1, "Preset encoding targets:")
+		self.presetLbl = wx.StaticText(self, -1, "Presets:")
 		self.preset = wx.Choice(self, -1, choices = ["Use settings below", "PAL-DVD", "NTSC-DVD"])
 		self.preset.Bind(wx.EVT_CHOICE, self.onUpdatePreset)
 		self.preset.SetSelection(0)
@@ -780,7 +780,7 @@ class VideoGeneration(wx.Panel):
 		self.renderingsizer.Add(self.saveProjectBox, (2, 0))
 		
 		self.videofile = wx.TextCtrl(self, -1, video, size = (150, -1))
-		self.videofileLbl = wx.StaticText(self, -1, "Output file name:")
+		self.videofileLbl = wx.StaticText(self, -1, "Video file name:")
 		self.videofileBtn = wx.Button(self, -1, "...")
 		self.videofileBtn.Bind(wx.EVT_BUTTON, self.onSelectOutputFile)
 		

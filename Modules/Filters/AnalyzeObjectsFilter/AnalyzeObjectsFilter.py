@@ -131,6 +131,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"ObjAvgSmoothness": "Average smoothness of the objects",
 								"ObjAvgSmoothnessStdErr": "Standard error of average smoothness"
 								}
+		self.filterDesc = "Quantitatively analyzes segmented objects\nInputs: Label image, Grayscale image\nOutput: Results (Label image input for pipeline)";
 		
 	def getInputName(self, n):
 		"""

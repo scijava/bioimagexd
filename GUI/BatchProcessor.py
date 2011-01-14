@@ -288,14 +288,14 @@ class ProcedureListCtrl(wx.ListCtrl,
 	Description: a ListCtrl that allows the selection of different procedure lists and the editing
 				 of the variables that should be retrieved from those lists
 	"""
-	def __init__(self, parent, ID, pos=wx.DefaultPosition,
-				 size=wx.DefaultSize, style=0, analysis = None):
+	def __init__(self, parent, ID, pos = wx.DefaultPosition,
+				 size = wx.DefaultSize, style = 0, analysis = None):
 		wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
 		listmix.TextEditMixin.__init__(self)
 		listmix.ListCtrlAutoWidthMixin.__init__(self)
 		
 		self.analysis = analysis
-		self.InsertColumn(0, "Procedure list")
+		self.InsertColumn(0, "Procedure list", width = 100)
 		self.InsertColumn(1, "Defined variables")
 		self.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT, self.OnBeginEdit)
 		
@@ -382,7 +382,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 		hdr1Sb = wx.StaticBox(self,-1,"Input datasets")
 		hdr1SbSizer = wx.StaticBoxSizer(hdr1Sb, wx.VERTICAL)
-		self.fileListBox = wx.ListBox(self,-1, size=(150,50), style = wx.LB_NEEDED_SB | wx.LB_MULTIPLE)
+		self.fileListBox = wx.ListBox(self,-1, size = (150,50), style = wx.LB_NEEDED_SB | wx.LB_MULTIPLE)
 		
 		hdr1SbSizer.Add(self.fileListBox, 1, wx.EXPAND)
 		
@@ -421,7 +421,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 		self.procedureSizer = wx.GridBagSizer()
 		hdr2SbSizer.Add(self.procedureSizer, 1, wx.EXPAND)
-		self.procedureListBox = ProcedureListCtrl(self,-1, analysis = self.analysis, size=(150,100), style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_EDIT_LABELS)
+		self.procedureListBox = ProcedureListCtrl(self, -1, analysis = self.analysis, size = (550,100), style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_EDIT_LABELS)
 		self.procedureListBox.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSelectProcedureList)
 		self.Bind(wx.EVT_LIST_END_LABEL_EDIT, self.onChangeListName)
 		self.procedureSizer.Add(self.procedureListBox, (0,0), flag = wx.EXPAND)
@@ -434,15 +434,15 @@ class ProcedurePanel(wx.ScrolledWindow):
 		self.removeBtn = wx.Button(self, -1, "Remove")
 		self.removeBtn.Bind(wx.EVT_BUTTON, self.onRemoveProcedureList)
 		
-		self.addVarBtn = wx.Button(self, -1, "Place variables")
-		self.addVarBtn.Bind(wx.EVT_BUTTON, self.onPlaceVariables)
+		#self.addVarBtn = wx.Button(self, -1, "Place variables")
+		#self.addVarBtn.Bind(wx.EVT_BUTTON, self.onPlaceVariables)
 		
 		self.executeBtn = wx.Button(self, -1, "Run!")
 		self.executeBtn.Bind(wx.EVT_BUTTON, self.onExecuteAnalysis)
 		
 		btnSizer.Add(self.addBtn)
 		btnSizer.Add(self.removeBtn)
-		btnSizer.Add(self.addVarBtn) 
+		#btnSizer.Add(self.addVarBtn) 
 		btnSizer.Add(self.executeBtn)
 		
 		self.filterEditor = GUI.FilterEditor.FilterEditor(self, scriptingId='scripting.dialogs["BatchProcessor"].filterEditor', fbSize = (300, 150))
@@ -506,11 +506,11 @@ class ProcedurePanel(wx.ScrolledWindow):
 		
 		self.analysis.execute(filename, dirname, tps)
 		
-	def onPlaceVariables(self, evt):
-		"""
-		place the selected variables on the grid
-		"""
-		pubsub.Publisher().sendMessage('UpdateGrid')
+	#def onPlaceVariables(self, evt):
+	#	"""
+	#	place the selected variables on the grid
+	#	"""
+	#	pubsub.Publisher().sendMessage('UpdateGrid')
 		
 	def updateFromAnalysis(self):
 		"""
@@ -569,8 +569,7 @@ class ProcedurePanel(wx.ScrolledWindow):
 		self.filterEditor.setFilterList(procList)
 		self.filterEditor.updateFromFilterList()
 		self.filterEditor.Enable(1)
-		
-		
+
 	def onRemoveProcedureList(self, evt):
 		"""
 		remove a procedure list from the list box
@@ -581,7 +580,6 @@ class ProcedurePanel(wx.ScrolledWindow):
 			self.procedureListBox.DeleteItem(item)
 			self.filterEditor.cleanFilterListBox()
 			self.analysis.removeProcedureList(name)
-			
 
 	def populateListBox(self):
 		"""
@@ -613,20 +611,20 @@ class BatchProcessor(wx.Frame):
 		Initialize the batch processor
 		"""
 		self.parent = parent
-		wx.Frame.__init__(self, parent, -1, "BioImageXD Batch Processor", size = (1024, 800))
-		self.splitter = wx.SplitterWindow(self, -1, style = wx.SP_LIVE_UPDATE)
-
+		wx.Frame.__init__(self, parent, -1, "BioImageXD Batch Processor", size = (600,600))
+		#self.splitter = wx.SplitterWindow(self, -1, style = wx.SP_LIVE_UPDATE)
 		
 		self.analysis = lib.BatchAnalysis.BatchAnalysis()
 
-		self.grid = BatchAnalysisGrid(self.splitter, self.analysis)
+		#self.grid = BatchAnalysisGrid(self.splitter, self.analysis)
 
-		self.procedurePane = ProcedurePanel(self.splitter, self.analysis)
+		#self.procedurePane = ProcedurePanel(self.splitter, self.analysis)
+		self.procedurePane = ProcedurePanel(self, self.analysis)
 		self.filterEditor = self.procedurePane.filterEditor
-		
-		self.splitter.SetMinimumPaneSize(20)
-		self.splitter.SplitVertically(self.procedurePane, self.grid, 650)
 
+		#self.splitter.SetMinimumPaneSize(20)
+		#self.splitter.SplitVertically(self.procedurePane, self.grid, 650)
+		
 		self.createMenubar()
 		
 		self.Layout()
@@ -653,10 +651,10 @@ class BatchProcessor(wx.Frame):
 		
 		self.menu.Append(self.file, "&File")
 		
-		self.file.Append(GUI.MenuManager.ID_SAVE_ANALYSIS, "&Save batch analysis...\tCtrl-S")
+		self.file.Append(GUI.MenuManager.ID_SAVE_ANALYSIS, "&Save batch analysis settings\tCtrl-S")
 		wx.EVT_MENU(self, GUI.MenuManager.ID_SAVE_ANALYSIS, self.procedurePane.onSaveAnalysis)
 		
-		self.file.Append(GUI.MenuManager.ID_LOAD_ANALYSIS, "&Open batch analysis...\tCtrl-O")
+		self.file.Append(GUI.MenuManager.ID_LOAD_ANALYSIS, "&Open batch analysis settings\tCtrl-O")
 		wx.EVT_MENU(self, GUI.MenuManager.ID_LOAD_ANALYSIS, self.onLoadAnalysis)
 		self.file.AppendSeparator()
 		self.file.Append(GUI.MenuManager.ID_CLOSE_BATCHPROCESSOR, "&Close...\tAlt-F4")
