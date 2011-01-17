@@ -119,7 +119,7 @@ class GUIBuilder(wx.Panel):
 		filterDesc = self.currentFilter.getFilterDesc()
 		if filterDesc != "":
 			filterDescText = wx.StaticText(self, -1, filterDesc)
-			filterDescText.SetBackgroundColour("Yellow")
+			filterDescText.SetBackgroundColour(wx.Colour(200,200,200))
 			filterDescText.Wrap(300)
 			sizer.Add(filterDescText, (gy,0), span = (1,2))
 			gy += 2
