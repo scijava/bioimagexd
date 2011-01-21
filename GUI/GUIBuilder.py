@@ -118,10 +118,8 @@ class GUIBuilder(wx.Panel):
 		# If filter description available, add to filter GUI
 		filterDesc = self.currentFilter.getFilterDesc()
 		if filterDesc != "":
-			filterDescText = wx.StaticText(self, -1, filterDesc)
-			filterDescText.SetBackgroundColour(wx.Colour(200,200,200))
-			filterDescText.Wrap(300)
-			sizer.Add(filterDescText, (gy,0), span = (1,2))
+			filterDescSizer = self.createFilterDesc(filterDesc)
+			sizer.Add(filterDescSizer, (gy, 0), span = (1,2))
 			gy += 2
 		
 		# If necessary, create the channel selection GUI
@@ -967,7 +965,27 @@ class GUIBuilder(wx.Panel):
 		lib.messenger.connect(currentFilter, "update_%s" % itemName, f)
 		
 		return spin
-	
+
+	def createFilterDesc(self, filterDesc = ""):
+		"""
+		Create filter description
+		"""
+		fdWin = wx.Window(self, -1)
+		fdSizer = wx.BoxSizer(wx.HORIZONTAL)
+		fdWin.SetSizer(fdSizer)
+		fdWin.SetAutoLayout(1)
+		filterDescText = wx.StaticText(fdWin, -1, filterDesc)
+		fdSizer.Add(filterDescText)
+		#filterDescText.SetBackgroundColour((200,200,200))
+		#fdWin.SetBackgroundColour((200,200,200))
+		filterDescText.Wrap(300)
+		fdWin.Layout()
+
+		descBox = wx.StaticBox(self, -1, "Description")
+		descBoxSizer = wx.StaticBoxSizer(descBox, wx.VERTICAL)
+		descBoxSizer.Add(fdWin)
+		return descBoxSizer
+
 
 	def updateLabel(self, obj, label):
 		"""

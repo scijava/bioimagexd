@@ -120,6 +120,7 @@ ReadColorTransferFunction(vtkColorTransferFunction *ctf)
 	}
   ctf->BuildFunctionFromTable(0.0, size/3-1, size/3, convTable);
 
+  doublePtr = 0;
   delete[] convTable;
   delete[] table;
   delete is;
@@ -159,6 +160,7 @@ LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, in
 	}
 
   ctf->BuildFunctionFromTable(start, end, points, table);
+  tablePtr = 0;
   delete[] table;
 
   return 1;
@@ -175,7 +177,7 @@ ColorTransferFunctionToString(vtkColorTransferFunction *ctf, int perColor)
   const char *table;
   table = reinterpret_cast<const char*>(ctf->GetTable(min, max, size));
 
-  if (this->OutputArray) delete this->OutputArray;
+  if (this->OutputArray) delete[] this->OutputArray;
   int outputSize = static_cast<int>(3 * size / perColor);
   this->OutputArray = new unsigned char[outputSize];
 
@@ -244,6 +246,7 @@ CreateRandomColorTransferFunction(vtkColorTransferFunction *ctf, int min, int ma
 	}
 
   ctf->BuildFunctionFromTable(0.0,size/3-1,size/3,table);
+  tablePtr = 0;
   delete[] table;
   delete[] originalTable;
 }

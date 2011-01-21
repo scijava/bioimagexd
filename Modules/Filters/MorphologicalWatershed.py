@@ -155,7 +155,7 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		self.relabelFilter.SetInput(data)
 
-		th = self.parameters["Threshold"]
+		th = int(self.parameters["Threshold"])
 		self.relabelFilter.SetMinimumObjectSize(th)
 	
 		data = self.relabelFilter.GetOutput()

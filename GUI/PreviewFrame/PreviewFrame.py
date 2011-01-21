@@ -425,7 +425,7 @@ class PreviewFrame(InteractivePanel):
 			preview = self.dataUnit.getTimepoint(self.timePoint)
 			self.rawImage = preview
 			Logging.info("Using timepoint %d as preview" % self.timePoint, kw = "preview")
-		
+
 		black = 0
 		if not preview:
 			preview = None

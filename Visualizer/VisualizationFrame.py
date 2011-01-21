@@ -269,6 +269,9 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.colorLbl = wx.StaticText(self.lightPanel, -1, "Background color: ")
 		self.colorBtn = csel.ColourSelect(self.lightPanel, -1)
 		self.Bind(csel.EVT_COLOURSELECT, self.onSelectColor, id = self.colorBtn.GetId())
+
+		self.angleLbl = wx.StaticText(self.lightPanel, -1, "View angle:")
+		self.angleEdit = wx.TextCtrl(self.lightPanel, -1, "30")
 		
 		self.lightSizer.Add(self.ambientLbl, (0, 0))
 		self.lightSizer.Add(self.ambientEdit, (0, 1))
@@ -278,8 +281,10 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.lightSizer.Add(self.specularEdit, (2, 1))
 		self.lightSizer.Add(self.specularPowerLbl, (3, 0))
 		self.lightSizer.Add(self.specularPowerEdit, (3, 1))
-		self.lightSizer.Add(self.colorLbl, (4,0))
-		self.lightSizer.Add(self.colorBtn, (4,1))
+		self.lightSizer.Add(self.angleLbl, (4,0))
+		self.lightSizer.Add(self.angleEdit, (4,1))
+		self.lightSizer.Add(self.colorLbl, (5,0))
+		self.lightSizer.Add(self.colorBtn, (5,1))
 		self.lightPanel.SetSizer(self.lightSizer)
 		self.lightSizer.Fit(self.lightPanel)
 		

@@ -95,10 +95,11 @@ class ModuleConfigurationPanel(wx.ScrolledWindow):
 			diffuse = float(visualizationFrame.diffuseEdit.GetValue())
 			specular = float(visualizationFrame.specularEdit.GetValue())
 			specularpwr = float(visualizationFrame.specularPowerEdit.GetValue())
+			viewangle = int(visualizationFrame.angleEdit.GetValue())
 		except:
 			return
-		
-		self.module.setProperties(ambient, diffuse, specular, specularpwr)
+
+		self.module.setProperties(ambient, diffuse, specular, specularpwr, viewangle)
 		
 	def findModule(self):
 		"""
