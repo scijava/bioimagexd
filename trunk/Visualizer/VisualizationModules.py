@@ -185,7 +185,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		self.renderer.AddActor(self.actor)
 		self.wxrenwin.Render()
 
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""
@@ -194,6 +194,7 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		property.SetDiffuse(diffuse)
 		property.SetSpecular(specular)
 		property.SetSpecularPower(specularpower)
+		self.renderer.GetActiveCamera().SetViewAngle(viewangle)
 
 	def setShading(self, shading):
 		"""
