@@ -298,7 +298,7 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 				filename = os.path.join(directory, bxdFile)
 				
 				# Then we do the actual processing
-				filename = self.dataUnit.doProcessing(filename, timepoints = timepoints)
+				filename = self.dataUnit.doProcessing(filename, timepoints = timepoints, writebxd = not(self.channelGrouping or self.procListGrouping))
 				# Store the filename we got as a result along with the filename of the source
 				# dataunit. This is done to make it possible to apply the second grouping action
 				# where the output of the procedure lists are grouped to bxd files based on

@@ -184,6 +184,7 @@ class CombinedDataUnit(DataUnit):
 		settings_only = kws.get("settings_only", 0)
 		callback = kws.get("callback", None)
 		timepoints = kws.get("timepoints", range(self.getNumberOfTimepoints()))
+		writebxd = kws.get("writebxd", True)
 		# We create the vtidatasource with the name of the dataunit file
 		# so it knows where to store the vtkImageData objects
 
@@ -294,20 +295,23 @@ class CombinedDataUnit(DataUnit):
 				bxdwriter.write()
 
 			# Write references to channels in BXD file
-			try:
-				fp = open(bxdFile, "w")
-				print "Writing output to",bxdFile
-				for dataWriter in dataWriters:
-					channelBXCFile = dataWriter.getFilename()
-					try:
-						channelBXCFile = channelBXCFile.lstrip(os.path.dirname(bxdFile))
-					except:
-						pass
-					fp.write("%s\n"%channelBXCFile)
-			except IOError, ex:
-				Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))
-			fp.close()
-			return bxdFile
+			if writebxd:
+				try:
+					fp = open(bxdFile, "w")
+					print "Writing output to",bxdFile
+					for dataWriter in dataWriters:
+						channelBXCFile = dataWriter.getFilename()
+						try:
+							channelBXCFile = channelBXCFile.lstrip(os.path.dirname(bxdFile))
+						except:
+							pass
+						fp.write("%s\n"%channelBXCFile)
+				except IOError, ex:
+					Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))
+				fp.close()
+				return bxdFile
+			else:
+				return bxdWriters[0].getFilename()
 
 	def setMask(self, mask):
 		"""

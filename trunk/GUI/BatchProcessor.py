@@ -611,7 +611,7 @@ class BatchProcessor(wx.Frame):
 		Initialize the batch processor
 		"""
 		self.parent = parent
-		wx.Frame.__init__(self, parent, -1, "BioImageXD Batch Processor", size = (600,600))
+		wx.Frame.__init__(self, parent, -1, "BioImageXD Batch Processor", size = (600,800))
 		#self.splitter = wx.SplitterWindow(self, -1, style = wx.SP_LIVE_UPDATE)
 		
 		self.analysis = lib.BatchAnalysis.BatchAnalysis()
