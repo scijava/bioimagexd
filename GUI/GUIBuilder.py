@@ -275,7 +275,8 @@ class GUIBuilder(wx.Panel):
 		background = wx.Window(self, -1)
 		level = currentFilter.getParameterLevel(itemName)
 		if level:
-			background.SetBackgroundColour(level)
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
 		
 		histogram = Histogram.Histogram(background)
 		
@@ -332,7 +333,8 @@ class GUIBuilder(wx.Panel):
 		background = wx.Window(self, -1)
 		level = currentFilter.getParameterLevel(itemName)
 		if level:
-			background.SetBackgroundColour(level)
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
 		
 		scatterPlot = GUI.Scatterplot.Scatterplot(background, drawLegend = 1)
 		dataUnit = self.filter.getDataUnit()
@@ -432,7 +434,8 @@ class GUIBuilder(wx.Panel):
 		itemName = items[n]
 		level = currentFilter.getParameterLevel(itemName)
 		if level:
-			background.SetBackgroundColour(level)
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
 		
 		seedbox = wx.ListBox(background, -1, size = (150, 150))
 		pixelsizer.Add(seedbox, (0, 0), span = (2, 1))
@@ -474,8 +477,9 @@ class GUIBuilder(wx.Panel):
 		itemName = items[n]
 		level = currentFilter.getParameterLevel(itemName)
 		if level:
-			background.SetBackgroundColour(level)
-			
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
+
 		label = wx.StaticText(background, -1, "(%d, %d, %d)" % (0, 0, 0), size = (80, -1))
 		button = wx.Button(background, -1, "Set seed")
 		def markAsSelected(listBox): 
@@ -576,8 +580,10 @@ class GUIBuilder(wx.Panel):
 		choice.SetSelection(defValue)
 		if level:
 			if text: 
-				label.SetBackgroundColour(level)
-			background.SetBackgroundColour(level)
+				#label.SetBackgroundColour(level)
+				label.SetForegroundColour(level)
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
 		choice.Bind(wx.EVT_CHOICE, updateChoiceFunc)
 
 		longDesc = currentFilter.getLongDesc(itemName)
@@ -660,9 +666,11 @@ class GUIBuilder(wx.Panel):
 		
 		slider = self.createSlider(currentFilter, itemName, item, background)
 		if level:
-			background.SetBackgroundColour(level)
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
 			if text:
-				label.SetBackgroundColour(level)
+				#label.SetBackgroundColour(level)
+				label.SetForegroundColour(level)
 		
 		box.Add(background, 1)
 		self.itemSizer.Add(box, (self.currentRow, 0), flag = wx.EXPAND | wx.HORIZONTAL)
@@ -895,10 +903,12 @@ class GUIBuilder(wx.Panel):
 		
 		level = currentFilter.getParameterLevel(item)
 		if label and level:
-			label.SetBackgroundColour(level)
+			#label.SetBackgroundColour(level)
+			label.SetForegroundColour(level)
 		
 		if level:		   
-			background.SetBackgroundColour(level)
+			#background.SetBackgroundColour(level)
+			background.SetForegroundColour(level)
 		
 		if itemType in [types.IntType, types.FloatType]:
 			input = self.createNumberInput(background, currentFilter, item, itemType, defaultValue, desc)
@@ -976,15 +986,15 @@ class GUIBuilder(wx.Panel):
 		fdWin.SetAutoLayout(1)
 		filterDescText = wx.StaticText(fdWin, -1, filterDesc)
 		fdSizer.Add(filterDescText)
-		#filterDescText.SetBackgroundColour((200,200,200))
-		#fdWin.SetBackgroundColour((200,200,200))
+		filterDescText.SetBackgroundColour((213,213,237))
+		fdWin.SetBackgroundColour((213,213,237))
 		filterDescText.Wrap(300)
 		fdWin.Layout()
 
-		descBox = wx.StaticBox(self, -1, "Description")
-		descBoxSizer = wx.StaticBoxSizer(descBox, wx.VERTICAL)
-		descBoxSizer.Add(fdWin)
-		return descBoxSizer
+		#descBox = wx.StaticBox(self, -1, "Description")
+		#descBoxSizer = wx.StaticBoxSizer(descBox, wx.VERTICAL)
+		#descBoxSizer.Add(fdWin)
+		return fdWin
 
 
 	def updateLabel(self, obj, label):
