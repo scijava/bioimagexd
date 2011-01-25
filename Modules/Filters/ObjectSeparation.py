@@ -119,12 +119,18 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Performing object separation procedure"
 
 		starttime = time.time()
-		# Create new filters
+		# Get maximum value for invert filter
+		minimaxi = itk.MinimumMaximumImageFilter[image].New()
+		minimaxi.SetInput(image)
+		minimaxi.Update()
+
+		# Create pipeline
 		invert = itk.InvertIntensityImageFilter[image,image].New()
 		distance = itk.DanielssonDistanceMapImageFilter[image,image].New()
 		invdistance = itk.InvertIntensityImageFilter[image,image].New()
 
 		# Setup pipeline
+		invert.SetMaximum(minimaxi.GetMaximum())
 		invert.SetInput(image)
 		distance.SetInput(invert.GetOutput())
 		distance.SetUseImageSpacing(self.parameters["ImageSpacing"])
@@ -136,6 +142,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		del invert
 		del distance
 		del invdistance
+		del minimaxi
 
 		mws = itk.MorphologicalWatershedImageFilter[data,ul].New()
 		mws.SetLevel(int(self.parameters["Level"]))
