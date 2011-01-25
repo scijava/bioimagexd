@@ -92,7 +92,7 @@ def build():
 	binFiles = os.path.join("bin","*.*")
 	helpFiles = os.path.join("Help","*.*")
 	lutFiles = os.path.join("LUT","*.bxdlut")
-	licenseFiles = os.path.join("Licensing","*.*")
+	licenseFiles = os.path.join("Licensing","*")
 	
 	dataFiles = [
 				("Icons",glob.glob(iconFiles)),
