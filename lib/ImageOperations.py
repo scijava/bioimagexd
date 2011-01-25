@@ -99,7 +99,7 @@ def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars =
 
 	@keyword paintScalars: True if the max/min values of the range should be painted on the bitmap
 	@type paintScalars: Boolean (0,1)
-	"""    
+	"""
 	vertical = 0
 	if height > width:
 		vertical = 1
@@ -112,8 +112,9 @@ def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars =
 	if vertical: 
 		size = height
 	
-	maxval = ctf.GetRange()[1]
-	colorsPerWidth = float(maxval) / size
+	minval,maxval = ctf.GetRange()
+	values = maxval - minval + 1
+	colorsPerWidth = float(values) / size
 	for xCoordinate in range(0, size):
 		val = [0, 0, 0]
 		ctf.GetColor(xCoordinate * colorsPerWidth, val)
@@ -249,12 +250,12 @@ def loadNIHLut(data):
 	blues = lut[(2 * ncolors): (3 * ncolors)]
 	return reds, greens, blues
 	
-def loadLUT(filename, ctf = None, ctfrange = (0, 256)):
+def loadLUT(filename, ctf = None, ctfrange = (0, 255)):
 	"""
 	Method: loadLUT(filename)
 	Load an ImageJ binary LUT and return it as CTF. If a ctf
 				 is passed as parameter, it is modified in place
-	"""    
+	"""
 	if ctf:
 		ctf.RemoveAllPoints()
 	else:
@@ -300,7 +301,7 @@ def loadBXDLutFromString(lut, ctf):
 
 	return 
 			
-def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
+def loadLUTFromString(lut, ctf, ctfrange = (0, 255)):
 	"""
 	Load an ImageJ binary LUT from string
 	Parameters:
@@ -318,9 +319,9 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 			failed = 0
 		except "loadNIHLut got no data":
 			failed = 1
-	
+
+	k = ( len(lut) / 3 ) - 1
 	if failed:
-		k = ( len(lut) / 3 ) - 1
 		reds = lut[0: k + 1]
 		greens = lut[k + 1: 2 * k + 2]
 		blues = lut[(2 * k) + 2: 3 * k + 3]
@@ -329,7 +330,7 @@ def loadLUTFromString(lut, ctf, ctfrange = (0, 256)):
 	if step == 0:
 		return vtk.vtkColorTransferFunction()
 	j = 0
-	for i in range(int(ctfrange[0]), int(ctfrange[1]), int(step)):
+	for i in range(int(ctfrange[0]), int(ctfrange[1])+1, step):
 		red = ord(reds[j])
 		green = ord(greens[j])
 		blue = ord(blues[j])
