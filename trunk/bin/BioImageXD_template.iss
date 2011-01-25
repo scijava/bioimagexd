@@ -36,6 +36,21 @@ Source: "C:\BioImageXD\trunk\Licensing\LGPL"; DestDir: {app}\Licensing; Flags: i
 Source: "C:\BioImageXD\trunk\Licensing\Python-License"; DestDir: {app}\Licensing; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\Licensing\VTK-License"; DestDir: {app}\Licensing; Flags: ignoreversion
 Source: "C:\BioImageXD\trunk\Licensing\wxWidgets-License"; DestDir: {app}\Licensing; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Brown.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Cyan Hot.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\ether.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Green Fire blue.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\HiLo.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\HiLo12bit.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\hsatl2.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\ICA.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Magenta Hot.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Orange Hot.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Rainbow RGB.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\RangeIndicator.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Ratio.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Red Fire.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
+Source: "C:\BioImageXD\trunk\LUT\Red Hot.bxdlut"; DestDir: {app}\LUT; Flags: ignoreversion
 
 __FILES__
 
