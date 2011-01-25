@@ -208,7 +208,7 @@ class AnnotationToolbar(wx.Window):
 		self.sizer.Add(self.circleBtn, (0, 0))
 		
 		self.rectangleBtn = createBtn(MenuManager.ID_ROI_RECTANGLE, "Annotation_Rectangle.png", \
-										"Select a circular area of the image")
+										"Select a rectangular area of the image")
 		self.sizer.Add(self.rectangleBtn, (0, 1))
 		
 		self.polygonBtn = createBtn(MenuManager.ID_ROI_POLYGON, "Annotation_Polygon.png", \
