@@ -83,7 +83,7 @@ class CTFButton(wx.BitmapButton):
 	def setColorTransferFunction(self, ctf):
 		"""
 		Set the color transfer function that is edited
-		"""	  
+		"""
 		self.ctf = ctf
 		self.minval, self.maxval = ctf.GetRange()
 		self.minval = int(self.minval)
@@ -100,7 +100,7 @@ class CTFButton(wx.BitmapButton):
 	def onModifyCTF(self, event):
 		"""
 		Modify the color transfer function
-		"""		   
+		"""
 		dlg = wx.Dialog(self, -1, "Edit color transfer function")
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		panel = ColorTransferEditor(dlg, alpha = self.alpha)
@@ -754,7 +754,7 @@ class ColorTransferEditor(wx.Panel):
 	def onSaveLut(self, event):
 		"""
 		Save a lut file
-		"""	   
+		"""
 		wc = "BioImageXD lookup table (*.bxdlut)|*.bxdlut|ImageJ Lookup table (*.lut)|*.lut"
 		filename = GUI.Dialogs.askSaveAsFileName(self, "Save lookup table", "palette.bxdlut", wc, "palette")
 	
@@ -776,6 +776,7 @@ class ColorTransferEditor(wx.Panel):
 			self.getPointsFromFree()
 			self.upToDate = 0
 			self.updateGraph()
+#			self.updateCTFView()
 		
 	def onSetToColor(self, event):
 		"""
