@@ -39,7 +39,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Threshold"
 	category = lib.FilterTypes.THRESHOLDING
-	level = scripting.COLOR_EXPERIENCED
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
 		"""
