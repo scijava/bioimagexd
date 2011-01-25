@@ -91,10 +91,15 @@ def build():
 	iconFiles = os.path.join("Icons","*.*")
 	binFiles = os.path.join("bin","*.*")
 	helpFiles = os.path.join("Help","*.*")
+	lutFiles = os.path.join("LUT","*.bxdlut")
+	licenseFiles = os.path.join("Licensing","*.*")
+	
 	dataFiles = [
 				("Icons",glob.glob(iconFiles)),
 				("Bin",glob.glob(binFiles)),
-				("Help",glob.glob(helpFiles))
+				("Help",glob.glob(helpFiles)),
+				("LUT",glob.glob(lutFiles)),
+				("Licensing",glob.glob(licenseFiles))
 	]
 	dataFiles.extend(modules)
 
