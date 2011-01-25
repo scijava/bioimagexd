@@ -502,7 +502,7 @@ class FilterEditor(wx.Panel):
 					
 					newitem = wx.MenuItem(submenu, menuid, name)
 					if currfilter.level:
-						newitem.SetBackgroundColour(wx.Colour(*currfilter.level))
+						newitem.SetTextColour(wx.Colour(*currfilter.level))
 					submenu.AppendItem(newitem)
 					n = self.filterList.getCount()
 					undo_cmd = "%s.deleteFilter(index=%d, name = '%s')" % (self.scriptingId, n, name)
