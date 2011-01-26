@@ -187,7 +187,7 @@ class VisualizeTrackModule(VisualizationModule):
 			for t in range(mintp, maxtp + 1):
 				val, (x, y, z) = track.getObjectAtTime(t)
 				if x >= 0 and y >= 0 and z >= 0:
-					currtrack.append((x * xc, y * yc, z * zc))
+					currtrack.append((t, (x * xc, y * yc, z * zc)))
 				else:
 					break
 			ret.append(currtrack)
@@ -245,12 +245,12 @@ class VisualizeTrackModule(VisualizationModule):
 				#	dx+=dataw/2
 				#	dy+=datay/2
 				#	dz+=dataz/2
-				
-				for i, (x, y, z) in enumerate(track[:-1]):
+
+				for i, (t,(x, y, z)) in enumerate(track[:-1]):
 				#	x+=dx
 				#	y+=dy
 				#	z+=dz
-					x2,y2,z2 = track[i + 1]
+					t2, (x2,y2,z2) = track[i + 1]
 				#	x2+=dx
 				#	y2+=dy
 				#	z2+=dz
@@ -271,53 +271,54 @@ class VisualizeTrackModule(VisualizationModule):
 					sph.SetCenter(x, y, z)
 
 					sph.SetRadius(sphereRadius)
-					if i == timepoint:
+					if t == timepoint:
 						appendCurrent.AddInput(sph.GetOutput())
-					elif i != timepoint and i != timepoints and i != 0:
+					elif i != 0:
 						appendSpheres.AddInput(sph.GetOutput())
 
-				if timepoint != 0:
+				if timepoint != track[0][0]:
 					sph = vtk.vtkSphereSource()
 					sph.SetPhiResolution(20)
 					sph.SetThetaResolution(20)
-					sph.SetCenter(track[0])
+					sph.SetCenter(track[0][1])
 					sph.SetRadius(sphereRadius)
 					appendFirst.AddInput(sph.GetOutput())
 
-				if timepoint != timepoints:
+				if timepoint != track[-1][0]:
 					sph = vtk.vtkSphereSource()
 					sph.SetPhiResolution(20)
 					sph.SetThetaResolution(20)
-					sph.SetCenter(track[-1])
+					sph.SetCenter(track[-1][1])
 					sph.SetRadius(sphereRadius)         
 					appendLast.AddInput(sph.GetOutput())
 				else:
 					sph = vtk.vtkSphereSource()
 					sph.SetPhiResolution(20)
 					sph.SetThetaResolution(20)
-					sph.SetCenter(track[-1])
+					sph.SetCenter(track[-1][1])
 					sph.SetRadius(sphereRadius)         
 					appendCurrent.AddInput(sph.GetOutput())
 
 			self.currentMapper.SetInput(appendCurrent.GetOutput())
 			self.sphereMapper.SetInput(appendSpheres.GetOutput())
 			self.lineMapper.SetInput(appendLines.GetOutput())
-			if timepoint != 0:
-				self.firstMapper.SetInput(appendFirst.GetOutput())
-			if timepoint != timepoints:
-				self.lastMapper.SetInput(appendLast.GetOutput())
+			self.firstMapper.SetInput(appendFirst.GetOutput())
+			self.lastMapper.SetInput(appendLast.GetOutput())
 
 			#self.mapper.SetInput(append.GetOutput())
-			self.currentMapper.Update()
-			self.actors.append(currentActor)
-			self.lineMapper.Update()
-			self.actors.append(lineactor)
-			self.sphereMapper.Update()
-			self.actors.append(spheresActor)
-			if timepoint != 0:
+			if appendCurrent.GetNumberOfInputConnections(0) > 0:
+				self.currentMapper.Update()
+				self.actors.append(currentActor)
+			if appendLines.GetNumberOfInputConnections(0) > 0:
+				self.lineMapper.Update()
+				self.actors.append(lineactor)
+			if appendSpheres.GetNumberOfInputConnections(0) > 0:
+				self.sphereMapper.Update()
+				self.actors.append(spheresActor)
+			if appendFirst.GetNumberOfInputConnections(0) > 0:
 				self.firstMapper.Update()
 				self.actors.append(firstActor)
-			if timepoint != timepoints:
+			if appendLast.GetNumberOfInputConnections(0) > 0:
 				self.lastMapper.Update()
 				self.actors.append(lastActor)
 			
@@ -325,7 +326,7 @@ class VisualizeTrackModule(VisualizationModule):
 				self.renderer.AddActor(actor)
 			
 			VisualizationModule.updateRendering(self)
-			self.parent.Render()    
+			self.parent.Render()
 
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):

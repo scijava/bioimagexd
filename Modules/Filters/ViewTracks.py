@@ -88,8 +88,11 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			#    lib.messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])
 			#    lib.messenger.send(None,"update_helpers",1)
 		elif parameter == "Track":
-			if self.tracks:
-				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"]]])            
+			if self.tracks and self.parameters["Track"] == 0:
+				lib.messenger.send(None, "visualize_tracks", [])            
+				lib.messenger.send(None, "update_helpers", 1)
+			elif self.tracks and self.parameters["Track"] <= len(self.tracks):
+				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"] - 1]])            
 				lib.messenger.send(None, "update_helpers", 1)
 		if parameter == "MinLength":
 			lib.messenger.send(self, "update_Track")

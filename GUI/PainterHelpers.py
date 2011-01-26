@@ -110,7 +110,7 @@ class VisualizeTracksHelper(PainterHelper):
 					y0 += yc
 					mintp += 1
 				dc.SetTextForeground((255, 255, 255))
-				self.drawTimepoint(dc, mintp - 1, x0, y0)
+				self.drawTimepoint(dc, mintp, x0, y0)
 				
 				for i in range(mintp, maxtp + 1):
 					objectValue, pos = track.getObjectAtTime(i)
@@ -124,18 +124,18 @@ class VisualizeTracksHelper(PainterHelper):
 						
 						x1 += xc
 						y1 += yc
-						self.drawTimepoint(dc, i, x1, y1)						 
+						self.drawTimepoint(dc, i+1, x1, y1)						 
 							
-						def angle(x_1, y_1, x_2, y_2):
-							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
-							ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
-							ang2 = ang
+						#def angle(x_1, y_1, x_2, y_2):
+						#	ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
+						#	ang = math.atan2(y_2 - y_1, x_2 - x_1) * 180.0 / math.pi
+						#	ang2 = ang
 							#if ang<0:ang=180+ang
-							return ang
+						#	return ang
 
-						if x0 != x1:
-							dc.DrawLine(x0, y0, x1, y1)
-							a1 = angle(x0, y0, x1, y1)
+						#if x0 != x1:
+						dc.DrawLine(x0, y0, x1, y1)
+						#	a1 = angle(x0, y0, x1, y1)
 
 						x0, y0 = x1, y1
 						
@@ -143,7 +143,7 @@ class VisualizeTracksHelper(PainterHelper):
 		"""
 		Draw the text label for given timepoint
 		"""
-		if tp != scripting.visualizer.getTimepoint():
+		if tp-1 != scripting.visualizer.getTimepoint():
 			dc.SetFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
 			dc.DrawCircle(x, y, 3)
 		else:
