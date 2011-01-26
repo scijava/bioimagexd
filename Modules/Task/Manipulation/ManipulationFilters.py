@@ -143,6 +143,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		x, y, z = self.parameters["RadiusX"], self.parameters["RadiusY"], self.parameters["RadiusZ"]
 		dims = self.parameters["Dimensionality"]
 		self.vtkfilter.SetRadiusFactors(x, y, z)
+		self.vtkfilter.SetStandardDeviations(x,y,z)
 		self.vtkfilter.SetDimensionality(dims)
 		self.vtkfilter.SetNumberOfThreads(1)
 		if update:
