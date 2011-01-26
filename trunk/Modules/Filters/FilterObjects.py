@@ -102,7 +102,7 @@ class FilterObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		if param == "MaxRoundness":
 			return 1.0
 
-	def getParameterLevel(self, param):
+	def getParameterLevel(self, parameter):
 		"""
 		Returns the level of knowledge for using parameter
 		@param param Parameter name

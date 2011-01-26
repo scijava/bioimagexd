@@ -172,16 +172,30 @@ class FilterEditor(wx.Panel):
 		self.presetBtn.Bind(wx.EVT_LEFT_DOWN, self.onShowPresetsMenu)
 				
 		vertbtnBox = wx.BoxSizer(wx.VERTICAL)
-		bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))        
-		self.remove = wx.BitmapButton(self, -1, bmp)
+		#bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))        
+		#self.remove = wx.BitmapButton(self, -1, bmp)
+		#self.remove.Bind(wx.EVT_BUTTON, self.onRemoveFilter)
+		
+		#bmp = wx.ArtProvider_GetBitmap(wx.ART_GO_UP, wx.ART_TOOLBAR, (16, 16))        
+		#self.up = wx.BitmapButton(self, -1, bmp)
+		#bmp = wx.ArtProvider_GetBitmap(wx.ART_GO_DOWN, wx.ART_TOOLBAR, (16, 16))        
+		#self.up.Bind(wx.EVT_BUTTON, self.onMoveFilterUp)
+		#self.down = wx.BitmapButton(self, -1, bmp)
+		#self.down.Bind(wx.EVT_BUTTON, self.onMoveFilterDown)
+
+		iconpath = scripting.get_icon_dir()
+		uparrow = wx.Image(os.path.join(iconpath, "Arrow_Up.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		downarrow = wx.Image(os.path.join(iconpath, "Arrow_Down.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+		remove = wx.Image(os.path.join(iconpath, "Delete.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+
+		self.up = wx.BitmapButton(self, -1, uparrow)
+		self.down = wx.BitmapButton(self, -1, downarrow)
+		self.remove = wx.BitmapButton(self, -1, remove)
+
+		self.up.Bind(wx.EVT_BUTTON, self.onMoveFilterUp)
+		self.down.Bind(wx.EVT_BUTTON, self.onMoveFilterDown)
 		self.remove.Bind(wx.EVT_BUTTON, self.onRemoveFilter)
 		
-		bmp = wx.ArtProvider_GetBitmap(wx.ART_GO_UP, wx.ART_TOOLBAR, (16, 16))        
-		self.up = wx.BitmapButton(self, -1, bmp)
-		bmp = wx.ArtProvider_GetBitmap(wx.ART_GO_DOWN, wx.ART_TOOLBAR, (16, 16))        
-		self.up.Bind(wx.EVT_BUTTON, self.onMoveFilterUp)
-		self.down = wx.BitmapButton(self, -1, bmp)
-		self.down.Bind(wx.EVT_BUTTON, self.onMoveFilterDown)
 		vertbtnBox.Add(self.remove)
 		vertbtnBox.Add(self.up)
 		vertbtnBox.Add(self.down)
