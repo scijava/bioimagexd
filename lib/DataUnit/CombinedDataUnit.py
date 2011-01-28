@@ -40,6 +40,7 @@ import Logging
 import lib.messenger
 import scripting
 import os.path
+import os
 import types
 
 class CombinedDataUnit(DataUnit):
@@ -299,12 +300,10 @@ class CombinedDataUnit(DataUnit):
 				try:
 					fp = open(bxdFile, "w")
 					print "Writing output to",bxdFile
-					for dataWriter in dataWriters:
-						channelBXCFile = dataWriter.getFilename()
-						try:
-							channelBXCFile = channelBXCFile.lstrip(os.path.dirname(bxdFile))
-						except:
-							pass
+					for bxdwriter in bxdWriters:
+						channelBXCFile = bxdwriter.getBXCFileName(bxdwriter.getFilename())
+						pathParts = channelBXCFile.split(os.sep)
+						channelBXCFile = pathParts[-2] + os.sep + pathParts[-1]
 						fp.write("%s\n"%channelBXCFile)
 				except IOError, ex:
 					Logging.error("Failed to write settings", "CombinedDataUnit failed to open .bxd file %s for writing settings (%s)"%(bxdFile, str(ex)))

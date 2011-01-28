@@ -42,10 +42,11 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 		#self.beginner = wx.Colour(180, 255, 180)
 		#self.intermediate = wx.Colour(255, 255, 180)
 		#self.expert = wx.Colour(0, 180, 255)
-		bRGB = scripting.COLOR_BEGINNER
-		eRGB = scripting.COLOR_EXPERIENCED
-		self.beginner = wx.Colour(bRGB[0], bRGB[1], bRGB[2])
-		self.expert = wx.Colour(eRGB[0], eRGB[1], eRGB[2])
+		#bRGB = scripting.COLOR_BEGINNER
+		#eRGB = scripting.COLOR_EXPERIENCED
+		#self.beginner = wx.Colour(bRGB[0], bRGB[1], bRGB[2])
+		self.beginner = scripting.COLOR_BEGINNER
+		self.expert = scripting.COLOR_EXPERIENCED
 		self.populateListCtrl()
 		
 	def setChannelNames(self, n1, n2):
@@ -111,7 +112,8 @@ class ColocListView(wx.ListCtrl, listmix.TextEditMixin):
 		for n, item in enumerate(self.headervals):
 			txt, a, b, col = item
 			self.InsertStringItem(n, txt)
-			self.SetItemBackgroundColour(n, self.cols[col])
+			self.SetItemTextColour(n, self.cols[col])
+			#self.SetItemBackgroundColour(n, self.cols[col])
 
 	def updateListCtrl(self, variables):
 		"""
