@@ -119,6 +119,8 @@ class VTK_BXD_PROCESSING_EXPORT vtkLIFReader: public vtkImageAlgorithm
   vtkUnsignedLongLongArray* GetTimeStamps();
   int GetFramesPerTimePoint(int);
   int GetFramesPerTimePoint();
+  int isRGB(int,int);
+  int isRGB();
 
   vtkGetMacro(CurrentImage,int);
   vtkGetMacro(CurrentChannel,int);

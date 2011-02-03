@@ -1896,7 +1896,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		try:
 			for dataunit in selectedFiles:
 				unit.addSourceDataUnit(dataunit)
-				Logging.info("ctf of source=", dataunit.getSettings().get("ColorTransferFunction"), kw = "ctf")
+				#Logging.info("ctf of source=", dataunit.getSettings().get("ColorTransferFunction"), kw = "ctf")
 		except Logging.GUIError, ex:
 			ex.show()
 			self.closeTask()
