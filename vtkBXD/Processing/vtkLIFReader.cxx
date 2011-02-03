@@ -231,8 +231,21 @@ int vtkLIFReader::GetChannelCount(int image)
 {
   if (image >= 0 && image < this->GetImageCount())
 	{
-	  if (this->Channels->at(image)->size() == 3 && this->Channels->at(image)->at(0)->ChannelTag > 0) return 1; // RGB image with 3 channels
-	  return this->Channels->at(image)->size();
+	  int channelCount = 0;
+	  // Go through whole channels vector for image to see whether there are
+	  // multiple rgb images or combination or rgb and grayscale
+	  int rgbCounter = 0;
+	  for (ImageChannelsTypeBase::const_iterator cIter = this->Channels->at(image)->begin();
+		   cIter != this->Channels->at(image)->end(); cIter++)
+		{
+		  if ((*cIter)->ChannelTag > 0) rgbCounter++;
+		  else channelCount++;
+		  if (rgbCounter == 3) {
+			channelCount++;
+			rgbCounter = 0;
+		  }
+		}
+	  return channelCount;
 	}
   return 0;
 }
@@ -1178,4 +1191,17 @@ int vtkLIFReader::CopyHeaderInfo(const vtkLIFReader *reader)
   this->HeaderInfoRead = 1;
 
   return 1;
+}
+
+int vtkLIFReader::isRGB(int image, int channel)
+{
+  if (image < 0 || image >= this->GetImageCount() || channel < 0 || channel > this->Channels->at(image)->size()) return 0;
+
+  if (this->Channels->at(image)->at(channel)->ChannelTag > 0) return 1;
+  else return 0;
+}
+
+int vtkLIFReader::isRGB()
+{
+  return isRGB(this->CurrentImage, this->CurrentChannel);
 }

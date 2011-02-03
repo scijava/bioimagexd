@@ -188,8 +188,7 @@ class DataUnit:
 	def getColorTransferFunction(self):
 		"""
 		Returns the ctf of this object
-		"""
-		
+		"""		
 		if not self.dataSource and not self.ctf:
 			Logging.backtrace()
 			Logging.info("Using no ctf because datasource = ", self.dataSource, kw = "ctf")
@@ -198,7 +197,6 @@ class DataUnit:
 			self.ctf = self.dataSource.getColorTransferFunction()
 			#Logging.info("Ctf from datasource = ", self.ctf, kw = "ctf")
 		return self.ctf
-	
 	
 	def setSettings(self, settings):
 		"""

@@ -119,7 +119,15 @@ class LIFDataSource(DataSource):
 			return None
 
 		self.setCurrentTimepoint(i)
-		self.reader.SetCurrentImageAndChannel(self.imageNum, self.channelNum)
+		# Check correct channel to be fetched if rgb data included
+		cNum = 0
+		for i in range(0,self.channelNum):
+			if self.reader.isRGB(self.imageNum, i):
+				cNum += 3
+			else:
+				cNum += 1
+		
+		self.reader.SetCurrentImageAndChannel(self.imageNum, cNum)
 		self.reader.SetCurrentTimePoint(i)
 		data = self.reader.GetOutput()
 		if raw:
