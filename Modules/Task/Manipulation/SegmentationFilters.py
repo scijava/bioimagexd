@@ -54,8 +54,7 @@ def getFilters():
 
 class MaskFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: A base class for image mathematics filters
+	A base class for image mathematics filters
 	"""		
 	name = "Mask"
 	category = MASK
@@ -193,8 +192,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		
 class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
-	Description: Re-label an image produced by watershed segmentation
+	Re-label an image produced by watershed segmentation
 	"""		
 	name = "Re-label image"
 	category = OBJECT
@@ -258,8 +256,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 05.07.2006, KP
-	Description: Invert the intensity of the image
+	Invert the intensity of the image
 	"""		
 	name = "Invert"
 	category = MATH
@@ -317,8 +314,7 @@ class ITKInvertIntensityFilter(ProcessingFilter.ProcessingFilter):
 		
 class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 29.05.2006, KP
-	Description: A class for doing confidence connected segmentation
+	A class for doing confidence connected segmentation
 	"""		
 	name = "Confidence connected threshold"
 	category = REGIONGROWING
@@ -418,8 +414,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 26.05.2006, KP
-	Description: A class for doing confidence connected segmentation
+	A class for doing confidence connected segmentation
 	"""		
 	name = "Connected threshold"
 	category = REGIONGROWING
@@ -496,8 +491,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		
 class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 29.05.2006, KP
-	Description: A class for doing connected threshold segmentation 
+	A class for doing connected threshold segmentation 
 	"""		
 	name = "Neighborhood connected threshold"
 	category = REGIONGROWING

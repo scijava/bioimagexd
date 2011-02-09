@@ -641,7 +641,7 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
   else if(this->GetInternalImage()->BitsPerSample==8) {
         unsigned char* image;
         image = (unsigned char*)outPtr;
-            
+
         if (InternalImage->PlanarConfig == PLANARCONFIG_CONTIG)
           {
           for ( row = 0; row < (int)height; row ++ )
@@ -651,6 +651,7 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
                 vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
                 break;
               }
+
               unsigned char* buf2 = (unsigned char*)buf;
               for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
                     *image++ = *buf2++;

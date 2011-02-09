@@ -477,8 +477,6 @@ class PreviewFrame(InteractivePanel):
 		data.UpdateInformation()
 		ncomps = data.GetNumberOfScalarComponents()
 		if ncomps > 3:
-			import pdb
-			pdb.set_trace()
 			extract = vtk.vtkImageExtractComponents()
 			extract.SetComponents(0, 1, 2)
 			extract.SetInput(data)

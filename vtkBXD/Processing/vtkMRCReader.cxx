@@ -224,6 +224,8 @@ int vtkMRCReader::ReadHeader()
   this->ReadVector(&pointer,this->VD,2);
   this->ReadVector(&pointer,this->TiltAngles,6);
   this->ReadVector(&pointer,this->Origin,3);
+  // Set origin to 0,0,0 so that misformed files can be visualized
+  this->Origin[0] = this->Origin[1] = this->Origin[2] = 0.0;
 
   strncpy(this->CMap,pointer,4);
   pointer += 4;

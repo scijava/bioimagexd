@@ -428,7 +428,7 @@ class ProcessingFilter:
 		self.sourceUnits = []
 		self.resetFilters()
 		self.updateDefaultValues()
-			
+
 	def getDataUnit(self):
 		"""
 		return the dataunit

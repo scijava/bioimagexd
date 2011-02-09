@@ -67,6 +67,8 @@ class Scatterplot(wx.Panel):
 		self.horizontalLegend = None
 		self.verticalLegend = None
 		self.scatterLegend = None
+		self.paintScalars = kws.get("paintScalars",1)
+		self.useBitDepth = kws.get("useBitDepth",1)
 		
 		self.plotCache = {}
 		self.size = (256,256)
@@ -404,7 +406,8 @@ class Scatterplot(wx.Panel):
 		self.renew = 1
 		self.sources = dataUnit.getSourceDataUnits()
 		self.dataUnit = dataUnit
-		self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
+		self.scalarMax = 255
+		#self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
 		
 		self.buffer = wx.EmptyBitmap(*self.size)
 		self.scatterBitmap = None
@@ -497,8 +500,13 @@ class Scatterplot(wx.Panel):
 		cvx = self.countVoxels	# Flag indicating whether we should count voxels, or just show the intensities
 		log = self.logarithmic	# Flag indicating whether we should draw a logarithmic scatterplot
 		wv = self.wholeVolume	# Flag indicating whether we should use the whole volume
+		if self.useBitDepth:
+			bitDepth = self.dataUnit.getBitDepth()
+		else:
+			bitDepth = None
+		
 		scatter, ctf, scatterImage = lib.ImageOperations.scatterPlot( imagedata1, imagedata2, z = -1,
-			countVoxels = cvx,  logarithmic = log, wholeVolume = wv, bitDepth = self.dataUnit.getBitDepth())
+			countVoxels = cvx,  logarithmic = log, wholeVolume = wv, bitDepth = bitDepth)
 #		scatter.Mirror(0)
 		self.scatterHeight = scatter.GetHeight()
 		return scatter, ctf, scatterImage
@@ -540,7 +548,7 @@ class Scatterplot(wx.Panel):
 		"""
 		if not self.dataUnit:
 			return
-			
+
 		# Get the official thresholds
 		(lower1, upper1), (lower2, upper2) = self.getThresholds()
 		
@@ -584,19 +592,17 @@ class Scatterplot(wx.Panel):
 			return
 
 		c = 256.0 / (self.scalarMax + 1)
-
 		bmp = self.scatter.ConvertToBitmap()
-		
 		self.scatterBitmap = bmp
 		
 		if not self.verticalLegend:
-			verticalLegend = lib.ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width = self.legendWidth, paintScalars = 1)
+			verticalLegend = lib.ImageOperations.paintCTFValues(self.sources[1].getColorTransferFunction(), height = 256, width = self.legendWidth, paintScalars = self.paintScalars)
 			self.verticalLegend = verticalLegend
 		else:
 			verticalLegend = self.verticalLegend
 		
 		if not self.horizontalLegend:
-			horizontalLegend = lib.ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width = 256, height = self.legendWidth, paintScalars = 1)
+			horizontalLegend = lib.ImageOperations.paintCTFValues(self.sources[0].getColorTransferFunction(), width = 256, height = self.legendWidth, paintScalars = self.paintScalars)
 			self.horizontalLegend = horizontalLegend
 		else:
 			horizontalLegend = self.horizontalLegend

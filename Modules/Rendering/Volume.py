@@ -407,9 +407,9 @@ class VolumeModule(VisualizationModule):
 		if not input:
 			input = self.getInput(1)
 		x, y, z = self.dataUnit.getDimensions()
-				
+
 		input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
-					
+		
 		ncomps = input.GetNumberOfScalarComponents()
 		Logging.info("Number of comps=", ncomps, kw = "rendering")
 		dataType = input.GetScalarType()

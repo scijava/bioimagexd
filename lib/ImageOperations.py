@@ -85,10 +85,6 @@ def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars =
 	"""
 	Paint a bar representing a CTF
 	
-	@author: Kalle Pahajoki
-	@since: 18.04.2005
-	@param ctf: The ColorTransferFunction to draw
-	
 	@keyword width: The width of the bitmap
 	@keyword height: The height of the bitmap
 	@type width: Positive number
@@ -133,8 +129,10 @@ def paintCTFValues(ctf, width = 256, height = 32, paintScale = 0, paintScalars =
 			deviceContext.DrawLine(0, height - xCoordinate, width, height - xCoordinate)
 			
 		ctfLowerBound, ctfUpperBound = ctf.GetRange()
+	
 	if paintScalars:
-		paintBoundaryValues(deviceContext, ctfLowerBound, ctfUpperBound, vertical, height, width)				
+		paintBoundaryValues(deviceContext, ctfLowerBound, ctfUpperBound, vertical, height, width)
+	
 	deviceContext.EndDrawing()
 	deviceContext.SelectObject(wx.NullBitmap)
 	deviceContext = None	 
@@ -711,7 +709,7 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 		else:
 			structString = structString[: i] + twochar + structString[i + 2: ]
 	img.SetAlphaData(structString)
-	return img	  
+	return img
 	
 def getImageScalarRange(image):
 	"""
@@ -738,15 +736,17 @@ def get_histogram(image, maxval = 0, minval = 0):
 
 	if maxval == 0:
 		x0, x1 = getImageScalarRange(image)
-		x1 = int(math.floor(x1))
-		x0 = int(math.ceil(x0))
+		#x1 = int(math.floor(x1))
+		#x0 = int(math.ceil(x0))
 	else:
-		x0, x1 = (int(math.ceil(minval)),int(math.floor(maxval)))
+		#x0, x1 = (int(math.ceil(minval)),int(math.floor(maxval)))
+		x0, x1 = (minval,maxval)
 
-	accu.SetComponentExtent(0, x1 - x0, 0, 0, 0, 0)
+	#accu.SetComponentExtent(0, x1 - x0, 0, 0, 0, 0)
+	accu.SetComponentExtent(0, 255, 0, 0, 0, 0)
 	accu.SetComponentOrigin(x0, 0, 0)
-	#accu.SetComponentSpacing((x1 - x0) / 255.0, 0, 0)
-	accu.SetComponentSpacing(1, 0, 0)
+	accu.SetComponentSpacing((x1 - x0) / 256.0, 0, 0)
+	#accu.SetComponentSpacing(1, 0, 0)
 	accu.Update() 
 	data = accu.GetOutput()
 	
@@ -968,16 +968,18 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 		
 	imagedata1.Update()
 	imagedata2.Update()
-	#x0, x1 = imagedata1.GetScalarRange()
-	#sc1max = x1
+	range1 = imagedata1.GetScalarRange()
+	range2 = imagedata2.GetScalarRange()
 
-	#x0, x1 = imagedata2.GetScalarRange()
-	#sc2max = x1
-	
 	n = 255
 	#n = min(max(sc1max,sc2max),255)
 	#d = (n+1) / float(2**bitDepth)
-	d = float(2**bitDepth) / (n+1)
+	if bitDepth is None:
+		spacing1 = float(abs(range1[1] - range1[0])) / (n+1)
+		spacing2 = float(abs(range2[1] - range2[0])) / (n+1)
+	else:
+		spacing1 = float(2**bitDepth) / (n+1)
+		spacing2 = float(2**bitDepth) / (n+1)
 	
 	app = vtk.vtkImageAppendComponents()
 	app.AddInput(imagedata1)
@@ -990,8 +992,8 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 	
 	acc = vtk.vtkImageAccumulate()
 	acc.SetComponentExtent(0, n, 0, n, 0, 0)
-	acc.SetComponentOrigin(0,0,0)
-	acc.SetComponentSpacing(d,d,0)
+	acc.SetComponentOrigin(range1[0], range2[0], 0)
+	acc.SetComponentSpacing(spacing1, spacing2, 0)
 	#acc.SetInputConnection(shiftscale.GetOutputPort())
 	acc.SetInputConnection(app.GetOutputPort())
 	acc.Update()
@@ -1021,6 +1023,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 		maptocolor.Update()
 		data = maptocolor.GetOutput()
 		ctf.originalRange = originalRange
+	
 	Logging.info("Scatterplot has dimensions: ", data.GetDimensions(), data.GetExtent(), kw = "imageop")						  
 	data.SetWholeExtent(data.GetExtent())
 	img = vtkImageDataToWxImage(data)
