@@ -1,9 +1,8 @@
 # -*- coding: iso-8859-1 -*-
 
 """
- Unit: Surface
+ Unit: NewSurface.py
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A module containing the surface rendering modules for the visualization
@@ -62,8 +61,8 @@ class SurfaceModule(VisualizationModule):
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 		#self.name = "Surface Rendering"
-		for i in range(1, 3):
-			self.setInputChannel(i, i)
+		#for i in range(1, 3):
+		#	self.setInputChannel(i, i)
 		self.normals = vtk.vtkPolyDataNormals()
 		self.smooth = None
 		self.volumeModule = None
@@ -200,10 +199,9 @@ class SurfaceModule(VisualizationModule):
 		Show the given timepoint
 		"""
 		VisualizationModule.showTimepoint(self, value, update)
-		min, max = self.data.GetScalarRange()
+		minVal, maxVal = self.data.GetScalarRange()
 		#if (min,max) != self.scalarRange:
-		self.setScalarRange(min, max)
-				
+		self.setScalarRange(minVal, maxVal)
 
 	def setMethod(self, method):
 		"""
@@ -263,10 +261,10 @@ class SurfaceModule(VisualizationModule):
 		self.mapper.SetLookupTable(ctf)
 		self.mapper.ScalarVisibilityOn()
 		
-		min, max = self.data.GetScalarRange()
-		self.setScalarRange(min, max)
+		minVal, maxVal = self.data.GetScalarRange()
+		self.setScalarRange(minVal, maxVal)
 		
-		self.mapper.SetScalarRange(min, max)
+		self.mapper.SetScalarRange(minVal, maxVal)
 		self.mapper.SetColorModeToMapScalars()
 		
 		opacity = self.parameters["Transparency"]
@@ -287,8 +285,10 @@ class SurfaceModule(VisualizationModule):
 			VisualizationModule.updateRendering(self, polyinput)
 			self.parent.Render() 
 			return
-		
+
+		x, y, z = self.dataUnit.getDimensions()
 		input = self.getInput(1)
+		input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 		
 		if self.parameters["Gaussian"]:
 			Logging.info("Doing gaussian smoothing", kw = "visualizer")
@@ -296,10 +296,7 @@ class SurfaceModule(VisualizationModule):
 				self.smooth = vtk.vtkImageGaussianSmooth()
 			self.smooth.SetInput(input)
 			input = self.smooth.GetOutput()
-			
 		
-		x, y, z = self.dataUnit.getDimensions()
-		input = optimize.optimize(image = input, updateExtent = (0, x - 1, 0, y - 1, 0, z - 1))
 		self.contour.SetInput(input)
 		input = self.contour.GetOutput()
 		

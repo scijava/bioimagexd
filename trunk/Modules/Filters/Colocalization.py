@@ -226,10 +226,10 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		if not self.listctrl:
 			self.listctrl = GUI.ColocListView.ColocListView(self.gui, -1, size = (350, 300))
-			
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.listctrl, 1)
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+		
 		return gui
 
 	def calculatePValue(self, images):

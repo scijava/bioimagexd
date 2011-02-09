@@ -57,8 +57,9 @@ NOBR = "NOBR"
 BR = "BR"
 ROISELECTION = "ROISELECTION"
 COLOC_THRESHOLD = "COLOCTHRESHOLD"
+SCATTERPLOT = "SCATTERPLOT"
 
-SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION, COLOC_THRESHOLD]
+SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION, COLOC_THRESHOLD, SCATTERPLOT]
 
 def getGUIBuilderForFilter(obj):
 	return GUIBuilder
@@ -207,6 +208,8 @@ class GUIBuilder(wx.Panel):
 							self.currentRow += self.createThresholdSelection(n, items, currentFilter)
 						elif itemType == COLOC_THRESHOLD:
 							self.currentRow += self.createColocalizationThresholdSelection(n, items, currentFilter)
+						elif itemType == SCATTERPLOT:
+							self.currentRow += self.createColocalizationThresholdSelection(n, items, currentFilter, paintScalars = 0, useBitDepth = 0)
 						elif itemType == CTF:
 							self.currentRow += self.createColorTransferFunctionEditor(n, items, currentFilter)
 						else:
@@ -323,7 +326,7 @@ class GUIBuilder(wx.Panel):
 
 		return 0
 
-	def createColocalizationThresholdSelection(self, n, items, currentFilter):
+	def createColocalizationThresholdSelection(self, n, items, currentFilter, paintScalars = 1, useBitDepth = 1):
 		"""
 		create a scatterplot GUI element that can be used to select a lower and upper threshold
 		for two channels for colocalization
@@ -336,7 +339,7 @@ class GUIBuilder(wx.Panel):
 			#background.SetBackgroundColour(level)
 			background.SetForegroundColour(level)
 		
-		scatterPlot = GUI.Scatterplot.Scatterplot(background, drawLegend = 1)
+		scatterPlot = GUI.Scatterplot.Scatterplot(background, drawLegend = 1, paintScalars = paintScalars, useBitDepth = useBitDepth)
 		dataUnit = self.filter.getDataUnit()
 		
 		scatterPlot.setDataUnit(dataUnit)
@@ -1077,7 +1080,7 @@ class GUIBuilder(wx.Panel):
 	def onSetPixelsFromFilter(self, listbox, item, value):
 		"""
 		Set the value of the pixel label from a variable
-		"""		
+		"""
 		listbox.Clear()
 		for rx, ry, rz in value:
 			listbox.Append("(%d, %d, %d)" % (rx, ry, rz))			 
