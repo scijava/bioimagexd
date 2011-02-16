@@ -461,7 +461,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			print "Track", i, "has time range", mintp, maxtp
 			for tp in range(mintp, maxtp + 1):
 				val, pos = track.getObjectAtTime(tp)
-				print "    value at tp ", tp, "(pos ", pos, ") is ", val
+				#print "    value at tp ", tp, "(pos ", pos, ") is ", val
 				if val:
 					table.SetValue(i, tp, pos, override = 1)
 		self.trackGrid.SetTable(table)
