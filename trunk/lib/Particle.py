@@ -523,7 +523,7 @@ class ParticleTracker:
 		else:
 		# Iterate over all particles in given timepoint
 			for i, particle in enumerate(self.particleList[timePoint]):
-				print "\nTracking particle %d / %d in timepoint %d" % (i, len(self.particleList[timePoint]), timePoint)
+				#print "\nTracking particle %d / %d in timepoint %d" % (i, len(self.particleList[timePoint]), timePoint)
 				self.trackParticle(particle, fromTimepoint, tracks)
 		self.tracks = tracks
 			

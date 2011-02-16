@@ -99,11 +99,14 @@ class ParticleReader:
 		skipNext = 0
 		curr = []
 		voxelSize = [1.0, 1.0, 1.0]
+		
 		for line in self.rdr:
 			if skipNext:
 				skipNext = 0
 				continue
-			if len(line) == 1:
+			if len(line) == 0:
+				continue
+			elif len(line) == 1:
 				timePoint = int(line[0].split(" ")[1])
 				#print "Current timepoint = ", timePoint
 				if curr:
