@@ -1593,6 +1593,8 @@ int vtkLSMReader::BYTES_BY_DATA_TYPE(int type)
       return 1;
     case(2):
       return 2;
+	case(3):
+	  return 2;
     case(5):
       return 4;
     }

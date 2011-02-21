@@ -406,8 +406,8 @@ class Scatterplot(wx.Panel):
 		self.renew = 1
 		self.sources = dataUnit.getSourceDataUnits()
 		self.dataUnit = dataUnit
-		self.scalarMax = 255
-		#self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
+		#self.scalarMax = 255
+		self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
 		
 		self.buffer = wx.EmptyBitmap(*self.size)
 		self.scatterBitmap = None
@@ -628,7 +628,7 @@ class Scatterplot(wx.Panel):
 		dc.DrawLine(self.xoffset + horizontalLegendWidth, ymax - lower2 * c, self.xoffset + 255 + horizontalLegendWidth, ymax - lower2 * c)
 		dc.DrawLine(self.xoffset + horizontalLegendWidth + upper1 * c, 0, self.xoffset + horizontalLegendWidth + upper1 * c, 255)
 		dc.DrawLine(self.xoffset + horizontalLegendWidth, ymax - upper2 * c, self.xoffset + horizontalLegendWidth + 255, ymax - upper2 * c)
-		
+
 		if upper1 != lower1 and upper2 != lower2:
 			overlay = lib.ImageOperations.getOverlay(int((upper1 - lower1) * c), int((upper2 - lower2) * c), (0, 0, 255), 64)
 			overlay = overlay.ConvertToBitmap()

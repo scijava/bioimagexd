@@ -2,7 +2,6 @@
 """
  Unit: DataSource.py
  Project: BioImageXD
- Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
 
  Copyright (C) 2005	 BioImageXD Project
@@ -70,8 +69,6 @@ class LsmDataSource(DataSource):
 		self.channelNum = channelNum
 		self.setPath(filename)
 		self.dataUnitSettings = {}
-		# TODO: what is this?
-		self.count = 0
 
 		self.spacing = None
 		self.origin = None
@@ -152,9 +149,14 @@ class LsmDataSource(DataSource):
 				if not self.originalScalarRange:
 					self.originalScalarRange = (0, 255)
 			if d == 5:
-				self.singleBitDepth = 12
-				if not self.originalScalarRange:
-					self.originalScalarRange = (0, 4095)
+				if self.reader.GetDataTypeForChannel(self.channelNum) == 2:
+					self.singleBitDepth = 12
+					if not self.originalScalarRange:
+						self.originalScalarRange = (0, 4095)
+				else:
+					self.singleBitDepth = 16
+					if not self.originalScalarRange:
+						self.originalScalarRange = (0, 65535)
 			self.bitdepth = self.singleBitDepth * data.GetNumberOfScalarComponents()
 		return self.bitdepth
 		
