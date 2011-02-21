@@ -406,8 +406,10 @@ class Scatterplot(wx.Panel):
 		self.renew = 1
 		self.sources = dataUnit.getSourceDataUnits()
 		self.dataUnit = dataUnit
-		#self.scalarMax = 255
-		self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
+		if self.useBitDepth:
+			self.scalarMax = max([(2**sourceUnit.getSingleComponentBitDepth())-1 for sourceUnit in self.sources])
+		else:
+			self.scalarMax = 255
 		
 		self.buffer = wx.EmptyBitmap(*self.size)
 		self.scatterBitmap = None
