@@ -1,9 +1,8 @@
-	#! /usr/bin/env python
+#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 """
  Unit: MainWindow
  Project: BioImageXD
- Created: 03.11.2004, KP
  Description:
 
  The main window for the BioImageXD program
