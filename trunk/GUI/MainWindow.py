@@ -416,8 +416,7 @@ class MainWindow(wx.Frame):
 				self.onCloseTaskPanel(None)
 		if close:
 			mode = self.visualizer.mode
-			self.visualizer.closeVisualizer()
-			self.visualizer.closeVisualizer()
+			self.closeVisualizer()
 			self.infoWidget.clearInfo()
 			self.loadVisualizer(mode)
 		
@@ -1252,7 +1251,7 @@ class MainWindow(wx.Frame):
 			self.tree.markRed(items, "*")
 			mode = self.visualizer.mode
 			unit = self.visualizer.dataUnit
-			self.visualizer.closeVisualizer()
+			self.closeVisualizer()
 			self.loadVisualizer(mode, dataunit = unit)
 			self.visualizer.resamplingBtn.SetToggle(True)
 			self.visualizer.resamplingBtn.Enable(1)
@@ -1289,7 +1288,7 @@ class MainWindow(wx.Frame):
 			self.infoWidget.updateInfo(None, None, None)
 			mode = self.visualizer.mode
 			unit = self.visualizer.dataUnit
-			self.visualizer.closeVisualizer()
+			self.closeVisualizer()
 			self.loadVisualizer(mode, dataunit = unit)
 			self.infoWidget.showInfo(selectedFiles[0])
 
@@ -1508,8 +1507,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if scripting.currentVisualizationMode == mode:
 			# If the user re-clicks on the icon, then close it (same as tasks) and load slices mode
 			unit = self.visualizer.dataUnit
-			self.visualizer.closeVisualizer()
-			#self.visualizer.closeVisualizer()
+			self.closeVisualizer()
 			self.infoWin.SetDefaultSize(self.infoWin.origSize)
 			self.loadVisualizer(self.defaultModeName, dataunit = unit)
 			return
@@ -1535,6 +1533,10 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 								"Please select a dataset")
 			return
 
+		if len(selectedFiles) > 1 and (mode == "3d" or mode == "animator"): # Group files automatically
+			self.tree.onGroupDataset(None)
+			selectedFiles = self.tree.getSelectedDataUnits()
+		
 		# If we open 3D then there is not necessary any open files when we use
 		# pdb reader or tracking visualizer
 		if len(selectedFiles) == 0:
@@ -2108,7 +2110,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		self.saveWindowSizes()
 			
 		self.visualizer.enable(0)		
-		self.visualizer.closeVisualizer()
+		self.closeVisualizer()
 
 		if answer == wx.ID_NO:
 			conf.setConfigItem("FileList", "General", "[]")
@@ -2209,3 +2211,10 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			scripting.removeSettingsFromCache(cacheKey, "ColorTransferFunction")
 		except:
 			pass
+
+	def closeVisualizer(self):
+		"""
+		"""
+		self.tree.onUngroup(None)
+		self.visualizer.closeVisualizer()
+		
