@@ -192,7 +192,7 @@ class CombinedDataUnit(DataUnit):
 		numberOfDatasets = self.module.getNumberOfOutputs()
 		bxdWriters = []
 		dataWriters = []
-		
+
 		if not settings_only:
 			if numberOfDatasets > 1:
 				for i in range(numberOfDatasets):
@@ -221,7 +221,7 @@ class CombinedDataUnit(DataUnit):
 			dataWriter = BXCDataWriter(bxcFile)
 			dataWriters.append(dataWriter)
 			
-		self.outputDirectory = os.path.dirname(bxdFile)
+		self.outputDirectory = os.path.dirname(bxcFile)
 		#self.dataWriter = BXCDataWriter(bxcFile)
 		
 		#if bxdwriter:
