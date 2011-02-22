@@ -40,6 +40,7 @@ from Visualizer.VisualizationModules import VisualizationModule
 from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 import vtk
 import wx
+import scripting
 
 TEXTURE_MAPPING = 1
 TEXTURE_MAPPING_3D = 2
@@ -188,8 +189,15 @@ class VolumeModule(VisualizationModule):
 		if self.haveVolpro:
 			params.insert(2, ["", ("UseVolumepro", )])
 		return params
-		
-		
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return parameter level
+		"""
+		if parameter in ["Palette"]:
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
+
 	def getRange(self, parameter):
 		"""
 		If a parameter has a certain range of valid values, the values can be queried with this function

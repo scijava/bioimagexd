@@ -106,6 +106,13 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",("AllTracks",)], ["Settings",("MinLength","SphereRadius","TubeRadius")]]
 
+	def getParameterLevel(self, parameter):
+		"""
+		Return level of parameter
+		"""
+		if parameter in ["SphereRadius", "TubeRadius"]:
+			return scripting.COLOR_EXPERIENCED
+		return scripting.COLOR_BEGINNER
 		
 	def getDefaultValue(self, parameter):
 		"""

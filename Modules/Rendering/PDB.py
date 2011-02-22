@@ -128,7 +128,9 @@ class PDBModule(VisualizationModule):
 		"""
 		Return the level of the given parameter
 		"""
-		return scripting.COLOR_INTERMEDIATE
+		if parameter in ["SphereRadius", "TubeRadius"]:
+			return scripting.COLOR_EXPERIENCED
+		return scripting.COLOR_BEGINNER
 		
 	def getParameters(self):
 		"""
