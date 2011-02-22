@@ -565,7 +565,7 @@ class TreeWidget(wx.SashLayoutWindow):
 	def onActivateItem(self, event = None):
 		"""
 		A event handler called when user double clicks an item
-		"""      
+		"""
 		item = event.GetItem()
 		if not item.IsOk():
 			return
@@ -616,10 +616,8 @@ class TreeWidget(wx.SashLayoutWindow):
 		"""
 		keyevent = event
 		if keyevent.ControlDown() or keyevent.ShiftDown():
-			
 			self.multiSelect = 1
 		else:
-			
 			self.multiSelect = 0
 		event.Skip()
 		
@@ -634,6 +632,9 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.lastSelection = item
 		if not item.IsOk():
 			return
+		
+		if item not in self.tree.GetSelections(): # Make selection work on 64-bit Win7
+			self.tree.SelectItem(item)
 		
 		obj = self.tree.GetPyData(item)
 		if obj == "1":
@@ -681,7 +682,7 @@ class TreeWidget(wx.SashLayoutWindow):
 	def selectChannelsByName(self, unit, channels, dontSelect = 0):
 		"""
 		Select items in the tree by their names
-		"""   
+		"""
 		ret = []
 		self.programmatic = 1        
 		for item in self.dataUnitItems:
