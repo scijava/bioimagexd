@@ -33,10 +33,7 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 import scripting
 import GUI.GUIBuilder as GUIBuilder
 import lib.ImageOperations
-try:
-	import itk
-except:
-	pass
+import itk
 import lib.messenger
 from lib import ProcessingFilter
 import types
@@ -64,10 +61,8 @@ def getFilters():
 			ITKAnisotropicDiffusionFilter, 
 			ITKLocalMaximumFilter]
 
-# fixed getFilterList() so that unnecessary wildcard imports could be removed, 10.8.2007 SS
 def getFilterList():
 	"""
-	Modified: 10.8.2007, SS
 	This function returns the filter-classes from all filter-modules
 	"""
 	filterlist = getFilters()
@@ -98,6 +93,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.descs = {"RadiusX": "Radius factor X:", "RadiusY": "Radius factor Y:", "RadiusZ": "Radius factor Z:",
 			"Dimensionality": "Dimensionality"}
+		self.filterDesc = "Performs convolution with gaussian\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
@@ -207,6 +203,7 @@ class GradientMagnitudeFilter(ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Performing edge detection (gradient magnitude)"
+		self.filterDesc = "Computes gradient magnitude of each pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
@@ -246,12 +243,13 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			"Iterations": "Number of iterations"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Performs anisotropic diffusion using gradient magnitude based equation\nInput: Grayscale image\nOutput: Grayscale image"
 
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
-		return scripting.COLOR_INTERMEDIATE
+		return scripting.COLOR_EXPERIENCED
 			
 	def getDefaultValue(self, parameter):
 		"""
@@ -315,6 +313,7 @@ class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.descs = {"Connectivity": "Use 8 neighbors for connectivity"}
 		self.itkFlag = 1
+		self.filterDesc = "Find pixels/voxels with local maxima intensity\nInput: Grayscale image\nOutput: Binary image"
 				
 	def getDefaultValue(self, parameter):
 		"""

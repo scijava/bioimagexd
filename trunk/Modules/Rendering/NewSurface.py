@@ -92,13 +92,10 @@ class SurfaceModule(VisualizationModule):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["FeatureAngle", "Normals"]:
-			return scripting.COLOR_EXPERIENCED
-		if parameter == "PreserveTopology":
-			return scripting.COLOR_INTERMEDIATE		
-		
-		return scripting.COLOR_BEGINNER
-
+		if parameter in ["IsoValue", "SolidColor", "Gaussian", "Normals"]:
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
+	
 	def setScalarRange(self, min, max):
 		"""
 		Set the scalar range of this module

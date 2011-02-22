@@ -88,8 +88,9 @@ class WarpScalarModule(VisualizationModule):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["FeatureAngle", "Scale"]:
-			return scripting.COLOR_INTERMEDIATE
+		if parameter in ["Normals", "FeatureAngle"]:
+			return scripting.COLOR_EXPERIENCED
+		return scripting.COLOR_BEGINNER
 		
 	def getParameters(self):
 		"""
