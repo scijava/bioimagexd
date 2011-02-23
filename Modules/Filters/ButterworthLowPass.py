@@ -3,7 +3,6 @@
 """
  Unit: ButterworthLowPass.py
  Project: BioImageXD
- Created: 23.09.2009, LP
  Description:
 
  A module that contains Butterworth low pass filter in fourier domain for the
@@ -45,7 +44,7 @@ class ButterworthLowPassFilter(FourierFilters.FourierFilter):
 	"""
 	name = "Butterworth low pass"
 	category = lib.FilterTypes.FOURIER
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -53,3 +52,5 @@ class ButterworthLowPassFilter(FourierFilters.FourierFilter):
 		"""
 		FourierFilters.FourierFilter.__init__(self, inputs)
 		self.filter = vtk.vtkImageButterworthLowPass()
+		self.filterDesc = "Low pass filter in frequency domain using Butterworth algorithm\nInput: Complex image\nOutput: Complex image"
+		

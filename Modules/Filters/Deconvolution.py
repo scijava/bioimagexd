@@ -52,7 +52,8 @@ class DeconvolutionFilter(lib.ProcessingFilter.ProcessingFilter):
 					 "Normalize":"Normalize PSF",
 					 "AntiRing":"Perform anti-ringing step",
 					 "DetectDivergence":"Detect divergence"
-		}
+					  }
+		self.filterDesc = "Performs iterative deconvolution for input image using provided PSF image\nInputs: Grayscale images\nOutput: Grayscale image"
 			
 	def getInputName(self, n):
 		"""
@@ -69,6 +70,14 @@ class DeconvolutionFilter(lib.ProcessingFilter.ProcessingFilter):
 				 ["Options",("Normalize","AntiRing","DetectDivergence")],
 				 ["Deconvolution",("Iterations","Gamma","ChangeThresholdPercent")],
 		]
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return parameter level
+		"""
+		if parameter in ["FilterX", "FilterZ", "Iterations"]:
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 		
 	def getType(self, parameter):
 		"""

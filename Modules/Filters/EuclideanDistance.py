@@ -35,6 +35,7 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Euclidean distance"
 	category = lib.FilterTypes.FEATUREDETECTION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -45,13 +46,21 @@ class EuclideanDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.descs = {"Algorithm":"Calculation algorithm","ConsiderAnisotropy":"Consider anisotropy","CastToUnsignedChar":"Cast to unsigned char"}
+		self.filterDesc = "Computes squared Euclidean distance transform\nInput: Binary image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [  ["Euclidean distance", ("Algorithm","ConsiderAnisotropy","CastToUnsignedChar")]]
-		
+		return [["Euclidean distance", ("Algorithm","ConsiderAnisotropy","CastToUnsignedChar")]]
+
+	def getParameterLevel(self, parameter):
+		"""
+		Returns level of parameter
+		"""
+		if parameter == "CastToUnsignedChar":
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 		
 	def getType(self, parameter):
 		"""

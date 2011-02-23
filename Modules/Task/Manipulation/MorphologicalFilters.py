@@ -3,7 +3,6 @@
 """
  Unit: MorphologicalFilters
  Project: BioImageXD
- Created: 07.06.2006, KP
  Description:
 
  A module containing the morphological filters for the processing task.
@@ -75,8 +74,7 @@ class MorphologicalFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""           
-		return 2
-		
+		return 2		
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -101,7 +99,7 @@ def getFilters():
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
 	return [DilateFilter, ErodeFilter, VarianceFilter, RangeFilter,
-			SobelFilter, MedianFilter, OpeningByReconstruction]
+			SobelFilter, MedianFilter]#, OpeningByReconstruction]
 
 
 class ErodeFilter(MorphologicalFilter):
@@ -119,6 +117,7 @@ class ErodeFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageContinuousErode3D()
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
+		self.filterDesc = "Replaces each pixel/voxel with minimum value inside kernel\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 		
 class VarianceFilter(MorphologicalFilter):
 	"""
@@ -135,6 +134,7 @@ class VarianceFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageVariance3D()        
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
+		self.filterDesc = "Replaces each pixel/voxel with variance inside kernel\nInput: Grayscale image\nOutput: Grayscale image"
 		
 class DilateFilter(MorphologicalFilter):
 	"""
@@ -151,7 +151,8 @@ class DilateFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageContinuousDilate3D()  
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
-  
+		self.filterDesc = "Replaces each pixel/voxel with maximum value inside kernel\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
+		
 class RangeFilter(MorphologicalFilter):
 	"""
 	A filter that sets the value of the neighborhood to be the max-min of that nbh
@@ -167,6 +168,7 @@ class RangeFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageRange3D()     
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
+		self.filterDesc = "Replaces each pixel/voxel with maximum minus minimum value inside kernel\nInput: Grayscale image\nOutput: Grayscale image"
 		
 class SobelFilter(MorphologicalFilter):
 	"""
@@ -183,6 +185,7 @@ class SobelFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageSobel3D()          
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
+		self.filterDesc = "Applies Sobel operator for each pixel/voxel\nInput: Grayscale image\nOutput: Vector image"
 		
 	def getParameters(self):
 		"""
@@ -219,20 +222,22 @@ class MedianFilter(MorphologicalFilter):
 		self.vtkfilter = vtk.vtkImageMedian3D()     
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
+		self.filterDesc = "Replaces each pixel/voxel with median value inside kernel\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
+"""
 class OpeningByReconstruction(MorphologicalFilter):
-	"""
+	\"""
 	OpeningByReconstructionFilter
 	OpeningByReconstruction(f) = DilationByReconstruction(f,Erosion(f))
-	"""
+	\"""
 	name = "Opening by reconstruction"
 	category = lib.FilterTypes.MORPHOLOGICAL
 	level = scripting.COLOR_INTERMEDIATE
 
 	def __init__(self):
-		"""
+		\"""
 		Initialization
-		"""
+		\"""
 		MorphologicalFilter.__init__(self)
 		self.itkFlag = 1
 		self.filter = None
@@ -240,15 +245,15 @@ class OpeningByReconstruction(MorphologicalFilter):
 		self.pc.SetCommandCallable(self.updateProgress)
 
 	def updateProgress(self):
-		"""
+		\"""
 		Update progress event handler
-		"""
+		\"""
 		lib.ProcessingFilter.ProcessingFilter.updateProgress(self,self.filter,"ProgressEvent")
 
 	def execute(self, inputs, update = 0, last = 0):
-		"""
+		\"""
 		Execute the filter with given inputs and return the output
-		"""
+		\"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		image = self.getInput(1)
@@ -284,4 +289,4 @@ class OpeningByReconstruction(MorphologicalFilter):
 		output.Update()
 
 		return output
-		
+"""		

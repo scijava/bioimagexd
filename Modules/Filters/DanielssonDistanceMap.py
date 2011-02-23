@@ -41,7 +41,7 @@ class DanielssonDistanceMapFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Danielsson distance map"
 	category = lib.FilterTypes.FEATUREDETECTION
-	level = scripting.COLOR_BEGINNER
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -53,6 +53,7 @@ class DanielssonDistanceMapFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
 		self.descs = {"Squared": "Squared distance", "ImageSpacing": "Use image spacing"}
+		self.filterDesc = "Computes Danielsson distance transform\nInput: Binary image\nOutput: Grayscale image"
 
 	def updateProgress(self):
 		"""
@@ -82,12 +83,14 @@ class DanielssonDistanceMapFilter(lib.ProcessingFilter.ProcessingFilter):
 			return True
 		return False
 
-	def getParameterLevel(self,param):
+	def getParameterLevel(self, param):
 		"""
 		Returns the level of knowledge for using parameter.
 		@param param Parameter name
 		"""
-		return scripting.COLOR_INTERMEDIATE
+		if param == "Squared":
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 
 	def execute(self, inputs = (1,1), update = 0, last = 0):
 		"""

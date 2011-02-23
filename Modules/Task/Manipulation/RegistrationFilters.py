@@ -3,7 +3,6 @@
 """
  Unit: RegistrationFilters
  Project: BioImageXD
- Created: 14.03.2007, KP
  Description:
 
  A module containing the registration filters for the processing task.
@@ -38,7 +37,6 @@ import lib.FilterTypes
 
 class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 14.03.2007, KP
 	Description: A filter for doing registration
 	"""     
 	name = "3D Registration filter"
@@ -73,11 +71,10 @@ class RegistrationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["FixedTimepoint","BackgroundPixelValue","MaxIterations","UsePreviousAsFixed"]:
-			return scripting.COLOR_INTERMEDIATE
-		if parameter in ["MaxStepLength","MinStepLength"]:
+		if parameter in ["FixedTimepoint","BackgroundPixelValue","UsePreviousAsFixed"]:
+			return scripting.COLOR_BEGINNER
+		if parameter in ["MaxStepLength","MinStepLength","MaxIterations"]:
 			return scripting.COLOR_EXPERIENCED
-		
 		return scripting.COLOR_BEGINNER                    
 			
 	def getDefaultValue(self, parameter):

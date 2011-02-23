@@ -3,7 +3,6 @@
 """
  Unit: InverseFFT.py
  Project: BioImageXD
- Created: 18.09.2009, LP
  Description:
 
  A module that contains inverse fast fourier transform for the processing task.
@@ -42,7 +41,7 @@ class InverseFFTFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Inverse FFT"
 	category = lib.FilterTypes.FOURIER
-	level = scripting.COLOR_BEGINNER
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -51,6 +50,7 @@ class InverseFFTFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
 		self.descs = {}
 		self.filter = None
+		self.filterDesc = "Transforms image from frequency domain to spatial domain\nInput: Complex image\nOutput: Grayscale image"
 
 	def updateProgress(self):
 		"""

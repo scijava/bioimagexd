@@ -3,7 +3,6 @@
 """
  Unit: NonUniformIlluminationCorrection.py
  Project: BioImageXD
- Created: 29.10.2009, LP
  Description:
 
  A module that contains non-uniform illumination correction filter for the
@@ -44,7 +43,7 @@ class NonUniformIlluminationCorrectionFilter(lib.ProcessingFilter.ProcessingFilt
 	"""
 	name = "Non-uniform illumination correction"
 	category = lib.FilterTypes.MISCFILTERING
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_BEGINNER
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -58,7 +57,7 @@ class NonUniformIlluminationCorrectionFilter(lib.ProcessingFilter.ProcessingFilt
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
-	
+		self.filterDesc = "Corrects non-uniform background illumination from image\nInput: Grayscale image\nOutput: Grayscale image"
 
 	def updateProgress(self):
 		"""
@@ -97,7 +96,7 @@ class NonUniformIlluminationCorrectionFilter(lib.ProcessingFilter.ProcessingFilt
 		@param param Parameter name
 		"""
 		if param in ["ShrinkFactor","MaxIterations"]:
-			return scripting.COLOR_INTERMEDIATE
+			return scripting.COLOR_BEGINNER
 		return scripting.COLOR_EXPERIENCED
 
 	def execute(self, inputs = (1,1), update = 0, last = 0):

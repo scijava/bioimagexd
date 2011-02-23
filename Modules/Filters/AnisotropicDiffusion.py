@@ -28,7 +28,7 @@ import vtk
 import types
 import GUI.GUIBuilder as GUIBuilder
 import lib.messenger
-
+import scripting
 import lib.FilterTypes
 
 class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
@@ -37,6 +37,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Anisotropic diffusion"
 	category = lib.FilterTypes.FILTERING
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -51,6 +52,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"Faces": "Faces", "Corners": "Corners", "Edges": "Edges",
 			"CentralDiff": "Central difference", "Gradient": "Gradient to neighbor",
 				"DiffThreshold": "Diffusion threshold:", "DiffFactor": "Diffusion factor:"}
+		self.filterDesc = "Performs anisotropic diffusion inside the neighborhood that fulfills given parameters\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
@@ -61,6 +63,12 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"Threshold:", ["Gradient measure", ( ("CentralDiff", "Gradient"), ("cols", 2)) ],
 		["", ("DiffThreshold", "DiffFactor")]
 		]
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return parameter level
+		"""
+		return scripting.COLOR_EXPERIENCED
 		
 	def getLongDesc(self, parameter):
 		"""
@@ -94,8 +102,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			return 5.0
 		elif parameter == "DiffFactor":
 			return 1.0
-		return 2
-		
+		return 2		
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""

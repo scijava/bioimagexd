@@ -3,7 +3,6 @@
 """
  Unit: FFT.py
  Project: BioImageXD
- Created: 18.09.2009, LP
  Description:
 
  A module that contains fast fourier transform for the processing task.
@@ -41,7 +40,7 @@ class FFTFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "FFT"
 	category = lib.FilterTypes.FOURIER
-	level = scripting.COLOR_BEGINNER
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -50,6 +49,7 @@ class FFTFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self,(1,1))
 		self.descs = {}
 		self.filter = None
+		self.filterDesc = "Transforms image from spatial domain to frequency domain\nInput: Grayscale image\nOutput: Complex image"
 
 	def updateProgress(self):
 		"""

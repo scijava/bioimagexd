@@ -3,7 +3,6 @@
 """
  Unit: GrayscaleFillHole.py
  Project: BioImageXD
- Created: 07.12.2009, LP
  Description:
 
  A module that contains grayscale fill hole filter for the processing task.
@@ -55,6 +54,7 @@ class GrayscaleFillHoleFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
+		self.filterDesc = "Removes local minima which are not connected to the bounday of the image\nInput: Binary/Grayscale image\nOutput: Binary/Grayscale image"
 
 	def updateProgress(self):
 		"""
