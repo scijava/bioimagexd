@@ -991,7 +991,7 @@ class GUIBuilder(wx.Panel):
 		fdSizer.Add(filterDescText)
 		filterDescText.SetBackgroundColour((213,213,237))
 		fdWin.SetBackgroundColour((213,213,237))
-		filterDescText.Wrap(300)
+		filterDescText.Wrap(330)
 		fdWin.Layout()
 
 		#descBox = wx.StaticBox(self, -1, "Description")

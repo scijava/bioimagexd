@@ -3,7 +3,6 @@
 """
  Unit: MathFilters
  Project: BioImageXD
- Created: 07.06.2006, KP
  Description:
 
  A module containing the math filters for the processing task.
@@ -149,7 +148,6 @@ class LogicFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 class AndFilter(LogicFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logical and
 	"""     
 	name = "And"
@@ -159,11 +157,11 @@ class AndFilter(LogicFilter):
 		Initialization
 		"""        
 		LogicFilter.__init__(self)
-		self.operation = "And"    
+		self.operation = "And"
+		self.filterDesc = "Calculates logical \"and\" between input images\nInputs: Binary/Grayscale images\nOutput: Binary image"
 		
 class OrFilter(LogicFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logical or
 	"""     
 	name = "Or"
@@ -174,12 +172,12 @@ class OrFilter(LogicFilter):
 		"""        
 		LogicFilter.__init__(self)
 		self.operation = "Or"
+		self.filterDesc = "Calculates logical \"or\" between input images\nInputs: Binary/Grayscale images\nOutput: Binary image"
 
 class XorFilter(LogicFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logical xor
-	"""     
+	"""
 	name = "Xor"
    
 	def __init__(self):
@@ -188,13 +186,13 @@ class XorFilter(LogicFilter):
 		Initialization
 		"""        
 		LogicFilter.__init__(self)
-		self.operation = "Xor"   
+		self.operation = "Xor"
+		self.filterDesc = "Calculates logical \"xor\" between input images\nInputs: Binary/Grayscale images\nOutput: Binary image"
 	   
 class NotFilter(LogicFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logical not
-	"""     
+	"""
 	name = "Not"
 				
 	def __init__(self):
@@ -202,11 +200,11 @@ class NotFilter(LogicFilter):
 		Initialization
 		"""        
 		LogicFilter.__init__(self, inputs = (1, 1))
-		self.operation = "Not"       
-		
+		self.operation = "Not"
+		self.filterDesc = "Calculates logical \"negate\" of input image\nInput: Binary/Grayscale image\nOutput: Binary image"
+
 class NorFilter(LogicFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logical nor
 	"""     
 	name = "Nor"
@@ -216,11 +214,11 @@ class NorFilter(LogicFilter):
 		Initialization
 		"""        
 		LogicFilter.__init__(self)
-		self.operation = "Nor"    
+		self.operation = "Nor"
+		self.filterDesc = "Calculates logical \"nor\" between input images\nInputs: Binary/Grayscale images\nOutput: Binary image"
 		
 class NandFilter(LogicFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logical nand
 	"""     
 	name = "Nand"
@@ -230,13 +228,13 @@ class NandFilter(LogicFilter):
 		Initialization
 		"""        
 		LogicFilter.__init__(self)
-		self.operation = "Nand"          
+		self.operation = "Nand"
+		self.filterDesc = "Calculates logical \"nand\" between input images\nInputs: Binary/Grayscale images\nOutput: Binary image"
 		
 class SubtractFilter(MathFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for subtracting two channels
-	"""     
+	"""
 	name = "Subtract"
 	category = MATH
 	
@@ -246,6 +244,7 @@ class SubtractFilter(MathFilter):
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Subtract"
+		self.filterDesc = "Subtracts one image from another, by subtracting the intensities for every pixel/voxel\nInputs: Grayscale image\nOutput: Grayscale image"
 
 class AddFilter(MathFilter):
 	"""
@@ -262,7 +261,8 @@ class AddFilter(MathFilter):
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Add"
-		
+		self.filterDesc = "Adds two images together, by pointwise adding the intensities for every pixel/voxel\nInputs: Grayscale images\nOutput: Grayscale image"
+
 class DivideFilter(MathFilter):
 	"""
 	Class: DivideFilter
@@ -279,6 +279,7 @@ class DivideFilter(MathFilter):
 		"""        
 		MathFilter.__init__(self)
 		self.operation = "Divide"
+		self.filterDesc = "Divides one image by another, by pointwise dividing the intensities for every pixel/voxel\nInputs: Grayscale images\nOutput: Grayscale image"
 		
 class MultiplyFilter(MathFilter):
 	"""
@@ -295,8 +296,9 @@ class MultiplyFilter(MathFilter):
 		Initialization
 		"""        
 		MathFilter.__init__(self)
-		self.operation = "Multiply"     
-	 
+		self.operation = "Multiply"
+		self.filterDesc = "Multiplies one image by another, by pointwise multiplying the intensities for every pixel/voxel\nInputs: Grayscale images\nOutput: Grayscale image"
+		
 class SinFilter(MathFilter):
 	"""
 	Class: SinFilter
@@ -312,8 +314,9 @@ class SinFilter(MathFilter):
 		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
-		self.operation = "Sin"        
-	 
+		self.operation = "Sin"
+		self.filterDesc = "Calculates the sine of the intensity of each pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
+
 class CosFilter(MathFilter):
 	"""
 	Class: CosFilter
@@ -327,14 +330,14 @@ class CosFilter(MathFilter):
 		"""
 		Method: __init__()
 		Initialization
-		"""        
+		"""
 		MathFilter.__init__(self, (1, 1))
-		self.operation = "Cos"   
+		self.operation = "Cos"
+		self.filterDesc = "Calculates the cosine of the intensity of each pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
 
 class ExpFilter(MathFilter):
 	"""
 	Class: ExpFilter
-	Created: 15.04.2006, KP
 	Description: A filter for calculating exp of input
 	"""     
 	name = "Exp"
@@ -346,12 +349,12 @@ class ExpFilter(MathFilter):
 		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
-		self.operation = "Exp" 
+		self.operation = "Exp"
+		self.filterDesc = "Calculates the exponent of the intensity of each pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
 		
 class LogFilter(MathFilter):
 	"""
 	Class: LogFilter
-	Created: 15.04.2006, KP
 	Description: A filter for calculating logarithm of input
 	"""     
 	name = "Log"
@@ -363,12 +366,12 @@ class LogFilter(MathFilter):
 		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
-		self.operation = "Log"    
-   
+		self.operation = "Log"
+		self.filterDesc = "Calculates the logarithm of the intensity of each pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
+		
 class SQRTFilter(MathFilter):
 	"""
 	Class: SQRTFilter
-	Created: 15.04.2006, KP
 	Description: A filter for calculating square root of input
 	"""     
 	name = "Sqrt"
@@ -380,5 +383,6 @@ class SQRTFilter(MathFilter):
 		Initialization
 		"""        
 		MathFilter.__init__(self, (1, 1))
-		self.operation = "SquareRoot"   
+		self.operation = "SquareRoot"
+		self.filterDesc = "Calculates the square root of the intensity of each pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
 			

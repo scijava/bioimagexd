@@ -76,7 +76,7 @@ class FourierFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the level of knowledge for using parameter
 		@param param Parameter name
 		"""
-		return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 
 	def getParamType(self, param):
 		"""
