@@ -35,6 +35,7 @@ class CityBlockDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "City block distance"
 	category = lib.FilterTypes.FEATUREDETECTION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -45,13 +46,13 @@ class CityBlockDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.descs = {"CastToOriginal":"Cast output to same datatype as input"}
+		self.filterDesc = "Computes Manhattan distance transform\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [  ["CityBlock distance", ("CastToOriginal",)]]
-		
+		return [["CityBlock distance", ("CastToOriginal",)]]
 		
 	def getType(self, parameter):
 		"""
@@ -89,6 +90,8 @@ class CityBlockDistanceFilter(lib.ProcessingFilter.ProcessingFilter):
 			cast.SetOutputScalarType(origType)
 			cast.SetClampOverflow(1)
 			data = cast.GetOutput()
+		
 		if update:
 			self.vtkfilter.Update()
+		
 		return data  

@@ -3,10 +3,9 @@
 """
  Unit: CannyEdge
  Project: BioImageXD
- Created: 10.12.2007, LP
  Description:
 
- A module that contains dynamic threshold filter for the processing task.
+ A module that contains Canny edge detection method
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -43,6 +42,7 @@ class CannyEdgeFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Canny edge detection"
 	category = lib.FilterTypes.FEATUREDETECTION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -55,11 +55,14 @@ class CannyEdgeFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {"LowerThreshold":"Lower threshold", "UpperThreshold":"Upper threshold","VarianceX":"X","VarianceY":"Y","VarianceZ":"Z",
 		"MaxErrorX":"X", "MaxErrorY":"Y", "MaxErrorZ":"Z",
 		"Rescale":"Rescale data to unsigned char (0-255)"}
+		self.filterDesc = "Performs Canny edge detection method\nInput: Grayscale image\nOutput: Grayscale image"
 		
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
+		if parameter == "Rescale":
+			return scripting.COLOR_BEGINNER
 		return scripting.COLOR_EXPERIENCED
 
 	def getType(self, parameter):

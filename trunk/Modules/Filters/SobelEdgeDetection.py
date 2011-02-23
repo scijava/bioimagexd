@@ -36,6 +36,7 @@ class SobelEdgeDetectionFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Sobel edge detection"
 	category = lib.FilterTypes.FEATUREDETECTION
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -45,6 +46,7 @@ class SobelEdgeDetectionFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Performing edge detection (Sobel)"
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Performs Sobel edge detection method\nInput: Grayscale image\nOutput: Grayscale image"
 		
 	def getParameters(self):
 		"""

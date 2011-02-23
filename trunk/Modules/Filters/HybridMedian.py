@@ -20,6 +20,7 @@ class HybridMedianFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, "ProgressEvent", self.updateProgress)
 		self.eventDesc = "Performing hybrid median filtering"
+		self.filterDesc = "Computes median value from pixel value, median of corner neighbors and median of face neighbors\nInput: Grayscale image\nOutput: Grayscale image"
 
 	def getParameters(self):
 		"""

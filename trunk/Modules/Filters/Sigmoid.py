@@ -34,6 +34,7 @@ class SigmoidFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Sigmoid filter" 
 	category = lib.FilterTypes.MISCFILTERING
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -44,18 +45,21 @@ class SigmoidFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {"Minimum": "Minimum output value", "Maximum": "Maximum output value", \
 						"Alpha": "Alpha", "Beta": "Beta"}
 		self.itkFilter = None
+		self.filterDesc = "Computes sigmoid function pixel-wise\nInput: Grayscale image\nOutput: Grayscale image"
 		
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
+		if parameter in ["Minimum", "Maximum"]:
+			return scripting.COLOR_BEGINNER
 		return scripting.COLOR_EXPERIENCED				   
 		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["Data range", ("Minimum", "Maximum")], ["", ("Alpha","Beta")]]		 
+		return [["Data range", ("Minimum", "Maximum")], ["", ("Alpha","Beta")]]
 
 	def getDefaultValue(self, parameter):
 		"""

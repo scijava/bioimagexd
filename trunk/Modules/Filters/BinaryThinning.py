@@ -3,7 +3,6 @@
 """
  Unit: BinaryThinning.py
  Project: BioImageXD
- Created: 16.12.2009, LP
  Description:
 
  A module that contains thinning filter for the processing task. Uses different
@@ -55,7 +54,7 @@ class BinaryThinningFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
-
+		self.filterDesc = "Performs skeletonization for binary image\nInput: Binary image\nOutput: Binary image"
 
 	def updateProgress(self):
 		"""

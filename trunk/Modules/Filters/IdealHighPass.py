@@ -3,7 +3,6 @@
 """
  Unit: IdealHighPass.py
  Project: BioImageXD
- Created: 23.09.2009, LP
  Description:
 
  A module that contains ideal high pass filter in fourier domain for the
@@ -45,7 +44,7 @@ class IdealHighPassFilter(FourierFilters.FourierFilter):
 	"""
 	name = "Ideal high pass"
 	category = lib.FilterTypes.FOURIER
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -53,3 +52,5 @@ class IdealHighPassFilter(FourierFilters.FourierFilter):
 		"""
 		FourierFilters.FourierFilter.__init__(self, inputs)
 		self.filter = vtk.vtkImageIdealHighPass()
+		self.filterDesc = "High pass filter in frequency domain using sharp cutoff\nInput: Complex image\nOutput: Complex image"
+		

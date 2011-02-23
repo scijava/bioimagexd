@@ -3,7 +3,6 @@
 """
  Unit: FourierFilters.py
  Project: BioImageXD
- Created: 23.09.2009, LP
  Description:
 
  A module that contains parent class for different low/high pass filters in
@@ -43,7 +42,6 @@ class FourierFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Fourier filter"
 	category = lib.FilterTypes.FOURIER
-	level = scripting.COLOR_INTERMEDIATE
 
 	def __init__(self, inputs = (1,1)):
 		"""
@@ -78,7 +76,7 @@ class FourierFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		return scripting.COLOR_EXPERIENCED
 
-	def getParamType(self, param):
+	def getType(self, param):
 		"""
 		Returns param type
 		"""
@@ -92,7 +90,6 @@ class FourierFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 
 		inputImage = self.getInput(1)
-
 		self.filter.SetXCutOff(self.parameters["XCutOff"])
 		self.filter.SetYCutOff(self.parameters["YCutOff"])
 		self.filter.SetZCutOff(self.parameters["ZCutOff"])

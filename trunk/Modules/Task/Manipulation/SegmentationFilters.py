@@ -2,7 +2,6 @@
 """
  Unit: SegmentationFilters
  Project: BioImageXD
- Created: 07.06.2006, KP
  Description:
 
  A module containing the segmentation filters for the processing task.
@@ -65,10 +64,10 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		"""		   
 		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
 		self.vtkfilter = vtk.vtkImageMask()
-		self.cast = None
-		
+		self.cast = None		
 		self.descs = {"OutputValue": "Masked output value"}
-			
+		self.filterDesc = "Masks image with another\nInput: Grayscale/Binary/Label image and Binary image\nOutput: Grayscale/Binary/Label image"
+
 			
 	def getInputName(self, n):
 		"""
@@ -81,19 +80,19 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
-		"""	   
+		"""
 		return 0
 		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""			   
+		"""
 		return [["", ("OutputValue", )]]
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""					   
+		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		self.vtkfilter.SetInput1(self.getInput(1))
@@ -130,6 +129,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Threshold for maximum object number"
 	category = THRESHOLDING
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -139,6 +139,7 @@ class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):
 		self.descs = {"MinSize": "Minimum object size in pixels"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Computes the threshold value that maximizes the number of objects in the image\nInput: Grayscale image\nOutput: Binary image"
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -197,6 +198,7 @@ class ITKRelabelImageFilter(ProcessingFilter.ProcessingFilter):
 	name = "Re-label image"
 	category = OBJECT
 	level = scripting.COLOR_EXPERIENCED
+	
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Initialization
@@ -318,6 +320,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Confidence connected threshold"
 	category = REGIONGROWING
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -330,6 +333,7 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 			"Multiplier": "Range relaxation", "Iterations": "Iterations"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Iteratively grows/changes initial neighborhood using pixels/voxels inside specified confidence range of neighborhood mean and variance\nInput: Grayscale image\nOutput: Binary image"
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -337,9 +341,6 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		if parameter in ["Multiplier", "Iterations"]:
 			return scripting.COLOR_EXPERIENCED
-		if parameter == "Neighborhood":
-			return scripting.COLOR_INTERMEDIATE
-		
 		return scripting.COLOR_BEGINNER			   
 			
 	def getDefaultValue(self, parameter):
@@ -419,6 +420,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 	name = "Connected threshold"
 	category = REGIONGROWING
 	level = scripting.COLOR_BEGINNER
+	
 	def __init__(self, inputs = (1, 1)):
 		"""
 		Initialization
@@ -429,6 +431,7 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 		self.setImageType("UC3")
 		self.itkfilter = None
+		self.filterDesc = "Includes all pixels/voxels in result that are connected to seed and inside defined thresholds\nInput: Grayscale image\nOutput: Binary image"
 
 	def getDefaultValue(self, parameter):
 		"""
@@ -495,6 +498,7 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 	"""		
 	name = "Neighborhood connected threshold"
 	category = REGIONGROWING
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self, inputs = (1, 1)):
 		"""
@@ -509,14 +513,12 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			"RadiusZ": "Z neighborhood size"}
 		self.itkFlag = 1
 		self.itkfilter = None
+		self.filterDesc = "Includes all pixels/voxels in result that are connected to seed and whose all neighbors are inside defined thresholds\nInput: Grayscale image\nOutput: Binary image"
 
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["RadiusX", "RadiusY", "RadiusZ"]:
-			return scripting.COLOR_INTERMEDIATE
-		
 		return scripting.COLOR_BEGINNER						   
 		
 	def getDefaultValue(self, parameter):
@@ -559,7 +561,6 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 			return None
 			
 		image = self.getInput(1)
-#		 print "Using as input",image
 		image = self.convertVTKtoITK(image)
 		self.itkfilter = itk.NeighborhoodConnectedImageFilter[image,image].New()
 		self.itkfilter.SetInput(image)

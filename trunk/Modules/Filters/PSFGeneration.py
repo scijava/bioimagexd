@@ -1,4 +1,4 @@
-	# -*- coding: iso-8859-1 -*-
+# -*- coding: iso-8859-1 -*-
 """
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -42,6 +42,7 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "PSF generation"
 	category = lib.FilterTypes.DECONVOLUTION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -63,6 +64,7 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 					  "Y":"PSF height (px)",
 					  "Z":"PSF depth (slices)",
 					  "Normalization":"Normalization"}
+		self.filterDesc = "Generates computational model of PSF to be used for deconvolution\nInput: None\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
@@ -86,6 +88,14 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 				self.dataUnit.setNumberOfTimepoints(1)
 				self.dataUnit.setModifiedDimensions((self.parameters["X"], self.parameters["Y"], self.parameters["Z"]))
 				lib.messenger.send(None, "update_dataset_info")
+
+	def getParameterLevel(self, parameter):
+		"""
+		Returns parameter level
+		"""
+		if parameter in ["SphericalAberration", "Normalization"]:
+			return scripting.COLOR_EXPERIENCED
+		return scripting.COLOR_BEGINNER
 	
 	def onRemove(self):
 		"""

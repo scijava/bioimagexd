@@ -55,6 +55,7 @@ class MeanFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.filter = None
 		self.pc = itk.PyCommand.New()
 		self.pc.SetCommandCallable(self.updateProgress)
+		self.filterDesc = "Replaces each pixel/voxel with mean value in neighborhood\nInput: Grayscale image\nOutput: Grayscale image"
 	
 
 	def updateProgress(self):
@@ -97,6 +98,8 @@ class MeanFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the level of knowledge for using parameter
 		@param param Parameter name
 		"""
+		if param == "UseImageSpacing":
+			return scripting.COLOR_EXPERIENCED
 		return scripting.COLOR_BEGINNER
 
 	def execute(self, inputs = (1,1), update = 0, last = 0):

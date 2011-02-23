@@ -866,7 +866,7 @@ class GUIBuilder(wx.Panel):
 			background = wx.Window(self, -1)
 		else:
 			background = self.currentBackground
-		
+
 		itemType = currentFilter.getType(item)
 		br = 0		  
 		if desc and desc[ -1] == '\n':
@@ -946,7 +946,7 @@ class GUIBuilder(wx.Panel):
 	def createNumberInput(self, parent, currentFilter, item, itemType, defaultValue, label = "", chainFunction = None):
 		"""
 		Return the input for int type
-		"""		   
+		"""
 		input = wx.TextCtrl(parent, -1, str(defaultValue), style = wx.TE_PROCESS_ENTER)
 		valid = lambda event, f = currentFilter, p = item, t = itemType, \
 							i = input:self.validateAndPassOn(event, i, p, itemType, f, chainFunction)
@@ -1158,6 +1158,7 @@ class GUIBuilder(wx.Panel):
 			value = convert(input.GetValue())
 		except:
 			return
+		
 		currentFilter.setParameter(parameter, value)
 		if chain:
 			chain(event, input, parameter, itemType, currentFilter)
