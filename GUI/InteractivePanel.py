@@ -445,9 +445,12 @@ class InteractivePanel(ogl.ShapeCanvas):
 				maskFromROIs.append(lib.ImageOperations.getMaskFromROIs([annotation], mx, my, 1)[1])
 			masks.append(lib.ImageOperations.CreateVolumeFromSlices(maskFromROIs, self.dataUnit.getSpacing()))
 
+		rois2D = []
 		for roi in rois:
 			if roi.parent == None:
-				masks.append(lib.ImageOperations.getMaskFromROIs(roi, mx, my, mz)[1])
+				rois2D.append(roi)
+
+		masks.append(lib.ImageOperations.getMaskFromROIs(rois2D, mx, my, mz)[1])
 
 		# Return all the masks and names.
 		return masks, names
