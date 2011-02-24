@@ -53,7 +53,7 @@ def getFilters():
 
 class MaskFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	A base class for image mathematics filters
+	Masking filter
 	"""		
 	name = "Mask"
 	category = MASK
@@ -67,7 +67,6 @@ class MaskFilter(ProcessingFilter.ProcessingFilter):
 		self.cast = None		
 		self.descs = {"OutputValue": "Masked output value"}
 		self.filterDesc = "Masks image with another\nInput: Grayscale/Binary/Label image and Binary image\nOutput: Grayscale/Binary/Label image"
-
 			
 	def getInputName(self, n):
 		"""

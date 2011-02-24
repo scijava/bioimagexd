@@ -38,6 +38,7 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Analyze ROI"
 	category = lib.FilterTypes.VOXELANALYSE
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
 		"""
@@ -50,6 +51,7 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {"ROI": "Region of Interest", "AllROIs": "Measure all ROIs",
 					"SecondInput":"Use second input as ROI"}
 		self.itkFlag = 1
+		self.filterDesc = "Quantitatively analyzes a ROI (Region Of Interest) or several\nInput: Grayscale image\nOutput: Grayscale image"
 		
 	def getInputName(self, n):
 		"""

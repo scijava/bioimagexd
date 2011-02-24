@@ -60,6 +60,7 @@ class TranslationRegistration2DFilter(RegistrationFilters.RegistrationFilter):
 			self.totalTranslation[i] = 0
 		self.descs["UsePreviousAsFixed"] = "Use previous slice as fixed image"
 		self.descs["FixedTimepoint"] = "Slice for fixed image"
+		self.filterDesc = "Performs translation registration between slices in 3D image stack\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
 	def updateProgress(self):
 		"""

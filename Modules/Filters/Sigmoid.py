@@ -32,7 +32,7 @@ class SigmoidFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
     A class for mapping an image data thru sigmoid image filter
 	"""		
-	name = "Sigmoid filter" 
+	name = "Sigmoid" 
 	category = lib.FilterTypes.MISCFILTERING
 	level = scripting.COLOR_EXPERIENCED
 	

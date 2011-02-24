@@ -50,7 +50,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Analyze motion tracks"
 	category = lib.FilterTypes.SEGMENTATIONANALYSE
-
+	level = scripting.COLOR_BEGINNER
 	def __init__(self):
 		"""
 		Initialization
@@ -73,6 +73,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.tpCount = []
 		self.globalmin = 0
 		self.globalmax = 0
+		self.filterDesc = "Quantitatively analyzes motion tracks\nInput: Track results (any pipeline input)\nOutput: Results (pipeline input as output)"
 
 	def setParameter(self, parameter, value):
 		"""

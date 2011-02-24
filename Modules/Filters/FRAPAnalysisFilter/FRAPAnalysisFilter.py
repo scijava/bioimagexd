@@ -35,12 +35,11 @@ import FRAPAnalysisList
 
 class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 01.09.2009, LP
 	Description: Filter for doing FRAP analysis
 	"""
 	name = "FRAP Analysis"
 	category = lib.FilterTypes.VOXELANALYSE
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -55,6 +54,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		self.timePointGUI = None
 		self.frapGUI = None
+		self.filterDesc = "Quantitatively analyzes FRAP (Fluorescence Recovery After Photobleaching) data\nInput: Grayscale image\nOutput: Grayscale image"
 
 	def getInputName(self, n):
 		"""

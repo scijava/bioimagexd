@@ -3,7 +3,6 @@
 """
  Unit: AutoBackgroundSubtract
  Project: BioImageXD
- Created: 10.12.2007, LP
  Description:
 
  A module for automatically subtracting the background from an image
@@ -43,6 +42,7 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Automatic background subtraction"
 	category = lib.FilterTypes.SUBTRACT
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
 		"""
@@ -55,13 +55,13 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Applying an Automatic background subtraction"
 		self.descs = {"SmallestNonZeroValue":"Use smallest non-zero value as background",
 		"FirstPeak":"First peak in histogram","MostCommon":"Most common value"}
+		self.filterDesc = "Removes background by subtracting a certain value from the intensity of every pixel/voxel\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["", (("SmallestNonZeroValue","FirstPeak","MostCommon"),("rows",3))]]
-		
+		return [["Subtract", (("SmallestNonZeroValue","FirstPeak","MostCommon"),("rows",3))]]
 		
 	def getLongDesc(self, parameter):
 		"""

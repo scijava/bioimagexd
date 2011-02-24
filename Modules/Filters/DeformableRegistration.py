@@ -62,6 +62,7 @@ class DeformableRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.descs["GridSizeX"] = "X:"
 		self.descs["GridSizeY"] = "Y:"
 		self.descs["GridSizeZ"] = "Z:"
+		self.filterDesc = "Perform BSpline deformable registration between images in time series data\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
 	def updateProgress(self):
 		"""
@@ -74,7 +75,7 @@ class DeformableRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Return the level of the given parameter
 		"""
 		if parameter in ["UseCaching", "GridSizeX", "GridSizeY", "GridSizeZ"]:
-			return scripting.COLOR_INTERMEDIATE
+			return scripting.COLOR_EXPERIENCED
 		return RegistrationFilters.RegistrationFilter.getParameterLevel(self,parameter)
 
 	def getDefaultValue(self, parameter):

@@ -53,14 +53,14 @@ class MorphologicalWatershedFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.relabelFilter	= None
 		self.itkfilter = None
 		self.data = None
+		self.filterDesc = "Performs morphological watershed segmentation by first removing local minima non-deeper than level parameter. After that uses watershed transform to segment and label objects.\nInput: Grayscale image\nOutput: Label image"
 
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
 		"""
-		if parameter in ["Threshold", "Level"]:
-			return scripting.COLOR_INTERMEDIATE
-		
+		if parameter in ["MarkWatershedLine", "Level"]:
+			return scripting.COLOR_EXPERIENCED
 		return scripting.COLOR_BEGINNER
 			
 	def getDefaultValue(self, parameter):
