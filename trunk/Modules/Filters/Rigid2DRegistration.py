@@ -63,6 +63,7 @@ class Rigid2DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.totalTransform.SetSize(5)
 		for i in range(5):
 			self.totalTransform.SetElement(i,0)
+		self.filterDesc = "Performs 2D rigid registration (translation + rotation) between images in time series data\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
 	def updateProgress(self):
 		"""
@@ -77,7 +78,7 @@ class Rigid2DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Return the level of the given parameter
 		"""
 		if parameter == "RotateAround":
-			return scripting.COLOR_INTERMEDIATE
+			return scripting.COLOR_BEGINNER
 		return RegistrationFilters.RegistrationFilter.getParameterLevel(self,parameter)
 
 	def getDefaultValue(self, parameter):

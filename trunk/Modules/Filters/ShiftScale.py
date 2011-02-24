@@ -3,7 +3,6 @@
 """
  Unit: ShiftScale
  Project: BioImageXD
- Created: 10.12.2007, LP
  Description:
 
  A module for shifting and scaling the intensities
@@ -41,8 +40,9 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for shifting the values of dataset by constant and scaling by a constant
 	"""		
-	name = "Shift and Scale"
+	name = "Shift and scale"
 	category = lib.FilterTypes.MATH
+	level = scripting.COLOR_BEGINNER
 	
 	def __init__(self):
 		"""
@@ -54,6 +54,7 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Applying a shift and scale to image intensity"
 		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to max range of data type", "NoOverflow":"Prevent over/underflow"}
+		self.filterDesc = "Shifts pixel/voxel intensities and then scales them, corresponding roughly to the adjustment of brightness and contrast, respectively\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""

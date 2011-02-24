@@ -3,7 +3,6 @@
 """
  Unit: TranslationRegistration.py
  Project: BioImageXD
- Created: 14.12.2007, LP
  Description:
 
  A module containing the translation registration filter for the processing
@@ -60,6 +59,7 @@ class TranslationRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.totalTranslation.SetSize(3)
 		for i in range(3):
 			self.totalTranslation.SetElement(i,0)
+		self.filterDesc = "Performs translation registration between images in time series data\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
 	def updateProgress(self):
 		"""

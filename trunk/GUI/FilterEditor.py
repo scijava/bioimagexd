@@ -151,7 +151,7 @@ class FilterEditor(wx.Panel):
 		f = lambda evt, btn = self.addSegmentationBtn, \
 					cats = (lib.FilterTypes.THRESHOLDING, lib.FilterTypes.WATERSHED, \
 							lib.FilterTypes.REGION_GROWING, \
-							lib.FilterTypes.MASK, lib.FilterTypes.OBJECT): \
+							lib.FilterTypes.ACTIVECONTOUR, lib.FilterTypes.OBJECT): \
 					self.onShowAddMenu(evt, btn, cats)
 		self.addSegmentationBtn.Bind(wx.EVT_LEFT_DOWN, f)
 
@@ -161,7 +161,7 @@ class FilterEditor(wx.Panel):
 		self.addAnalyzeBtn.Bind(wx.EVT_LEFT_DOWN, f)
 
 		f = lambda evt, btn = self.addMiscBtn, \
-			cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+			cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
 			self.onShowAddMenu(evt, btn, cats)
 		self.addMiscBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		

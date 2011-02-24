@@ -3,7 +3,6 @@
 """
  Unit: MultiResolutionRegistration.py
  Project: BioImageXD
- Created: 26.2.2009, LP
  Description:
 
  A module containing the translation registration filter in multi resolution.
@@ -65,6 +64,7 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.totalTranslation.SetSize(3)
 		for i in range(3):
 			self.totalTranslation.SetElement(i,0)
+		self.filterDesc = "Performs multi resolution translation registration between images in time series data\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
 	def updateProgress(self):
 		"""
@@ -90,8 +90,7 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		"""
 		if parameter in ["FixedTimepoint","BackgroundPixelValue","UsePreviousAsFixed","X","Y","Z"]:
 			return scripting.COLOR_BEGINNER
-		
-		return scripting.COLOR_INTERMEDIATE
+		return scripting.COLOR_EXPERIENCED
 			
 	def getDefaultValue(self, parameter):
 		"""

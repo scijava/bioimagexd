@@ -62,6 +62,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.totalTransform.SetSize(6)
 		for i in range(6):
 			self.totalTransform.SetElement(i,0)
+		self.filterDesc = "Performs versor rigid registration (translation + rotation) between images in time series data\nInput: Grayscale/Binary image\nOutput: Grayscale/Binary image"
 
 	def updateProgress(self):
 		"""
@@ -76,7 +77,7 @@ class VersorRigid3DRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		Return the level of the given parameter
 		"""
 		if parameter == "RotateAround":
-			return scripting.COLOR_INTERMEDIATE
+			return scripting.COLOR_BEGINNER
 		return RegistrationFilters.RegistrationFilter.getParameterLevel(self,parameter)
 
 	def getDefaultValue(self, parameter):

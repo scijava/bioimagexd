@@ -52,7 +52,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Analyze polydata"
 	category = lib.FilterTypes.SEGMENTATIONANALYSE
-	level = scripting.COLOR_INTERMEDIATE
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self):
 		"""
@@ -113,6 +113,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		# "Avg. of all-voxel-distance to Cell COM"		Average of the average distances from each object's each voxel to the cell COM
 
 		self.aggregateHeaders = ["COMs outside", "COMs inside","Avg.Dist.(COM-surface)","Avg.Dist.(COM-Cell COM)","# of voxels inside", "# of voxels outside","Avg. % of voxels inside", "Avg. of all-voxel-distance to surface","Avg. of all-voxel-distance to Cell COM"]
+		self.filterDesc = "Analyzes location of segmented objects in respect of polydata surface, to quantify for instance cellular internalization\nInputs: Polydata image and label image\nOutput: Results (polydata input for pipeline)"
 		
 	def getParameters(self):
 		"""
