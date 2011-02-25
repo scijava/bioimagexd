@@ -43,7 +43,7 @@ class ImplicitModellingFilter(lib.ProcessingFilter.ProcessingFilter):
 	A filter for analyzing polydata
 	"""
 	name = "Implicit modelling"
-	category = lib.FilterTypes.POLYDATA
+	category = lib.FilterTypes.CONVERSION
 	level = scripting.COLOR_INTERMEDIATE
 
 	def __init__(self):
@@ -69,8 +69,7 @@ class ImplicitModellingFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the parameters for GUI.
 		"""
 		return [
-			["Implicit modelling",("MaximumDistance","Capping","CapValue","ScaleToMax")],
-			
+			["Implicit modelling",("MaximumDistance","Capping","CapValue","ScaleToMax")]
 			]
 
 	def getType(self, parameter):
@@ -90,12 +89,12 @@ class ImplicitModellingFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "MaximumDistance": return 0.1
 		if parameter == "CapValue": return 255
 		if parameter == "ScaleToMax": return True
+	
 	def getParameterLevel(self, param):
 		"""
 		Description:
 		"""
 		return scripting.COLOR_BEGINNER
-		
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""

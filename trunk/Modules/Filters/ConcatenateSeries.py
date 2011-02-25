@@ -34,8 +34,9 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Concatenate several datasets into one
 	"""		
-	name = "Concatenate time series"
+	name = "Combine time series"
 	category = lib.FilterTypes.CONVERSION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -47,6 +48,7 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.totalTimepoints = -1
 		self.descs = {"UseTimestamps":"Use timestamps to position datasets",
 		"PadDatasets":"Pad datasets to largest dimensions"}
+		self.filterDesc = "Combines several time series datasets together. Used to create a single dataset of a time series that is in several parts.\nInput: All opened grayscale images\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
@@ -54,6 +56,12 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [ "Positioning:", ["", ("UseTimestamps",)],
 		"Dimensions:", ["", ("PadDatasets",)]]
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return parameter level
+		"""
+		return scripting.COLOR_EXPERIENCED
 		
 	def getLongDesc(self, parameter):
 		"""

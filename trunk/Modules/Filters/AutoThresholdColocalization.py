@@ -37,7 +37,7 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for calculating a colocalization map and various colocalization statistics
 	"""		
-	name = "Auto threshold colocalization"
+	name = "Calculate thresholds for colocalization"
 	category = lib.FilterTypes.COLOCALIZATION
 	level = scripting.COLOR_BEGINNER
 	
@@ -59,6 +59,7 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 							"Slope":			"Correlation slope",
 							"Intercept":		"Correlation intercept"
 							}
+		self.filterDesc = "Calculates thresholds for colocalization analysis automatically. Combine with the 'Analyze colocalization' procedure to analyze the results. Intended for use with the Batch Processor only, for other colocalization analyses use the Colocalization task.\nInputs: Grayscale images\nOutput: Thresholds (first input as pipeline output)"
 					
 	def getParameterLevel(self, parameter):
 		"""

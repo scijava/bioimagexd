@@ -3,7 +3,6 @@
 """
  Unit: ImageCast.py
  Project: BioImageXD
- Created: 10.12.2007, LP
  Description:
 
  A module for casting the intensity of dataset
@@ -44,6 +43,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Convert data type"
 	category = lib.FilterTypes.CONVERSION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -57,6 +57,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.descs = {"ClampOverflow":"Clamp overflow","Float":"Float", "Double":"Double",
 		"Int":"Int","UnsignedInt":"Unsigned int", "Long":"Long", "UnsignedLong":"Unsigned long",
 		"Short":"Short","UnsignedShort":"Unsigned short","UnsignedChar":"Unsigned char","Char":"Char"}
+		self.filterDesc = "Converts input data type to another data type\nInput: Grayscale/Binary/Label image\nOutput: Grayscale/Binary/Label image"
 	
 	def getParameters(self):
 		"""
@@ -64,7 +65,12 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""			   
 		return [["", ("ClampOverflow",)],
 		["Target datatype",(("Float","Double","Int","UnsignedInt","Long","UnsignedLong","Short","UnsignedShort","Char","UnsignedChar"),("cols",4))]]
-		
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return level of a parameter
+		"""
+		return scripting.COLOR_EXPERIENCED
 		
 	def getLongDesc(self, parameter):
 		"""
