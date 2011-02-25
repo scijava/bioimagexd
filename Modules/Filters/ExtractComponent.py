@@ -31,11 +31,11 @@ import scripting
 
 class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 21.01.2007, KP
 	Description: A filter for extracting component or components from a dataset
 	"""     
 	name = "Extract components"
 	category = lib.FilterTypes.CONVERSION
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -47,6 +47,7 @@ class ExtractComponentFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		
 		self.descs = {"Component1": "Component #1", "Component2": "Component #2", "Component3": "Component #3"}
+		self.filterDesc = "Extracts the red and/or green and/or blue components of an RGB color image into separate greyscale channels\nInput: RGB image\nOutput: 3 grayscale images"
 	
 	def getParameters(self):
 		"""

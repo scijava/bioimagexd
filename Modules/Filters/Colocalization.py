@@ -38,7 +38,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	A filter for calculating a colocalization map and various colocalization statistics
 	"""		
-	name = "Colocalization"
+	name = "Analyze colocalization"
 	category = lib.FilterTypes.COLOCALIZATION
 	level = scripting.COLOR_BEGINNER
 	
@@ -56,7 +56,6 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (2,2), requireWholeDataset = 1)
 		for i in range(1, 3):
 			self.setInputChannel(i, i)
-
 
 		self.colocFilter = vtkbxd.vtkImageColocalizationFilter()
 		self.colocFilter.AddObserver('ProgressEvent', lib.messenger.send)
@@ -119,6 +118,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 							"LowerThresholdCh2":"",
 							"UpperThresholdCh2":""
 							}
+		self.filterDesc = "Analyzes colocalization using manually specified thresholds, or automatically calculated thresholds if preceded by the procedure 'Calculate thresholds for colocalization'. Intended for use with the Batch Processor only, for other colocalization analyses use the Colocalization task.\nInputs: Grayscale images\nOutput: Results (Colocalization map as grayscale image)"
 					
 	def getParameterLevel(self, parameter):
 		"""
