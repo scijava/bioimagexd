@@ -222,7 +222,7 @@ class MainWindow(wx.Frame):
 		self.infoWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.infoWin.SetAlignment(wx.LAYOUT_RIGHT)
 		self.infoWin.SetSashVisible(wx.SASH_LEFT, True)
-		self.infoWin.SetSashBorder(wx.SASH_LEFT, True)
+		#self.infoWin.SetSashBorder(wx.SASH_LEFT, True)
 		self.infoWin.SetDefaultSize((300, 768))
 		self.infoWin.origSize = (300, 768)
 		
