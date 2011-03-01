@@ -2,7 +2,6 @@
 """
  Unit: DataUnit.py
  Project: BioImageXD
- Created: 03.11.2004, JM
  Description: Classes for 4D DataUnits
 		   
  Copyright (C) 2005  BioImageXD Project
@@ -124,7 +123,6 @@ class DataUnit:
 		A method for querying whether this dataset is a processed one
 		"""    
 		return 0
-
 
 	def getDataSource(self):
 		"""

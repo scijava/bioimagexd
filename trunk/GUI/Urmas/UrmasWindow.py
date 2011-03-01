@@ -4,7 +4,6 @@
 """
  Unit: UrmasWindow
  Project: BioImageXD
- Created: 10.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -55,7 +54,6 @@ import platform
 
 class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 	"""
-	Created: 10.02.2005, KP
 	Description: A window for controlling the rendering/animation/movie generation.
 				 The window has a notebook with different pages for rendering and
 				 animation modes, and a page for configuring the movie generation.
@@ -343,8 +341,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		self.visualizer.getCurrentMode().lockSliderPanel(0)
 		self.visualizer.OnSize()
 		
-		
-		
 	def onMinTrack(self, evt):
 		"""
 		Callback function for menu item minimize track
@@ -359,7 +355,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		"""
 		Callback function for menu item minimize track
 		"""
-
 		dlg = wx.TextEntryDialog(self, "Set duration of each item (seconds):", "Set item duration")
 		dlg.SetValue("5.0")
 		val = 5
@@ -371,8 +366,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		spf = self.control.getSecondsPerFrame()
 		# Make it so that you cant set the item smaller than a single frame
 		if val < spf:
-			val = spf
-					
+			val = spf					
 		
 		#print "Setting to size ",size,"(",val,"seconds)"
 		active = self.control.getSelectedTrack()
@@ -387,7 +381,6 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 		startOfTrack = active.getStartOfTrack()
 		startOfTrack /= float(pps)
 		w = float(self.control.getDuration() - startOfTrack) / float(n)
-		
 	
 		if val > w:
 			val = w
@@ -421,9 +414,7 @@ class UrmasWindow(wx.lib.scrolledpanel.ScrolledPanel):
 			except:
 				return
 		size = int(val * self.control.getPixelsPerSecond())
-		#print "Setting to size ",size,"(",val,"seconds)"
-	
-			
+		#print "Setting to size ",size,"(",val,"seconds)"			
 		active.setToRelativeSize(size)
 		
 

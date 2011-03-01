@@ -62,9 +62,9 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 		
 		self.descs = {"MinLength": "Min. length of track (# of timepoints)",
-			"ResultsFile": "Tracking results file:",
-			"Track": "Track to visualize",
-			"AllTracks":"Visualize all tracks"}
+			"ResultsFile": "Tracks file:"}
+#			"Track": "Track to visualize",
+#			"AllTracks":"Visualize all tracks"}
 	
 		self.numberOfPoints = None
 		lib.messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)
@@ -87,24 +87,52 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			#if self.parameters.has_key("Track") and self.tracks:
 			#    lib.messenger.send(None,"visualize_tracks",[self.tracks[self.parameters["Track"]]])
 			#    lib.messenger.send(None,"update_helpers",1)
-		elif parameter == "Track":
-			if self.tracks and self.parameters["Track"] == 0:
-				lib.messenger.send(None, "visualize_tracks", [])            
-				lib.messenger.send(None, "update_helpers", 1)
-			elif self.tracks and self.parameters["Track"] <= len(self.tracks):
-				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"] - 1]])            
-				lib.messenger.send(None, "update_helpers", 1)
+#		elif parameter == "Track":
+#			if self.tracks and self.parameters["Track"] == 0:
+#				lib.messenger.send(None, "visualize_tracks", [])
+#				lib.messenger.send(None, "update_helpers", 1)
+#			elif self.tracks and self.parameters["Track"] <= len(self.tracks):
+#				lib.messenger.send(None, "visualize_tracks", [self.tracks[self.parameters["Track"] - 1]])            
+#				lib.messenger.send(None, "update_helpers", 1)
 		if parameter == "MinLength":
 			lib.messenger.send(self, "update_Track")
 		
-		if parameter == "AllTracks":
-			if self.tracks and value:
-				lib.messenger.send(None, "visualize_tracks", self.tracks)
-				lib.messenger.send(None, "update_helpers", 1)
-			if not value:
-				lib.messenger.send(None, "visualize_tracks", [])
-				lib.messenger.send(None, "update_helpers", 1)
-		  
+#		if parameter == "AllTracks":
+#			if self.tracks and value:
+#				lib.messenger.send(None, "visualize_tracks", self.tracks)
+#				lib.messenger.send(None, "update_helpers", 1)
+#			if not value:
+#				lib.messenger.send(None, "visualize_tracks", [])
+#				lib.messenger.send(None, "update_helpers", 1)
+
+	def onSelectAll(self, evt):
+		"""
+		Select all button event handler
+		"""
+		self.setAllTracks(1)
+		lib.messenger.send(None, "visualize_tracks", self.tracks)
+		lib.messenger.send(None, "update_helpers", 1)
+
+	def onDeselectAll(self, evt):
+		"""
+		Deselect all button event handler
+		"""
+		self.setAllTracks(0)
+		lib.messenger.send(None, "visualize_tracks", [])
+		lib.messenger.send(None, "update_helpers", 1)
+
+	def setAllTracks(self, value):
+		"""
+		Set visualize all tracks selection
+		"""
+		if value:
+			for i in range(0,self.trackGrid.GetNumberRows()):
+				self.trackGrid.table.setEnabled(i,1)
+		else:
+			for i in range(0,self.trackGrid.GetNumberRows()):
+				self.trackGrid.table.setEnabled(i,0)
+		self.trackGrid.ForceRefresh()
+		
 	def updateSelectedTracks(self, obj, evt, tracks):
 		"""
 		show the given tracks
@@ -121,9 +149,10 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""            
-		return [["Tracking", ("MinLength", )],        
-		["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
-		["Visualization", ("Track", "AllTracks")]]
+		return [["Read tracks", (("ResultsFile", "Select track file that contains the results", "*.csv"),)],
+				["Show tracks", ()],
+				["Settings", ("MinLength", )]]
+#		["Visualization", ("Track", "AllTracks")]]
 
 		
 	def getLongDesc(self, parameter):
@@ -139,10 +168,10 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""    
 		if parameter in ["MinLength"]:
 			return GUI.GUIBuilder.SPINCTRL
-		if parameter == "Track":
-			return GUI.GUIBuilder.SLICE            
-		if parameter == "AllTracks":
-			return types.BooleanType
+#		if parameter == "Track":
+#			return GUI.GUIBuilder.SLICE            
+#		if parameter == "AllTracks":
+#			return types.BooleanType
 		return GUI.GUIBuilder.FILENAME
 		
 	def getRange(self, parameter):
@@ -150,12 +179,12 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the range of given parameter
 		"""
 		print "Get range", parameter
-		if parameter == "Track":
-			if self.track:
-				minlength = self.parameters["MinLength"]
-				return 0, self.track.getNumberOfTracks(minlength)            
-			else:
-				return 0, 1
+#		if parameter == "Track":
+#			if self.track:
+#				minlength = self.parameters["MinLength"]
+#				return 0, self.track.getNumberOfTracks(minlength)            
+#			else:
+#				return 0, 1
 		if parameter == "MinLength":
 			if self.numberOfPoints:
 				return 0, self.numberOfPoints
@@ -165,14 +194,14 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the default value of a parameter
 		"""
-		if parameter == "Track":
-			return 0    
+#		if parameter == "Track":
+#			return 0    
 		if parameter == "MinLength":
 			return 3
 		if parameter == "ResultsFile":
 			return "track_results.csv"
-		if parameter == "AllTracks":
-			return False
+#		if parameter == "AllTracks":
+#			return False
 		return "statistics.csv"
 		
 		
@@ -183,18 +212,23 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
 		
 		if not self.trackGrid:
-			self.trackGrid = self.trackingGUI.TrackTableGrid(self.gui, self.dataUnit, self, canEnable = 1)
 			sizer = wx.BoxSizer(wx.VERTICAL)
+			btnSizer = wx.BoxSizer(wx.HORIZONTAL)
+			self.selectAllBtn = wx.Button(self.gui, -1, "Select all")
+			self.selectAllBtn.Bind(wx.EVT_BUTTON, self.onSelectAll)
+			btnSizer.Add(self.selectAllBtn)
+			self.deselectAllBtn = wx.Button(self.gui, -1, "Deselect all")
+			self.deselectAllBtn.Bind(wx.EVT_BUTTON, self.onDeselectAll)
+			btnSizer.Add(self.deselectAllBtn)
+			self.trackGrid = self.trackingGUI.TrackTableGrid(self.gui, self.dataUnit, self, canEnable = 1)
+			sizer.Add(btnSizer)
+			sizer.Add(self.trackGrid)
 			
-			sizer.Add(self.trackGrid, 1)
 			box = wx.BoxSizer(wx.HORIZONTAL)
-			
 			self.readTracksBtn = wx.Button(self.gui, -1, "Read tracks")
 			box.Add(self.readTracksBtn)
-			
 			self.readTracksBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
 			
-			sizer.Add(box)
 			pos = (0, 0)
 			item = gui.sizer.FindItemAtPosition(pos)
 			if item.IsWindow():
@@ -203,16 +237,21 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				win = item.GetSizer()
 			elif item.IsSpacer():
 				win = item.GetSpacer()
-			
-			gui.sizer.Detach(win)            
-			gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-			gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
+
+			readtracksSizer = win.GetItem(0).GetSizer().FindItemAtPosition((1,0)).GetSizer()
+			readtracksSizer.Add(box)
+			showtracksSizer = win.GetItem(0).GetSizer().FindItemAtPosition((2,0)).GetSizer()
+			showtracksSizer.Add(sizer)
+			#gui.sizer.Detach(win)
+			#gui.sizer.Add(win, (0, 0), flag = wx.EXPAND | wx.ALL)
+			#gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 			
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
 			if filename and os.path.exists(filename):
 				self.setParameter("ResultsFile", filename)
 				self.onReadTracks(event = None)
+		
 		return gui
 		
 		

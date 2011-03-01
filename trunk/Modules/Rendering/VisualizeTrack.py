@@ -3,7 +3,6 @@
 """
  Unit: VisualizeTrack
  Project: BioImageXD
- Created: 29.05.2006, KP
  Description:
 
  A VisualizeTrack rendering module
@@ -60,7 +59,7 @@ class VisualizeTrackModule(VisualizationModule):
 		"""     
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"TrackFile": "Tracks file", "AllTracks": "Show all tracks", \
+		self.descs = {"TrackFile": "Tracks file", #"AllTracks": "Show all tracks", \
 					"MinLength": "Min. length of track (# of timepoints)",
 					"SphereRadius": "Sphere radius",
 					"TubeRadius": "Tube radius"}
@@ -96,15 +95,15 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		Set a value for the parameter
 		"""
-		if parameter == "AllTracks":
-			lib.messenger.send(None, "visualize_all_tracks", value)
+		#if parameter == "AllTracks":
+		#	lib.messenger.send(None, "visualize_all_tracks", value)
 		VisualizationModule.setParameter(self, parameter, value)
   
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",("AllTracks",)], ["Settings",("MinLength","SphereRadius","TubeRadius")]]
+		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",()], ["Settings",("MinLength","SphereRadius","TubeRadius")]]
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -390,8 +389,18 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 		self.trackGrid = self.trackingGUI.TrackTableGrid(self.gui, self.module.dataUnit, self, canEnable = 1)
 		gridSizer = wx.BoxSizer(wx.HORIZONTAL)
 		gridSizer.Add(self.trackGrid, 1)
+
+		self.selectAllBtn = wx.Button(self.gui, -1, "Select all")
+		self.selectAllBtn.Bind(wx.EVT_BUTTON, self.onSelectAll)
+		self.deselectAllBtn = wx.Button(self.gui, -1, "Deselect all")
+		self.deselectAllBtn.Bind(wx.EVT_BUTTON, self.onDeselectAll)
+		btnBox = wx.BoxSizer(wx.HORIZONTAL)
+		btnBox.Add(self.selectAllBtn)
+		btnBox.Add(self.deselectAllBtn)
+		
 		# Terrible hack!!!
 		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((2,0)).GetSizer().GetItem(0).GetSizer()
+		sizer.Add(btnBox, (0,0))
 		sizer.Add(gridSizer, (1,0))
 		
 	def setModule(self, module):
@@ -435,6 +444,18 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 				table.SetValue(i, tp + 1, pos, override = 1)
 		self.trackGrid.SetTable(table)
 		self.trackGrid.ForceRefresh()
+
+	def onSelectAll(self, evt):
+		"""
+		View all tracks
+		"""
+		self.visualizeAllTracks(None, evt, 1)
+
+	def onDeselectAll(self, evt):
+		"""
+		View no tracks
+		"""
+		self.visualizeAllTracks(None, evt, 0)
 		
 	def updateSelectedTracks(self, obj, evt, tracks):
 		"""
@@ -451,10 +472,14 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 		"""
 		if value:
 			for i in range(0,self.trackGrid.GetNumberRows()):
-				self.trackGrid.table.SetValue(i,0,1)
+				self.trackGrid.table.setEnabled(i,1)
 		else:
 			for i in range(0,self.trackGrid.GetNumberRows()):
-				self.trackGrid.table.SetValue(i,0,0)
+				self.trackGrid.table.setEnabled(i,0)
 
 		self.trackGrid.ForceRefresh()
-	
+		if value:
+			lib.messenger.send(None, "visualize_tracks", self.tracks)
+		else:
+			lib.messenger.send(None, "visualize_tracks", [])
+			

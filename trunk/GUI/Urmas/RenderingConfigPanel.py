@@ -4,7 +4,6 @@
 """
  Unit: RenderingConfigPanel
  Project: BioImageXD
- Created: 19.12.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -180,7 +179,7 @@ be the same size as the final frame.""")
 	def useSettings(self, event = None):
 		"""
 		Use the GUI settings
-		"""		   
+		"""
 		duration = -1
 		frameCount = -1
 		try:

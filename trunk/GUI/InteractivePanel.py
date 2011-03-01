@@ -3,7 +3,6 @@
 """
  Unit: InteractivePanel
  Project: BioImageXD
- Created: 24.03.2005, KP
  Description:
 
  A panel that can select regions of interest, draw annotations, etc.

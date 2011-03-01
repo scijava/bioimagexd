@@ -2,7 +2,6 @@
 """
  Unit: WatershedTotalsList
  Project: BioImageXD
- Created: 22.11.2007, KP
  Description: A module containg a list control element for showing the average totals of analyzing segmented objects
 
  This program is distributed in the hope that it will be useful,
@@ -25,7 +24,6 @@ import lib.messenger
 
 class WatershedTotalsList(wx.ListCtrl):
 	"""
-	Created: KP
 	Description: a listctrl that shows the averages of the segmented object
 	"""
 	def __init__(self, parent, log):
@@ -156,18 +154,20 @@ class WatershedTotalsList(wx.ListCtrl):
 		return self.attr
 
 
-class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
+class WatershedObjectList(wx.ListCtrl, listmix.CheckListCtrlMixin):
 	"""
 	A list control object that is used to display a list of the results of
 				 a watershed segmentation or a connected components analysis
 	"""
-	def __init__(self, parent, wid, gsize = (400, 250)):
+	def __init__(self, parent, wid, gsize = (400, 250), canEnable = 0):
 		wx.ListCtrl.__init__(
 			self, parent, wid, 
 			size = gsize,
 			style = wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES,
 			)
-		listmix.ListCtrlSelectionManagerMix.__init__(self)
+		listmix.CheckListCtrlMixin.__init__(self)
+		self.checkedItems = []
+		
 		self.InsertColumn(0, "Object #")
 		self.InsertColumn(1, u"Volume (px)")
 		self.InsertColumn(2, u"Volume (\u03BCm)")
@@ -199,7 +199,7 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		self.SetColumnWidth(13, 100)
 		self.SetColumnWidth(14, 70)
 
-		self.highlightSelected = 1
+		self.highlightSelected = 0
 		#self.SetItemCount(1000)
 
 		self.attr1 = wx.ListItemAttr()
@@ -391,12 +391,12 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 		event.Skip()
 		
 	def OnItemSelected(self, event):
-		self.currentItem = event.m_itemIndex
-		item = -1
+		#self.currentItem = event.m_itemIndex
+		#item = -1
 		
-		if self.highlightSelected:
-			self.counter += 1
-			wx.FutureCall(200, self.sendHighlight)
+		#if self.highlightSelected:
+		#	self.counter += 1
+		#	wx.FutureCall(200, self.sendHighlight)
 		event.Skip()
 		
 	def sendHighlight(self):
@@ -409,18 +409,34 @@ class WatershedObjectList(wx.ListCtrl, listmix.ListCtrlSelectionManagerMix):
 			self.counter = 0
 			
 	def OnItemActivated(self, event):
-		self.currentItem = event.m_itemIndex
+		event.Skip()
+		#self.currentItem = event.m_itemIndex
 		
-		if len(self.centersOfMassList) >= self.currentItem: 
-			centerofmass = self.centersOfMassList[self.currentItem]
-			x, y, z = centerofmass
+		#if len(self.centersOfMassList) >= self.currentItem: 
+		#	centerofmass = self.centersOfMassList[self.currentItem]
+		#	x, y, z = centerofmass
 			
-			lib.messenger.send(None, "show_centerofmass", self.currentItem, centerofmass)
-			lib.messenger.send(None, "zslice_changed", int(z))
-			lib.messenger.send(None, "update_helpers", 1)
+		#	lib.messenger.send(None, "show_centerofmass", self.currentItem, centerofmass)
+		#	lib.messenger.send(None, "zslice_changed", int(z))
+		#	lib.messenger.send(None, "update_helpers", 1)
 
 	def OnItemDeselected(self, evt):
-		print ("OnItemDeselected: %s" % evt.m_itemIndex)
+		evt.Skip()
+		#print ("OnItemDeselected: %s" % evt.m_itemIndex)
+
+	def OnCheckItem(self, index, flag):
+		"""
+		Check item event handler
+		"""
+		if len(self.centersOfMassList) >= index:
+			com = self.centersOfMassList[index]
+			if flag:
+				self.checkedItems.append((index, com))
+			else:
+				self.checkedItems.remove((index, com))
+
+			lib.messenger.send(None, "show_centerofmass", self.checkedItems)
+			lib.messenger.send(None, "update_helpers", 1)
 
 	def OnGetItemImage(self, item):
 		return - 1

@@ -3,7 +3,6 @@
 """
  Unit: scripting
  Project: BioImageXD
- Created: 13.02.2006, KP
  Description:
 
  A module containing various shortcuts for ease of scripting the app

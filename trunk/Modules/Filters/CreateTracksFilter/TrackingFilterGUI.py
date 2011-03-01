@@ -66,6 +66,15 @@ class TrackTable(gridlib.PyGridTableBase):
 				ret.append(key)
 		return ret
 
+	def setEnabled(self, row, value):
+		"""
+		Mark row as enabled
+		"""
+		if value:
+			self.enabled[row] = True
+		else:
+			self.enabled[row] = False
+
 	def GetTypeNameDISABLED(self, row, col):
 		"""
 		return the type of the given row and col
@@ -141,7 +150,7 @@ class TrackTable(gridlib.PyGridTableBase):
 	def GetValue(self, row, col):
 		"""
 		Return the value of a cell
-		"""                
+		"""
 		if not self.canEnable:
 			if (row, col) in self.gridValues:
 				return "(%d,%d,%d)" % self.gridValues[(row, col)]

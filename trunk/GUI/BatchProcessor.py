@@ -3,7 +3,6 @@
 """
  Unit: BatchProcessor
  Project: BioImageXD
- Created: 25.11.2007, KP
  Description:
 
  A batch processor tool for BioImageXD
@@ -52,7 +51,6 @@ import lib.BatchAnalysis
 
 class BatchAnalysisTable(gridlib.PyGridTableBase):
 	"""
-	Created: 26.11.2007, KP
 	Description: a table model for a wx.lib.gridlib.Grid
 	"""
 	def __init__(self, analysis):
@@ -216,7 +214,6 @@ class CheckListCtrl(wx.ListCtrl,
 				   listmix.ListCtrlAutoWidthMixin,
 				   listmix.TextEditMixin, listmix.CheckListCtrlMixin):
 	"""
-	Created: 26.11.2007, KP
 	Description: a ListCtrl that allows the selection of different procedure lists and the editing
 				 of the variables that should be retrieved from those lists
 	"""
@@ -284,7 +281,6 @@ class ProcedureListCtrl(wx.ListCtrl,
 				   listmix.ListCtrlAutoWidthMixin,
 				   listmix.TextEditMixin):
 	"""
-	Created: 26.11.2007, KP
 	Description: a ListCtrl that allows the selection of different procedure lists and the editing
 				 of the variables that should be retrieved from those lists
 	"""
@@ -336,7 +332,6 @@ class ProcedureListCtrl(wx.ListCtrl,
 			
 class BatchAnalysisGrid(gridlib.Grid):
 	"""
-	Created: 25.11.2007, KP
 	Description: a grid that can be modified that is used to define how to layout the results of a batch processing
 	"""
 	def __init__(self, parent, analysis):

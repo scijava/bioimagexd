@@ -3,7 +3,6 @@
 """
  Unit: ProcessingFilter
  Project: BioImageXD
- Created: 13.04.2006, KP
  Description:
 
  A module that contains the base class for various data processing filters used in the Process

@@ -5,7 +5,7 @@
  Project: BioImageXD
  Description:
 
- A module for the imagedata to polydata conversion filter
+ Object colocalization filter
  
  Copyright (C) 2005  BioImageXD Project
  See CREDITS.txt for details
@@ -214,11 +214,12 @@ class CountLabelsFilter(lib.ProcessingFilter.ProcessingFilter):
 		bgImage = self.getInput(1)
 		bgDataUnit = self.getInputDataUnit(1)
 		tracksFile = bgDataUnit.getSettings().get("StatisticsFile")
-		if tracksFile:
+		if os.path.exists(tracksFile):			
 			self.tracksFile = tracksFile
 			self.reader = lib.ParticleReader.ParticleReader(tracksFile, 0)
 		else:
-			self.reader = None
+			self.tracksFile = os.path.join(os.path.join(os.path.dirname(bgDataUnit.getFileName()),bgDataUnit.getName()),"statistics.csv")
+			self.reader = lib.ParticleReader.ParticleReader(self.tracksFile, 0)
 			
 		fgImage = self.getInput(2)
 		

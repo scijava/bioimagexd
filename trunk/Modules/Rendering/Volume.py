@@ -3,7 +3,6 @@
 """
  Unit: Volume
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A module containing the volume rendering module for the visualization

@@ -4,7 +4,6 @@
 """
  Unit: VideoGeneration
  Project: BioImageXD
- Created: 10.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -374,6 +373,7 @@ class VideoGeneration(wx.Panel):
 		self.rendering = 0
 		self.abort = 0
 		self.parent = parent
+
 		if self.control:
 			size = self.control.getFrameSize()
 			self.encoder.setSize(*size)
@@ -406,17 +406,17 @@ class VideoGeneration(wx.Panel):
 		self.encoder.setCodec(self.outputFormat.GetStringSelection())
 		self.defformat = (sel, self.outputFormat.GetSelection())
 		self.buttonBox = wx.BoxSizer(wx.HORIZONTAL)
-		self.okButton = wx.Button(self, -1, "Ok")
+		self.okButton = wx.Button(self, -1, "Create animation")
 		self.cancelButton = wx.Button(self, -1, "Cancel")
 
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOkButton)
 		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancelButton)
 		
 
-		if not filename:
-			self.loadButton = wx.Button(self,-1,"Load project")
-			self.loadButton.Bind(wx.EVT_BUTTON, self.onLoadProject)	
-			self.buttonBox.Add(self.loadButton)
+		#if not filename:
+			#self.loadButton = wx.Button(self,-1,"Load project")
+			#self.loadButton.Bind(wx.EVT_BUTTON, self.onLoadProject)	
+			#self.buttonBox.Add(self.loadButton)
 		
 		self.buttonBox.Add(self.okButton)
 		self.buttonBox.Add(self.cancelButton)
@@ -788,7 +788,12 @@ class VideoGeneration(wx.Panel):
 		self.renderingsizer.Add(self.videofile, (4, 0), flag = wx.EXPAND | wx.ALL)
 		self.renderingsizer.Add(self.videofileBtn, (4, 1), flag = wx.EXPAND | wx.ALL)
 		self.mainsizer.Add(self.renderingsizer, (1, 0), flag = wx.EXPAND | wx.ALL)
-		
+
+		self.guidance = wx.StaticText(self, -1, "When you click \"Create animation\", every frame is rendered using the 3D mode, and after that the (optional) video file is created. This process may take a long time, and you should not touch the computer during this time. A message will appear when the process is complete. Note that you can save and open animation projects from the \"Animation\" menu.")
+		self.guidance.Wrap(350)
+		self.guideSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.guideSizer.Add(self.guidance)
+		self.mainsizer.Add(self.guideSizer, (3,0), flag = wx.EXPAND | wx.ALL)
 		
 	def disableFrameDeletion(self):
 		"""
