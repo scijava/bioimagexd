@@ -3,7 +3,6 @@
 """
  Unit: FilterEditor
  Project: BioImageXD
- Created: 12.11.2007, KP
  Description:
 
  A common filter editor GUI component and model for use all around the software
@@ -160,9 +159,15 @@ class FilterEditor(wx.Panel):
 			self.onShowAddMenu(evt, btn, cats)
 		self.addAnalyzeBtn.Bind(wx.EVT_LEFT_DOWN, f)
 
-		f = lambda evt, btn = self.addMiscBtn, \
-			cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
-			self.onShowAddMenu(evt, btn, cats)
+		if not scripting.TFLAG:
+			f = lambda evt, btn = self.addMiscBtn, \
+				cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+				self.onShowAddMenu(evt, btn, cats)
+		else:
+			f = lambda evt, btn = self.addMiscBtn, \
+				cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+				self.onShowAddMenu(evt, btn, cats)
+			
 		self.addMiscBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
 		#f = lambda evt, btn = self.addTrackingBtn, cats = (lib.FilterTypes.TRACKING, ): \

@@ -44,8 +44,6 @@ import scripting
 import vtk
 import wx
 
-INCLUDE3D = 0
-
 class AnnotationToolbar(wx.Window):
 	"""
 	A class representing the vertical annotation toolbar of the visualizer
@@ -71,7 +69,7 @@ class AnnotationToolbar(wx.Window):
 	def updateInterpolationGUI(self, *args):
 		"""
 		"""
-		if self.visualizer.dataUnit and INCLUDE3D:
+		if self.visualizer.dataUnit and not scripting.TFLag:
 			self.interpolationStart.SetRange(1, self.visualizer.dataUnit.getDimensions()[2])
 			self.interpolationEnd.SetRange(1, self.visualizer.dataUnit.getDimensions()[2])
 
@@ -229,7 +227,7 @@ class AnnotationToolbar(wx.Window):
 		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (32, 32))
 		self.sizer.Add(self.colorSelect, (2, 1))
 
-		if INCLUDE3D:
+		if not scripting.TFLag:
 			self.threeDPolygonBtn = createBtn(MenuManager.ID_ROI_THREE_D_POLYGON, "three_d_polygon.png", "Select one or several polygonal areas of the image in different slices to perform a 3D crop")
 			self.sizer.Add(self.threeDPolygonBtn, (3, 0))
 
@@ -320,7 +318,7 @@ class AnnotationToolbar(wx.Window):
 		self.rectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.polygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 		self.scaleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
-		if INCLUDE3D:
+		if not scripting.TFLag:
 			self.threeDPolygonBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 			self.threeDCircleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
 			self.threeDRectangleBtn.Bind(wx.EVT_BUTTON, self.addAnnotation)
@@ -462,7 +460,7 @@ class AnnotationToolbar(wx.Window):
 		self.circleBtn.SetToggle(False)
 		self.rectangleBtn.SetToggle(False)
 		self.polygonBtn.SetToggle(False)
-		if INCLUDE3D:
+		if not scripting.TFLag:
 			self.threeDPolygonBtn.SetToggle(False)
 			self.threeDCircleBtn.SetToggle(False)
 			self.threeDRectangleBtn.SetToggle(False)

@@ -3,7 +3,6 @@
 """
  Unit: PainterHelpers
  Project: BioImageXD
- Created: 24.03.2005, KP
  Description:
 
  A module containing painter helper classes that work together with Interactive Panel
@@ -46,7 +45,6 @@ def registerHelpers(interactivePanel):
 
 class PainterHelper:
 	"""
-	Created: 06.10.2006, KP
 	Description: A base class for adding behaviour to the painting of the previews
 				 in a standard way, that can be used for example to implement different
 				 kinds of highlighting, annotations etc.
@@ -88,7 +86,6 @@ class VisualizeTracksHelper(PainterHelper):
 			return
 		self.selectedTracks = tracks
 		
-				
 	def paintOnDC(self, dc):			   
 		"""
 		Paint the selected tracks to the DC
@@ -157,23 +154,20 @@ class CenterOfMassHelper(PainterHelper):
 		Initialize the helper
 		"""
 		PainterHelper.__init__(self, parent)
-		self.centerOfMass = None
+		self.centerOfMass = []
 		lib.messenger.connect(None, "show_centerofmass", self.onShowCenterOfMass)
 		
-	def onShowCenterOfMass(self, obj, evt, label, centerofmass):
+	def onShowCenterOfMass(self, obj, evt, centerofmasses):
 		"""
 		Show the given center of mass
-		"""			   
-		self.centerOfMass = (label, centerofmass)
-		
+		"""
+		self.centerOfMass = centerofmasses
 		
 	def paintOnDC(self, dc):
 		"""
 		Paint the contents
 		"""
-		if self.centerOfMass:
-			label, (x, y, z) = self.centerOfMass
-			
+		for label,(x,y,z) in self.centerOfMass:
 			x *= self.parent.zoomFactor
 			y *= self.parent.zoomFactor
 			x += self.parent.xoffset
@@ -186,7 +180,7 @@ class CenterOfMassHelper(PainterHelper):
 			dc.DrawCircle(x, y, 10)
 			dc.SetTextForeground((255, 255, 255))
 			dc.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD))
-			dc.DrawText("%d" % label, x - 5, y - 5)	   
+			dc.DrawText("%d" % (label+1), x - 5, y - 5)	   
 	
 class AnnotationHelper(PainterHelper):
 	"""

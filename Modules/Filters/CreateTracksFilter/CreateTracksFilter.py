@@ -51,6 +51,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""     
 	name = "Create motion tracks"
 	category = lib.FilterTypes.TRACKING
+	level = scripting.COLOR_EXPERIENCED
 	
 	def __init__(self):
 		"""
@@ -80,7 +81,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			"MaxIntensityChange": "Max. change of average intensity (% of old intensity)",
 			"MinLength": "Min. length of track (# of timepoints)",
 			"MinSize": "Min. size of tracked objects",
-			"TrackFile": "Object statistics file:",
+			"TrackFile": "Objects file:",
 			"SizeWeight": "Weight (0-100%):", "DirectionWeight": "Weight (0-100%):",
 			"IntensityWeight": "Weight (0-100%):",
 			"VelocityWeight": "Weight (0-100%):",
@@ -93,7 +94,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.numberOfPoints = None
 		self.selectedTimepoint = 0
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
-		
+		self.filterDesc = "Create motion tracks of labeled time series image data\nInput: Object statistics file\nOutput: Track file"
 
 	def onRemove(self):
 		"""
@@ -187,16 +188,22 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the list of parameters needed for configuring this GUI
 		"""            
 		return [
-		["Change between consecutive objects",
-		("MaxVelocity", "MinVelocity","VelocityWeight","VelocityDeviation",
+				["Read objects", (("TrackFile", "Select file with object statistics to load", "*.csv"),)],
+				["Seed objects", ("UseROI", "ROI")],
+				["Settings", ("MaxVelocity", "MinVelocity","VelocityWeight","VelocityDeviation",
 		"MaxSizeChange", "SizeWeight",
 		"MaxIntensityChange", "IntensityWeight",
-		"MaxDirectionChange", "DirectionWeight")],
-		["Region of Interest", ("UseROI", "ROI")],
-		["Tracking", ("MinLength", "MinSize")],
-		["Load object info", (("TrackFile", "Select file with object statistics to load", "*.csv"), )],
-		["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
+		"MaxDirectionChange", "DirectionWeight", "MinLength", "MinSize")],
+		["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )]
 		]
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return parameter level
+		"""
+		if parameter in ["MinLength", "MinSize", "ResultsFile", "TrackFile"]:
+			return scripting.COLOR_BEGINNER
+		return scripting.COLOR_EXPERIENCED
 		
 	def getLongDesc(self, parameter):
 		"""
@@ -308,41 +315,49 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.trackGrid = TrackingFilterGUI.TrackTableGrid(self.gui, self.dataUnit, self)
 			self.reportGUI = self.watershedStats.WatershedObjectList(self.gui, -1, (350, 100))
 			sizer = wx.BoxSizer(wx.VERTICAL)
-			sizer.Add(self.trackGrid, 1)
-						
+			sizer.Add(self.trackGrid)
+
 			box = wx.BoxSizer(wx.HORIZONTAL)
-			
+			readbox = wx.BoxSizer(wx.HORIZONTAL)
 			self.readBtn = wx.Button(self.gui, -1, "Read objects")
-			self.readTracksBtn = wx.Button(self.gui, -1, "Read tracks")
-			self.newTrackBtn = wx.Button(self.gui, -1, "New track")
-			self.calcTrackBtn = wx.Button(self.gui, -1, "Calculate tracks")
-			box.Add(self.readBtn)
-			box.Add(self.readTracksBtn)
-			box.Add(self.newTrackBtn)
+#			self.readTracksBtn = wx.Button(self.gui, -1, "Read tracks")
+#			self.newTrackBtn = wx.Button(self.gui, -1, "New track")
+			self.calcTrackBtn = wx.Button(self.gui, -1, "Calculate tracks and export result")
+			readbox.Add(self.readBtn)
+#			box.Add(self.readTracksBtn)
+#			box.Add(self.newTrackBtn)
 			box.Add(self.calcTrackBtn)
 			
 			#self.newTrackBtn.Enable(0)
 			self.calcTrackBtn.Enable(0)
 			
-			self.readTracksBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
+			#self.readTracksBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
 			self.readBtn.Bind(wx.EVT_BUTTON, self.onReadObjects)
-			self.newTrackBtn.Bind(wx.EVT_BUTTON, self.trackGrid.onNewTrack)
+#			self.newTrackBtn.Bind(wx.EVT_BUTTON, self.trackGrid.onNewTrack)
 			self.calcTrackBtn.Bind(wx.EVT_BUTTON, self.onDoTracking)
 			
 			sizer.Add(box)
 			
-			self.toggleBtn = wx.ToggleButton(self.gui, -1, "Show seed objects>>")
-			self.toggleBtn.SetValue(0)
-			self.toggleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onShowObjectList)
-			sizer.Add(self.toggleBtn)            
-			sizer.Add(self.reportGUI, 1)
-			sizer.Show(self.reportGUI, 0)
+#			self.toggleBtn = wx.ToggleButton(self.gui, -1, "Show seed objects>>")
+#			self.toggleBtn.SetValue(0)
+#			self.toggleBtn.Bind(wx.EVT_TOGGLEBUTTON, self.onShowObjectList)
+#			sizer.Add(self.toggleBtn)            
+#			sizer.Add(self.reportGUI, 1)
+#			sizer.Show(self.reportGUI, 0)
 			
 			self.guisizer = sizer
-			self.useSelectedBtn = wx.Button(self.gui, -1, "Use selected as seeds")
-			self.useSelectedBtn.Bind(wx.EVT_BUTTON, self.onUseSelectedSeeds)
-			sizer.Add(self.useSelectedBtn)
-			
+			#self.useSelectedBtn = wx.Button(self.gui, -1, "Use selected as seeds")
+			#self.useSelectedBtn.Bind(wx.EVT_BUTTON, self.onUseSelectedSeeds)
+			#sizer.Add(self.useSelectedBtn)
+
+			seedBox = wx.BoxSizer(wx.HORIZONTAL)
+			self.selectAllBtn = wx.Button(self.gui, -1, "Select all")
+			self.deselectAllBtn = wx.Button(self.gui, -1, "Deselect all")
+			self.selectAllBtn.Bind(wx.EVT_BUTTON, self.onSelectAll)
+			self.deselectAllBtn.Bind(wx.EVT_BUTTON, self.onDeselectAll)
+			seedBox.Add(self.selectAllBtn, 0)
+			seedBox.Add(self.deselectAllBtn, 1)
+
 			pos = (0, 0)
 			item = gui.sizer.FindItemAtPosition(pos)
 			if item.IsWindow():
@@ -351,10 +366,19 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 				win = item.GetSizer()
 			elif item.IsSpacer():
 				win = item.GetSpacer()
+
+			readSizer = win.GetItem(0).GetSizer().FindItemAtPosition((2,0)).GetSizer()
+			readSizer.Add(readbox)
+			seedSizer = win.GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
+			seedSizer.Prepend(self.reportGUI)
+			seedSizer.Prepend(seedBox)
+			trackSizer = win.GetItem(0).GetSizer().FindItemAtPosition((5,0)).GetSizer()
+			trackSizer.Prepend(sizer)
+			trackSizer.Add(box)
 			
-			gui.sizer.Detach(win)            
-			gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-			gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
+			#gui.sizer.Detach(win)
+			#gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
+			#gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
 			self.gui = gui
 			
 		if self.delayReading:
@@ -504,7 +528,19 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.reportGUI.setAverageDistances(avgdists,avgdiststderr)
 		
 		self.calcTrackBtn.Enable(1)
-		
+
+	def onSelectAll(self, evt):
+		"""
+		Select all button event handler
+		"""
+		pass
+
+	def onDeselectAll(self, evt):
+		"""
+		Deselect all button event handler
+		"""
+		pass
+	
 	def updateObjects(self):
 		"""
 		update the objects list
@@ -530,6 +566,12 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		image.Update()
 		intensity = int(image.GetScalarComponentAsDouble(x, y, z, 0))
 		return intensity
+
+	def canSelectChannels(self):
+		"""
+		Don't add channel selection list
+		"""
+		return 0
 		
 	def onDoTracking(self, event):
 		"""

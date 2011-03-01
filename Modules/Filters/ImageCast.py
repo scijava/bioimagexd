@@ -54,7 +54,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Casting the image to datatype"
-		self.descs = {"ClampOverflow":"Clamp overflow","Float":"Float", "Double":"Double",
+		self.descs = {"ClampOverflow": "Prevent over/underflow","Float":"Float", "Double":"Double",
 		"Int":"Int","UnsignedInt":"Unsigned int", "Long":"Long", "UnsignedLong":"Unsigned long",
 		"Short":"Short","UnsignedShort":"Unsigned short","UnsignedChar":"Unsigned char","Char":"Char"}
 		self.filterDesc = "Converts input data type to another data type\nInput: Grayscale/Binary/Label image\nOutput: Grayscale/Binary/Label image"

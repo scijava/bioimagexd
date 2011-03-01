@@ -49,7 +49,7 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""        
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.descs = {"ClampOverflow": "Clamp overflow"}
+		self.descs = {"ClampOverflow": "Prevent over/underflow"}
 		self.vtkfilter = vtkbxd.vtkImageMathematicsClamp()
 	
 	def getParameters(self):

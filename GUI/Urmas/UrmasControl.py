@@ -4,7 +4,6 @@
 """
  Unit: UrmasControl
  Project: BioImageXD
- Created: 22.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -49,7 +48,6 @@ import UrmasRenderer
 
 class UrmasControl:
 	"""
-	Created: 22.02.2005, KP
 	Description: A class that controls Urmas
 	"""
 	def __init__(self, window, visualizer):
@@ -152,7 +150,6 @@ class UrmasControl:
 		
 	def getSecondsPerFrame(self):
 		"""
-		Creted: 09.10.2006, KP
 		Return the seconds per frame
 		"""
 		return float(self.duration) / self.frames

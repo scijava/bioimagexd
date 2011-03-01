@@ -3,7 +3,6 @@
 """
  Unit: GUIBuilder
  Project: BioImageXD
- Created: 15.04.2006, KP
  Description:
 
  A module containing the classes for building a GUI for all the manipulation filters
@@ -80,7 +79,7 @@ class GUIBuilder(wx.Panel):
 		self.histograms = []
 		self.currentBackground = None
 		self.currentBackgroundSizer = None
-		self.items = {}		
+		self.items = {}
 		self.buildGUI(myfilter)
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
@@ -621,6 +620,7 @@ class GUIBuilder(wx.Panel):
 		funcs = []
 
 		for i in item:
+			level = currentFilter.getParameterLevel(i)
 			filterDescription = currentFilter.getDesc(i)
 			itemToDesc[i] = filterDescription
 			choices.append(filterDescription)

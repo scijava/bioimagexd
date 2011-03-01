@@ -92,6 +92,12 @@ class ConcatenateSeriesFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""		
 		return True
 
+	def canSelectChannels(self):
+		"""
+		Don't allow channel selection
+		"""
+		return 0
+
 	def calculateMaximumDimensions(self):
 		"""
 		Calculate the maximum dimensions of the output dataset
