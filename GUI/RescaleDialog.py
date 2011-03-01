@@ -3,7 +3,6 @@
 """
  Unit: RescaleDialog
  Project: BioImageXD
- Created: 13.02.2006, KP
  Description:
 
  A dialog for controlling the rescaling that occurs for 12-bit datasets.
@@ -38,7 +37,6 @@ import lib.messenger
 
 class RescaleDialog(wx.Dialog):
 	"""
-	Created: 11.04.2006, KP
 	Description: A dialog for rescaling a dataset to 8-bit
 	"""
 	def __init__(self, parent):
@@ -48,7 +46,7 @@ class RescaleDialog(wx.Dialog):
 		wx.Dialog.__init__(self, parent, -1, 'Select mapping to 8-bit values', size = (640, 480))
 		
 		self.sizer = wx.GridBagSizer()
-		self.btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+		self.btnsizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.histograms = []
 		self.dataUnits = []
 		self.resampleDims = []
@@ -57,7 +55,7 @@ class RescaleDialog(wx.Dialog):
 		self.taskPanels = Modules.DynamicLoader.getTaskModules()
 		self.createRescale()
 		self.lbl = wx.StaticText(self, -1,
-"""BioImageXD recommends 8-bit images (intensity values between 0 and 255) for most purposes. This tool converts other bit depths to 8-bit. Use the histograms below to select how the intensities in your dataset are mapped to the range 0-255, then click "Convert". Click "Convert without mapping" to directly use only the values 0-255 in your original dataset for the resulting dataset.
+"""BioImageXD recommends 8-bit images (intensity values between 0 and 255) for most purposes. This tool converts other bit depths to 8-bit.\nUse the histograms below to select how the intensities in your dataset are mapped to the range 0-255, then click "Convert".\nClick "Convert without mapping" to directly use only the values 0-255 in your original dataset for the resulting dataset.
 """)
 		lblbox = wx.BoxSizer(wx.VERTICAL)
 		
@@ -68,12 +66,17 @@ class RescaleDialog(wx.Dialog):
 		lblbox.Add(self.lbl)
 		self.sizer.Add(lblbox, (1, 0), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
 		self.sizer.Add(self.btnsizer, (3, 0), flag = wx.EXPAND | wx.RIGHT | wx.LEFT)
-		wx.EVT_BUTTON(self, wx.ID_OK, self.onOkButton)
-		wx.EVT_BUTTON(self, wx.ID_CANCEL, self.onCancelButton)
-		
-		self.noScalingButton = wx.Button(self, -1, "No mapping")
+
+		self.okButton = wx.Button(self, -1, "Convert")
+		self.noScalingButton = wx.Button(self, -1, "Convert without mapping")
+		self.cancelButton = wx.Button(self, -1, "Cancel")
+		self.okButton.Bind(wx.EVT_BUTTON, self.onOkButton)
 		self.noScalingButton.Bind(wx.EVT_BUTTON, self.onNoScaling)
+		self.cancelButton.Bind(wx.EVT_BUTTON, self.onCancelButton)
+		
+		self.btnsizer.Add(self.okButton)
 		self.btnsizer.Add(self.noScalingButton)
+		self.btnsizer.Add(self.cancelButton)
 		self.result = 0
 		
 		self.SetSizer(self.sizer)

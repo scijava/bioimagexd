@@ -3,7 +3,6 @@
 """
  Unit: MenuManager
  Project: BioImageXD
- Created: 29.05.2005, KP
  Description:
 
  A module for managing the menus
@@ -226,7 +225,6 @@ ID_ROI_THREE_D_RECTANGLE    = 31257
 
 class MenuManager:
 	"""
-	Created: 29.05.2005, KP
 	Description: A class for managing the menu
 	"""
 	instance = None

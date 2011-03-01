@@ -894,18 +894,19 @@ class MainWindow(wx.Frame):
 
 
 		##### Edit menu #####
-		mgr.addMenuItem("edit", MenuManager.ID_UNDO, "&Undo*\tCtrl-Z", self.onMenuUndo)
-		mgr.addMenuItem("edit", MenuManager.ID_REDO, "&Redo*\tShift-Ctrl-Z", self.onMenuRedo)
-		mgr.addMenuItem("edit", MenuManager.ID_COMMAND_HISTORY, "Command history*", self.onShowCommandHistory)
-		mgr.addSeparator("edit")
-		mgr.disable(MenuManager.ID_REDO)
+		if not scripting.TFLag:
+			mgr.addMenuItem("edit", MenuManager.ID_UNDO, "&Undo*\tCtrl-Z", self.onMenuUndo)
+			mgr.addMenuItem("edit", MenuManager.ID_REDO, "&Redo*\tShift-Ctrl-Z", self.onMenuRedo)
+			mgr.addMenuItem("edit", MenuManager.ID_COMMAND_HISTORY, "Command history*", self.onShowCommandHistory)
+			mgr.addSeparator("edit")
+			mgr.disable(MenuManager.ID_REDO)
 
 		if platform.system() == "Darwin":
 			keyCombo = "\tCtrl-, "
 		else:
 			keyCombo = "\tCtrl-P"
 		mgr.addMenuItem("edit", wx.ID_PREFERENCES, "&Preferences" + keyCombo, self.onMenuPreferences)
-		mgr.addMenuItem("edit", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor*", "Show the script editor", self.onMenuShowScriptEditor)
+		#mgr.addMenuItem("edit", MenuManager.ID_VIEW_SCRIPTEDIT, "Script &editor*", "Show the script editor", self.onMenuShowScriptEditor)
 		mgr.addSeparator("edit")
 
 		mgr.addMenuItem("edit", MenuManager.ID_IMMEDIATE_RENDER, "&Immediate view panel updating", \
@@ -995,11 +996,12 @@ class MainWindow(wx.Frame):
 				continue
 			mgr.addMenuItem("visualization", vid, "&" + sdesc, desc, check = 1, checked = 0)
 
-		mgr.addSeparator("visualization")
-		mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...*\tCtrl-L", "Configure lighting")
+		if not scripting.TFLag:
+			mgr.addSeparator("visualization")
+			mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...*\tCtrl-L", "Configure lighting")
 		#mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
 		
-		mgr.disable(MenuManager.ID_LIGHTS)
+			mgr.disable(MenuManager.ID_LIGHTS)
 		#mgr.disable(MenuManager.ID_RENDERWIN)
 
 
