@@ -313,7 +313,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		
 		if not self.trackGrid:
 			self.trackGrid = TrackingFilterGUI.TrackTableGrid(self.gui, self.dataUnit, self)
-			self.reportGUI = self.watershedStats.WatershedObjectList(self.gui, -1, (350, 100))
+			self.reportGUI = self.watershedStats.WatershedObjectList(self.gui, -1, (350, 200))
 			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.trackGrid)
 

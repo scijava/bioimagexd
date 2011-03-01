@@ -62,7 +62,11 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.fileUpdated = 0
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 
-		self.descs = {"MinLength":"Minimum length of tracks:","ResultsFile": "Tracking results file:", "AnalyseFile": "Analyse results file:", "CalculateFrontRear": "Calculate front and rear results", "InputImage": "Input image"}
+		self.descs = {"MinLength":"Minimum length of tracks:",
+					  "ResultsFile": "Tracks file:",
+					  "AnalyseFile": "Analyse results file:",
+					  "CalculateFrontRear": "Calculate front and rear results",
+					  "InputImage": "Objects file (for front and rear results):"}
 		self.numberOfPoints = None
 		self.particleFile = ""
 
@@ -88,11 +92,9 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Tracking Results", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
-				["Results of the analyse", (("AnalyseFile", "Select the file to export analyse results", "*.csv"), )],
-				["Segmentation results (front and rear calculations)", (("InputImage", "Select the dataset of segmentation results", "*.bxc"), )],
-				["Track parameters", ("MinLength", )],
-				["Analyses", ("CalculateFrontRear",)]]
+		return [["Read tracks", (("ResultsFile", "Select track file that contains the results", "*.csv"), )],
+				["Analyse tracks", ("MinLength", "CalculateFrontRear", ("InputImage", "Select the dataset of segmentation results", "*.bxc"))],
+				["Analysis result", (("AnalyseFile", "Select the file to export analyse results", "*.csv"), )]]
 
 	def getLongDesc(self, parameter):
 		"""
@@ -153,11 +155,23 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			sizer.Add(self.exportBtn)
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 
+			pos = (0, 0)
+			item = gui.sizer.FindItemAtPosition(pos)
+			if item.IsWindow():
+				win = item.GetWindow()
+			elif item.IsSizer():
+				win = item.GetSizer()
+			elif item.IsSpacer():
+				win = item.GetSpacer()
+
+			#readSizer = win.GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
+
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
 			if filename and os.path.exists(filename):
 				self.setParameter("ResultsFile", filename)
 				self.onReadTracks(event = None)
+		
 		return gui
 
 	def execute(self, inputs, update = 0, last = 0):

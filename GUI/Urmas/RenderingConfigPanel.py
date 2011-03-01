@@ -41,6 +41,7 @@ import lib.messenger
 from wx.lib.masked import TimeCtrl
 import types
 import wx
+import scripting
 
 #class RenderingConfigPanel(wx.Panel):
 class RenderingConfigPanel:
@@ -76,6 +77,7 @@ class RenderingConfigPanel:
 		self.duration.Bind(wx.EVT_TEXT, self.updateDuration)
 
 		self.followAspect = wx.CheckBox(self.parent, -1, "Don't resize preview, only use aspect ratio.")
+		self.followAspect.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		toolTip = wx.ToolTip("""If this box is checked, the rendering preview window
 will always be sized so that it fits into the screen and
 uses the aspect ratio of the final rendered frame. If 
