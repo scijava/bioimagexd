@@ -159,7 +159,7 @@ class FilterEditor(wx.Panel):
 			self.onShowAddMenu(evt, btn, cats)
 		self.addAnalyzeBtn.Bind(wx.EVT_LEFT_DOWN, f)
 
-		if not scripting.TFLAG:
+		if not scripting.TFLag:
 			f = lambda evt, btn = self.addMiscBtn, \
 				cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
 				self.onShowAddMenu(evt, btn, cats)
