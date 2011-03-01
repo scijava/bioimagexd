@@ -2,7 +2,6 @@
 """
  Unit: TaskPanel
  Project: BioImageXD
- Created: 23.11.2004, KP
  Description:
 
  A panel that is a base class for all the task panels that are 
@@ -50,7 +49,6 @@ TOOL_H = 50
 
 class TaskPanel(ScrolledPanel):
 	"""
-	Created: 23.11.2004, KP
 	Description: A baseclass for a panel for controlling the settings of the 
 				 various task modules
 	"""

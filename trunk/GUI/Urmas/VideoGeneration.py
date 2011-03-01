@@ -687,11 +687,12 @@ class VideoGeneration(wx.Panel):
 		self.outputstaticbox = wx.StaticBoxSizer(box, wx.HORIZONTAL)
 		self.outputstaticbox.Add(self.outputsizer)
 
-		self.formatLabel = wx.StaticText(self, -1, "Output format")
+		self.formatLabel = wx.StaticText(self, -1, "Output format:")
+		self.formatLabel.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.formatMenu = wx.Choice(self, -1, choices = ["Images", "Video"])
 		self.formatMenu.SetSelection(1)
 		self.formatMenu.Bind(wx.EVT_CHOICE, self.onUpdateFormat)
-		
+		self.formatMenu.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		
 		self.totalFramesLabel = wx.StaticText(self, -1, "Frames:")
 		self.durationLabel = wx.StaticText(self, -1, "Duration:")
@@ -702,9 +703,11 @@ class VideoGeneration(wx.Panel):
 		self.duration = wx.StaticText(self, -1, t, size = (100, -1))
 
 		self.outputFormatLbl = wx.StaticText(self, -1, "Video codec:")
+		self.outputFormatLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.outputFormat = wx.Choice(self, -1, choices = self.outputFormats[1])
 		self.outputFormat.Bind(wx.EVT_CHOICE, self.onUpdateCodec)
 		self.outputFormat.SetSelection(2)
+		self.outputFormat.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		
 		self.frameSizeLbl = wx.StaticText(self, -1, "Frame size:")
 		self.frameSize = wx.StaticText(self, -1, "%d x %d" % self.encoder.getSize())
@@ -713,8 +716,10 @@ class VideoGeneration(wx.Panel):
 		self.frameRate = wx.StaticText(self, -1, "%.2f" % self.encoder.getFPS())
 		
 		self.qualityLbl = wx.StaticText(self, -1, "Encoding quality (1 = worst, 10 = best)")
+		self.qualityLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.qualitySlider = wx.Slider(self, -1, value = 10, minValue = 1, maxValue = 10, \
 										style = wx.SL_HORIZONTAL | wx.SL_LABELS | wx.SL_AUTOTICKS, size = (250, -1))
+		self.qualitySlider.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		
 		self.presetLbl = wx.StaticText(self, -1, "Presets:")
 		self.preset = wx.Choice(self, -1, choices = ["Use settings below", "PAL-DVD", "NTSC-DVD"])

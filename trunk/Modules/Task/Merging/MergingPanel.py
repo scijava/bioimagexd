@@ -3,7 +3,6 @@
 """
  Unit: MergingPanel
  Project: BioImageXD
- Created: 10.11.2004, JV
  Description:
 
  A wxPython Dialog window that is used to control the settings for the
@@ -39,10 +38,10 @@ from GUI import TaskPanel
 from GUI import ColorTransferEditor
 import vtkbxd
 import wx
+import scripting
 
 class MergingPanel(TaskPanel.TaskPanel):
 	"""
-	Created: 10.11.2004, JV
 	Description: A window for controlling the settings of the color
 				 combination module
 	"""
@@ -107,12 +106,14 @@ class MergingPanel(TaskPanel.TaskPanel):
 		choices = ["Maximum Mode", "Average Mode", "Image Luminance"], \
 					majorDimension = 2, style = wx.RA_SPECIFY_COLS)
 		
-		
+		self.alphaModeBox.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.alphaModeBox.Bind(wx.EVT_RADIOBOX, self.modeSelect)
 		
 		self.averageLbl = wx.StaticText(self.editAlphaPanel, -1, "Average Threshold:")
+		self.averageLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.averageEdit = wx.TextCtrl(self.editAlphaPanel, -1, "", size = (150, -1))
 		self.averageEdit.Enable(0)
+		self.averageEdit.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		box.Add(self.averageLbl)

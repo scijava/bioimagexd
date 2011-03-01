@@ -3,7 +3,6 @@
 """
  Unit: AdjustPanel
  Project: BioImageXD
- Created: 24.11.2004, KP
  Description:
 
  A configuration panel for module that is used to process a single dataset series in 
@@ -42,7 +41,6 @@ import vtkbxd
 
 class AdjustPanel(TaskPanel):
 	"""
-	Created: 03.11.2004, KP
 	Description: A window for processing a single dataunit
 	"""
 	def __init__(self, parent, tb):

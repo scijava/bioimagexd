@@ -2,7 +2,6 @@
 """
  Unit: IntensityTransferEditor
  Project: BioImageXD
- Created: 30.10.2004, KP
  Description:
 
  A widget used to view and modify an intensity transfer function. The widget
@@ -36,10 +35,10 @@ import Logging
 import RangedSlider
 import vtkbxd
 import wx
+import scripting
 
 class PaintPanel(wx.Panel):
 	"""
-	Created: 10.01.2005, KP
 	Description: A widget onto which the transfer function is painted
 	"""
 	def __init__(self, parent):
@@ -237,6 +236,7 @@ class IntensityTransferEditor(wx.Panel):
 
 		self.brightnessEdit = wx.TextCtrl(self, -1, "0.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
 		self.gammaEdit = wx.TextCtrl(self, -1, "1.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
+		self.gammaEdit.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 
 		self.brightnessSlider = RangedSlider.RangedSlider(self, -1, 5000, size = (260, -1), style = wx.SL_HORIZONTAL)
 		self.brightnessSlider.setRange(0, 100, -255, 255)
@@ -258,10 +258,14 @@ class IntensityTransferEditor(wx.Panel):
 		self.brightnessBox.Add(self.brightnessEdit, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
 		self.minValueLbl = wx.StaticText(self, wx.NewId(), "Min value:")
+		self.minValueLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.maxValueLbl = wx.StaticText(self, wx.NewId(), "Max value:")
+		self.maxValueLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 
 		self.minValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.minValue.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.maxValue = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.maxValue.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 
 		fieldsizer = wx.GridBagSizer(0, 5)
 		valuesizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -272,10 +276,14 @@ class IntensityTransferEditor(wx.Panel):
 		fieldsizer.Add(self.maxValue, (0, 3))
 		
 		self.minthresholdLbl = wx.StaticText(self, wx.NewId(), "Min threshold:")
+		self.minthresholdLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.maxthresholdLbl = wx.StaticText(self, wx.NewId(), "Max threshold:")
+		self.maxthresholdLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 
 		self.minthreshold = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.minthreshold.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.maxthreshold = wx.TextCtrl(self, -1, style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.maxthreshold.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 
 		fieldsizer.Add(self.minthresholdLbl, (1, 0))
 		fieldsizer.Add(self.minthreshold, (1, 1))
@@ -291,14 +299,18 @@ class IntensityTransferEditor(wx.Panel):
 		
 		
 		self.ssThresholdLbl = wx.StaticText(self, -1, "Smooth start:")
+		self.ssThresholdLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.ssThreshold = wx.TextCtrl(self, -1, "0", style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.ssThreshold.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		
 		self.ssgammaEdit = wx.TextCtrl(self, -1, "1.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
+		self.ssgammaEdit.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.ssgammaSlider = RangedSlider.RangedSlider(self, -1, 10000, size = (150, -1), style = wx.SL_HORIZONTAL)
 		self.ssgammaSlider.setRange(0, 50, 0.0001, 1.0)
 		self.ssgammaSlider.setRange(50.01, 100, 1.0, 15.0)
 		self.ssgammaSlider.setScaledValue(1.0)
 		self.ssgammaSlider.setSnapPoint(1.0, 0.1)
+		self.ssgammaSlider.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.Bind(wx.EVT_COMMAND_SCROLL, self.setSSGamma, self.ssgammaSlider)
 		
 		fieldsizer.Add(self.ssThresholdLbl, (2, 0))
@@ -307,13 +319,17 @@ class IntensityTransferEditor(wx.Panel):
 		fieldsizer.Add(self.ssgammaEdit, (2, 3))
 
 		self.seThresholdLbl = wx.StaticText(self, -1, "Smooth end:")
+		self.seThresholdLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.seThreshold = wx.TextCtrl(self, -1, "255", style = wx.TE_PROCESS_ENTER, size=(70,-1))
+		self.seThreshold.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.segammaEdit = wx.TextCtrl(self, -1, "1.00", size = (70, -1), style = wx.TE_PROCESS_ENTER)
+		self.segammaEdit.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.segammaSlider = RangedSlider.RangedSlider(self, -1, 10000, size = (150, -1), style = wx.SL_HORIZONTAL)
 		self.segammaSlider.setRange(0, 50, 0.0001, 1.0)
 		self.segammaSlider.setRange(50.01, 100, 1.0, 15.0)
 		self.segammaSlider.setScaledValue(1.0)
 		self.segammaSlider.setSnapPoint(1.0, 0.1)
+		self.segammaSlider.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.Bind(wx.EVT_COMMAND_SCROLL, self.setSEGamma, self.segammaSlider)
 
 		self.seThreshold.Bind(wx.EVT_KILL_FOCUS, self.updateSE)
@@ -352,6 +368,7 @@ class IntensityTransferEditor(wx.Panel):
 		self.mainsizer.Add(self.canvasBox)
 
 		self.gammaLbl = wx.StaticText(self, -1, "Gamma")
+		self.gammaLbl.SetForegroundColour(scripting.COLOR_EXPERIENCED)
 		self.brightnessLbl = wx.StaticText(self, -1, "Brightness")
 
 		self.mainsizer.Add(self.brightnessLbl)
