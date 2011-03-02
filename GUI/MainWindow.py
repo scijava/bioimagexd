@@ -396,11 +396,13 @@ class MainWindow(wx.Frame):
 		if not undo:
 			if command.canUndo():
 				undolbl = "Undo: %s...*\tCtrl-Z" % command.getDesc()
-				self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, undolbl)
+				if not scripting.TFLag:
+					self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, undolbl)
 		else:
 			redolbl = "Redo: %s...*\tShift-Ctrl-Z" % command.getCategory()
-			self.menuManager.menus["edit"].SetLabel(MenuManager.ID_REDO, redolbl)
-			self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, "Undo...*\tCtrl-Z")
+			if not scripting.TFLag:
+				self.menuManager.menus["edit"].SetLabel(MenuManager.ID_REDO, redolbl)
+				self.menuManager.menus["edit"].SetLabel(MenuManager.ID_UNDO, "Undo...*\tCtrl-Z")
 		self.menuManager.addCommand(command)
 		
 	def onDeleteDataset(self, obj, evt, arg):

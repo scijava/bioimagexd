@@ -250,7 +250,8 @@ class RenderingMode(VisualizationMode):
 		
 		self.visualizer.tb.EnableTool(GUI.MenuManager.ID_ZOOM_TO_FIT, 0)
 		
-		mgr.enable(GUI.MenuManager.ID_LIGHTS, self.configPanel.onConfigureLights)
+		if not scripting.TFLag:
+			mgr.enable(GUI.MenuManager.ID_LIGHTS, self.configPanel.onConfigureLights)
 		#mgr.enable(GUI.MenuManager.ID_RENDERWIN, self.configPanel.onConfigureRenderwindow)
 		mgr.addMenuItem("file", GUI.MenuManager.ID_LOAD_SCENE, "Open 3D view scene...", \
 						"Open a 3D view scene file", self.configPanel.onOpenScene, \
@@ -376,7 +377,8 @@ class RenderingMode(VisualizationMode):
 		self.container.Show(0)
 		self.configPanel.Show(0)
 		mgr = self.menuManager
-		mgr.disable(GUI.MenuManager.ID_LIGHTS)
+		if not scripting.TFLag:
+			mgr.disable(GUI.MenuManager.ID_LIGHTS)
 		#mgr.disable(GUI.MenuManager.ID_RENDERWIN)
 		
 		self.visualizer.pitch.Unbind(wx.EVT_SPIN_UP)
