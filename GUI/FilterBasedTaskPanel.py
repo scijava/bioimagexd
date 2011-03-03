@@ -3,7 +3,6 @@
 """
  Unit: FilterBasedTaskPanel
  Project: BioImageXD
- Created: 10.04.2005, KP
  Description:
 
  A base class for task panels that is based on using a chain of filters to process the data

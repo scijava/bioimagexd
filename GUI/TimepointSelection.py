@@ -3,7 +3,6 @@
 """
  Unit: TimepointSelection.py
  Project: BioImageXD
- Created: 03.02.2005, KP
  Description:
 
  This is a base widget for all operations that need to let the user select
@@ -42,9 +41,8 @@ import wx
 
 class TimepointSelectionPanel(scrolled.ScrolledPanel):
 	"""
-	Created: 10.2.2005, KP
 	Description: A class containing the basic timepoint selection functionality
-				 in a panel. This is a class separete from TimepointSelection
+				 in a panel. This is a class separate from TimepointSelection
 				 so that this can be also embedded in any other dialog.
 	"""
 	def __init__(self, parent, parentStr = "scripting.processingManager"):
@@ -232,7 +230,6 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 
 class TimepointSelection(wx.Dialog):
 	"""
-	Created: 10.11.2004, KP
 	Description: A base class for creating windows where the user can select        
 				 the timepoints that should be operated upon.
 	"""
@@ -299,7 +296,6 @@ class TimepointSelection(wx.Dialog):
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Process the selected timepoints")
 		cmd.run()        
 
-	
 	def process(self):
 		"""
 		Set the status so that the processing will continue and close the window
@@ -308,7 +304,6 @@ class TimepointSelection(wx.Dialog):
 		scripting.unregisterDialog(self.dialogName)
 		self.Close()
 		
-
 	def cancel(self):
 		"""
 		Set the status so that the processing will cancel and close the window
