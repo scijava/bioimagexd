@@ -357,12 +357,12 @@ class TaskPanel(ScrolledPanel):
 		mgr.setDataUnit(self.dataUnit)
 		self.grayOut()
 
-		if scripting.modal:
+		if scripting.modal and self.dataUnit.getNumberOfTimepoints() > 1:
 			mgr.ShowModal()
 			mgr.Destroy()
 			scripting.processingManager = None
 		else:
-			mgr.Show()
+			mgr.onDoProcessing(None)
 		self.grayOut(1)
 
 	def grayOut(self, enable = 0):

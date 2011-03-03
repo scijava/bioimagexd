@@ -3,7 +3,6 @@
 """
  Unit: ProcessingManager
  Project: BioImageXD
- Created: 2.2.2005, KP
  Description:
  
  This is a dialog used to control the execution of all operations. The dialog
@@ -43,7 +42,6 @@ import lib.Command
 
 class ProcessingManager(TimepointSelection.TimepointSelection):
 	"""
-	Created: 03.11.2004, KP
 	Description: A dialog for selecting timepoints for processing
 	"""
 	def __init__(self, parent, operation):

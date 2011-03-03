@@ -3,7 +3,6 @@
 """
  Unit: ManipulationPanel
  Project: BioImageXD
- Created: 10.04.2005, KP
  Description:
 
  A task that allows the user to process the input data through a chain of different filters.
@@ -93,7 +92,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 					 Preview and Close
 		"""
 		GUI.FilterBasedTaskPanel.FilterBasedTaskPanel.createButtonBox(self)
-				
+		
 		lib.messenger.connect(None, "process_dataset", self.doProcessingCallback)        
 
 	def createOptionsFrame(self):
