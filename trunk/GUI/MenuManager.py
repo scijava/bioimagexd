@@ -290,7 +290,6 @@ class MenuManager:
 		"""
 		return self.undoCmd
 		
-		
 	def setMenuBar(self, menubar):
 		"""
 		Method: setMenuBar
@@ -432,7 +431,7 @@ class MenuManager:
 		self.visualizer.tb.ToggleTool(toolid, flag)
 
 	def addMenuItem(self, menu, menuid, name, hlp = None, callback = None, \
-					before = None, check = 0, checked = 1):
+					before = None, check = 0, checked = 1, color = None):
 		"""
 		Method: addMenuItem
 		Add a menu item
@@ -447,11 +446,12 @@ class MenuManager:
 			method = menu.AppendCheckItem
 		else:
 			method = menu.Append
+
 		if not before:
 			if not hlp:
-				method(menuid, name)            # Find the position where the item belongs
+				menuitem = method(menuid, name) # Find the position where the item belongs
 			else:
-				method(menuid, name, hlp)
+				menuitem = method(menuid, name, hlp)
 		else:
 			if check:
 				method = menu.Insert
@@ -464,11 +464,13 @@ class MenuManager:
 					k = i
 					break
 			if not hlp:
-				menu.Insert(k, menuid, name)
+				menuitem = menu.Insert(k, menuid, name)
 			else:
-				menu.Insert(k, menuid, name, hlp)
-			
-			
+				menuitem = menu.Insert(k, menuid, name, hlp)
+
+		if color is not None:
+			menuitem.SetTextColour(color)
+		
 		if callback:
 			wx.EVT_MENU(self.mainwin, menuid, callback)
 		if check and checked:

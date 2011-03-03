@@ -3,7 +3,6 @@
 """
  Unit: Rendering
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A 3D rendering mode for Visualizer
@@ -250,7 +249,7 @@ class RenderingMode(VisualizationMode):
 		
 		self.visualizer.tb.EnableTool(GUI.MenuManager.ID_ZOOM_TO_FIT, 0)
 		
-		if not scriptin.TFLag:
+		if not scripting.TFLag:
 			mgr.enable(GUI.MenuManager.ID_LIGHTS, self.configPanel.onConfigureLights)
 		#mgr.enable(GUI.MenuManager.ID_RENDERWIN, self.configPanel.onConfigureRenderwindow)
 		mgr.addMenuItem("file", GUI.MenuManager.ID_LOAD_SCENE, "Open 3D view scene...", \

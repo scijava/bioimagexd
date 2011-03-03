@@ -3,7 +3,6 @@
 """
  Unit: VisualizationFrame
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A framework for embedding different visualization modes to BioImageXD
