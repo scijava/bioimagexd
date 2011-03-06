@@ -23,7 +23,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111 - 1307	 USA
 
 """
-__author__ = "BioImageXD Project < http://www.bioimagexd.net/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.net/>"
 __version__ = "$Revision$"
 __date__ = "$Date$"
 
@@ -47,6 +47,7 @@ import types
 import platform
 import lib.ParticleWriter
 import sys
+import lib.Progress
 
 class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -131,8 +132,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 								"ObjAvgSmoothness": "Average smoothness of the objects",
 								"ObjAvgSmoothnessStdErr": "Standard error of average smoothness"
 								}
-		self.filterDesc = "Quantitatively analyzes segmented objects\nInputs: Label image, Grayscale image\nOutput: Results (Label image input for pipeline)";
 		
+		self.filterDesc = "Quantitatively analyzes segmented objects\nInputs: Label image, Grayscale image\nOutput: Results (Label image input for pipeline)";
+		self.progressObj = lib.Progress.Progress()
+
 	def getInputName(self, n):
 		"""
 		Return the name of the input #n
@@ -303,6 +306,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
+		
+		self.progressObj.setProgress(0.0)
+		self.updateProgress(None, "ProgressEvent")
 
 		labelImage = self.getInput(1)
 		labelImage.Update()
@@ -431,6 +437,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				avgintCalc.SetInput(origITK)
 				avgintCalc.SetLabelInput(labelITK)
 				avgintCalc.Update()
+
+		self.progressObj.setProgress(0.2)
+		self.updateProgress(None, "ProgressEvent")
 
 		# Area calculation pipeline
 		if self.parameters["Area"]:
@@ -661,6 +670,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			objAngleMajZ.append(angleMajZ)
 			objSmoothness.append(smoothness)
 
+		self.progressObj.setProgress(0.7)
+		self.updateProgress(None, "ProgressEvent")
+
 		# Do distance calculations
 		t0 = time.time()
 		for i, cm in enumerate(umcentersofmass):
@@ -677,6 +689,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			avgDists.append(avgDist)
 			avgDistsStdErrs.append(avgDistStdErr)
 		print "Distance calculations took", time.time()-t0
+
+		self.progressObj.setProgress(0.8)
+		self.updateProgress(None, "ProgressEvent")
 		
 		# Calculate average values and errors
 		n = len(values)
@@ -745,7 +760,10 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 				avgIntOutsideObjsNonZeroStdErr = labelAverage.GetOutsideLabelsStdDev() / math.sqrt(labelAverage.GetVoxelsOutsideLabels())
 			# Get also non zero voxels here that there is no need to recalculate
 			nonZeroVoxels = labelAverage.GetNonZeroVoxels()
-			
+
+		self.progressObj.setProgress(0.9)
+		self.updateProgress(None, "ProgressEvent")
+
 		# Calculate average intensity inside objects
 		avgIntInsideObjs = 0.0
 		avgIntInsideObjsStdErr = 0.0
@@ -879,4 +897,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setSmoothness(objSmoothness)
 			self.totalGUI.setStats(self.stats)
 
+		self.progressObj.setProgress(1.0)
+		self.updateProgress(None, "ProgressEvent")
+		
 		return self.getInput(1)

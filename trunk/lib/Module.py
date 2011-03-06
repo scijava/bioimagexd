@@ -2,7 +2,6 @@
 """
  Unit: Module.py
  Project: BioImageXD
- Created: 03.11.2004, KP
  Description:
 
  A Base Class for all data processing modules.
@@ -25,7 +24,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "Selli Project <http://sovellusprojektit.it.jyu.fi/selli/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.net/>"
 __version__ = "$Revision: 1.19 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
@@ -75,6 +74,13 @@ class Module:
 		update the progress from the itk side
 		"""
 		progress = self.shift + itkprogress * self.scale
+		scripting.mainWindow.updateProgressBar(None, "ProgressEvent", progress, self.getEventDesc(), 0)
+
+	def updateFilterProgress(self, progressObj):
+		"""
+		New progress object based progress report
+		"""
+		progress = self.shift + progressObj.getProgress() * self.scale
 		scripting.mainWindow.updateProgressBar(None, "ProgressEvent", progress, self.getEventDesc(), 0)
 		
 	def setControlDataUnit(self, dataunit):

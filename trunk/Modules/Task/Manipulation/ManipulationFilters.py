@@ -3,7 +3,6 @@
 """
  Unit: ManipulationFilters
  Project: BioImageXD
- Created: 13.04.2006, KP
  Description:
 
  A module containing classes representing the filters available in ManipulationPanelC

@@ -2,7 +2,6 @@
 """
  Unit: FilterBasedModule
  Project: BioImageXD
- Created: 04.04.2006, KP
  
  Description:
  A module that functions by taking a stack of filters and applying it to the input images
@@ -324,7 +323,6 @@ class FilterList:
 		
 class FilterBasedModule(lib.Module.Module):
 	"""
-	Created: 04.04.2006, KP
 	Description: Applies a stack of processing filters to a given input dataset
 	"""
 
