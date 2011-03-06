@@ -2,7 +2,6 @@
 """
  Unit: Manipulation
  Project: BioImageXD
- Created: 04.04.2006, KP
  
  Description:
  A module for various data manipulation purposes
@@ -33,7 +32,6 @@ import lib.FilterBasedModule
 
 class Manipulation(lib.FilterBasedModule.FilterBasedModule):
 	"""
-	Created: 04.04.2006, KP
 	Description: Manipulationes a single dataunit in specified ways
 	"""
 

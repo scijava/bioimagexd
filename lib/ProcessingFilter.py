@@ -98,6 +98,7 @@ class ProcessingFilter:
 		for i in range(1, chmax+1):
 			self.setInputChannel(i, i-1)
 		self.executive = None
+		self.progressObj = None
 		self.eventDesc = ""
 		self.replacementColorTransferFunction = None
 		self.filterDesc = ""
@@ -224,7 +225,9 @@ class ProcessingFilter:
 		Sends progress update event
 		"""
 		if self.executive:
-			if self.itkFlag:
+			if self.progressObj is not None:
+				self.executive.updateFilterProgress(self.progressObj)
+			elif self.itkFlag:
 				self.executive.updateITKProgress(obj.GetNameOfClass(), obj.GetProgress())
 			else:
 				self.executive.updateProgress(obj, evt)

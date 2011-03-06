@@ -3,7 +3,6 @@
 """
  Unit: DynamicThreshold.py
  Project: BioImageXD
- Created: 10.12.2007, LP
  Description:
 
  A module that contains dynamic threshold 3D filter for the processing task.
