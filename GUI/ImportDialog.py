@@ -3,7 +3,6 @@
 """
  Unit: ImportDialog
  Project: BioImageXD
- Created: 16.03.2005, KP
  Description:
 
  A dialog for importing different kinds of data to form a .bxd file
@@ -54,7 +53,6 @@ import lib.messenger
 
 class ImportDialog(wx.Dialog):
 	"""
-	Created: 16.03.2005, KP
 	Description: A dialog for importing various forms of data to create a .bxd file
 	"""
 	def __init__(self, parent, imageMode = 1):
@@ -154,6 +152,7 @@ class ImportDialog(wx.Dialog):
 			ex.show()
 			self.Close()
 			return
+		
 		bxdwriter = BXDDataWriter(outname)
 		self.resultDataset = bxdwriter.getFilename()
 
@@ -163,8 +162,8 @@ class ImportDialog(wx.Dialog):
 		bxdwriter.write()
 		self.tot = self.dataSource.getDataSetCount()
 		self.dlg = wx.ProgressDialog("Importing", "Reading dataset %d / %d" \
-										% (0, 0), maximum = 2 * self.tot, parent = self,
-		style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)   
+										% (0, 0), maximum = self.tot, parent = self,
+		style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_AUTO_HIDE)   
 		
 		self.writeDataUnitFile()
 		self.dlg.Destroy()
@@ -211,8 +210,9 @@ class ImportDialog(wx.Dialog):
 			image.SetOrigin(0, 0, 0)
 			self.writer.addImageData(image)
 			self.writer.sync()
-			self.dlg.Update(self.tot + i, "Writing dataset %d / %d" % (i + 1, self.tot))
+			self.dlg.Update(i+1, "Writing dataset %d / %d" % (i + 1, self.tot))
 			i = i + 1
+
 		self.writer.write()
 			
 			
