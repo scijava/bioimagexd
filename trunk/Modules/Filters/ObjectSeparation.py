@@ -54,7 +54,6 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.itkFlag = 1
 
 		self.origCtf = None
-		self.data = None
 		self.ignoreObjects = 1
 		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Capable of separating objects touching each other\nInput: Binary image\nOutput: Label image";
 
@@ -177,7 +176,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
 			if not self.origCtf:
 				self.origCtf = self.dataUnit.getColorTransferFunction()
-			self.data = data
+
 			settings.set("ColorTransferFunction", ctf)
 			settings.set("PaletteColors", n)
 

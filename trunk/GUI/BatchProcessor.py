@@ -357,7 +357,6 @@ class BatchAnalysisGrid(gridlib.Grid):
 
 class ProcedurePanel(wx.ScrolledWindow):
 	"""
-	Created: 25.11.2007, KP
 	Description: a panel used to define the procedures 
 	"""
 	def __init__(self, parent, model):
@@ -489,15 +488,19 @@ class ProcedurePanel(wx.ScrolledWindow):
 		if not filename:
 			return
 		dirname = os.path.dirname(filename)
-		n = max([x.getNumberOfTimepoints() for x in self.analysis.getSourceDataUnits()])
-		timepoints = GUI.TimepointSelection.TimepointSelection(self)
-		timepoints.setNumberOfTimepoints(n)
 		if not dirname:
 			return
-		if timepoints.ShowModal() == wx.ID_OK:
-			tps = timepoints.getSelectedTimepoints()
-		if not tps:
-			return
+
+		n = max([x.getNumberOfTimepoints() for x in self.analysis.getSourceDataUnits()])
+		if n > 1:
+			timepoints = GUI.TimepointSelection.TimepointSelection(self)
+			timepoints.setNumberOfTimepoints(n)
+			if timepoints.ShowModal() == wx.ID_OK:
+				tps = timepoints.getSelectedTimepoints()
+			if not tps:
+				return
+		else:
+			tps = [0]
 		
 		self.analysis.execute(filename, dirname, tps)
 		
@@ -525,7 +528,12 @@ class ProcedurePanel(wx.ScrolledWindow):
 		self.groupChannelsCheckbox.SetValue(chlGrouping)
 		self.groupProcListCheckbox.SetValue(procListGrouping)
 		self.radioBox.SetSelection(channelProc)
-
+		if channelProc == 0:
+			self.groupChannelsCheckbox.Enable(1)
+			self.groupProcListCheckbox.Enable(0)
+		else:
+			self.groupChannelsCheckbox.Enable(0)
+			self.groupProcListCheckbox.Enable(1)
 
 	def onAddProcedureList(self, evt):
 		"""

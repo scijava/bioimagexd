@@ -2,7 +2,6 @@
 """
  Unit: CombinedDataUnit
  Project: BioImageXD
- Created: 03.11.2004, JM
  Description: Classes for managing combined 4D data.
 							
  Copyright (C) 2005	 BioImageXD Project
@@ -244,8 +243,8 @@ class CombinedDataUnit(DataUnit):
 				
 				for dataunit in self.sourceunits:
 					image = dataunit.getTimepoint(timePoint)
-				
 					self.module.addInput(dataunit, image)
+				
 				# Get the vtkImageData containing the results of the operation 
 				# for this time point
 				imageDatas = self.module.doOperation()

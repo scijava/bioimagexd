@@ -3,7 +3,6 @@
 """
  Unit: BatchAnalysis
  Project: BioImageXD
- Created: 25.11.2007, KP
  Description:
 
  The batch analysis model class for the BioImageXD Batch Analyzer
@@ -45,7 +44,6 @@ PROCESS_TOGETHER = 1
 
 class BatchAnalysis:
 	"""
-	Created: 25.11.2007, KP
 	Description: A batch analysis model
 	"""
 	def __init__(self, filename = ""):
@@ -270,7 +268,8 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 
 			# then go through each dataunit and apply the procedure list
 			for dataUnits in self.getGroupedDataUnits():
-				self.dataUnit.removeAllInputs()
+				self.initializeDataUnit()
+				#self.dataUnit.removeAllInputs()
 				
 				# The division of what channels should be used as source dataunits is
 				# affected by the channel processing option, and determined in getGroupedDataUnits()
@@ -496,7 +495,6 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 	def setSelectedProcedureList(self, name):
 		"""
-		Creted: 27.11.2007, KP
 		Set the currently selected procedure list
 		"""
 		self.selectedList = name
@@ -506,10 +504,10 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		return the input data units
 		"""
 		return self.inputDataUnits
-		
-	def setInputDataUnits(self, fileList):
+
+	def initializeDataUnit(self):
 		"""
-		set the input files used by this model
+		Initializes new dataunit used in processing
 		"""
 		pluginLoader = Modules.DynamicLoader.getPluginLoader()
 		taskMod = pluginLoader.getPluginModule("Task", "Process")
@@ -519,7 +517,12 @@ the name '%s' was found. Existing lists are: %s"""%(name, ", ".join(self.procedu
 		
 		module = moduleType()
 		self.dataUnit.setModule(module)
-				
+		
+	def setInputDataUnits(self, fileList):
+		"""
+		set the input files used by this model
+		"""
+		self.initializeDataUnit()
 		self.inputDataUnits = fileList
 		groupedUnits = self.getDataUnitsByFilename()
 		print "\n\n---> Grouped units = ",groupedUnits
