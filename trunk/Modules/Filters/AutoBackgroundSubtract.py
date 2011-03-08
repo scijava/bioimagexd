@@ -96,9 +96,11 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetClampOverflow(1)
 		image.Update()
 		print "Getting scalar & histogram info"
-		scalarRange = image.GetScalarRange()
-		histogram = lib.ImageOperations.get_histogram(image)
-		
+
+		bitdepth = self.getInputDataUnit(1).getSingleComponentBitDepth()
+		histogram = lib.ImageOperations.get_histogram(image, maxval = 2**bitdepth - 1, maxrange = 1)
+
+		shift = 0
 		if self.parameters["SmallestNonZeroValue"]:
 			for i, value in enumerate(histogram):
 				if i and value:

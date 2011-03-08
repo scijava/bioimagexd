@@ -2,7 +2,6 @@
 """
  Unit: InterfileDataSource
  Project: BioImageXD
- Created: 29.03.2006, KP
  Description: A datasource for reading Interfile .hdr files
 
  Copyright (C) 2005  BioImageXD Project

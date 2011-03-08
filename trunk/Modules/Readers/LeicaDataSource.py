@@ -1,7 +1,6 @@
 """
  Unit: LeicaDataSource
  Project: BioImageXD
- Created: 12.04.2005, KP
  Description: 
 
  A module for reading data produced by Leica microscopes. 
@@ -87,8 +86,7 @@ class LeicaDataSource(DataSource):
 		self.ctf = None
 		self.setPath(filename)
 		self.datasetCount = None
-		
-			
+					
 	def getDataSetCount(self):
 		"""
 		Returns the number of individual DataSets (=time points)
@@ -120,7 +118,6 @@ class LeicaDataSource(DataSource):
 					 dataunit contains
 		"""
 		return self.reader.GetDimensions(self.experiment)
-	
 		
 	def getSpacing(self):
 		"""
@@ -185,7 +182,6 @@ class LeicaDataSource(DataSource):
 			for i in range(channelNum):
 				# We create a datasource with specific channel number that
 				#  we can associate with the dataunit
-				
 				datasource = LeicaDataSource(filename, experiment, i)
 				dataunit = DataUnit()
 				dataunit.setDataSource(datasource)
@@ -198,6 +194,7 @@ class LeicaDataSource(DataSource):
 		Return a unique id identifying this channel
 		"""
 		return "%s|%s|%d"%(self.filename, self.experiment, self.channel)
+	
 	def getName(self):
 		"""
 		Returns the name of the dataset series which this datasource

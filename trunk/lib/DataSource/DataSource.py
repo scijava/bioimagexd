@@ -2,7 +2,6 @@
 """
  Unit: DataSource.py
  Project: BioImageXD
- Created: 03.11.2004, JM
  Description: Classes for managing 4D data located on disk
 
  Copyright (C) 2005  BioImageXD Project
@@ -74,7 +73,6 @@ class DataWriter:
 		
 class DataSource:
 	"""
-	Created: 03.11.2004, JM
 	Description: A base class for different kinds of DataSources
 	"""
 	def __init__(self):

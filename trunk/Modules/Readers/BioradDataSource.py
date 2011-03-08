@@ -2,7 +2,6 @@
 """
  Unit: BioradDataSource
  Project: BioImageXD
- Created: 29.03.2006, KP
  Description: A datasource for reading Biorad .PIC files
 
  Copyright (C) 2005	 BioImageXD Project
