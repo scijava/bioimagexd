@@ -2,7 +2,6 @@
 """
  Unit: ImageOperations
  Project: BioImageXD
- Created: 10.02.2005, KP
  Description:
 
  This is a module with functions for various kind of image operations, for example
@@ -727,7 +726,7 @@ def getImageScalarRange(image):
 
 	return x0,x1
 	
-def get_histogram(image, maxval = 0, minval = 0):
+def get_histogram(image, maxval = 0, minval = 0, maxrange = 0):
 	"""
 	Return the histogram of the image as a list of floats
 	"""
@@ -743,10 +742,15 @@ def get_histogram(image, maxval = 0, minval = 0):
 		x0, x1 = (minval,maxval)
 
 	#accu.SetComponentExtent(0, x1 - x0, 0, 0, 0, 0)
-	accu.SetComponentExtent(0, 255, 0, 0, 0, 0)
-	accu.SetComponentOrigin(x0, 0, 0)
-	accu.SetComponentSpacing((x1 - x0) / 256.0, 0, 0)
 	#accu.SetComponentSpacing(1, 0, 0)
+	if maxrange:
+		accu.SetComponentExtent(0, x1-x0, 0, 0, 0, 0)
+		accu.SetComponentSpacing(1, 0, 0)
+	else:
+		accu.SetComponentExtent(0, 255, 0, 0, 0, 0)
+		accu.SetComponentSpacing((x1 - x0 + 1) / 256.0, 0, 0)
+
+	accu.SetComponentOrigin(x0, 0, 0)
 	accu.Update() 
 	data = accu.GetOutput()
 	

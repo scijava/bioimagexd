@@ -2,7 +2,6 @@
 """
  Unit: SlicesFileReader
  Project: BioImageXD
- Created: 09.01.2008, KP
  Description: A datasource for reading a directory of normal image formats. This assumes
  			  that all files of a given type in a directory belong to a single channel
 
@@ -51,9 +50,7 @@ class SlicesDataSource(DataSource):
 	A datasource for reading a directory of image slices
 	"""
 	def __init__(self, filename = ""):
-
 		DataSource.__init__(self)
-
 
 	def getTimeStamp(self, timepoint):
 		"""
@@ -88,7 +85,6 @@ class SlicesDataSource(DataSource):
 
 	def getSpacing(self):
 		return [1,1,1]
-
 		
 	def getVoxelSize(self):
 		return [1,1,1]
@@ -123,14 +119,14 @@ class SlicesDataSource(DataSource):
 		settings.set("Name", os.path.basename(os.path.dirname(filename)))
 		
 		return [dataunit]
+
 	def getColorTransferFunction(self):
 		"""
 		Returns the ctf of the dataset series which this datasource
 					 operates on
 		"""
 		return None
-		
-		
+
 	def getName(self):
 		"""
 		Returns the name of the dataset series which this datasource

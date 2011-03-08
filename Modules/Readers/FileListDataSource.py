@@ -2,7 +2,6 @@
 """
  Unit: FileListDataSource
  Project: BioImageXD
- Created: 29.03.2006, KP
  Description: A datasource for a list of given files as a time series,
 				dependent on the given number of slices in a stack
 
@@ -490,7 +489,6 @@ class FileListDataSource(DataSource):
 		Loads the specified .oif - file and imports data from it.
 		"""
 		return []
-		
 
 	def getName(self):
 		"""
@@ -498,7 +496,6 @@ class FileListDataSource(DataSource):
 					 operates on
 		"""
 		return self.name
-
 		
 	def getColorTransferFunction(self):
 		"""
