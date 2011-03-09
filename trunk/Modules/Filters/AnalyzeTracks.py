@@ -62,7 +62,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.fileUpdated = 0
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
 
-		self.descs = {"MinLength":"Minimum length of tracks:",
+		self.descs = {"MinLength":"Min. length of track (# of timepoints):",
 					  "ResultsFile": "Tracks file:",
 					  "AnalyseFile": "Analyse results file:",
 					  "CalculateFrontRear": "Calculate front and rear results",
@@ -155,6 +155,14 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			sizer.Add(self.exportBtn)
 			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 
+			self.readBtn = wx.Button(self.gui, -1, "Read tracks")
+			self.readBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
+			pluginloader = Modules.DynamicLoader.getPluginLoader()
+			mod = pluginloader.getPluginModule("Filters", "CreateTracksFilter")
+			self.trackGrid = mod.TrackingFilterGUI.TrackTableGrid(self.gui, self.dataUnit, self)
+			trackGridSizer = wx.BoxSizer(wx.VERTICAL)
+			trackGridSizer.Add(self.trackGrid)
+
 			pos = (0, 0)
 			item = gui.sizer.FindItemAtPosition(pos)
 			if item.IsWindow():
@@ -164,7 +172,9 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			elif item.IsSpacer():
 				win = item.GetSpacer()
 
-			#readSizer = win.GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
+			readSizer = win.GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
+			readSizer.Add(self.readBtn)
+			readSizer.Add(trackGridSizer)
 
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
@@ -181,7 +191,16 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
-		self.onReadTracks(None)
+		# Analyze front and rear of objects from the tracks and input image
+		if self.parameters["CalculateFrontRear"]:
+			inputFile = self.parameters["InputImage"]
+			readers = Modules.DynamicLoader.getReaders()
+			bxcReader = readers['BXCDataSource'][0]()
+			bxcReader.loadFromFile(inputFile)
+			for track in self.tracks:
+				track.calculateFrontAndRear(bxcReader, 10.0, 0.01)
+		
+		self.analyseTracks()
 
 		image = self.getInputFromChannel(0)
 		return image
@@ -196,26 +215,17 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.track = lib.Track.TrackReader()
 		self.track.readFromFile(filename)
 		self.tracks = self.track.getTracks(self.parameters["MinLength"])
+		self.trackGrid.showTracks(self.tracks)
 
-		# Analyze front and rear of objects from the tracks and input image
-		if self.parameters["CalculateFrontRear"]:
-			inputFile = self.parameters["InputImage"]
-			readers = Modules.DynamicLoader.getReaders()
-			bxcReader = readers['BXCDataSource'][0]()
-			bxcReader.loadFromFile(inputFile)
-			for track in self.tracks:
-				track.calculateFrontAndRear(bxcReader, 10.0, 0.01)
-		
-		self.showTracks(self.tracks)
-
-	def showTracks(self, tracks):
+	def analyseTracks(self):
 		"""
-		show the given tracks in the track grid
+		Analyse tracks in the track grid
 		"""
 #		track length
 #		Directional persistance = distance to starting point / path length
 #		speed
 #		angle (avg of changes)
+		tracks = self.tracks
 		rows = [["Track #", "# of tps", u"Length (\u03BCm)", u"Avg. speed (\u03BCm/s)", "Directional persistence", "Avg. angle", u"Avg. front speed (\u03BCm/s)", u"Avg. rear speed (\u03BCm)"]]
 		self.globalmin = 9999999999
 		self.globalmax = 0

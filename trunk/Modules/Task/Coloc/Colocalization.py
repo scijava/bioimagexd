@@ -2,7 +2,6 @@
 """
  Unit: Colocalization.py
  Project: BioImageXD
- Created: 16.11.2004, KP
  Description:
 
  Calculates the colocalization between two channels
@@ -100,7 +99,8 @@ class Colocalization(Module):
 
 #		for i in self.images:
 #			i.Update()
-		maxval = int(max([x.GetScalarRange()[1] for x in self.images]))
+
+		maxval = 2**max([self.dataunits[x].getBitDepth() for x in range(2)]) - 1
 		Logging.info("Maximum value = %d"%maxval, kw="processing") 
 		settings = self.settingsLst[0]
 		calcVal = settings.get("CalculateThresholds")

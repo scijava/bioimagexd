@@ -2,7 +2,6 @@
 """
  Unit: CombineDiffIntensityRangeImages.py
  Project: BioImageXD
- Created: 19.8.2009, LP
  Description:
 
  A module that combines two datasets with adjacent intensity ranges. For
@@ -180,4 +179,3 @@ class CombineDiffIntensityRangeImagesFilter(lib.ProcessingFilter.ProcessingFilte
 			resultImage = castFilter.GetOutput()
 
 		return resultImage
-	

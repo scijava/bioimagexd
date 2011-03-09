@@ -121,7 +121,7 @@ class AutoThresholdColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		images[1].SetUpdateExtent(images[1].GetWholeExtent())
 		images[0].Update()
 		images[1].Update()
-		maxval = int(max([x.GetScalarRange()[1] for x in images]))
+		maxval = 2**max([self.getInputDataUnit(x).getBitDepth() for x in range(1,3)]) - 1
 		Logging.info("Maximum value = %d"%maxval, kw="processing") 
 		
 		self.colocAutoThreshold.AddInput(images[0])
