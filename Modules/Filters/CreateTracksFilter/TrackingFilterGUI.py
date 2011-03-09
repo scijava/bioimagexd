@@ -372,3 +372,19 @@ class TrackTableGrid(gridlib.Grid):
 		#print "Selected",event.GetRow(),event.GetCol()
 		self.selectedRow = event.GetRow()
 		self.selectedCol = event.GetCol()
+
+	def showTracks(self, tracks):
+		"""
+		show the given tracks in the track grid
+		"""
+		table = self.getTable()
+		table.Clear()
+		table.AppendRows(len(tracks))
+		for i, track in enumerate(tracks):
+			mintp, maxtp = track.getTimeRange()
+			for tp in range(mintp, maxtp + 1):
+				val, pos = track.getObjectAtTime(tp)
+				if val:
+					table.SetValue(i, tp, pos, override = 1)
+		self.SetTable(table)
+		self.ForceRefresh()

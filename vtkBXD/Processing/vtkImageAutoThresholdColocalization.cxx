@@ -497,10 +497,10 @@ template < class T >
     
     for (idxZ = 0; idxZ <= maxZ; idxZ++) {
         if(!id) {
-            sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ,maxZ);
+            sprintf(progressText,"Performing final regression (slice %d / %d)",idxZ+1,maxZ+1);
             self->SetProgressText(progressText);
 
-            self->UpdateProgress(0.5+idxZ/float(maxZ));        
+            self->UpdateProgress(0.5+(idxZ)/float((maxZ+1)*2));
         }
         
         for (idxY = 0; idxY <= maxY; idxY++) {

@@ -471,26 +471,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		lib.messenger.send(self, "update_Track")
 		print "Read %d tracks" % (n)
 		print self.tracks
-		self.showTracks(self.tracks)
-		
-	def showTracks(self, tracks):
-		"""
-		show the given tracks in the track grid
-		"""
-		table = self.trackGrid.getTable()
-		table.Clear()
-		table.AppendRows(len(tracks))
-		for i, track in enumerate(tracks):
-			mintp, maxtp = track.getTimeRange()
-			print "Track", i, "has time range", mintp, maxtp
-			for tp in range(mintp, maxtp + 1):
-				val, pos = track.getObjectAtTime(tp)
-				#print "    value at tp ", tp, "(pos ", pos, ") is ", val
-				if val:
-					table.SetValue(i, tp, pos, override = 1)
-		self.trackGrid.SetTable(table)
-		self.trackGrid.ForceRefresh()
-		
+		self.trackGrid.showTracks(self.tracks)
 		
 	def onReadObjects(self, event):
 		"""

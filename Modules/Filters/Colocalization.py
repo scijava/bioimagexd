@@ -288,7 +288,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		ch2thresmax = self.getPrecedingResultVariable("Ch2ThresholdMax")
 		
 		Logging.info("result vars ch1, ch2=",ch1thresmax, ch2thresmax)
-		if ch1thresmax != None and ch2thresmax != None and self.prevFilter.getName() == "Auto threshold colocalization":
+		if ch1thresmax != None and ch2thresmax != None and self.prevFilter.getName() == "Calculate thresholds for colocalization":
 			slope = self.getPrecedingResultVariable("Slope")
 			intercept = self.getPrecedingResultVariable("Intercept")
 			print "Got slope, intercept", slope, intercept
@@ -296,7 +296,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.set("LowerThresholdCh1", ch1thresmax)
 			self.set("LowerThresholdCh2", ch2thresmax)
 		
-		maxval = int(max([x.GetScalarRange()[1] for x in images]))
+		maxval = 2**max([self.getInputDataUnit(x).getBitDepth() for x in range(1,3)]) - 1
 		self.colocRange = maxval
 
 		lib.messenger.send(self, "update_LowerThresholdCh1")

@@ -595,8 +595,9 @@ class MainWindow(wx.Frame):
 		# The progress coefficient gives us some amount of control on what range
 		arg *= self.progressCoeff
 		arg += self.progressShift
-		
+
 		self.progress.SetValue(int(arg))
+
 		if int(arg) >= 100:
 			wx.CallLater(1500, self.clearProgressBar)
 		else:

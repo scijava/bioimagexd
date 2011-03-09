@@ -106,6 +106,7 @@ class Module:
 		txt = obj.GetProgressText()
 		if not txt:
 			txt = self.getEventDesc()
+
 		scripting.mainWindow.updateProgressBar(obj, evt, progress, txt, 0)
 		
 	def setTimepoint(self, timePoint):
