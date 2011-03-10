@@ -42,6 +42,7 @@ import lib.Command
 import os
 import GUI.Scatterplot
 import Configuration
+import GUI.Dialogs
 
 RADIO_CHOICE = "RADIO_CHOICE"
 THRESHOLD = "THRESHOLD"
@@ -50,6 +51,7 @@ PIXEL = "PIXEL"
 PIXELS = "PIXELS"
 SLICE = "SLICE"
 FILENAME = "FILENAME"
+SAVEFILE = "SAVEFILE"
 CHOICE = "CHOICE"
 SPINCTRL = "SPINCTRL"
 NOBR = "NOBR"
@@ -58,7 +60,7 @@ ROISELECTION = "ROISELECTION"
 COLOC_THRESHOLD = "COLOCTHRESHOLD"
 SCATTERPLOT = "SCATTERPLOT"
 
-SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, CHOICE, ROISELECTION, COLOC_THRESHOLD, SCATTERPLOT]
+SPECIAL_ELEMENTS = [RADIO_CHOICE, THRESHOLD, CTF, PIXEL, PIXELS, SLICE, FILENAME, SAVEFILE, CHOICE, ROISELECTION, COLOC_THRESHOLD, SCATTERPLOT]
 
 def getGUIBuilderForFilter(obj):
 	return GUIBuilder
@@ -195,6 +197,8 @@ class GUIBuilder(wx.Panel):
 						elif itemType == FILENAME:
 							#skipNextNItems = 2
 							self.currentRow += self.createFileSelection(n, items, currentFilter)
+						elif itemType == SAVEFILE:
+							self.currentRow += self.createFileSelection(n, items, currentFilter, save = 1)
 						elif itemType == CHOICE:
 							self.currentRow += self.createChoice(n, items, currentFilter)
 						elif itemType == ROISELECTION:
@@ -724,7 +728,7 @@ class GUIBuilder(wx.Panel):
 		minval, maxval = currentFilter.getRange(itemName)
 		slider.SetRange(minval, maxval)
 		
-	def createFileSelection(self, n, items, currentFilter):
+	def createFileSelection(self, n, items, currentFilter, save = 0):
 		"""
 		create a file selection GUI element that shows the filename and has a button to select a file
 		"""
@@ -745,10 +749,14 @@ class GUIBuilder(wx.Panel):
 		updateFilenameFunc = lambda event, its = items[n], f = currentFilter, i = itemName, \
 						s = self: s.onSetFileName(f, i, event)
 
-		browse = FileBrowseButton(self, -1, size = (400, -1), labelText = text, 
-		fileMask = items[n][2], dialogTitle = items[n][1], startDirectory = lastPath, changeCallback = updateFilenameFunc)
-
+		if save:
+			filemode = wx.SAVE
+		else:
+			filemode = wx.OPEN
+		
+		browse = FileBrowseButton(self, -1, size = (400, -1), labelText = text, fileMask = items[n][2], dialogTitle = items[n][1], startDirectory = lastPath, changeCallback = updateFilenameFunc, fileMode = filemode)
 		browse.SetValue(defValue)
+		
 		setFilenameFunc = lambda obj, event, arg, b = browse, i = itemName, s = self: \
 									s.onSetFileNameFromFilter(b, i, arg)
 		lib.messenger.connect(currentFilter, "set_%s" % itemName, setFilenameFunc) 

@@ -48,7 +48,6 @@ import wx
 
 class FilterEditor(wx.Panel):
 	"""
-	Created: 13.11.2007, KP
 	Description: A filter list editor
 	"""
 	def __init__(self, parent, filtersModule = None, filterList = None, taskPanel = None, scriptingId = "scripting.mainWindow.tasks['Process'].filterEditor", fbSize = (300,300)):
@@ -404,7 +403,8 @@ class FilterEditor(wx.Panel):
 		self.currentSelected = -1
 		self.removeGUI()
 		self.currentGUI = None
-
+		self.Layout()
+		self.parent.Layout()
 
 	def addFilter(self, event, filterclass):
 		"""

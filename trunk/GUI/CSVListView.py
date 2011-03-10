@@ -3,7 +3,6 @@
 """
  Unit: UIElements
  Project: BioImageXD
- Created: 30.6.2007, KP
  Description:
 
  A list view that will take input similiar to what the csv module takes, and view it as a list ctrl
@@ -54,7 +53,8 @@ class CSVListView(wx.ListCtrl):
 		self.attr1.SetBackgroundColour("white")
 
 		self.attr2 = wx.ListItemAttr()
-		self.attr2.SetBackgroundColour("light blue")
+		#self.attr2.SetBackgroundColour("light blue")
+		self.attr2.SetBackgroundColour("white")
 		self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated)
 
 	def exportToCsv(self, filename, headers = []):
@@ -123,7 +123,6 @@ class CSVListView(wx.ListCtrl):
 		"""
 		Return the attribute for the given item
 		"""    
-	
 		if item % 2 == 1:
 			return self.attr1
 		elif item % 2 == 0:

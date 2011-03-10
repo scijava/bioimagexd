@@ -87,7 +87,29 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "Scale":
 			return 1
 		return 1
-		
+
+	def setParameter(self, parameter, value):
+		"""
+		Set value for the parameter
+		"""
+		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
+		if parameter == "AutoScale" and self.gui:
+			self.gui.items["Shift"].GetChildren()[1].Enable(not value)
+			self.gui.items["Scale"].GetChildren()[1].Enable(not value)
+
+	def getGUI(self, parent, taskPanel):
+		"""
+		Return the GUI for this filter
+		"""
+		gui = lib.ProcessingFilter.ProcessingFilter.getGUI(self, parent, taskPanel)
+		if gui:
+			shiftCtrl = gui.items["Shift"].GetChildren()[1]
+			shiftCtrl.Disable()
+			scaleCtrl = gui.items["Scale"].GetChildren()[1]
+			scaleCtrl.Disable()
+
+		return gui
+	
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output

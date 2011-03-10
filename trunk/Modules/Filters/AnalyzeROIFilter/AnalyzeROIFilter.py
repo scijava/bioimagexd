@@ -48,16 +48,16 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 	  
 		self.reportGUI = None
 		self.measurements = []
-		self.descs = {"ROI": "Region of Interest", "AllROIs": "Measure all ROIs",
-					"SecondInput":"Use second input as ROI"}
+		self.descs = {"ROI": "Region of Interest", "AllROIs": "Analyze all ROIs",
+					"SecondInput":"Use image input as ROI"}
 		self.itkFlag = 1
-		self.filterDesc = "Quantitatively analyzes a ROI (Region Of Interest) or several\nInput: Grayscale image\nOutput: Grayscale image"
+		self.filterDesc = "Quantitatively analyzes a ROI (Region Of Interest) or several\nInput: Grayscale image (optional Binary image)\nOutput: Grayscale image"
 		
 	def getInputName(self, n):
 		"""
 		Return the name of the input #n
 		"""			 
-		if n == 2: return "ROI image"
+		if n == 2: return "Optional ROI image"
 		return "Source dataset" 
 
 	def getParameters(self):
@@ -99,6 +99,14 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 				return (0, n[0])
 			return 0, None
 		return 0
+
+	def getParameterLevel(self, parameter):
+		"""
+		Return level of parameter
+		"""
+		if parameter == "SecondInput":
+			return scripting.COLOR_EXPERIENCED
+		return scripting.COLOR_BEGINNER
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""

@@ -120,9 +120,9 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		Returns the parameters for GUI.
 		"""
 		return [
-			["Polydata",(("PolyDataFile","Select the polydata file to analyze", "*.vtp"),)],
-			["Segmented objects",(("ObjectsFile","Select the objects file to analyze", "*.csv"),)],
-			["Analyses",("DistanceToSurface","InsideSurface")],
+#			["Polydata",(("PolyDataFile","Select the polydata file to analyze", "*.vtp"),)],
+#			["Segmented objects",(("ObjectsFile","Select the objects file to analyze", "*.csv"),)],
+			["Settings",("DistanceToSurface","InsideSurface")],
 			["Results", (("ResultsFile","File to write results to", "*.csv"),)]
 			]
 
@@ -130,8 +130,10 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Returns the types of parameters for GUI.
 		"""
-		if parameter in ["PolyDataFile","ObjectsFile","ResultsFile"]:
+		if parameter in ["PolyDataFile","ObjectsFile"]:
 			return GUI.GUIBuilder.FILENAME
+		if parameter == "ResultsFile":
+			return GUI.GUIBuilder.SAVEFILE
 		if parameter in ["DistanceToSurface","InsideSurface"]:
 			return types.BooleanType
 			
@@ -185,13 +187,30 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				self.delayedData = None
 			else:
 				self.objectsBox.setContents([self.headers])
-			sizer = wx.BoxSizer(wx.VERTICAL)
+				aggrData = [["Quantity", "Value"],
+							[self.aggregateHeaders[0], "0"],
+							[self.aggregateHeaders[1], "0"],
+							[self.aggregateHeaders[2], u"0.000\u00B10.000 \u03BCm"],
+							[self.aggregateHeaders[3], u"0.000\u00B10.000 \u03BCm"],
+							[self.aggregateHeaders[4], "0"],
+							[self.aggregateHeaders[5], "0"],
+							[self.aggregateHeaders[6], u"0.00\u00B10.00 %"],
+							[self.aggregateHeaders[7], u"0.000\u00B10.000 \u03BCm"],
+							[self.aggregateHeaders[8], u"0.000\u00B10.000 \u03BCm"]]
+				self.aggregateBox.setContents(aggrData)
+				self.aggregateBox.SetColumnWidth(0, 150)
+				self.aggregateBox.SetColumnWidth(1, 200)
 
+			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
+			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
+			sizer = wx.BoxSizer(wx.VERTICAL)
 			sizer.Add(self.objectsBox, 1)
 			sizer.Add(self.aggregateBox, 1)
 			box = wx.BoxSizer(wx.HORIZONTAL)
-
 			sizer.Add(box)
+			sizer.AddSpacer((5,5))
+			sizer.Add(self.exportBtn)
+			
 			pos = (0, 0)
 			item = gui.sizer.FindItemAtPosition(pos)
 			if item.IsWindow():
@@ -201,13 +220,8 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			elif item.IsSpacer():
 				win = item.GetSpacer()
 
-			gui.sizer.Detach(win)
-			gui.sizer.Add(sizer, (0, 0), flag = wx.EXPAND | wx.ALL)
-			gui.sizer.Add(win, (1, 0), flag = wx.EXPAND | wx.ALL)
-			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
-			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
-			sizer.AddSpacer((5,5))
-			sizer.Add(self.exportBtn)
+			resultSizer = win.GetItem(0).GetSizer().FindItemAtPosition((4,0)).GetSizer()
+			resultSizer.Add(sizer)
 
 		return gui
 
@@ -438,18 +452,20 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		# Read objects first from users input file, then from objects
 		# StatisticsFile, then from object csv found in file's directory,
 		# and finally create again from file
-		particleFile = ""
-		objectsFile = self.parameters["ObjectsFile"]
-		if os.path.exists(objectsFile):
-			particleFile = objectsFile
-		else:
-			particleFile = self.segmentedSource.getSettings().get("StatisticsFile")
 
-		if not os.path.exists(particleFile):
-			path = self.segmentedSource.getDataSource().path
-			for fileName in os.listdir(path):
-				if ".csv" in fileName:
-					particleFile = os.path.join(path,fileName)
+		#particleFile = ""
+		#objectsFile = self.parameters["ObjectsFile"]
+		#if os.path.exists(objectsFile):
+		#	particleFile = objectsFile
+		#else:
+		particleFile = os.path.basename(self.segmentedSource.getSettings().get("StatisticsFile"))
+
+		#if not os.path.exists(particleFile):
+		path = self.segmentedSource.getDataSource().path
+		#for fileName in os.listdir(path):
+			#if ".csv" in fileName:
+				#particleFile = os.path.join(path,fileName)
+		particleFile = os.path.join(path, particleFile)
 
 		if os.path.exists(particleFile):
 			reader = lib.ParticleReader.ParticleReader(particleFile, 0)
@@ -469,7 +485,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "# of dists=",len(objComDistToSurf), len(avgDistToSurf), len(objComDistToSurfCom), len(avgDistToCom)
 		data = [self.headers]
 		writeData = [self.writeHeaders]
-		aggrData = [self.aggregateHeaders]
+		aggrData = [["Quantity", "Value"]]
 		insideCount = 0
 		outsideCount = 0
 		insideCountVox = 0
@@ -538,7 +554,10 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 			entry.append(u"%.2f\u00B1%.2f "%(percInside*100, percInsideStdErr*100) + "%")
 			entry.append(u"%.3f\u00B1%.3f \u03BCm"%(avgDistToSurface, avgDistToSurfaceStdErr))
 			entry.append(u"%.3f\u00B1%.3f \u03BCm"%(avgDistToCellCOM, avgDistToCellCOMStdErr))
-			aggrData.append(entry)
+
+			for i in range(len(entry)):
+				aggrData += [[self.aggregateHeaders[i], entry[i]]]
+			
 			self.setResultVariable("NumObjsOutside", outsideCount)
 			self.setResultVariable("NumObjsInside", insideCount)
 			self.setResultVariable("AvgDistanceCOMtoSurface", avgDistComToSurf)
@@ -564,6 +583,8 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.objectsBox:
 			self.objectsBox.setContents(data)
 			self.aggregateBox.setContents(aggrData)
+			self.aggregateBox.SetColumnWidth(0, 150)
+			self.aggregateBox.SetColumnWidth(1, 200)
 		else:
 			self.delayedData = data, aggrData
 			

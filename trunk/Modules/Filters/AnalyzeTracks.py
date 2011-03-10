@@ -64,7 +64,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		self.descs = {"MinLength":"Min. length of track (# of timepoints):",
 					  "ResultsFile": "Tracks file:",
-					  "AnalyseFile": "Analyse results file:",
+					  "AnalyseFile": "File to save results:",
 					  "CalculateFrontRear": "Calculate front and rear results",
 					  "InputImage": "Objects file (for front and rear results):"}
 		self.numberOfPoints = None
@@ -84,9 +84,9 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		Set a value for the parameter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
-
-		if parameter == "ResultsFile" and os.path.exists(value) and self.trackListBox:
-			self.fileUpdated = 1
+		if parameter == "CalculateFrontRear" and self.gui:
+			self.gui.items["InputImage"].ShowItems(value)
+			self.gui.sizer.Layout()
 
 	def getParameters(self):
 		"""
@@ -110,6 +110,8 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			return GUI.GUIBuilder.SPINCTRL
 		if parameter == "CalculateFrontRear":
 			return types.BooleanType
+		if parameter == "AnalyseFile":
+			return GUI.GUIBuilder.SAVEFILE
 		return GUI.GUIBuilder.FILENAME
 
 	def getRange(self, parameter):
@@ -150,10 +152,24 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			sizer.Add(self.trackListBox, 1)
 			sizer.Add(self.aggregateBox, 1)
 
-			self.exportBtn = wx.Button(self.gui, -1, "Export statistics")
-			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
+			totalRows = [["Quantity", "Value"]]
+			avgs = [["# of tracks", "0"],
+					["Avg. tps", "0.00"],
+					[u"Avg. length (\u03BCm)", u"0.000\u00B10.000"],
+					[u"Avg. speed (\u03BCm/s)", u"0.000000\u00B10.000000"],
+					["Avg. DP", u"0.00\u00B10.00"],
+					["Avg. angle", u"0.00\u00B10.00"],
+					[u"Avg. front speed (\u03BCm/s)", u"0.000000\u00B10.0000000"],
+					[u"Avg. rear speed (\u03BCm/s)", u"0.000000\u00B10.000000"]]
+			totalRows += avgs
+			self.aggregateBox.setContents(totalRows)
+			self.aggregateBox.SetColumnWidth(0, 150)
+			self.aggregateBox.SetColumnWidth(1, 200)
+
+			self.exportBtn = wx.Button(self.gui, -1, "Analyze tracks and export results")
+			self.exportBtn.Bind(wx.EVT_BUTTON, self.onAnalyseExportStatistics)
 			sizer.Add(self.exportBtn)
-			gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
+			#gui.sizer.Add(sizer, (1, 0), flag = wx.EXPAND | wx.ALL)
 
 			self.readBtn = wx.Button(self.gui, -1, "Read tracks")
 			self.readBtn.Bind(wx.EVT_BUTTON, self.onReadTracks)
@@ -175,6 +191,9 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			readSizer = win.GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
 			readSizer.Add(self.readBtn)
 			readSizer.Add(trackGridSizer)
+			self.gui.items["InputImage"].ShowItems(False)
+			analyseSizer = win.GetItem(0).GetSizer().FindItemAtPosition((5,0)).GetSizer()
+			analyseSizer.Add(sizer)
 
 		if self.prevFilter:
 			filename = self.prevFilter.getParameter("ResultsFile")
@@ -191,15 +210,6 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
-		# Analyze front and rear of objects from the tracks and input image
-		if self.parameters["CalculateFrontRear"]:
-			inputFile = self.parameters["InputImage"]
-			readers = Modules.DynamicLoader.getReaders()
-			bxcReader = readers['BXCDataSource'][0]()
-			bxcReader.loadFromFile(inputFile)
-			for track in self.tracks:
-				track.calculateFrontAndRear(bxcReader, 10.0, 0.01)
-		
 		self.analyseTracks()
 
 		image = self.getInputFromChannel(0)
@@ -221,6 +231,15 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Analyse tracks in the track grid
 		"""
+		# Analyze front and rear of objects from the tracks and input image
+		if self.parameters["CalculateFrontRear"]:
+			inputFile = self.parameters["InputImage"]
+			readers = Modules.DynamicLoader.getReaders()
+			bxcReader = readers['BXCDataSource'][0]()
+			bxcReader.loadFromFile(inputFile)
+			for track in self.tracks:
+				track.calculateFrontAndRear(bxcReader, 10.0, 0.01)
+
 #		track length
 #		Directional persistance = distance to starting point / path length
 #		speed
@@ -295,8 +314,7 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			rows[0].append("T%d com,front,rear" %(i+1))
 
 		self.trackListBox.setContents(rows)
-		
-		totalRows = [["# of tracks", "Avg. tps", u"Avg. length (\u03BCm)", u"Avg. speed (\u03BCm/s)", "Avg. DP", "Avg. angle", u"Avg front speed (\u03BCm/s)", u"Avg. rear speed (\u03BCm/s)"]]
+
 		self.avglen = lib.Math.meanstdeverr(self.lengths)
 		self.avgspeed = lib.Math.meanstdeverr(self.speeds)
 		self.avgdps = lib.Math.meanstdeverr(self.dps)
@@ -305,16 +323,28 @@ class AnalyzeTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.avgFrontSpeeds = lib.Math.meanstdeverr(self.frontSpeeds)
 		self.avgRearSpeeds = lib.Math.meanstdeverr(self.rearSpeeds)
 
-		avgs = [len(tracks), "%.2f"%self.avgTpCount, u"%.3f\u00B1%.3f"%(self.avglen[0],self.avglen[2]), u"%.6f\u00B1%.6f"%(self.avgspeed[0],self.avgspeed[2]), u"%.2f\u00B1%.2f"%(self.avgdps[0],self.avgdps[2]), u"%.2f\u00B1%.2f"%(self.avgang[0],self.avgang[2]), u"%.6f\u00B1%.6f"%(self.avgFrontSpeeds[0], self.avgFrontSpeeds[2]), u"%.6f\u00B1%.6f"%(self.avgRearSpeeds[0], self.avgRearSpeeds[2])]
-		totalRows.append(avgs)
+		totalRows = [["Quantity", "Value"]]
+		avgs = [["# of tracks", len(tracks)],
+				["Avg. tps", "%.2f"%self.avgTpCount],
+				[u"Avg. length (\u03BCm)", u"%.3f\u00B1%.3f"%(self.avglen[0],self.avglen[2])],
+				[u"Avg. speed (\u03BCm/s)", u"%.6f\u00B1%.6f"%(self.avgspeed[0],self.avgspeed[2])],
+				["Avg. DP", u"%.2f\u00B1%.2f"%(self.avgdps[0],self.avgdps[2])],
+				["Avg. angle", u"%.2f\u00B1%.2f"%(self.avgang[0],self.avgang[2])],
+				[u"Avg. front speed (\u03BCm/s)", u"%.6f\u00B1%.6f"%(self.avgFrontSpeeds[0], self.avgFrontSpeeds[2])],
+				[u"Avg. rear speed (\u03BCm/s)", u"%.6f\u00B1%.6f"%(self.avgRearSpeeds[0], self.avgRearSpeeds[2])]]
+		totalRows += avgs
 		self.aggregateBox.setContents(totalRows)
+		self.aggregateBox.SetColumnWidth(0, 150)
+		self.aggregateBox.SetColumnWidth(1, 200)
 		
-	def onExportStatistics(self, evt):
+	def onAnalyseExportStatistics(self, evt):
 		"""
 		Export the statistics to csv file
 		"""
-		name = self.parameters["AnalyseFile"]
-		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save tracking analyse results as", "%s"%name, "CSV File (*.csv)|*.csv")
+		self.analyseTracks()
+		
+		filename = self.parameters["AnalyseFile"]
+		#filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save tracking analyse results as", "%s"%name, "CSV File (*.csv)|*.csv")
 		if platform.system() == "Windows":
 			filename = filename.encode('mbcs')
 		else:
