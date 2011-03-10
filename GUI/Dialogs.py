@@ -3,7 +3,7 @@
  Unit: Dialogs
  Project: BioImageXD
  Created: 28.01.2005
- Creator: KP
+ 
  Description:
 
  Shortcut methods for displaying most of the normal dialogs. 

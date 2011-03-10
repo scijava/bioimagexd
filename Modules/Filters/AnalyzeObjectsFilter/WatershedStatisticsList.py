@@ -77,7 +77,8 @@ class WatershedTotalsList(wx.ListCtrl):
 		self.SetColumnWidth(1, 250)
 
 		self.attr = wx.ListItemAttr()
-		self.color = wx.Colour(180,255,180)
+		#self.color = wx.Colour(180,255,180)
+		self.color = wx.Colour(255,255,255)
 		self.attr.SetBackgroundColour(self.color)
 
 	def setStats(self, stats):

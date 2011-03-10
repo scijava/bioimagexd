@@ -37,7 +37,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	Description: Filter for doing FRAP analysis
 	"""
-	name = "FRAP Analysis"
+	name = "FRAP analysis"
 	category = lib.FilterTypes.VOXELANALYSE
 	level = scripting.COLOR_EXPERIENCED
 	
@@ -46,29 +46,30 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		Initialization
 		"""
 		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 2))
-		self.descs = {"ROI": "Use ROI as FRAP ROI",
-					  "SecondInput": "Use second input as FRAP ROI"}
+		self.descs = {"ROI": "Use ROI",
+					  "SecondInput": "Use image input as ROI",
+					  "ResultsFile": "Results file"}
 		self.itkFlag = 1
 		self.timePointMeasurements = []
 		self.frapMeasurements = {}
 		
 		self.timePointGUI = None
 		self.frapGUI = None
-		self.filterDesc = "Quantitatively analyzes FRAP (Fluorescence Recovery After Photobleaching) data\nInput: Grayscale image\nOutput: Grayscale image"
+		self.filterDesc = "Quantitatively analyzes FRAP (Fluorescence Recovery After Photobleaching) data\nInput: Grayscale image (Optional Binary image)\nOutput: Grayscale image"
 
 	def getInputName(self, n):
 		"""
 		Return the name of the input n
 		"""
 		if n == 2:
-			return "ROI mask"
+			return "optional ROI image"
 		return "Source dataset"
 		
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["Select ROI to use", ("ROI", "SecondInput")]]
+		return [["Select ROI to use", ("ROI", "SecondInput")], ["Results", (("ResultsFile", "File to write results to", "*.csv"),)]]
 				
 	def getType(self, parameter):
 		"""
@@ -76,6 +77,8 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter == "ROI":
 			return GUI.GUIBuilder.ROISELECTION
+		if parameter == "ResultsFile":
+			return GUI.GUIBuilder.SAVEFILE
 		return types.BooleanType
 
 	def getDefaultValue(self, parameter):
@@ -83,6 +86,8 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if parameter == "SecondInput":
 			return False
+		if parameter == "ResultsFile":
+			return "FRAP_results.csv"
 		if parameter == "ROI":
 			n = scripting.visualizer.getRegionsOfInterest()
 			if n:
@@ -107,13 +112,23 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.exportBtn.Bind(wx.EVT_BUTTON, self.onExportStatistics)
 
 			sizer = wx.BoxSizer(wx.VERTICAL)
-			sizer.Add(self.timePointGUI, 1, wx.EXPAND)
+			sizer.Add(self.timePointGUI)
 			sizer.AddSpacer((5,5))
-			sizer.Add(self.frapGUI, 1)
+			sizer.Add(self.frapGUI)
 			sizer.AddSpacer((5,5))
 			sizer.Add(self.exportBtn)
-			sizer.AddSpacer((5,5))
-			gui.sizer.Add(sizer, (1,0), flag = wx.EXPAND | wx.ALL)
+
+			pos = (0, 0)
+			item = gui.sizer.FindItemAtPosition(pos)
+			if item.IsWindow():
+				win = item.GetWindow()  
+			elif item.IsSizer():
+				win = item.GetSizer()
+			elif item.IsSpacer():
+				win = item.GetSpacer()
+
+			resultSizer = win.GetItem(0).GetSizer().FindItemAtPosition((4,0)).GetSizer()
+			resultSizer.Add(sizer)
 
 		return gui
 
