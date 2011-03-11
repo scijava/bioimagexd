@@ -28,6 +28,7 @@ import lib.ImageOperations
 import scripting
 import vtk
 import GUI.GUIBuilder
+import types
 
 class MaskROIFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -35,20 +36,30 @@ class MaskROIFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
 	name = "Use ROI mask"
 	category = lib.FilterTypes.ROI
-	
+	level = scripting.COLOR_BEGINNER
 	def __init__(self):
 		"""
 		Initialization
 		"""
-		lib.ProcessingFilter.ProcessingFilter.__init__(self, (1, 1))
-		self.descs = {"ROI": "Region of Interest used as mask"}
+		lib.ProcessingFilter.ProcessingFilter.__init__(self, (2, 2))
+		self.descs = {"ROI": "Region of Interest used as mask",
+					  "OutputValue":"Outside mask value",
+					  "UseImageROI": "Use image input as ROI"}
+		self.filterDesc = "Uses a Region of Interest (ROI) as a mask\nInput: Grayscale/Binary/Label image and optional Binary image\nOutput: Grayscale/Binary/Label image"
+
+	def getInputName(self, n):
+		"""
+		Return the name of the input #n
+		"""			 
+		if n == 1:
+			return "Source dataset %d" % n	  
+		return "Optional ROI image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Region of Interest", ("ROI",)]]
-		
+		return [["Region of Interest", ("ROI",)], ["", ("UseImageROI", "OutputValue")]]
 	
 	def getType(self, parameter):
 		"""
@@ -56,6 +67,10 @@ class MaskROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""    
 		if parameter == "ROI":
 			return GUI.GUIBuilder.ROISELECTION
+		if parameter == "OutputValue":
+			return types.FloatType
+		if parameter == "UseImageROI":
+			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
 		"""
@@ -66,6 +81,7 @@ class MaskROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			if n:
 				return (0, n[0])
 			return 0
+		return 0
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -74,9 +90,18 @@ class MaskROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
-		maxx, maxy, maxz = self.dataUnit.getDimensions()
-		roi = self.parameters["ROI"][1]
-		n, maskImage = lib.ImageOperations.getMaskFromROIs([roi], maxx, maxy, maxz)
+		if self.parameters["UseImageROI"]:
+			maskImage = self.getInput(2)
+			# If scalar type is not unsigned char, then cast the data
+			cast = vtk.vtkImageCast()
+			cast.SetInput(maskImage)
+			cast.SetOutputScalarType(3)
+			cast.SetClampOverflow(1)
+			maskImage = cast.GetOutput()
+		else:
+			maxx, maxy, maxz = self.dataUnit.getDimensions()
+			roi = self.parameters["ROI"][1]
+			n, maskImage = lib.ImageOperations.getMaskFromROIs([roi], maxx, maxy, maxz)
 
 		scripting.wantWholeDataset=1
 		imagedata = self.getInput(1)
@@ -86,5 +111,6 @@ class MaskROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		maskFilter = vtk.vtkImageMask()
 		maskFilter.SetImageInput(imagedata)
 		maskFilter.SetMaskInput(maskImage)
+		maskFilter.SetMaskedOutputValue(self.parameters["OutputValue"])
 		
 		return maskFilter.GetOutput()

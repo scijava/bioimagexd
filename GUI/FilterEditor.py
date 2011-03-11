@@ -160,11 +160,11 @@ class FilterEditor(wx.Panel):
 
 		if not scripting.TFLag:
 			f = lambda evt, btn = self.addMiscBtn, \
-				cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+				cats = (lib.FilterTypes.ROI, lib.FilterTypes.SIMULATION, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
 				self.onShowAddMenu(evt, btn, cats)
 		else:
 			f = lambda evt, btn = self.addMiscBtn, \
-				cats = (lib.FilterTypes.ROI, lib.FilterTypes.MASK, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
+				cats = (lib.FilterTypes.ROI, lib.FilterTypes.REGISTRATION, lib.FilterTypes.TRACKING, lib.FilterTypes.CONVERSION): \
 				self.onShowAddMenu(evt, btn, cats)
 			
 		self.addMiscBtn.Bind(wx.EVT_LEFT_DOWN, f)
