@@ -51,6 +51,7 @@ class FRAPAnalysisList(wx.ListCtrl):
 		Setup list ctrl
 		"""
 		self.quantities = []
+		self.quantities.append("Number of pixels")
 		self.quantities.append("Baseline intensity")
 		self.quantities.append("Lowest intensity")
 		self.quantities.append("Intensity after recovery")
@@ -60,6 +61,7 @@ class FRAPAnalysisList(wx.ListCtrl):
 		self.quantities.append("Diffusion constant")
 
 		self.values = []
+		self.values.append(0)
 		self.values.append(0.0)
 		self.values.append(0.0)
 		self.values.append(0.0)
@@ -68,7 +70,7 @@ class FRAPAnalysisList(wx.ListCtrl):
 		self.values.append(0.0)
 		self.values.append(0.0)
 
-		self.SetItemCount(7)
+		self.SetItemCount(8)
 		self.InsertColumn(0, "Quantity")
 		self.InsertColumn(1, "Value")
 		self.SetColumnWidth(0, 250)
@@ -77,7 +79,6 @@ class FRAPAnalysisList(wx.ListCtrl):
 		self.attr = wx.ListItemAttr()
 		self.color = wx.Colour(180,255,180)
 		self.attr.SetBackgroundColour(self.color)
-
 
 	def getColumnText(self, index, col):
 		"""
@@ -92,10 +93,12 @@ class FRAPAnalysisList(wx.ListCtrl):
 		if col == 0:
 			return self.quantities[item]
 		elif col == 1:
-			if item == 3:
+			if item == 4:
 				return "%.3f s"%self.values[item]
-			elif item == 5:
+			elif item == 6:
 				return u"%.3f %%"%self.values[item]
+			elif item == 0:
+				return "%d"%self.values[item]
 			else:
 				return "%.3f"%self.values[item]
 		return ""
@@ -109,47 +112,53 @@ class FRAPAnalysisList(wx.ListCtrl):
 		"""
 		return self.attr
 
+	def setNumPixels(self, numPixels):
+		"""
+		Set number of pixels in ROI
+		"""
+		self.values[0] = numPixels
+
 	def setBaselineInt(self, baseInt):
 		"""
 		Set baseline intensity
 		"""
-		self.values[0] = baseInt
+		self.values[1] = baseInt
 
 	def setLowestInt(self, lowInt):
 		"""
 		Set lowest intensity
 		"""
-		self.values[1] = lowInt
+		self.values[2] = lowInt
 
 	def setAfterRecoveryInt(self, afterInt):
 		"""
 		Set intensity after recovery
 		"""
-		self.values[2] = afterInt
+		self.values[3] = afterInt
 
 	def setHalfRecoveryTime(self, recTime):
 		"""
 		Set half recovery time
 		"""
-		self.values[3] = recTime
+		self.values[4] = recTime
 		
 	def setSlope(self, slope):
 		"""
 		Set slope
 		"""
-		self.values[4] = slope
+		self.values[5] = slope
 
 	def setRecoveryPercentage(self, recPerc):
 		"""
 		Set recovery percentage
 		"""
-		self.values[5] = recPerc
+		self.values[6] = recPerc
 
 	def setDiffusionConstant(self, diffConst):
 		"""
 		Set diffusion constant
 		"""
-		self.values[6] = diffConst
+		self.values[7] = diffConst
 
 		
 class FRAPIntensityMeasurementList(IntensityMeasurementList.IntensityMeasurementsList):
@@ -164,6 +173,7 @@ class FRAPIntensityMeasurementList(IntensityMeasurementList.IntensityMeasurement
 		item.SetText("Time point")
 		self.SetColumn(0, item)
 		self.SetColumnWidth(0, 50)
+		self.DeleteColumn(1)
 
 		self.attr1 = wx.ListItemAttr()
 		self.attr1.SetBackgroundColour("white")
@@ -198,14 +208,12 @@ class FRAPIntensityMeasurementList(IntensityMeasurementList.IntensityMeasurement
 		if col == 0:
 			return "%d"%(item+1)
 		elif col == 1:
-			return "%d"%itemStats["NumPixels"]
-		elif col == 2:
 			return "%.2f"%itemStats["TotInt"]
+		elif col == 2:
+			return "%.2f"%itemStats["MinInt"]
 		elif col == 3:
 			return "%.2f"%itemStats["MaxInt"]
 		elif col == 4:
-			return "%.2f"%itemStats["MinInt"]
-		elif col == 5:
 			return u"%.2f\u00B1%.2f"%(itemStats["MeanInt"], itemStats["Sigma"])
 			
 

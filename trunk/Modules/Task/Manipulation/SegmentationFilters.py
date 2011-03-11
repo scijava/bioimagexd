@@ -45,81 +45,9 @@ def getFilters():
 	"""
 	This function returns all the filter-classes in this module and is used by ManipulationFilters.getFilterList()
 	"""
-	return [MaskFilter,
-			MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
+	return [MaximumObjectsFilter, ITKRelabelImageFilter, ITKInvertIntensityFilter,
 			ITKConfidenceConnectedFilter, ITKConnectedThresholdFilter,
 			ITKNeighborhoodConnectedThresholdFilter]
-
-
-class MaskFilter(ProcessingFilter.ProcessingFilter):
-	"""
-	Masking filter
-	"""		
-	name = "Mask"
-	category = MASK
-	level = scripting.COLOR_BEGINNER
-	def __init__(self, inputs = (2, 2)):
-		"""
-		Initialization
-		"""		   
-		ProcessingFilter.ProcessingFilter.__init__(self, inputs)
-		self.vtkfilter = vtk.vtkImageMask()
-		self.cast = None		
-		self.descs = {"OutputValue": "Masked output value"}
-		self.filterDesc = "Masks image with another\nInput: Grayscale/Binary/Label image and Binary image\nOutput: Grayscale/Binary/Label image"
-			
-	def getInputName(self, n):
-		"""
-		Return the name of the input #n
-		"""			 
-		if n == 1:
-			return "Source dataset %d" % n	  
-		return "Mask dataset"
-		
-	def getDefaultValue(self, parameter):
-		"""
-		Return the default value of a parameter
-		"""
-		return 0
-		
-	def getParameters(self):
-		"""
-		Return the list of parameters needed for configuring this GUI
-		"""
-		return [["", ("OutputValue", )]]
-
-	def execute(self, inputs, update = 0, last = 0):
-		"""
-		Execute the filter with given inputs and return the output
-		"""
-		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
-			return None
-		self.vtkfilter.SetInput1(self.getInput(1))
-		
-		maskDataset = self.getInput(2)
-		print "maskDataset=",maskDataset.GetScalarType()
-		# If scalar type is not unsigned char, then cast the data
-		if maskDataset.GetScalarType() != 3:
-			# if the data is unsigned long, check that if there's no 0
-			# intensity, then use 1 as the background intensity
-			if maskDataset.GetScalarType() == 9:
-				histogram = lib.ImageOperations.get_histogram(maskDataset)
-				print "histogram = ",histogram[0:10]
-			if not self.cast:
-				self.cast = vtk.vtkImageCast()
-			print "Casting data"
-			self.cast.RemoveAllInputs()
-			self.cast.SetInput(maskDataset)
-			self.cast.SetOutputScalarType(3)
-			self.cast.SetClampOverflow(1)
-			maskDataset = self.cast.GetOutput()
-		
-		self.vtkfilter.SetInput2(maskDataset)
-		self.vtkfilter.SetMaskedOutputValue(self.parameters["OutputValue"])
-		
-		if update:
-			self.vtkfilter.Update()
-		return self.vtkfilter.GetOutput()
 
 
 class MaximumObjectsFilter(ProcessingFilter.ProcessingFilter):

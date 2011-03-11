@@ -32,6 +32,9 @@ import itk
 import types
 import math
 import FRAPAnalysisList
+import codecs
+import csv
+import Logging
 
 class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -62,7 +65,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		Return the name of the input n
 		"""
 		if n == 2:
-			return "optional ROI image"
+			return "Optional ROI image"
 		return "Source dataset"
 		
 	def getParameters(self):
@@ -136,7 +139,29 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Export statistics button event handler
 		"""
-		pass
+		name = self.parameters["ResultsFile"]
+		if name[-4:] == ".csv":
+			name = name[:-4]
+		filename = GUI.Dialogs.askSaveAsFileName(self.taskPanel, "Save FRAP results as", "%s.csv"%name, "CSV File (*.csv)|*.csv")
+		self.writeStatistics(filename)
+
+	def writeStatistics(self, filename):
+		"""
+		Write FRAP results to file
+		"""
+		fhndl = codecs.open(filename, "ab", "latin1")
+		Logging.info("Saving FRAP results to file %s"%filename, kw="processing")
+		writer = csv.writer(fhndl, dialect = "excel", delimiter = ";")
+
+		writer.writerow(["Time point", "Sum", "Min", "Max", "Mean int.", "Std. dev."])
+		for tp,row in enumerate(self.timePointMeasurements):
+			writer.writerow([tp+1, row["TotInt"], row["MinInt"], row["MaxInt"], row["MeanInt"], row["Sigma"]])
+
+		writer.writerow([])
+		writer.writerow(["Number or pixels", "Baseline intensity", "Lowest intensity", "Intensity after recovery", "Half recovery time", "Slope", "Recovery %", "Diffusion constant"])
+		writer.writerow([self.frapMeasurements["NumPixels"], self.frapMeasurements["BaselineInt"], self.frapMeasurements["LowestInt"], self.frapMeasurements["AfterRecoveryInt"], self.frapMeasurements["HalfRecoveryTime"], "0.000", self.frapMeasurements["RecoveryPercentage"], self.frapMeasurements["DiffusionConstant"]])
+
+		fhndl.close()
 		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -161,6 +186,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 		dx, dy, dz = self.dataUnit.getDimensions()
 		radius = 0.0
 		timeStamps = self.dataUnit.getSettings().get("TimeStamps")
+		numPixels = 0
 		for tp in range(timePoints):
 			image = self.dataUnit.getSourceDataUnits()[0].getTimepoint(tp)
 			itkImage = self.convertVTKtoITK(image)
@@ -168,11 +194,11 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 			maskValue = 255
 			if self.parameters["SecondInput"]:
 				itkMask = self.convertVTKtoITK(mask)
-				min, maskValue = mask.GetScalarRange()
+				minValue, maskValue = mask.GetScalarRange()
 			else:
 				n, mask = lib.ImageOperations.getMaskFromROIs([roi], dx, dy, dz)
 				itkMask = self.convertVTKtoITK(mask)
-				min, maskValue = mask.GetScalarRange()
+				minValue, maskValue = mask.GetScalarRange()
 
 			maskValue = int(maskValue)
 			labelStats = itk.LabelStatisticsImageFilter[itkImage, itkMask].New()
@@ -186,8 +212,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 			minInt = labelStats.GetMinimum(maskValue)
 			meanInt = labelStats.GetMean(maskValue)
 			sigma = labelStats.GetSigma(maskValue)
-			self.timePointMeasurements.append({"NumPixels": numPixels,
-											   "TotInt": totInt,
+			self.timePointMeasurements.append({"TotInt": totInt,
 											   "MaxInt": maxInt,
 											   "MinInt": minInt,
 											   "MeanInt": meanInt,
@@ -200,6 +225,7 @@ class FRAPAnalysisFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.timePointGUI.Refresh()
 
 		# Calculate FRAP statistics
+		self.frapMeasurements["NumPixels"] = numPixels
 		lowestIntTP = 0
 		lowestInt = self.timePointMeasurements[0]["MeanInt"]
 		for n, tpStat in enumerate(self.timePointMeasurements):

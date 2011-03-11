@@ -72,7 +72,7 @@ class TaskPanel(ScrolledPanel):
 		self.preview = None
 		self.onByDefault = 1
 		self.cacheKey = None
-	
+
 		self.mainsizer = wx.GridBagSizer()
 		if not hasattr(self, "createItemSelection"):
 			self.createItemSelection = 0
