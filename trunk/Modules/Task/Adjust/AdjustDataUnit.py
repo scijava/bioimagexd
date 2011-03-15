@@ -2,7 +2,6 @@
 """
  Unit: AdjustDataUnit
  Project: BioImageXD
- Created: 01.01.2004, KP
  Description: A dataunit class that represents a data unit produced by adjustment and processing
 
  Copyright (C) 2005  BioImageXD Project
@@ -35,10 +34,8 @@ from lib.DataUnit.CombinedDataUnit import CombinedDataUnit
 
 class AdjustDataUnit(CombinedDataUnit):
 	"""
-	Created: 24.11.2004, JM, JV
 	Description: Class for an adjusted single-channel 4D DataUnit
 	"""
-
 	def __init__(self, name = ""):
 		"""
 		Constructor
@@ -82,7 +79,7 @@ class AdjustDataUnit(CombinedDataUnit):
 				"There are %d timepoints" % (n, self.length))
 				continue
 			print "Interpolating from %d to %d" % (fromtp, totp)
-			self.interpolateIntensitiesBetween(fromtp, totp)
+			self.interpolateIntensitiesBetween(fromtp-1, totp-1)
 
 	def interpolateIntensitiesBetween(self, timepoint1, timepoint2):
 		"""

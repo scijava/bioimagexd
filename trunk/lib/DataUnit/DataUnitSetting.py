@@ -3,7 +3,6 @@
 """
  Unit: DataUnitSetting
  Project: BioImageXD
- Created: 26.03.2005, KP
  Description:
 
  This is a class that holds all settings of a dataunit. A dataunit's 
@@ -218,7 +217,6 @@ class DataUnitSettings:
 				
 				for i in range(n + 1):
 					ckey = "%s[%d]" % (key, i)
-					#try:
 					try:
 						try:
 							value = parser.get(key, ckey)

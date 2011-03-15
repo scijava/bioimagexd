@@ -2,7 +2,6 @@
 """
  Unit: MergingSettings.py
  Project: BioImageXD
- Created: 26.03.2005, KP
  Description:
 
  This is a class that holds all settings of a dataunit. A dataunit's 
@@ -41,7 +40,6 @@ import vtkbxd
 		
 class MergingSettings(DataUnitSettings):
 	"""
-	Created: 27.03.2005, KP
 	Description: Stores color merging related settings
 	"""
 	def __init__(self, n = -1):

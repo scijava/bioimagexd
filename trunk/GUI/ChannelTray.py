@@ -2,7 +2,6 @@
 """
  Unit: ChannelTray
  Project: BioImageXD
- Created: 20.06.2006, KP
  Description:
 
  A panel that lets the user select from given channels
@@ -40,7 +39,6 @@ import wx
 
 class ChannelTray(wx.Panel):
 	"""
-	Created: 20.06.2006, KP
 	Description: A frame used to let the user select from the different masks
 	"""
 	def __init__(self, parent, **kws):

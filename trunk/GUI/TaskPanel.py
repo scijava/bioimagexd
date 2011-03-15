@@ -142,7 +142,7 @@ class TaskPanel(ScrolledPanel):
 	def onUpdateGUI(self, *arg):
 		"""
 		A callback for updating the GUI when settings have been changed
-		"""			
+		"""
 		self.updateSettings(1)
 		
 	def restoreFromCache(self, cachedSettings = None):

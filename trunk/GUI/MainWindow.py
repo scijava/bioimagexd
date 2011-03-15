@@ -1605,6 +1605,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				if not filenames:
 					Logging.info("Got no name for settings file", kw = "dataunit")
 					return
+				filenames = filenames[0]
 				Logging.info("Loading settings for dataset", name, " from ", filenames, kw = "dataunit")
 
 				do_cmd = "mainWindow.loadSettings(\"%s\")" % filenames

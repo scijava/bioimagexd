@@ -2,7 +2,6 @@
 """
  Unit: AdjustSettings
  Project: BioImageXD
- Created: 02.07.2005, KP
  Description:
 
  This is a class that holds all settings of a dataunit. A dataunit's
@@ -40,7 +39,6 @@ import vtkbxd
 
 class AdjustSettings(DataUnitSettings):
 	"""
-	Created: 27.03.2005, KP
 	Description: Stores settings related to dataset adjustment
 	"""
 	def __init__(self, n = -1):
@@ -49,7 +47,7 @@ class AdjustSettings(DataUnitSettings):
 		"""
 		DataUnitSettings.__init__(self, n)
 		self.registerCounted("IntensityTransferFunctions", 1)
-		self.register("InterpolationTimepoints")
+		self.register("InterpolationTimepoints", 1)
 		self.set("Type", "Adjust")
 		
 		self.registerPrivate("ColorTransferFunction", 1)        

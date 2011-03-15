@@ -2,7 +2,6 @@
 """
  Unit: MergingDataUnit
  Project: BioImageXD
- Created: 01.01.2004, KP
  Description: A dataunit class that represents a data unit processed through filters
 
  Copyright (C) 2005	 BioImageXD Project
