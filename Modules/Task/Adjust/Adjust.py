@@ -2,7 +2,6 @@
 """
  Unit: Adjust
  Project: BioImageXD
- Created: 25.11.2004, KP
  Description:
  
  A Module for adjusting a dataset by changing for example it's brightness, contrast

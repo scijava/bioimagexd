@@ -416,7 +416,11 @@ def getAsParameterList(iTF):
 			iTF.GetMaximumThreshold(),
 			iTF.GetMaximumValue(),
 			iTF.GetProcessingThreshold(),
-			iTF.GetRangeMax()]
+			iTF.GetRangeMax(),
+			iTF.GetSmoothStart(),
+			iTF.GetSmoothEnd(),
+			iTF.GetSmoothStartGamma(),
+			iTF.GetSmoothEndGamma()]
 	return lst
 	
 def setFromParameterList(iTF, listOfValuesToSet):
@@ -424,7 +428,7 @@ def setFromParameterList(iTF, listOfValuesToSet):
 	Set the parameters from the input list
 	"""
 	brightness, contrast, gamma, minimumThreshold, minimumValue, maximumThreshold, \
-	maximumValue, processingThreshold, rangemax = listOfValuesToSet
+	maximumValue, processingThreshold, rangemax, smoothStart, smoothEnd, smoothStartGamma, smoothEndGamma = listOfValuesToSet
 	iTF.SetRangeMax(rangemax)
 	iTF.SetContrast(float(contrast))
 	iTF.SetGamma(float(gamma))
@@ -434,6 +438,10 @@ def setFromParameterList(iTF, listOfValuesToSet):
 	iTF.SetMaximumValue(int(maximumValue))
 	iTF.SetProcessingThreshold(int(processingThreshold))
 	iTF.SetBrightness(int(brightness))
+	iTF.SetSmoothStart(int(smoothStart)),
+	iTF.SetSmoothEnd(int(smoothEnd)),
+	iTF.SetSmoothStartGamma(float(smoothStartGamma)),
+	iTF.SetSmoothEndGamma(float(smoothEndGamma))
 
 def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None):
 	"""

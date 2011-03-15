@@ -3,7 +3,6 @@
 """
  Unit: ManipulationSetting
  Project: BioImageXD
- Created: 26.03.2005, KP
  Description:
 
  This is a class that holds all settings of a dataunit. A dataunit's 

@@ -262,14 +262,13 @@ class CombinedDataUnit(DataUnit):
 					lib.messenger.send(None, "update_processing_progress", timePoint, n, len(timepoints) * len(imageDatas))
 					n += 1
 					# Write the image data to disk
-					if not settings_only:
-						Logging.info("Writing timepoint %d"%timePoint,kw="processing")
-						dataWriters[i].addImageData(imageData)
-						if polydatas is not None and i < len(polydatas):
-							dataWriters[i].addPolyData(polydatas[i])
-						dataWriters[i].sync()
-						dims = dataWriters[i].getOutputDimensions()
-						self.settings.set("Dimensions", str(dims))
+					Logging.info("Writing timepoint %d"%timePoint,kw="processing")
+					dataWriters[i].addImageData(imageData)
+					if polydatas is not None and i < len(polydatas):
+						dataWriters[i].addPolyData(polydatas[i])
+					dataWriters[i].sync()
+					dims = dataWriters[i].getOutputDimensions()
+					self.settings.set("Dimensions", str(dims))
 					
 		scripting.processingTimepoint = -1
 		if settings_only:
@@ -288,6 +287,7 @@ class CombinedDataUnit(DataUnit):
 			if updateCTF:
 				self.settings.set("ColorTransferFunction", self.sourceunits[i].getColorTransferFunction())
 			self.createDataUnitFile(dataWriter)
+		
 		self.settings.set("ColorTransferFunction", origCTF)
 
 		if not settings_only:

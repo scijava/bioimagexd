@@ -2,7 +2,6 @@
 """
  Unit: Merging
  Project: BioImageXD
- Created: 24.11.2004, JV
  Description:
 
  Merges two (or more) 8-bit datasets to one 24-bit using classes in the VTK
