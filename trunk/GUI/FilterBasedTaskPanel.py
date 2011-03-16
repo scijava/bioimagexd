@@ -104,4 +104,4 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		filtNum = len(self.filterList.getFilters())
 		for i in range(filtNum-1,-1,-1):
 			self.filterList.removeFilter(i)
-			
+

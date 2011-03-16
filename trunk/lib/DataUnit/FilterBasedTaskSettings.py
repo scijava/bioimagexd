@@ -3,7 +3,6 @@
 """
  Unit: FilterBasedTaskSettings
  Project: BioImageXD
- Created: 26.03.2005, KP
  Description:
 
  This is a base class for all tasks that are based on the notion of a list of filters
@@ -35,7 +34,6 @@ import lib.FilterBasedModule
 
 class FilterBasedTaskSettings(DataUnitSettings):
 	"""
-	Created: 27.03.2005, KP
 	Description: Stores settings related to single unit Manipulationing
 	"""
 	def __init__(self, n = -1):
@@ -79,8 +77,8 @@ class FilterBasedTaskSettings(DataUnitSettings):
 		"""
 		if name == "FilterList":
 			filterList = lib.FilterBasedModule.FilterList()
-			#filterNames = eval(value)
-			#filterList.populate(filterNames)
+			filterNames = eval(value)
+			filterList.populate(filterNames)
 			return filterList
 		else:
 			return DataUnitSettings.deserialize(name, value)
