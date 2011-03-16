@@ -1397,6 +1397,7 @@ class MainWindow(wx.Frame):
 		A method that actually closes the task panel
 		"""
 		if self.currentTaskWindow:
+			self.currentTaskWindow.removeFilters()
 			self.currentTaskWindow.cacheSettings()
 		selectedUnits = self.tree.getSelectedDataUnits()
 		self.visualizer.enable(0)
@@ -1406,7 +1407,6 @@ class MainWindow(wx.Frame):
 
 		if self.currentTaskWindow:
 			Logging.info("Closing task")
-			self.currentTaskWindow.removeFilters()
 			self.currentTaskWindow.deregister()
 			self.currentTaskWindow.Show(0)
 			self.currentTaskWindow.Destroy()

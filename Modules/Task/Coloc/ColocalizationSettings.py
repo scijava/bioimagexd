@@ -3,7 +3,6 @@
 """
  Unit: ColocalizationSettings
  Project: BioImageXD
- Created: 26.03.2005, KP
  Description:
 
  This is a class that holds all settings of a colocalization dataunit. A dataunit's 
@@ -41,7 +40,6 @@ from lib.DataUnit.DataUnitSetting import DataUnitSettings
 		
 class ColocalizationSettings(DataUnitSettings):
 	"""
-	Created: 26.03.2005, KP
 	Description: Registers keys related to colocalization in a dataunitsetting
 	"""
 	def __init__(self, n = -1):
@@ -68,7 +66,7 @@ class ColocalizationSettings(DataUnitSettings):
 				  "PercentageTotalCh1", "PercentageTotalCh2",
 				  "PercentageVolumeCh2", "PercentageMaterialCh1", "PercentageMaterialCh2",
 				  "SumOverThresholdCh1", "SumOverThresholdCh2", "SumCh1", "SumCh2",
-				  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh1", "OverThresholdCh2"]:
+				  "NonZeroCh1", "NonZeroCh2", "OverThresholdCh1", "OverThresholdCh2", "Ch2Lambda"]:
 			self.register(i, 1)
 		self.register("OutputScalar", 1)
 

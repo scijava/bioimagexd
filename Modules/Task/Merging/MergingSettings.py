@@ -66,12 +66,6 @@ class MergingSettings(DataUnitSettings):
 		"""
 		DataUnitSettings.initialize(self, dataunit, channels, timepoints)
 
-		#tf=vtkbxd.vtkIntensityTransferFunction()
-		#print "\n\n****' SETING RANGE OF ALPHA TF =",maxval
-		#tf.SetRangeMax(maxval)    
-		#self.set("AlphaTransferFunction",tf)
-		
-		
 		for i in range(channels):
 			tf = vtkbxd.vtkIntensityTransferFunction()
 			self.setCounted("IntensityTransferFunction", i, tf, 0)

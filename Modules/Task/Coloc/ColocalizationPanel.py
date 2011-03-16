@@ -2,7 +2,6 @@
 """
  Unit: ColocalizationPanel
  Project: BioImageXD
- Created: 03.11.2004, KP
  Description:
 
  A window that is used to control the settings for the
@@ -194,7 +193,7 @@ class ColocalizationPanel(TaskPanel):
 			coloctest.AddInput(data)
 		coloctest.AddObserver('ProgressEvent', lib.messenger.send)
 		lib.messenger.connect(coloctest, "ProgressEvent", self.updateProgress)
-		
+
 		coloctest.Update()
 		print "It took ", time.time() - t, "seconds to calculate p-value"
 		set = sources[0].getSettings().set
@@ -308,6 +307,7 @@ class ColocalizationPanel(TaskPanel):
 		self.iterLbl = wx.StaticText(self.colocalizationPanel, -1, "Iterations:")
 		self.iterations = wx.SpinCtrl(self.colocalizationPanel, -1, "100", min = 2, \
 										max = 999, initial = 100)
+		self.iterations.Bind(wx.EVT_SPINCTRL, self.onSetIterations)
 		
 		fixedPSFLbl = wx.StaticText(self.colocalizationPanel, -1, "PSF radius (px):")
 		self.fixedPSF = wx.TextCtrl(self.colocalizationPanel, -1, "")
@@ -379,9 +379,9 @@ class ColocalizationPanel(TaskPanel):
 		self.constColocValue = wx.TextCtrl(self.colocalizationPanel, -1, "255",
 									validator = val(string.digits, below = 255))
 		self.constColocValue.Enable(0)
+		self.constColocValue.Bind(wx.EVT_TEXT, self.onSetColocValue)
 
-		self.constColocCheckbox.Bind(wx.EVT_CHECKBOX,
-		lambda e, s = self, v = self.constColocValue:v.Enable(e.IsChecked()))
+		self.constColocCheckbox.Bind(wx.EVT_CHECKBOX, self.onSetColocCheckbox)
 		
 		sboxsizer.Add(self.constColocCheckbox)
 		sboxsizer.Add(self.constColocValue)
@@ -427,16 +427,23 @@ class ColocalizationPanel(TaskPanel):
 		try:
 			l = float(self.Ch2Lambda.GetValue())
 			na = float(self.NA.GetValue())
+			self.settings.set("Ch2Lambda", l)
+			self.settings.set("NumericalAperture", na)
 		except:
-			
 			return
 		
 		psf = (0.61 * l) / na
-		
 		# psf is now in nanometers
 		psf /= (vx * 1000 * 1000000)
 		self.fixedPSF.SetValue("%.4f" % float(psf))
-		
+		self.settings.set("PSF", psf)
+
+	def onSetIterations(self, event):
+		"""
+		Set number of iterations
+		"""
+		value = self.iterations.GetValue()
+		self.settings.set("NumIterations", value)
 		
 	def onSetTestMethod(self, event):
 		"""
@@ -448,13 +455,27 @@ class ColocalizationPanel(TaskPanel):
 		self.NA.Enable(flag)
 		self.Ch2Lambda.Enable(flag)
 		self.fixedPSF.Enable(flag)
-		
+		self.settings.set("Method", n)
+
+	def onSetColocCheckbox(self, event):
+		"""
+		Set coloc value checkbox
+		"""
+		checked = self.constColocCheckbox.IsChecked()
+		self.constColocValue.Enable(checked)
+		self.settings.set("ColocalizationDepth", checked)
+
+	def onSetColocValue(self, event):
+		"""
+		Set coloc value
+		"""
+		value = self.constColocValue.GetValue()
+		self.settings.set("OutputScalar", float(value))
 
 	def onExportStatistics(self, event):
 		"""
 		Export colocalization statistics to file
 		"""
-		
 		name = self.dataUnit.getName()
 		filename = GUI.Dialogs.askSaveAsFileName(self, "Save colocalization statistics as", \
 													"%s.csv" % name, "CSV File (*.csv)|*.csv")
@@ -578,7 +599,8 @@ class ColocalizationPanel(TaskPanel):
 			format = self.settings.get("ColocalizationDepth")
 			scalar = self.settings.get("OutputScalar")
 			self.constColocCheckbox.SetValue(format == 1)
-			self.constColocValue.SetValue("%d" % scalar)
+			self.constColocValue.SetValue("%d" %int(scalar))
+			self.constColocValue.Enable(format == 1)
 			
 			th = self.settings.getCounted("ColocalizationLowerThreshold", 0)
 			if th != None:
@@ -592,7 +614,29 @@ class ColocalizationPanel(TaskPanel):
 			th = self.settings.getCounted("ColocalizationUpperThreshold", 1)
 			if th != None:
 				self.upperthreshold2.SetValue(th)
-		
+
+			method = self.settings.get("Method")
+			if method is not None:
+				self.radiobox.SetSelection(int(method))
+				flag = (int(method) == 1)
+				self.iterations.Enable(flag)
+				self.NA.Enable(flag)
+				self.Ch2Lambda.Enable(flag)
+				self.fixedPSF.Enable(flag)
+
+			psf = self.settings.get("PSF")
+			if psf is not None:
+				self.fixedPSF.SetValue("%.4f"%float(psf))
+			iterations = self.settings.get("NumIterations")
+			if iterations is not None:
+				self.iterations.SetValue(int(iterations))
+			na = self.settings.get("NumericalAperture")
+			if na is not None:
+				self.NA.SetValue("%.4f"%float(na))
+			ch2lambda = self.settings.get("Ch2Lambda")
+			if ch2lambda is not None:
+				self.Ch2Lambda.SetValue("%d"%int(ch2lambda))
+
 		# If the scatterplot exists, update it's thresholds 
 		if self.scatterPlot:
 			sources = self.dataUnit.getSourceDataUnits()

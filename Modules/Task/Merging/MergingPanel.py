@@ -39,6 +39,7 @@ from GUI import ColorTransferEditor
 import vtkbxd
 import wx
 import scripting
+import types
 
 class MergingPanel(TaskPanel.TaskPanel):
 	"""
@@ -114,6 +115,8 @@ class MergingPanel(TaskPanel.TaskPanel):
 		self.averageEdit = wx.TextCtrl(self.editAlphaPanel, -1, "", size = (150, -1))
 		self.averageEdit.Enable(0)
 		self.averageEdit.SetForegroundColour(scripting.COLOR_EXPERIENCED)
+		self.averageEdit.Bind(wx.EVT_TEXT_ENTER, self.onAverageEdit)
+		self.averageEdit.Bind(wx.EVT_KILL_FOCUS, self.onAverageEdit)
 		
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		box.Add(self.averageLbl)
@@ -140,10 +143,27 @@ class MergingPanel(TaskPanel.TaskPanel):
 		A method that is called when the selection of alpha mode is chan ged
 		"""
 		mode = event.GetInt()
+		try:
+			value = int(self.averageEdit.GetValue())
+		except:
+			value = 0
+		self.settings.set("AlphaMode", [mode, value])
 		if mode == 1:
 			self.averageEdit.Enable(1)
 		else:
 			self.averageEdit.Enable(0)
+
+	def onAverageEdit(self, evt):
+		"""
+		Method to update settings of current average value
+		"""
+		try:
+			value = int(self.averageEdit.GetValue())
+		except:
+			value = 0
+		mode = self.settings.get("AlphaMode")
+		mode[1] = value
+		self.settings.set("AlphaMode", mode)
 
 	def resetTransferFunctions(self, event = None):
 		"""
@@ -179,14 +199,20 @@ class MergingPanel(TaskPanel.TaskPanel):
 				self.colorBtn.Refresh()
 	
 			#Logging.info("settings=",self.settings,kw="task")
-			print self.settings.settings.keys()
 			tf = self.settings.get("IntensityTransferFunction")
-			#if tf:
-			#    #print "\n\n\nGot itf with 0=",tf.GetValue(0)," 255=",tf.GetValue(255)
-			#else:
-			#    print "\n\n\n*** WTF NO ITF"
 			self.intensityTransferEditor.setIntensityTransferFunction(tf)
-
+			try:
+				mode = self.settings.get("AlphaMode")
+				if types.StringType == type(mode):
+					mode = eval(mode)
+				self.alphaModeBox.SetSelection(mode[0])
+				if mode[0] == 1:
+					self.averageEdit.Enable(1)
+				else:
+					self.averageEdit.Enable(0)
+				self.averageEdit.SetValue(str(mode[1]))
+			except:
+				pass
 
 	def doColorMergingCallback(self, *args):
 		"""
