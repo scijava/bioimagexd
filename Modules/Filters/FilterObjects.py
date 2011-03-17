@@ -3,7 +3,6 @@
 """
  Unit: FilterObjects.py
  Project: BioImageXD
- Created: 10.12.2009, LP
  Description:
 
  A module that is used to filter objects from labeled image using different

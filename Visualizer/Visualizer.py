@@ -1258,14 +1258,14 @@ class Visualizer:
 		if delay >= 0:
 			imm = self.currentModeModule.getImmediateRendering()
 		delay = self.currentModeModule.getRenderingDelay()
-		Logging.info("Immediate rendering = ", imm, "delay = ", delay, kw = "visualizer")
+		Logging.info("Immediate rendering =", imm, "delay =", delay, kw = "visualizer")
 		if not imm:
 			t = time.time()
 			delay /= 1000.0
 			if not self.renderingTime:
 				self.renderingTime = t - (delay * 2)
 			diff = t - self.renderingTime
-			Logging.info("diff in renderTime = ", diff, kw = "visualizer")
+			Logging.info("diff in renderTime =", diff, kw = "visualizer")
 			if diff < delay and not self.delayed:
 				diff = 200 + int(1000 * diff)
 				Logging.info("Delaying, delay = %f, diff = %d" % (delay, diff), kw = "visualizer")
@@ -1284,7 +1284,6 @@ class Visualizer:
 		"""
 		if self.enabled:
 			self.currentMode.Render()
-
 
 	def onZPageDown(self, evt):
 		"""

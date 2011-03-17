@@ -181,10 +181,9 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		Initialization
 		"""
 		#wx.Panel.__init__(self, parent, -1, style = wx.RAISED_BORDER)
-		#wx.ScrolledWindow.__init__(self, parent, -1)
 		size = kws.get("size", (200, -1))
+		#wx.ScrolledWindow.__init__(self, parent, -1, size = size)
 		scrolled.ScrolledPanel.__init__(self, parent, -1, size = size)
-		
 		self.tmpSizer = wx.GridBagSizer(5, 5)
 		
 		self.sizer = wx.GridBagSizer(5, 5)
