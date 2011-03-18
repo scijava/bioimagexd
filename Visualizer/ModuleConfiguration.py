@@ -3,7 +3,6 @@
 """
  Unit: ModuleConfiguration
  Project: BioImageXD
- Created: 30.04.2005, KP
  Description:
 
  A module containing the configuration dialogs for various rendering 
@@ -37,7 +36,6 @@ import scripting
 
 class ModuleConfigurationPanel(wx.ScrolledWindow):
 	"""
-	Created: 23.05.2005, KP
 	Description: A base class for module configuration dialogs
 	"""    
 	def __init__(self, parent, visualizer, name, **kws):

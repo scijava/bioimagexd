@@ -3,7 +3,6 @@
 """
  Unit: Axes
  Project: BioImageXD
- Created: 20.06.2005, KP
  Description:
 
  A module containing axes for visualization
@@ -49,7 +48,7 @@ class AxesModule(VisualizationModule):
 	def __init__(self, parent, visualizer, **kws):
 		"""
 		Initialization
-		"""     
+		"""
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 		#self.name = "Axes"
@@ -91,15 +90,12 @@ class AxesModule(VisualizationModule):
 		Sets the dataunit this module uses for visualization
 		"""       
 		VisualizationModule.setDataUnit(self, dataunit)
-				
- 
 	
 	def showTimepoint(self, value):
 		"""
 		Set the timepoint to be displayed
 		"""          
 		self.updateRendering()
- 
 		
 	def updateRendering(self, e1 = None, e2 = None):
 		"""
@@ -117,7 +113,6 @@ class AxesModule(VisualizationModule):
 		self.marker.Off()
 		self.wxrenwin.Render()
 		
-		
 	def enableRendering(self):
 		"""
 		Enable the Rendering of this module
@@ -126,7 +121,7 @@ class AxesModule(VisualizationModule):
 		self.marker.On()
 		self.wxrenwin.Render()
 		
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		A dummy method that captures the call for setting the
 					 different properties
