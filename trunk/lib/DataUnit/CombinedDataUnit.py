@@ -528,8 +528,7 @@ class CombinedDataUnit(DataUnit):
 		elif showOrig:
 			self.doOrig = 1
 		return preview
-			
-		
+
 	def getSettingsClass(self):
 		"""
 		Return the class that represents settings for this dataunit

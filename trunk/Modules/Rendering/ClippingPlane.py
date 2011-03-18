@@ -3,7 +3,6 @@
 """
  Unit: ClippingPlane
  Project: BioImageXD
- Created: 24.06.2005, KP
  Description:
 
  A module containing a clipping plane module
@@ -104,7 +103,6 @@ class ClippingPlaneModule(VisualizationModule):
 		if parameter in ["AllModules", "ClippedModule"]:
 			self.clipWithCurrentPlane()
 
-		
 	def getType(self, parameter):
 		"""
 		Return the type of the parameter
@@ -197,10 +195,8 @@ class ClippingPlaneModule(VisualizationModule):
 	def setDataUnit(self, dataunit):
 		"""
 		Sets the dataunit this module uses for visualization
-		"""       
-
-		VisualizationModule.setDataUnit(self, dataunit)
-			
+		"""
+		VisualizationModule.setDataUnit(self, dataunit)	
 		data = self.getInput(1)
 
 		self.origin = data.GetOrigin()
@@ -222,12 +218,11 @@ class ClippingPlaneModule(VisualizationModule):
 		"""          
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
-
 		
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""             
+		"""
 		#self.outline.SetInput(self.data)
 		#self.outlineMapper.SetInput(self.outline.GetOutput())
 		
@@ -235,7 +230,6 @@ class ClippingPlaneModule(VisualizationModule):
 
 		if self.renew:
 			data = self.getInput(1)
-
 			self.planeWidget.SetInput(data)
 			self.renew = 0
 		
@@ -259,21 +253,20 @@ class ClippingPlaneModule(VisualizationModule):
 	def showPlane(self, flag):
 		"""
 		Show / hide the plane controls
-		"""          
+		"""
 		if flag:
 			self.planeWidget.On()
 		else:
 			self.planeWidget.Off()
 		
-		
 	def enableRendering(self):
 		"""
 		Enable the Rendering of this module
-		"""          
+		"""
 		self.planeWidget.On()
 		self.wxrenwin.Render()
 		
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""         
@@ -282,7 +275,7 @@ class ClippingPlaneModule(VisualizationModule):
 	def setShading(self, shading):
 		"""
 		Set shading on / off
-		"""          
+		"""
 		pass
 
 class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):

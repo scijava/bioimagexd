@@ -3,7 +3,6 @@
 """
  Unit: VisualizationModules
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A module containing the various Rendering modules for the visualization

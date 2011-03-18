@@ -3,7 +3,6 @@
 """
  Unit: WarpScalar
  Project: BioImageXD
- Created: 29.05.2006, KP
  Description:
 
  A WarpScalar rendering module
@@ -35,6 +34,7 @@ import types
 from Visualizer.VisualizationModules import VisualizationModule
 from Visualizer.ModuleConfiguration import ModuleConfigurationPanel
 import vtk
+import optimize
 
 def getClass():
 	return WarpScalarModule
@@ -84,6 +84,7 @@ class WarpScalarModule(VisualizationModule):
 		self.renderer.AddActor(self.actor)
 
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+	
 	def getParameterLevel(self, parameter):
 		"""
 		Return the level of the given parameter
@@ -166,12 +167,13 @@ class WarpScalarModule(VisualizationModule):
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
 
-		
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""             
-		data = self.data
+		"""
+		data = self.getInput(1)
+		x,y,z = self.dataUnit.getDimensions()
+		data = optimize.optimize(image = data, updateExtent = (0, x-1, 0, y-1, 0, z-1))
 		if data.GetNumberOfScalarComponents() > 3:
 			extract = vtk.vtkImageExtractComponents()
 			extract.SetInput(data)
@@ -180,9 +182,7 @@ class WarpScalarModule(VisualizationModule):
 		if data.GetNumberOfScalarComponents() > 1:
 			self.luminance.SetInput(data)
 			data = self.luminance.GetOutput()
-			
-		dims = self.data.GetDimensions()
-		x, y, z = dims
+		
 		z = self.parameters["Slice"]
 		ext = (0, x - 1, 0, y - 1, z, z)
 
@@ -193,14 +193,12 @@ class WarpScalarModule(VisualizationModule):
 		self.geometry.SetInput(slice)         
 		
 		self.warp.SetInput(self.geometry.GetOutput())
-		self.warp.SetScaleFactor(self.parameters["Scale"])        
-		
+		self.warp.SetScaleFactor(self.parameters["Scale"])		
 		self.merge.SetGeometry(self.warp.GetOutput())
-
 		
 		if slice.GetNumberOfScalarComponents() == 1:
 			maptocol = vtk.vtkImageMapToColors()
-			ctf = self.dataUnit.getColorTransferFunction()
+			ctf = self.getInputDataUnit(1).getColorTransferFunction()
 			maptocol.SetInput(slice)
 			maptocol.SetLookupTable(ctf)
 			maptocol.Update()
@@ -209,7 +207,6 @@ class WarpScalarModule(VisualizationModule):
 			scalars = slice
 			
 		self.merge.SetScalars(scalars)
-		
 		data = self.merge.GetOutput()
 		
 		if self.parameters["Normals"]:
@@ -218,14 +215,10 @@ class WarpScalarModule(VisualizationModule):
 			print "Feature angle=", self.parameters["FeatureAngle"]            
 			data = self.normals.GetOutput()
 		
-		
 		self.mapper.SetInput(data)
-
-		
 		self.mapper.Update()
 		VisualizationModule.updateRendering(self)
-		self.parent.Render()    
-
+		self.parent.Render()
 		
 	def setProperties(self, ambient, diffuse, specular, specularpower):
 		"""

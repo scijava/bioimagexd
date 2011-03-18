@@ -3,7 +3,6 @@
 """
  Unit: Orthogonal
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A module containing the orthogonal slices module for the visualization
@@ -298,7 +297,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.planeWidgetZ.On()
 		self.wxrenwin.Render()
 		
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""         
@@ -308,6 +307,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 			property.SetDiffuse(diffuse)
 			property.SetSpecular(specular)
 			property.SetSpecularPower(specularpower)
+			self.renderer.GetActiveCamera().SetViewAngle(viewangle)
 		
 	def setShading(self, shading):
 		"""
@@ -489,9 +489,8 @@ class OrthogonalPlaneConfigurationPanel(ModuleConfigurationPanel):
 		y = self.ySlider.GetValue()
 		z = self.zSlider.GetValue()
 		self.module.setDisplaySlice(x, y, z)
-		self.module.updateRendering()
-	
-		
+		self.module.updateRendering()	
+
 	def onApply(self, event):
 		"""
 		Apply the changes

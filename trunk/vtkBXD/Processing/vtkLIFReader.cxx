@@ -566,7 +566,7 @@ int vtkLIFReader::GetFramesPerTimePoint()
 
 int vtkLIFReader::ReadLIFHeader()
 {
-  this->OpenFile()
+  this->OpenFile();
   if (!this->File) {
     vtkErrorMacro(<< "ReadLIFHeader: No open LIF file.");
     return 0;
