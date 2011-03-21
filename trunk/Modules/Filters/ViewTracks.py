@@ -67,9 +67,9 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 #			"AllTracks":"Visualize all tracks"}
 	
 		self.numberOfPoints = None
-		lib.messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)
-		
+		lib.messenger.connect(None, "set_shown_tracks", self.updateSelectedTracks)		
 		self.particleFile = ""
+		self.filterDesc = "Visualize motion tracks in 2D\nInput: Grayscale/Binary/Label image\nOutput: Grayscale/Binary/Label image (same as output)"
 		
 	def setParameter(self, parameter, value):
 		"""
@@ -238,9 +238,9 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			elif item.IsSpacer():
 				win = item.GetSpacer()
 
-			readtracksSizer = win.GetItem(0).GetSizer().FindItemAtPosition((1,0)).GetSizer()
+			readtracksSizer = win.GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
 			readtracksSizer.Add(box)
-			showtracksSizer = win.GetItem(0).GetSizer().FindItemAtPosition((2,0)).GetSizer()
+			showtracksSizer = win.GetItem(0).GetSizer().FindItemAtPosition((4,0)).GetSizer()
 			showtracksSizer.Add(sizer)
 			#gui.sizer.Detach(win)
 			#gui.sizer.Add(win, (0, 0), flag = wx.EXPAND | wx.ALL)
@@ -262,7 +262,7 @@ class ViewTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
-		image = self.getInputFromChannel(0)
+		image = self.getInput(1)
 		return image
 	
 	def onReadTracks(self, event):
