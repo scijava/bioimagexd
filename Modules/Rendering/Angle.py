@@ -3,7 +3,6 @@
 """
  Unit: Angle
  Project: BioImageXD
- Created: 04.04.2006, KP
  Description:
 
  A module containing an angle measuring widget
@@ -52,7 +51,7 @@ class AngleModule(VisualizationModule):
 		"""     
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
-		#self.name = "Clipping Plane"
+
 		self.on = 0
 		self.renew = 1
 	
@@ -63,12 +62,10 @@ class AngleModule(VisualizationModule):
 		self.renderer = self.parent.getRenderer()
 		iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 		self.angleWidget.SetInteractor(iactor)
-		#self.updateRendering()
-		
-		#self.updateRendering()
-		self.picker = vtk.vtkCellPicker()
 
+		self.picker = vtk.vtkCellPicker()
 		#self.picker.SetTolerance(0.05)
+		self.filterDesc = "Measure angle in 3D view"
 	  
 	def onPlacePoint(self, obj, event):
 		"""

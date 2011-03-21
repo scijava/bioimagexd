@@ -3,7 +3,6 @@
 """
  Unit: Distance
  Project: BioImageXD
- Created: 03.04.2006, KP
  Description:
 
  A module containing a distance widget
@@ -54,7 +53,7 @@ class DistanceModule(VisualizationModule):
 		"""		
 		self.x, self.y, self.z = -1, -1, -1
 		VisualizationModule.__init__(self, parent, visualizer, **kws)	
-		#self.name = "Clipping Plane"
+
 		self.on = 0
 		self.renew = 1
 	
@@ -72,6 +71,7 @@ class DistanceModule(VisualizationModule):
 
 		#self.picker.SetTolerance(0.05)
 		#self.updateRendering()
+		self.filterDesc = "Measure distance in 3D view"
 	  
 	def onPlacePoint(self, obj, event):
 		"""
@@ -153,10 +153,8 @@ class DistanceModule(VisualizationModule):
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
-		"""				
-		
+		"""
 		if self.renew:
-
 #			 self.distanceWidget.SetInput(self.data)
 			self.renew = 0
 		
@@ -192,7 +190,7 @@ class DistanceModule(VisualizationModule):
 		self.distanceWidget.On()
 		self.wxrenwin.Render()
 		
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""			

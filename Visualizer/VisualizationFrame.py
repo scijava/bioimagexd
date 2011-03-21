@@ -314,8 +314,8 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		lbl = self.moduleListbox.GetStringSelection()
 		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().showConfiguration("%s")' % (lbl)
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
-									desc = "Show configuration module '%s'"%lbl)		
-		cmd.run()		
+									desc = "Show configuration module '%s'"%lbl)
+		cmd.run()
 #		self.showConfiguration(self.selected)
 		
 	def showConfiguration(self, label):
@@ -377,7 +377,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 	def loadModule(self, lbl):
 		"""
 		load a visualization module with the give name
-		"""		
+		"""
 		if not lbl in self.count:
 			self.count[lbl] = 0
 		n = self.count[lbl]
