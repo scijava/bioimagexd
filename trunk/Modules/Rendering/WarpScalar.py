@@ -84,6 +84,7 @@ class WarpScalarModule(VisualizationModule):
 		self.renderer.AddActor(self.actor)
 
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
+		self.filterDesc = "Visualize 2D slice as 3D map"
 	
 	def getParameterLevel(self, parameter):
 		"""

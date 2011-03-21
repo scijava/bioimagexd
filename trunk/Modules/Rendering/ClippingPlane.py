@@ -71,8 +71,10 @@ class ClippingPlaneModule(VisualizationModule):
 		self.planeWidget.SetInteractor(iactor)
 		VisualizationModule.__init__(self, parent, visualizer, **kws)
 		
-		self.descs = {"ShowControl": "Show controls","AllModules": "Clip all modules","ClippedModule": "Module to clip"}
-		self.filterDesc = "Clipping plane desc"
+		self.descs = {"ShowControl": "Show controls",
+					  "AllModules": "Clip all modules",
+					  "ClippedModule": "Module to clip"}
+		self.filterDesc = "Clip rendering using a plane"
 		
 	def getParameters(self):
 		"""
@@ -277,6 +279,12 @@ class ClippingPlaneModule(VisualizationModule):
 		Set shading on / off
 		"""
 		pass
+
+	def canSelectChannels(self):
+		"""
+		No channel selection
+		"""
+		return 0
 
 class ClippingPlaneConfigurationPanel(ModuleConfigurationPanel):
 

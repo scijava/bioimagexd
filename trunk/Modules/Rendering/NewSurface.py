@@ -87,6 +87,7 @@ class SurfaceModule(VisualizationModule):
 		self.renderer = self.parent.getRenderer()
 		self.renderer.AddActor(self.lodActor)
 		#self.updateRendering()
+		self.filterDesc = "Create and visualize iso-surface"
 		
 	def getParameterLevel(self, parameter):
 		"""

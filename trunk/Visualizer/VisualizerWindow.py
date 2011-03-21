@@ -3,7 +3,6 @@
 """
  Unit: VisualizerWindow
  Project: BioImageXD
- Created: 15.05.2005, KP
  Description:
 
  A window encapsulating wxVTKRenderWindowInteractor

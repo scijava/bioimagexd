@@ -109,6 +109,7 @@ class OrthogonalPlaneModule(VisualizationModule):
 		self.planeWidgetZ.SetInteractor(iactor)
 		
 		lib.messenger.connect(None, "zslice_changed", self.setZ)
+		self.filterDesc = "View orthogonal slices"
 		
 	   
 	def __getstate__(self):

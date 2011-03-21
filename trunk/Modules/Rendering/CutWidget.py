@@ -3,7 +3,6 @@
 """
  Unit: CutWidget
  Project: BioImageXD
- Created: 29.05.2007, KP
  Description:
 
  A widget for cutting off a piece from a volume
@@ -56,8 +55,10 @@ class CutBoxModule(VisualizationModule):
 		self.boxWidget = None
 		VisualizationModule.__init__(self, parent, visualizer, **kws)   
 
-		self.descs = {"ShowControls": "Show controls", "ClippedModule": "Module to clip", \
-						"AllModules": "Clip all modules", "InsideOut": "Clip from outside"}
+		self.descs = {"ShowControls": "Show controls",
+					  "ClippedModule": "Module to clip",
+					  "AllModules": "Clip all modules",
+					  "InsideOut": "Clip from outside"}
 		boxWidget = self.boxWidget = vtk.vtkBoxWidget()
 		self.cut = 0
 	  
@@ -82,6 +83,7 @@ class CutBoxModule(VisualizationModule):
 #        iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 		boxWidget.AddObserver("InteractionEvent", self.clipVolumeRender)
 		self.renew = 0
+		self.filterDesc = "Clip rendering using a box"
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -108,7 +110,6 @@ class CutBoxModule(VisualizationModule):
 		VisualizationModule.setParameter(self, parameter, value)
 		if parameter == "ShowControls" and self.boxWidget:
 			self.showPlane(value)
-			
 		
 	def getParameters(self):
 		"""
@@ -174,7 +175,6 @@ class CutBoxModule(VisualizationModule):
 		self.boxWidget.SetInput(data)
 		self.boxWidget.PlaceWidget()
 		self.boxWidget.On()
-		
 
 	def showTimepoint(self, value):
 		"""
@@ -185,7 +185,6 @@ class CutBoxModule(VisualizationModule):
 
 	def clipVolumeRender(self, obj, evt, *args):
 		"""
-		CreateD: 22.04.2007, KP
 		clip the module based on the given clipping planes
 		"""
 		modules = self.getModulesToClip()
@@ -219,7 +218,7 @@ class CutBoxModule(VisualizationModule):
 		VisualizationModule.updateRendering(self)
 		self.parent.Render()
 		
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""         
@@ -255,6 +254,12 @@ class CutBoxModule(VisualizationModule):
 			self.boxWidget.On()
 		else:
 			self.boxWidget.Off()
+
+	def canSelectChannels(self):
+		"""
+		No channel selection
+		"""
+		return 0
 
 class CutBoxConfigurationPanel(ModuleConfigurationPanel):
 		

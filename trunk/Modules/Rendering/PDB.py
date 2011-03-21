@@ -3,7 +3,6 @@
 """
  Unit: PDB
  Project: BioImageXD
- Created: 29.05.2006, KP
  Description:
 
  A PDB rendering module
@@ -123,6 +122,7 @@ class PDBModule(VisualizationModule):
 		self.glyph3D.SetScaleFactor(.25)
 		self.glyph3D.SetSource(self.sphereSource.GetOutput())
 
+		self.filterDesc = "Visualize Protein Data Bank file"
 
 	def getParameterLevel(self, parameter):
 		"""
@@ -135,11 +135,9 @@ class PDBModule(VisualizationModule):
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
-		"""            
-		
+		"""
 		return [["Input", (("FileName", "Select the PDB file to visualize", "*.pdb"), )], ["Settings", ("SphereRadius", "TubeRadius")]]
 
-		
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
@@ -150,7 +148,6 @@ class PDBModule(VisualizationModule):
 			return 0.2
 		if parameter == "SphereRadius":
 			return 1.0
-		
 		
 	def getType(self, parameter):
 		"""
@@ -193,7 +190,6 @@ class PDBModule(VisualizationModule):
 		self.renew = 1
 		VisualizationModule.showTimepoint(self, value)
 
-		
 	def updateRendering(self):
 		"""
 		Update the Rendering of this module
@@ -223,8 +219,7 @@ class PDBModule(VisualizationModule):
 		VisualizationModule.updateRendering(self)
 		self.parent.Render()
 
-		
-	def setProperties(self, ambient, diffuse, specular, specularpower):
+	def setProperties(self, ambient, diffuse, specular, specularpower, viewangle):
 		"""
 		Set the ambient, diffuse and specular lighting of this module
 		"""         

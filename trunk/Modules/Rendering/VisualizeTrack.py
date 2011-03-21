@@ -77,6 +77,7 @@ class VisualizeTrackModule(VisualizationModule):
 
         #iactor = self.wxrenwin.GetRenderWindow().GetInteractor()
 		lib.messenger.connect(None, "visualize_tracks", self.onVisualizeTracks)
+		self.filterDesc = "Visualize created motion tracks"
 		
 	def onVisualizeTracks(self, obj, evt, tracks):
 		"""

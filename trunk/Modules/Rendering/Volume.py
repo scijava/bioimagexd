@@ -146,6 +146,7 @@ class VolumeModule(VisualizationModule):
 		self.vtkObjects = ["otf", "otf2"]
 		#self.updateRendering()
 		lib.messenger.connect(None, "switch_datasets", self.onSwitchDatasets)
+		self.filterDesc = "Volume render input data"
 		
 	def setParameter(self, parameter, value):
 		"""
@@ -468,7 +469,6 @@ class VolumeModule(VisualizationModule):
 		self.colorTransferFunction = args[0].getColorTransferFunction()
 		lib.messenger.send(self, "set_Palette_ctf", self.colorTransferFunction)
 		self.volumeProperty.SetColor(self.colorTransferFunction)
-
 
 		
 class VolumeConfigurationPanel(ModuleConfigurationPanel):
