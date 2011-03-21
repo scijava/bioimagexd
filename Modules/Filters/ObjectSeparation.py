@@ -83,6 +83,14 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		return [["", ("Level",)], ["", ("ImageSpacing",)], ["Minimum object size (in voxels)", ("Threshold",)]]
 
+	def getParameterLevel(self, parameter):
+		"""
+		Return level of parameter
+		"""
+		if parameter == "Level":
+			return scripting.COLOR_EXPERIENCED
+		return scripting.COLOR_BEGINNER
+	
 	def onRemove(self):
 		"""
 		Callback for when filter is removed

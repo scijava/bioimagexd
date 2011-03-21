@@ -3,7 +3,6 @@
 """
 Unit: Scatterplot
 Project: BioImageXD
-Created: 25.03.2005, KP
 Description:
 
 A module that displays a scatterplot and allows the user

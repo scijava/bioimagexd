@@ -110,6 +110,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"SigmaDistSurface":"Sigma of Gaussian distance to surface (in x,y px size)",
 		"TimeDifference":"Time difference between time points",
 		"TargetPointsInside":"Target points inside radius (in x,y px size)"}
+
+		self.filterDesc = "Generate simulated image data\nInput: None\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""

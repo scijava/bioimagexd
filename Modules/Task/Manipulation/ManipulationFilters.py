@@ -98,7 +98,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [ "Radius factor:", ["", ("RadiusX", "RadiusY", "RadiusZ")],
+		return [["Radius factor:", ("RadiusX", "RadiusY", "RadiusZ")],
 		["", ("Dimensionality", )]
 		]
 		
