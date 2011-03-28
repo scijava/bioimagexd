@@ -3,7 +3,6 @@
 """
  Unit: ExportDialog.py
  Project: BioImageXD
- Created: 20.03.2005, KP
 
  Description:
 
@@ -103,7 +102,7 @@ class ExportDialog(wx.Dialog):
 		n = pattern.count("%")
 		Logging.info("Number of images =", n, kw = "io")
 		self.dlg = wx.ProgressDialog("Writing", "Writing image %d / %d" % (0, 0),
-		maximum = self.imageAmnt - 1, parent = self, style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
+		maximum = self.imageAmnt, parent = self, style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_AUTO_HIDE)
 		
 		if n == 0:
 			pattern = pattern + "%d"
@@ -135,7 +134,8 @@ class ExportDialog(wx.Dialog):
 			data.Update()
 			writer.SetInput(data)
 			writer.SetFileDimensionality(2)
-			self.dlg.Update(t * self.z, "Writing image %d / %d" % (t * self.z, self.imageAmnt))
+
+			self.dlg.Update((t+1) * self.z, "Writing image %d / %d" % ((t+1) * self.z, self.imageAmnt))
 
 			Logging.info("Writer = ", writer, kw = "io")
 			writer.Update()
