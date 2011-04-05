@@ -30,6 +30,7 @@ import types
 import lib.ImageOperations
 import scripting
 import os.path
+import platform
 
 class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -52,7 +53,6 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.origCtf = None
 		self.relabelFilter = None
 		self.itkfilter = None
-		self.data = None
 		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Objects touching each other become one object\nInput: Binary image\nOutput: Label image"
 		
 	def getParameterLevel(self, parameter):
@@ -147,8 +147,12 @@ class ConnectedComponentLabelingFilter(lib.ProcessingFilter.ProcessingFilter):
 			if not self.origCtf:
 				self.origCtf = settings.get("ColorTransferFunction")
 			ctf = lib.ImageOperations.watershedPalette(1, n, ignoreColors = 1)
-			self.data = data
+
 			settings.set("ColorTransferFunction", ctf)
 			settings.set("PaletteColors", n)
+			resBitDepth = 32
+			if platform.system() == "Linux":
+				resBitDepth = 64
+			settings.set("BitDepth", resBitDepth)
 			
 		return data

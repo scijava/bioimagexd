@@ -56,14 +56,15 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.eventDesc = "Casting the image to datatype"
 		self.descs = {"ClampOverflow": "Prevent over/underflow","Float":"Float", "Double":"Double",
 		"Int":"Int","UnsignedInt":"Unsigned int", "Long":"Long", "UnsignedLong":"Unsigned long",
-		"Short":"Short","UnsignedShort":"Unsigned short","UnsignedChar":"Unsigned char","Char":"Char"}
+		"Short":"Short","UnsignedShort":"Unsigned short","UnsignedChar":"Unsigned char","Char":"Char",
+					  "RescaleCTF": "Rescale current CTF to range of a new datatype"}
 		self.filterDesc = "Converts input data type to another data type\nInput: Grayscale/Binary/Label image\nOutput: Grayscale/Binary/Label image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["", ("ClampOverflow",)],
+		return [["Settings", ("ClampOverflow","RescaleCTF")],
 		["Target datatype",(("Float","Double","Int","UnsignedInt","Long","UnsignedLong","Short","UnsignedShort","Char","UnsignedChar"),("cols",4))]]
 
 	def getParameterLevel(self, parameter):
@@ -84,13 +85,15 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter in ["Float","Double","Int","UnsignedInt","Long","UnsignedLong","Short","UnsignedShort","Char","UnsignedChar"]:
 			return GUI.GUIBuilder.RADIO_CHOICE
-		elif parameter == "ClampOverflow":
+		elif parameter in ["ClampOverflow", "RescaleCTF"]:
 			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
-		"""		
+		"""
+		if parameter == "RescaleCTF":
+			return False
 		if parameter == "ClampOverflow":
 			return True
 		if parameter == "UnsignedChar":
@@ -105,8 +108,8 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 			return None
 
 		bitDepth = 8
-		min = 0.0
-		max = 255.0
+		minVal = 0.0
+		maxVal = 255.0
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)
 		self.vtkfilter.SetClampOverflow(self.parameters["ClampOverflow"])
@@ -116,7 +119,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 			if self.parameters[param]:
 				eval("self.vtkfilter.SetOutputScalarTypeTo%s()"%param)
 				output.Update()
-				min,max = output.GetScalarRange()
+				minVal,maxVal = output.GetScalarRange()
 				
 				self.eventDesc = "Casting the image to datatype %s"%param
 				if param in ["Short", "UnsignedShort"]:
@@ -128,11 +131,13 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		settings = self.dataUnit.getSettings()
 		settings.set("BitDepth", bitDepth)
-		ctf = settings.get("ColorTransferFunction")
-		scaledCtf = vtk.vtkColorTransferFunction()
-		handleCtf = vtkbxd.vtkHandleColorTransferFunction()
-		handleCtf.ScaleColorTransferFunction(ctf,scaledCtf,min,max)
-		settings.set("ColorTransferFunction",scaledCtf)
+
+		if self.parameters["RescaleCTF"]:
+			ctf = settings.get("ColorTransferFunction")
+			scaledCtf = vtk.vtkColorTransferFunction()
+			handleCtf = vtkbxd.vtkHandleColorTransferFunction()
+			handleCtf.ScaleColorTransferFunction(ctf,scaledCtf,minVal,maxVal)
+			settings.set("ColorTransferFunction",scaledCtf)
 
 		if update:
 			self.vtkfilter.Update()

@@ -899,5 +899,5 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		self.progressObj.setProgress(1.0)
 		self.updateProgress(None, "ProgressEvent")
-		
+
 		return self.getInput(1)

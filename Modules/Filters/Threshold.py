@@ -175,7 +175,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			#self.vtkfilter.ThresholdByLower(self.parameters["UpperThreshold"])
 			#self.vtkfilter.ThresholdByUpper(self.parameters["LowerThreshold"])
 			self.vtkfilter.ThresholdBetween(self.parameters["LowerThreshold"],self.parameters["UpperThreshold"])
-		
+
 			self.vtkfilter.SetReplaceIn(self.parameters["ReplaceIn"])
 			if self.parameters["ReplaceIn"]:
 				self.vtkfilter.SetInValue(self.parameters["ReplaceInValue"])
@@ -183,10 +183,11 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.vtkfilter.SetReplaceOut(self.parameters["ReplaceOut"])
 			if self.parameters["ReplaceOut"]:
 				self.vtkfilter.SetOutValue(self.parameters["ReplaceOutValue"])
-			
+
 			if update:
 				self.vtkfilter.Update()
 			return self.vtkfilter.GetOutput()
+
 		else:
 			lower = self.parameters["LowerThreshold"]
 			upper = self.parameters["UpperThreshold"]

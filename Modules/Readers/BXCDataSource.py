@@ -357,9 +357,9 @@ class BXCDataSource(DataSource):
 		if not self.scalarRange:
 			self.getBitDepth()
 			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.dataSets) == 1:
-				min = 0
-				max = 2**self.singleBitDepth - 1
-				self.scalarRange = (int(min),int(max))
+				minVal = 0
+				maxVal = 2**self.singleBitDepth - 1
+				self.scalarRange = (int(minVal),int(maxVal))
 			else:
 				data = self.getDataSet(0, raw = 1)
 				data.Update()
