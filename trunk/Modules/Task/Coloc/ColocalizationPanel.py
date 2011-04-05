@@ -431,7 +431,9 @@ class ColocalizationPanel(TaskPanel):
 			self.settings.set("NumericalAperture", na)
 		except:
 			return
-		
+
+		if na == 0:
+			na = 1.00
 		psf = (0.61 * l) / na
 		# psf is now in nanometers
 		psf /= (vx * 1000 * 1000000)

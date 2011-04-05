@@ -1,10 +1,10 @@
 /*=========================================================================
 
   Program:   BioImageXD
-  Module:    vtkLIFReader.cxx
+  Module:    vtkMRCReader.cxx
   Language:  C++
-  Date:      $Date: 2008-01-29 10:11:17 +0200 (Tue, 29 Jan 2008) $
-  Version:   $Revision: 1366 $
+  Date:      $Date$
+  Version:   $Revision$
 
 
  Copyright (C) 2005  BioImageXD Project
@@ -197,6 +197,11 @@ int vtkMRCReader::ReadHeader()
   // Check if file is in little endian or not
   this->LittleEndian = int(buffer[212]) == 68 || int(buffer[213]) == 68 || int(buffer[214] == 68) || int(buffer[215] == 68);
 
+  // Check if file doesn't specify machine stamp, but is still Little endian
+  char *mode_pointer = buffer + 12;
+  int mode_check = this->ReadInt(&mode_pointer);
+  this->LittleEndian = mode_check > 6 || mode_check < 0 ? !this->LittleEndian : this->LittleEndian;
+
   // Read values of header
   this->ReadVector(&pointer,this->N,3);
   this->Mode = this->ReadInt(&pointer);
@@ -234,6 +239,7 @@ int vtkMRCReader::ReadHeader()
 
   this->RMS = this->ReadFloat(&pointer);
   this->NLabl = this->ReadInt(&pointer);
+
   if (this->NLabl > 0)
 	{
 	  this->Labels = new char*[this->NLabl];

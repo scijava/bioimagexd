@@ -34,7 +34,6 @@ import Logging
 
 class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A thresholding filter
 	"""		
 	name = "Threshold"

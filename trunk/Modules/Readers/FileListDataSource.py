@@ -338,7 +338,7 @@ class FileListDataSource(DataSource):
 			extract.SetComponents(0, 1, 2)
 			extract.SetInput(data)
 			data = extract.GetOutput()
-			
+
 		if self.flipVertically:
 			flip = vtk.vtkImageFlip()
 			flip.SetFilteredAxis(1)

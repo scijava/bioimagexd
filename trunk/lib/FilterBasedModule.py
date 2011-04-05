@@ -36,6 +36,7 @@ import traceback
 import vtk
 import scripting
 import optimize
+import types
 
 class FilterList:
 	"""
@@ -325,7 +326,6 @@ class FilterBasedModule(lib.Module.Module):
 	"""
 	Description: Applies a stack of processing filters to a given input dataset
 	"""
-
 	def __init__(self, **kws):
 		"""
 		Initialization
@@ -384,7 +384,6 @@ class FilterBasedModule(lib.Module.Module):
 		"""
 		lib.Module.Module.addInput(self, dataunit, data)
 		self.settings = dataunit.getSettings()
-
 
 	def getPreview(self, depth):
 		"""
@@ -499,7 +498,7 @@ class FilterBasedModule(lib.Module.Module):
 			scripting.wantWholeDataset = wantWhole
 		Logging.info("Pipeline done",kw="pipeline")
 		data = data[0]
-		if data.__class__ != vtk.vtkImageData:
+		if data.__class__ != vtk.vtkImageData and type(data) != types.TupleType:
 			data = lastfilter.convertITKtoVTK(data)
 
 		filterlist.setModified(0)

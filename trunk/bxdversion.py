@@ -1,1 +1,1 @@
-VERSION="Release Candidate 1 test v1"
+VERSION="beta-474"

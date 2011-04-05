@@ -479,6 +479,8 @@ class CombinedDataUnit(DataUnit):
 					self.module.addInput(dataunit, image)
 			Logging.info("Getting preview from module %s"%str(self.module), kw="dataunit")
 			preview = self.module.getPreview(depth)
+			if type(preview) == types.TupleType:
+				preview = preview[0]
 
 		if preview is not None:
 			isMultiComponent = preview.GetNumberOfScalarComponents()>1 # doesn't work when preview isn't updated
