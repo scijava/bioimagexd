@@ -37,6 +37,7 @@ import types
 import itk
 import time
 import os.path
+import platform
 
 class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -55,7 +56,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		self.origCtf = None
 		self.ignoreObjects = 1
-		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Capable of separating objects touching each other\nInput: Binary image\nOutput: Label image";
+		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Capable of separating objects touching each other.\nInput: Binary image\nOutput: Label image";
 
 	def getDefaultValue(self, parameter):
 		"""
@@ -177,6 +178,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 		# Create ctf for objects
 		self.eventDesc = "Create CTF for objects"
 		n = relabel.GetNumberOfObjects()
+
 		print "Number of objects",n
 		settings = self.dataUnit.getSettings()
 		ncolors = settings.get("PaletteColors")
@@ -187,5 +189,9 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 			settings.set("ColorTransferFunction", ctf)
 			settings.set("PaletteColors", n)
+			resBitDepth = 32
+			if platform.system() == "Linux":
+				resBitDepth = 64
+			settings.set("BitDepth", resBitDepth)
 
 		return data

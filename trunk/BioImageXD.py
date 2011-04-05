@@ -3,7 +3,6 @@
 """
  Unit: BioImageXD
  Project: BioImageXD
- Created: 01.11.2004, KP
  Description:
 
  BioImageXD main program

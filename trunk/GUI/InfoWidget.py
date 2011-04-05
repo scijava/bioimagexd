@@ -138,7 +138,6 @@ class InfoWidget(wx.Panel):
 			odims = (0, 0, 0)
 			resampledims = dataunit.dataSource.getResampleDimensions()
 			
-			
 			if resampledims:
 				odims = dataunit.dataSource.getOriginalDimensions()
 				lib.messenger.send(None, "set_resample_dims", resampledims, odims)
