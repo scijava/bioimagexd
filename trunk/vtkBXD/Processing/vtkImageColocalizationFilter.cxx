@@ -36,6 +36,7 @@ vtkStandardNewMacro(vtkImageColocalizationFilter);
 //----------------------------------------------------------------------------
 vtkImageColocalizationFilter::vtkImageColocalizationFilter()
 {
+    this->SetNumberOfThreads(1);
     this->OutputDepth = 8;
     this->NumberOfDatasets = 8;
     this->OutputScalarValue = -1;

@@ -133,7 +133,6 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 				minV, self.defaultUpper = sourceDataUnits[0].getScalarRange()
 				self.defaultLower = (self.defaultUpper + minV) / 2
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
-		
 
 	def onRemove(self):
 		"""

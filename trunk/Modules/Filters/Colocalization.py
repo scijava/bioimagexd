@@ -48,7 +48,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		self.defaultLower = 128
 		self.defaultUpper = 255
-		self.colocRange = 255
+		self.colocRange = (0,255)
 		self.numericalAperture = 1.4
 		self.listctrl = None
 		self.emissionWavelength = 520
@@ -139,7 +139,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [  ["Thresholds", (("LowerThresholdCh1", "UpperThresholdCh1","LowerThresholdCh2", "UpperThresholdCh2"),)],
+		return [ ["Thresholds", (("LowerThresholdCh1", "UpperThresholdCh1","LowerThresholdCh2", "UpperThresholdCh2"),)],
 		 		 ["Calculate P-value", ( ("None","Costes","Fay","Steensel"), ("cols", 2)) ],
 		 		 ["Costes parameters", ("Iterations","PSF","NA","Lambda")],
 		 		 ["Colocalization output",("OneBit","ColocValue")]
@@ -175,7 +175,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter == "Iterations":
 			return 0,999
 		elif parameter in ["LowerThresholdCh1","LowerThresholdCh2","UpperThresholdCh1","UpperThresholdCh2"]:
-			return 0, self.colocRange
+			return self.colocRange
 		
 	def getDefaultValue(self, parameter):
 		"""
@@ -198,8 +198,21 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if dataUnit:
 			sourceDataUnits = dataUnit.getSourceDataUnits()
 			if sourceDataUnits:
-				self.defaultUpper = sourceDataUnits[0].getScalarRange()[1]
-				self.defaultLower = self.defaultUpper / 2
+				bitmax = sourceDataUnits[0].getSingleComponentBitDepth()
+				if bitmax > 12:
+					range1 = sourceDataUnits[0].getScalarRange()
+					range2 = sourceDataUnits[0].getScalarRange()
+					minVal = min(range1[0],range2[0])
+					maxVal = max(range1[1],range2[1])
+					self.colocRange = (minVal, maxVal)
+					self.defaultLower = int((maxVal + minVal) / 2)
+					self.defaultUpper = maxVal
+				else:
+					maxVal = (2**bitmax) - 1
+					self.colocRange = (0, maxVal)
+					self.defaultLower = maxVal / 2
+					self.defaultUpper = maxVal
+				
 				na = sourceDataUnits[1].getNumericalAperture()
 				if na:
 					self.numericalAperture = na
@@ -208,7 +221,6 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 					self.emissionWavelength = emissionWavelength
 		lib.ProcessingFilter.ProcessingFilter.setDataUnit(self, dataUnit)
 		
-			
 	def setInputChannel(self, inputNum,n):
 		lib.ProcessingFilter.ProcessingFilter.setInputChannel(self, inputNum, n)
 		
@@ -216,8 +228,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			dataUnit = self.getInputDataUnit(inputNum)
 			if dataUnit:
 				lib.messenger.send(self, "set_UpperThreshold_dataunit", dataUnit)
-				
-				
+	
 	def getGUI(self, parent, taskPanel):
 		"""
 		Return the GUI for this filter
@@ -296,14 +307,11 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.set("LowerThresholdCh1", ch1thresmax)
 			self.set("LowerThresholdCh2", ch2thresmax)
 		
-		maxval = 2**max([self.getInputDataUnit(x).getBitDepth() for x in range(1,3)]) - 1
-		self.colocRange = maxval
-
 		lib.messenger.send(self, "update_LowerThresholdCh1")
 		lib.messenger.send(self, "update_LowerThresholdCh2")
 		lib.messenger.send(self, "update_UpperThresholdCh1")
 		lib.messenger.send(self, "update_UpperThresholdCh2")
-		Logging.info("Maximum value = %d"%maxval, kw="processing") 
+
 		ch1Lower, ch1Upper, ch2Lower, ch2Upper = self.parameters["LowerThresholdCh1"], self.parameters["UpperThresholdCh1"], self.parameters["LowerThresholdCh2"], self.parameters["UpperThresholdCh2"]
 		
 		self.colocAutoThreshold.AddInput(images[0])
