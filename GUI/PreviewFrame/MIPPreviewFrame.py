@@ -3,7 +3,6 @@
 """
  Unit: MIPPreviewFrame.py
  Project: BioImageXD
- Created: 03.11.2004, KP
  Description:
 
  A prevew frame for showing MIP
@@ -71,7 +70,6 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 		self.rawImages = [self.rawImage]
 		PreviewFrame.PreviewFrame.getVoxelValue(self, event)
 
-
 	def setPreviewedSlice(self, obj, event, newz = -1):
 		"""
 		Sets the preview to display the selected z slice
@@ -97,12 +95,21 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 			self.mip.SetInput(data)
 			data = self.mip.GetOutput()
 		else: # AIP mode
-			self.convVTKtoITK = itk.VTKImageToImageFilter.IUC3.New()
+			scalarType = data.GetScalarType()
+			imgType = "IUC"
+			if scalarType == 5:
+				imgType = "IUS"
+			elif scalarType == 9:
+				imgType = "IUL"
+			elif scalarType == 10:
+				imgType = "IF"
+			
+			self.convVTKtoITK = eval("itk.VTKImageToImageFilter.%s3.New()"%imgType)
 			self.convVTKtoITK.SetInput(data)
 			self.convVTKtoITK.Update()
 			itkImg = self.convVTKtoITK.GetOutput()
 			
-			self.pif = itk.MeanProjectionImageFilter.IUC3IUC2.New()
+			self.pif = eval("itk.MeanProjectionImageFilter.%s3%s2.New()"%(imgType,imgType))
 			self.pif.SetInput(itkImg)
 			output = self.pif.GetOutput()
 			
