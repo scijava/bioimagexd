@@ -3,7 +3,6 @@
 """
  Unit: PreviewFrame.py
  Project: BioImageXD
- Created: 03.11.2004, KP
  Description:
 
  A widget that can be used to Preview any operations done by a subclass of Module
@@ -47,7 +46,6 @@ ZOOM_TO_FIT = -1
 
 class PreviewFrame(InteractivePanel):
 	"""
-	Created: 03.11.2004, KP
 	Description: A visualization mode used to show a single slice of the previewed image
 	"""
 	count = 0

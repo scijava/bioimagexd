@@ -3,7 +3,6 @@
 """
  Unit: bahama
  Project: BioImageXD
- Created: 13.02.2006, KP
  Description:
 
  BAHAMA - BioimAgexd Highly Advanced Memory Architecture
