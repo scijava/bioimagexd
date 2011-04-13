@@ -241,12 +241,12 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.optimizer = itk.RegularStepGradientDescentOptimizer.New()
 
 		# Initialize registration framework's components
-		self.registration.SetOptimizer(self.optimizer.GetPointer())
-		self.registration.SetTransform(self.transform.GetPointer())
-		self.registration.SetInterpolator(self.interpolator.GetPointer())
-		self.registration.SetMetric(self.metric.GetPointer())
-		self.registration.SetFixedImagePyramid(fixedPyramid.GetPointer())
-		self.registration.SetMovingImagePyramid(movingPyramid.GetPointer())
+		self.registration.SetOptimizer(self.optimizer)
+		self.registration.SetTransform(self.transform)
+		self.registration.SetInterpolator(self.interpolator)
+		self.registration.SetMetric(self.metric)
+		self.registration.SetFixedImagePyramid(fixedPyramid)
+		self.registration.SetMovingImagePyramid(movingPyramid)
 		self.registration.SetFixedImage(fixedImage)
 		self.registration.SetMovingImage(movingImage)
 		self.registration.SetFixedImageRegion(fixedImage.GetLargestPossibleRegion())
@@ -279,21 +279,21 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		self.registration.SetSchedules(fixedArray,movingArray)
 
 		# Use last transform parameters as initialization to this registration
-		if not initialParameters:
+		if initialParameters is None:
 			self.transform.SetIdentity()
 			initialParameters = self.transform.GetParameters()
 		
-		self.registration.SetInitialTransformParameters(initialParameters)
+		self.registration.SetInitialTransformParameters(tuple([initialParameters[i] for i in range(3)]))
 		self.optimizer.SetMaximumStepLength(self.maxSteps[usedLevels-1])
 		self.optimizer.SetMinimumStepLength(self.minSteps[usedLevels-1])
 		self.optimizer.SetNumberOfIterations(self.maxIters[usedLevels-1])
 		
 		iterationCommand = itk.PyCommand.New()
 		iterationCommand.SetCommandCallable(self.updateProgress)
-		self.optimizer.AddObserver(itk.IterationEvent(),iterationCommand.GetPointer())
+		self.optimizer.AddObserver(itk.IterationEvent(),iterationCommand)
 		levelCommand = itk.PyCommand.New()
 		levelCommand.SetCommandCallable(self.updateParameters)
-		self.registration.AddObserver(itk.IterationEvent(),levelCommand.GetPointer())
+		self.registration.AddObserver(itk.IterationEvent(),levelCommand)
 
 		# Execute registration
 		Logging.info("Starting registration")
@@ -319,10 +319,10 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 			finalParameters.SetElement(2,0.0)
 		
 		# del filters to free memory
-		del self.metric
-		del self.optimizer
-		del self.interpolator
-		del self.registration
+		#del self.metric
+		#del self.optimizer
+		#del self.interpolator
+		#del self.registration
 		
 		Logging.info("Use transform parameters")
 		Logging.info("Translation X = %f"%(finalParameters.GetElement(0)))
@@ -332,7 +332,7 @@ class MultiResolutionRegistrationFilter(RegistrationFilters.RegistrationFilter):
 		# Translate input image using results from the registration
 		resampler = itk.ResampleImageFilter.IF3IF3.New()
 		self.transform.SetParameters(finalParameters)
-		resampler.SetTransform(self.transform.GetPointer())
+		resampler.SetTransform(self.transform)
 		resampler.SetInput(movingImage)
 		region = movingImage.GetLargestPossibleRegion()
 		resampler.SetSize(region.GetSize())
