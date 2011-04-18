@@ -986,7 +986,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 	def zoomToRubberband(self, event):
 		"""
 		Zooms to the rubberband
-		""" 
+		"""
 		x1, y1 = self.actionstart
 		x2, y2 = self.actionend
 		Logging.info("Zooming to rubberband defined by (%d,%d),(%d,%d)" % (x1, y1, x2, y2), kw = "iactivepanel")
@@ -996,23 +996,19 @@ class InteractivePanel(ogl.ShapeCanvas):
 		x1, x2 = min(x1, x2), max(x1, x2)
 		y1, y2 = min(y1, y2), max(y1, y2)
 		
-		if self.zoomFactor != 1:
-			f = float(self.zoomFactor)
-			x1, x2, y1, y2 = int(x1 / f), int(x2 / f), int(y1 / f), int(y2 / f)
-			x1 /= float(self.zoomx)
-			x2 /= float(self.zoomx)
-			y1 /= float(self.zoomy)
-			y2 /= float(self.zoomy)
-			
-		
 		x1, y1 = self.getScrolledXY(x1, y1)
 		x2, y2 = self.getScrolledXY(x2, y2)
 
-		w, h = self.size
-		self.setZoomFactor(lib.ImageOperations.getZoomFactor((x2 - x1), (y2 - y1), w, h))
-		
-		self.scrollTo = (self.zoomFactor * x1 * self.zoomx, self.zoomFactor * y1 * self.zoomy)
-		
+		self.setZoomFactor(min(16.0,lib.ImageOperations.getZoomFactor((x2 - x1), (y2 - y1), self.maxClientSizeX, self.maxClientSizeY)))
+
+		scrollX = x1 * self.zoomx
+		if x1 > x2 / 2.0:
+			scrollX *= self.zoomFactor
+		scrollY = y1 * self.zoomy
+		if y1 > y2 / 2.0:
+			scrollY *= self.zoomFactor
+		self.scrollTo = (scrollX, scrollY)
+		scripting.visualizer.zoomCombo.SetValue(str(self.zoomFactor*100)+"%")
 		self.updatePreview()
 		
 	def getZoomFactor(self):
