@@ -385,7 +385,7 @@ class PreviewFrame(InteractivePanel):
 			Logging.info("PreviewFrame not enabled, won't update on DataUnit setting", kw="preview")
 
 	def updatePreview(self, renew = 1):
-                """
+		"""
 		Update the preview
 		@param renew    A boolean flag indicating whether the method should recalculate the images
 		"""
@@ -568,8 +568,6 @@ class PreviewFrame(InteractivePanel):
 		Sets the factor by which the image should be zoomed
 		"""
 		self.zoomToFitFlag = False
-		if newFactor > 10:
-			newFactor = 10
 		Logging.info("Setting zoom factor to ", newFactor, kw = "preview")
 		x, y = [a*newFactor for a in (self.dataDimX, self.dataDimY)]
 		if scripting.resampleToFit:
@@ -640,10 +638,10 @@ class PreviewFrame(InteractivePanel):
 		"""
 		Logging.info("PreviewFrame is enabled=", bool(self.enabled), kw="preview")
 		# Don't paint anything if there's going to be a redraw anyway
-
 		if not self.slice and self.graySize == self.paintSize:
 			Logging.info("Nothing to draw, returning", kw="preview")
 			return
+		
 		dc = wx.MemoryDC()
 		dc.SelectObject(self.buffer)
 		dc.BeginDrawing()
