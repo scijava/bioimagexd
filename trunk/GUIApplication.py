@@ -6,7 +6,6 @@ import os
 
 class BXDGUIApplication(wx.App):
 	"""
-	Created: 03.11.2004, KP
 	Description: Encapsulates the wxPython initialization and mainwindow creation
 	"""
 	def OnInit(self):

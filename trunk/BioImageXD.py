@@ -292,7 +292,6 @@ if __name__ == '__main__':
 				toRemove.append(datafile)
 		for fileToBeRemoved in toRemove:
 			dataFiles.remove(fileToBeRemoved)
-			
 
 
 		if doProfile and profile:
