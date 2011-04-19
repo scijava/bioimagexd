@@ -2,7 +2,6 @@
 """
  Unit: TreeWidget
  Project: BioImageXD
- Created: 10.01.2005, KP
  Description:
 
  A widget for displaying a hierarchical tree of datasets
@@ -241,8 +240,7 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.removeParents = removeParents
 			wx.CallAfter(self.removeEmptyParents)
 		else:
-			self.removeParents = []			
-		
+			self.removeParents = []
 					
 	def onCloseDataset(self, event):
 		"""
@@ -385,15 +383,17 @@ class TreeWidget(wx.SashLayoutWindow):
 			path        Path of the item
 			objtype     Type of the object (lsm, bxd)
 			objs        objects to add
-		"""            
-	
+		"""
 		item = None
 		imageSize = (16, 16)
 		il = wx.ImageList(imageSize[0], imageSize[1])
-		folderIndex     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, imageSize))
-		folderOpenIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, imageSize))
-		fileIndex     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, imageSize))
+		folderIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, imageSize))
+		folderOpenIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN, wx.ART_OTHER, imageSize))
+		fileIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, imageSize))
 
+		if objtype in ["lif", "lei", "txt"]:
+			path = path + name
+		
 		for i in range(0, len(objs)):
 			if not path in self.items:
 				self.items[path] = 1
@@ -404,7 +404,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.dataUnitToPath[i] = path
 
 		if objtype == "lsm":
-		
 			if not self.lsmfiles:
 				self.lsmfiles = self.tree.AppendItem(self.root, "LSM files")
 				self.tree.SetPyData(self.lsmfiles, "1")
@@ -453,6 +452,7 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.SetItemImage(self.bioradfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 			item = self.bioradfiles
 			self.tree.Expand(item)
+		
 		elif objtype == "hdr":
 			if not self.interfilefiles:
 				self.interfilefiles = self.tree.AppendItem(self.root, "Interfile files")
@@ -515,7 +515,6 @@ class TreeWidget(wx.SashLayoutWindow):
 			self.tree.SetPyData(item, "2")
 			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
-			
 		self.tree.Expand(item)
 		selected = 0
 		for obj in objs:
@@ -534,7 +533,7 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.UnselectAll()
 				self.tree.SelectItem(added, 1)
 				selected = 1
-				lib.messenger.send(None, "tree_selection_changed", obj)            
+				lib.messenger.send(None, "tree_selection_changed", obj)
 			
 		self.tree.Expand(self.root)
 		conf = Configuration.getConfiguration()

@@ -68,11 +68,9 @@ import wx
 import lib.ImageOperations
 import QuitDialog
 import Urmas.UrmasWindow
-import AnnotationToolbar
 
 class MainWindow(wx.Frame):
 	"""
-	Created: 03.11.2004, KP
 	Description: The main window of the BioImageXD software
 	"""
 	def __init__(self, parent, id, app, splash):
