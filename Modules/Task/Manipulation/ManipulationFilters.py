@@ -80,7 +80,7 @@ class GaussianSmoothFilter(ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "Gaussian smooth"
 	category = FILTERING
-	
+	level = scripting.COLOR_BEGINNER
 	def __init__(self):
 		"""
 		Initialization

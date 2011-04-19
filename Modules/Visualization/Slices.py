@@ -3,7 +3,6 @@
 """
  Unit: Slices
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A slices viewing rendering mode for Visualizer

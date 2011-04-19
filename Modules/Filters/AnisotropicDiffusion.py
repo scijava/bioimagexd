@@ -102,7 +102,9 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 			return 5.0
 		elif parameter == "DiffFactor":
 			return 1.0
-		return 2		
+		if parameter == "CentralDiff":
+			return True
+		return False
 
 	def execute(self, inputs, update = 0, last = 0):
 		"""
@@ -113,7 +115,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		
 		image = self.getInput(1)
 		self.vtkfilter.SetInput(image)
-		
+
 		self.vtkfilter.SetDiffusionThreshold(self.parameters["DiffThreshold"])
 		self.vtkfilter.SetDiffusionFactor(self.parameters["DiffFactor"])
 		self.vtkfilter.SetFaces(self.parameters["Faces"])
