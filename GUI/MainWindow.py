@@ -1968,6 +1968,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 		wx.LayoutAlgorithm().LayoutWindow(self, self.visWin)
 		self.visualizer.OnSize(None)
+		self.visualizer.getCurrentWindow().setZoomFactor(self.visualizer.getCurrentWindow().getZoomFactor())
+		self.visualizer.getCurrentWindow().updatePreview()
 
 	def loadVisualizer(self, mode, processed = 0, dataunit = None, **kws):
 		"""

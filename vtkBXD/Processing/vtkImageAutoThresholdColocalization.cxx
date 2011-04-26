@@ -260,21 +260,18 @@ template <class T> void calculateThreshold
         else
             divByZero = false;
 
-        //check to see if we're getting colser to zero for r                                               
+        //check to see if we're getting colser to zero for r
         if ((bestr2 * bestr2 > r2 * r2)) {
             *ch1BestThresh = ch1threshmax;
             bestr2 = r2;
             *best = bestr2;
-                
         }
         //if our r is close to our level of tolerance then set threshold has been found
         if ((r2 < tolerance) && (r2 > -tolerance)) {
-            
             thresholdFound = true;
         }
         //if we've reached ch1 =1 then we've exhausted posibilities
         if (vtkMath::Round(ch1threshmax) == 0) {
-            
             thresholdFound = true;
         }
         oldMax = newMax;
@@ -360,8 +357,7 @@ template < class T >
     inPtr2 = (T *) inData[1]->GetScalarPointerForExtent(outExt);
 
     inData[0]->GetContinuousIncrements(outExt, inIncX, inIncY, inIncZ);
-    outData[0]->GetIncrements(outIncX, outIncY,
-                        outIncZ);
+    outData[0]->GetIncrements(outIncX, outIncY, outIncZ);
     
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
