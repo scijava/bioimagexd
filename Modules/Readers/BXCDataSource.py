@@ -328,22 +328,22 @@ class BXCDataSource(DataSource):
 					 operates on
 		"""
 		Logging.info("Getting colortransferfunction from settings", kw = "ctf")
-		
 		if not self.ctf:
 			ctf = self.settings.get("ColorTransferFunction")
 			#Logging.info("settings.ctf = ", ctf, kw = "ctf")
 			try:
-				#ctf = self.parser.get("ColorTransferFunction", "ColorTransferFunction")
 				ctf = self.settings.get("ColorTransferFunction")				  
 				if not ctf:
 					ctf = self.settings.get("ColocalizationColorTransferFunction")
 			except:
 				return None
+			
 			if not ctf:
 				Logging.info("Will return no CTF", kw = "ctf")
+				scalarRange = self.getScalarRange()
 				ctf = vtk.vtkColorTransferFunction()
-				ctf.AddRGBPoint(0, 0, 0, 0)
-				ctf.AddRGBPoint(255, 1, 1, 1)				  
+				ctf.AddRGBPoint(scalarRange[0], 0, 0, 0)
+				ctf.AddRGBPoint(scalarRange[1], 1, 1, 1)				  
 			else:
 				#Logging.info("Using CTF read from dataset", ctf, kw = "ctf")
 				pass
@@ -356,7 +356,7 @@ class BXCDataSource(DataSource):
 		"""
 		if not self.scalarRange:
 			self.getBitDepth()
-			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.dataSets) == 1:
+			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.dataSets) != 1:
 				minVal = 0
 				maxVal = 2**self.singleBitDepth - 1
 				self.scalarRange = (int(minVal),int(maxVal))
