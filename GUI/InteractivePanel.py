@@ -37,6 +37,7 @@ import wx.lib.ogl as ogl
 import platform
 import wx
 import bxdevents
+from AnnotationSettings import AnnotationSettings
 
 import GUI.PainterHelpers
 import GUI.OGLAnnotations
@@ -900,17 +901,9 @@ class InteractivePanel(ogl.ShapeCanvas):
 		annotations = filter(lambda x:isinstance(x, GUI.OGLAnnotations.OGLAnnotation), annotations)
 		annotations = filter(lambda x:not isinstance(x, GUI.OGLAnnotations.MyPolygonSketch), annotations)
 
-		annotationNames = []
-		annotationColors = []
-		for annotation in annotations:
-			annotationNames.append(annotation.getName())
-			annotationColors.append(annotation.GetPen())
-
 		if self.dataUnit:
-			self.dataUnit.getSettings().set("Annotations", annotations)
-			self.dataUnit.getSettings().set("AnnotationNames", annotationNames)
-			self.dataUnit.getSettings().set("AnnotationColors", annotationColors)
-
+			for annotation in annotations:
+				AnnotationSettings.getInstance().addAnnotation(annotation)
 	
 	def addNewShape(self, shape, noUpdate = 0):
 		"""
@@ -927,10 +920,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 
 		# Change color for annotation name
 		# Unfortunately needs to be done in this not so handy way
-		colordb = wx.TheColourDatabase
-		id = str(shape.__class__) +  str(GUI.OGLAnnotations.count[shape.__class__])
-		colordb.AddColour(id, self.annotationColor)
-		shape.SetTextColour(id)
+		AnnotationSettings.getInstance().addColor(shape.getName(), self.annotationColor)
+		shape.SetTextColour(shape.getName())
 		
 		self.AddShape( shape )
 		
@@ -981,6 +972,9 @@ class InteractivePanel(ogl.ShapeCanvas):
 				else:
 					self.RemoveShape(shape)
 					shape.Delete()
+
+				AnnotationSettings.getInstance().removeAnnotation(shape)
+				self.saveAnnotations()
 				self.paintPreview()
 				self.Refresh()
 			
@@ -1080,28 +1074,26 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		restore annotations from cache
 		"""
-		annotations = settings.get("Annotations")
-		annotationNames = settings.get("AnnotationNames")
-		annotationColors = settings.get("AnnotationColors")
+		annotations = AnnotationSettings.getInstance().getAnnotations()
+		keys = annotations.keys()
 
-		k = 0
-		for obj in annotations:
-			obj.SetEventHandler(obj)
-			newobj = self.addNewAnnotation(obj.AnnotationType, 0, 0, 10, 10, noUpdate = 1, scaleFactor = 1)
-			newobj.restoreFrom(obj)
-			newobj._offset = (0, 0)
-			newobj.SetCanvas(self)
-			newobj.setName(annotationNames[k])
-			newobj.SetPen(annotationColors[k])
-			GUI.OGLAnnotations.count[newobj.__class__] -= 1
-			newobj.SetTextColour(str(newobj.__class__) + str(GUI.OGLAnnotations.count[newobj.__class__]))
-			k += 1
+		for key in keys:
+			annotation = annotations[key]
+			name, pen, text = annotation.getName(), annotation.GetPen(), annotation.GetTextColour()
+			annotation.SetEventHandler(annotation)
+			self.addNewShape(annotation, noUpdate = 1)
+			annotation.SetCanvas(self)
+			annotation.setName(name)
+			annotation.SetPen(pen)
+			annotation.SetTextColour(text)
+			AnnotationSettings.getInstance().updateAnnotation(annotation, annotation)
+
 		self.setOffset(self.xoffset, self.yoffset)
 		self.updateAnnotations()
 
 		self.diagram.ShowAll(1)
 		self.repaintHelpers()
-		
+
 		self.Refresh()
 		
 	def OnPaint(self, event):
