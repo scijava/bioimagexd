@@ -3,7 +3,6 @@
 """
  Unit: OGLAnnotations
  Project: BioImageXD
- Created: 10.02.2005, KP
  Description:
 
  This is a module that contains classes for annotating images using the OGL library
@@ -53,6 +52,7 @@ class OGLAnnotation(ogl.Shape):
 		self._offset = (0,0)
 		self._name = ""
 		self.attrList = ["_xpos","_ypos","scaleFactor"]
+		self.id = -1
 
 	def getCoveredPoints(self):
 		"""
@@ -272,7 +272,9 @@ class ShapeAnnotation(OGLAnnotation):
 				count[self.__class__] = 1
 			else:
 				count[self.__class__] += 1
+				self.id = count[self.__class__]
 			self.name = "%s #%d" % (self.name, count[self.__class__])
+			
 
 class MyText(OGLAnnotation, ogl.TextShape):
 	"""

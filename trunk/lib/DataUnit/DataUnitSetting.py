@@ -95,8 +95,6 @@ class DataUnitSettings:
 		self.register("BitDepth")
 		self.register("TimeStamps", serialize = 1)
 		self.register("AbsoluteTimeStamps", serialize = 1)
-		self.register("AnnotationNames")
-		self.register("AnnotationColors")
 		
 	def getDatasetNumber(self):
 		"""
