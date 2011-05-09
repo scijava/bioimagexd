@@ -3,7 +3,6 @@
 """
  Unit: Sections
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A visualization mode for Visualizer that shows the xy- xz, and yz- planes

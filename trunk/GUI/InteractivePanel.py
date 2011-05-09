@@ -103,6 +103,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 		self.imagedata = None
 		self.bmp = None
 
+		self.preventScrolling = False
 		self.annotationColor = wx.Colour(0, 255, 0)
 		self.actionstart = (0, 0)
 		self.actionend = (0, 0)
@@ -655,7 +656,20 @@ class InteractivePanel(ogl.ShapeCanvas):
 			self.scrollPos = None
 			self.zoomDragPos = None
 		if (event.LeftIsDown() or event.MiddleIsDown()) and event.Dragging():
-			if self.scrollPos and self.action != ZOOM_TO_BAND and self.action != ADD_ANNOTATION and self.action != ADD_ROI:
+			# @jonte
+			# Here we check if we want to prevent scrolling, because
+			# we might only want to move an annotation. The key
+			# is to select an annotation, and then drag it.
+			# The preventScrolling variable is updated in OGLAnnotations'
+			# onDragLeft.
+			annotations = AnnotationSettings.getInstance().getAnnotations()
+			keys = annotations.keys()
+			annotationSelected = False
+			for key in keys:
+				if annotations[key].Selected():
+					annotationSelected = True
+					break
+			if not self.preventScrolling and not annotationSelected and self.scrollPos and self.action != ZOOM_TO_BAND and self.action != ADD_ANNOTATION and self.action != ADD_ROI:
 				self.changeScrollByDifference(self.scrollPos, event.GetPosition())
 			self.scrollPos = event.GetPosition()
 		if event.RightIsDown():
