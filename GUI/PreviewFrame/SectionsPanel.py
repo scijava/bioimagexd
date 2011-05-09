@@ -3,7 +3,6 @@
 """
  Unit: SectionsPanel.py
  Project: BioImageXD
- Created: 23.05.2005, KP
  Description:
 
  A panel that can display previews of all the optical slices of
@@ -61,7 +60,9 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.bgcolor = (127, 127, 127)
 		self.enabled = 1
 		self.slices = []
-			
+
+		self.dims = (0, 0, 0)
+		self.curDims = (0, 0, 0)
 		x, y = size
 		self.paintSize = size
 		self.buffer = wx.EmptyBitmap(x, y)
@@ -145,7 +146,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		nx, ny = self.x, self.y
 		nz = arg
 		self.z = arg
-		self.drawPos = [x * self.zoomFactor for x in (nx, ny, nz)]
+		#self.drawPos = [x * self.zoomFactor for x in (nx, ny, nz)]
 		
 		self.setTimepoint(self.timepoint)
 		
@@ -273,15 +274,18 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.dataUnit = dataUnit
 		
 		self.dims = dataUnit.getDimensions()
+		#import pdb
+		#pdb.set_trace()
+		if self.dims != self.curDims:
+			self.curDims = self.dims
+			x, y, z = self.dims
+			x /= 2
+			y /= 2
+			z /= 2
+			z *= self.zoomZ
 		
-		x, y, z = self.dims
-		x /= 2
-		y /= 2
-		z /= 2
-		z *= self.zoomZ
-		
-		self.x, self.y, self.z = x, y, z
-		self.drawPos = (x, y, z)
+			self.x, self.y, self.z = x, y, z
+			self.drawPos = (x, y, z)
 
 		self.voxelSize = dataUnit.getVoxelSize()
 		GUI.InteractivePanel.InteractivePanel.setDataUnit(self, dataUnit)

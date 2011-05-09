@@ -131,6 +131,7 @@ class OGLAnnotation(ogl.Shape):
 		"""
 		Set the name of this annotation
 		"""
+		self.name = name
 		self._name = name
 		self.ClearText()
 		lines = name.split("\n")
@@ -802,7 +803,7 @@ class MyPolygon(ShapeAnnotation, ogl.PolygonShape):
 		ogl.PolygonShape.__init__(self)
 		self._isROI = 1
 		self.attrList = ["_points", "_xpos", "_ypos"]
-
+		self.setName(self.name)
 
 	def OnDraw(self, dc):
 		"""
@@ -1218,11 +1219,14 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 		self.parent.Refresh()
 
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
+		self.parent.EnableScrolling(False, False)
+		self.parent.preventScrolling = True
 		ogl.ShapeEvtHandler.OnDragLeft(self, draw, x, y, keys, attachment)
-
 		self.parent.repaintHelpers()
 
 	def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
+		self.parent.EnableScrolling(True, True)
+		self.parent.preventScrolling = False
 		shape = self.GetShape()
 		ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
 

@@ -9,6 +9,7 @@ vtkDistanceRepresentationScaled2D.cxx
 vtkExtTIFFReader.cxx
 vtkImageAlphaFilter.cxx
 vtkImageAutoThresholdColocalization.cxx
+vtkImageMaskAutoThresholdColocalization.cxx
 vtkImageColocalizationFilter.cxx
 vtkImageColocalizationTest.cxx
 vtkIntensityTransferFunction.cxx
