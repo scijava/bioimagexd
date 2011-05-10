@@ -59,6 +59,8 @@ class PDBModule(VisualizationModule):
 		self.descs = {"FileName": "PDB file",
 					  "SphereRadius": "Sphere radius",
 					  "TubeRadius": "Tube radius"}
+
+		self.enabled = 1
 		self.mapper = vtk.vtkPolyDataMapper()
 		self.mapper.UseLookupTableScalarRangeOff()
 		self.mapper.SetScalarVisibility(1)
@@ -195,7 +197,7 @@ class PDBModule(VisualizationModule):
 		Update the Rendering of this module
 		"""
 		filename = self.parameters["FileName"]
-		if not os.path.exists(filename):
+		if not os.path.exists(filename) or not self.enabled:
 			return
 
 		self.reader.SetFileName(filename)
@@ -236,6 +238,23 @@ class PDBModule(VisualizationModule):
 		Set channel selection off
 		"""
 		return 0
+
+	def enableRendering(self):
+		"""
+		"""
+		self.renderer.AddActor(self.tubeActor)
+		self.renderer.AddActor(self.actor)
+		self.actorsInitialized = True
+		self.wxrenwin.Render()
+	
+	def disableRendering(self):
+		"""
+		"""
+		if self.actorsInitialized:
+			self.renderer.RemoveActor(self.tubeActor)
+			self.renderer.RemoveActor(self.actor)
+			self.actorsInitialized = False
+			self.wxrenwin.Render()
 
 class PDBConfigurationPanel(ModuleConfigurationPanel):
 
