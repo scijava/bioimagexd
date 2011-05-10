@@ -314,8 +314,9 @@ class ITKConfidenceConnectedFilter(ProcessingFilter.ProcessingFilter):
 		image = self.convertVTKtoITK(image)
 		self.itkfilter = itk.ConfidenceConnectedImageFilter[image,image].New()
 		self.itkfilter.SetInput(image)
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
 		
-		pixelidx = itk.Index[3]()
+		pixelidx = eval("itk.Index[%d]()"%dim)
 		for (x, y, z) in self.parameters["Seed"]:
 			pixelidx.SetElement(0, x)
 			pixelidx.SetElement(1, y)
@@ -400,8 +401,9 @@ class ITKConnectedThresholdFilter(ProcessingFilter.ProcessingFilter):
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
 		self.itkfilter.SetUpper(self.parameters["Upper"])
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
 		
-		pixelidx = itk.Index[3]()
+		pixelidx = eval("itk.Index[%d]()"%dim)
 		for (x, y, z) in self.parameters["Seed"]:
 			pixelidx.SetElement(0, x)
 			pixelidx.SetElement(1, y)
@@ -493,8 +495,9 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetLower(self.parameters["Lower"])
 		self.itkfilter.SetUpper(self.parameters["Upper"])
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
 		
-		pixelidx = itk.Index[3]()
+		pixelidx = eval("itk.Index[%d]()"%dim)
 		for (x, y, z) in self.parameters["Seed"]:
 			pixelidx.SetElement(0, x)
 			pixelidx.SetElement(1, y)
@@ -503,10 +506,11 @@ class ITKNeighborhoodConnectedThresholdFilter(ProcessingFilter.ProcessingFilter)
 		
 		rx, ry, rz = self.parameters["RadiusX"], self.parameters["RadiusY"], self.parameters["RadiusZ"]
 		
-		size = itk.Size[3]()
+		size = eval("itk.Size[%d]()"%dim)
 		size.SetElement(0, rx)
 		size.SetElement(0, ry)
-		size.SetElement(0, rz)
+		if dim == 3:
+			size.SetElement(0, rz)
 		self.itkfilter.SetRadius(size)
 		self.itkfilter.SetReplaceValue(255)
 		if update:
