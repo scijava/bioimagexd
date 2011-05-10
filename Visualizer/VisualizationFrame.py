@@ -407,6 +407,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		if self.selected == -1:
 			GUI.Dialogs.showerror(self, "You have to select a module to be removed", "No module selected")
 			return
+		
 		lbl = self.moduleListbox.GetString(self.selected)
 		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().removeModule("%s")' % lbl
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
