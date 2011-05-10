@@ -130,7 +130,7 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 	
 	filename = ""
 	dlg = wx.FileDialog(parent, title, defaultFile = initFile, \
-						defaultDir = initialDir, wildcard = wc, style = wx.SAVE)
+						defaultDir = initialDir, wildcard = wc, style = wx.FD_SAVE)
 	filename = None
 	if dlg.ShowModal() == wx.ID_OK:
 		filename = dlg.GetPath()

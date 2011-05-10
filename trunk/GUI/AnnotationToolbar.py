@@ -3,7 +3,6 @@
 """
  Unit: AnnotationToolbar
  Project: BioImageXD
- Created: 03.02.2005, KP
  Description:
 
  A toolbar for the annotations in visualizer
@@ -43,6 +42,7 @@ import os
 import scripting
 import vtk
 import wx
+from AnnotationSettings import AnnotationSettings
 
 class AnnotationToolbar(wx.Window):
 	"""
@@ -225,6 +225,7 @@ class AnnotationToolbar(wx.Window):
 		self.sizer.Add(self.deleteAnnotationBtn, (2, 0))
 
 		self.colorSelect = csel.ColourSelect(self, -1, "", self.annotateColor, size = (32, 32))
+		self.colorSelect.Bind(csel.EVT_COLOURSELECT, self.setAnnotationColor)
 		self.sizer.Add(self.colorSelect, (2, 1))
 
 		if not scripting.TFLag:
@@ -477,3 +478,17 @@ class AnnotationToolbar(wx.Window):
                                 masks[i] = MaskTray.Mask(name, dims, masks[i])
 			self.visualizer.setMask(masks)
 			
+	def setAnnotationColor(self, evt):
+		"""
+		Changes the annotation color of the selected annotation(s)
+		"""
+		annotations = AnnotationSettings.getInstance().getAnnotations()
+		keys = annotations.keys()
+		for key in keys:
+			if annotations[key].Selected():
+				annotation = annotations[key]
+				color = evt.GetValue()
+				annotation.SetPen(wx.Pen(color, 1))
+				annotation.SetTextColour(annotation.getName())
+				AnnotationSettings.getInstance().updateAnnotation(annotation, annotation)
+		lib.messenger.send(None, "update_helpers", 1)

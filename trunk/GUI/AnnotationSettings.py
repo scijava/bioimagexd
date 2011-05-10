@@ -69,8 +69,14 @@ class AnnotationSettings:
 			colordb = wx.TheColourDatabase
 			colordb.AddColour(id, color)
 
+	def updateColor(self, id, color):
+		self.textColors[id] = color
+		colordb = wx.TheColourDatabase
+		colordb.AddColour(id, color)
+
 	def getColor(self, id):
 		return self.textColors.get(id)
 		
 	def updateAnnotation(self, annotation, newAnnotation):
 		self.annotations[annotation.getName()] = newAnnotation
+		self.updateColor(annotation.getName(), annotation.GetPen().GetColour())
