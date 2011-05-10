@@ -1341,7 +1341,7 @@ class Visualizer:
 				defaultExt = "jpeg"
 			if defaultExt == "tif":
 				defaultExt = "tiff"
-			initFile = "%s.%s" % (self.dataUnit.getName(), defaultExt)
+			initFile = "%s" % self.dataUnit.getName()
 			if defaultExt not in wildCardDict:
 				defaultExt = "png"
 			wildCard = wildCardDict[defaultExt] + "|*.%s" % defaultExt
@@ -1349,11 +1349,7 @@ class Visualizer:
 
 			for key in wildCardDict.keys():
 				wildCard += "|%s|*.%s" % (wildCardDict[key], key)
-			filename = GUI.Dialogs.askSaveAsFileName(self.parent,
-													"Save snapshot of rendered scene",
-													initFile,
-													wildCard,
-													"snapshotImage")
+			filename = GUI.Dialogs.askSaveAsFileName(self.parent, "Save snapshot of rendered scene", initFile, wildCard, "snapshotImage")
 			if filename:
 				if platform.system() == "Windows":
 					filename = filename.encode('mbcs')

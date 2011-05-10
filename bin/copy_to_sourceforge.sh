@@ -29,6 +29,8 @@ cd sourceforge
 # Do not update build_innosetup.sh
 echo "Remove bin/build_innosetup.sh from commit"
 rm bin/build_innosetup.sh
+echo "Remove vtkBXD/Processing/CMakeLists.txt from commit"
+rm vtkBXD/Processing/CMakeLists.txt
 echo
 echo "Possibly modified files:"
 svn stat|grep "^?"|grep -v ".pyc$"
