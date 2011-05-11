@@ -322,7 +322,6 @@ class ExportDialog(wx.Dialog):
 		self.vtksourcesizer.Add(self.vtklistlbl)
 		self.vtksourcesizer.Add(self.vtksourceListbox)
 		
-		
 		self.vtkSourceboxsizer.Add(self.vtksourcesizer, 1, wx.EXPAND)
 		
 		self.vtkInfoBox = wx.StaticBox(self.vtkPanel, -1, "Dataset Information")
@@ -333,15 +332,11 @@ class ExportDialog(wx.Dialog):
 		self.vtkdimlbl = wx.StaticText(self.vtkPanel, -1, "Dataset dimensions:")
 		self.vtkdimensionLbl = wx.StaticText(self.vtkPanel, -1, "%d x %d x %d" % (self.x, self.y, self.z))
 	
-
 		self.vtktpLbl = wx.StaticText(self.vtkPanel, -1, "Number of Timepoints:")
 		self.vtktimepointLbl = wx.StaticText(self.vtkPanel, -1, "%d" % self.n)
 		
-		
-		
 		self.vtkinfosizer.Add(self.vtkdimlbl, (0, 0))
 		self.vtkinfosizer.Add(self.vtkdimensionLbl, (0, 1), flag = wx.EXPAND | wx.ALL)
-		
 		
 		self.vtkinfosizer.Add(self.vtktpLbl, (1, 0))
 		self.vtkinfosizer.Add(self.vtktimepointLbl, (1, 1), flag = wx.EXPAND | wx.ALL)
@@ -370,7 +365,7 @@ class ExportDialog(wx.Dialog):
 	def updateListOfImages(self, event = None):
 		"""
 		A method that updates a list of images to a listbox based on the selected input type
-		"""        
+		"""
 		if self.imageMode == 1:
 			dirname = self.browsedir.GetValue()
 			pattern = self.patternEdit.GetValue()
@@ -392,8 +387,7 @@ class ExportDialog(wx.Dialog):
 		self.conf.writeSettings()
 		
 		n = pattern.count("%")
-		
-		
+				
 		if n == 0:
 			pattern = pattern + "%d"
 			n = 1
@@ -405,8 +399,14 @@ class ExportDialog(wx.Dialog):
 				a = pattern % (0, 0)
 		except:
 			return
+
 		if n == 1:
-			for i in range(self.imageAmnt):
+			if self.imageMode == 1:
+				amount = self.imageAmnt
+			else:
+				amount = self.n
+			
+			for i in range(amount):
 				file = os.path.join(dirname, pattern % i) + ".%s" % ext
 				lstbox.Append(file)
 		else:
@@ -435,8 +435,9 @@ class ExportDialog(wx.Dialog):
 			n = 1
 		for i in range(self.n):
 			try:
-				file = os.path.join(dirname, pattern % i) + ".%s" % ext
+				filename = os.path.join(dirname, pattern % i) + ".%s" % ext
 			except:
 				return
-			self.vtksourceListbox.Append(file)
+			
+			self.vtksourceListbox.Append(filename)
 			
