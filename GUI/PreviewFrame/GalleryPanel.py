@@ -3,7 +3,6 @@
 """
  Unit: GalleryPanel
  Project: BioImageXD
- Created: 23.05.2005, KP
  Description:
 
  A panel that can display previews of all the optical slices of
@@ -230,26 +229,26 @@ class GalleryPanel(InteractivePanel):
 			self.updatePreview()
 			self.Refresh()
 			
-	def getScaledSlice(self, slice):
+	def getScaledSlice(self, sliceNum):
 		"""
 		@param slice The number of the slice to return
 		"""
 		w, h = self.sliceSize
 		try:
-			slice = lib.ImageOperations.imageDataTo3Component(self.slices[slice], self.ctf)
-			slice.Update()
+			sliceImg = lib.ImageOperations.imageDataTo3Component(self.slices[sliceNum], self.ctf)
+			sliceImg.Update()
 		except:
 			return
 		
-		x, y, z = slice.GetDimensions()
+		x, y, z = sliceImg.GetDimensions()
 		factor = lib.ImageOperations.getZoomFactor(x, y, w, h)
 		
 		if self.interpolation:
-			slice = self.zoomImageWithInterpolation(slice, factor, self.interpolation, 0)
+			sliceImg = self.zoomImageWithInterpolation(sliceImg, factor, self.interpolation, 0)
 		else:
-			slice = lib.ImageOperations.vtkImageDataToWxImage(slice)
-			slice.Rescale(w, h)
-		return slice
+			sliceImg = lib.ImageOperations.vtkImageDataToWxImage(sliceImg)
+			sliceImg.Rescale(w, h)
+		return sliceImg
 		
 	def forceUpdate(self):
 		"""

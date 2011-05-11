@@ -1050,7 +1050,7 @@ def getZoomFactor(imageWidth, imageHeight, screenWidth, screenHeight):
 	Calculate a zoom factor so that the image
 				 will be zoomed to be as large as possible
 				 while fitting to screenWidth, screenHeight
-	"""		  
+	"""
 	widthProportion = float(screenWidth) / imageWidth
 	heightProportion = float(screenHeight) / imageHeight
 	return min(widthProportion, heightProportion)
