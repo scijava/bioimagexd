@@ -4,7 +4,6 @@
 """
  Unit: Configuration.py
  Project: BioImageXD
- Created: 23.02.2004, KP
  Description:
 
  A module that loads / saves a configuration file and gives information
@@ -148,10 +147,8 @@ class Configuration:
 		if configItem:
 			scripting.COLOR_EXPERIENCED = eval(configItem)
 		
-		
 		self.setConfigItem("RemoveOldVTK", "VTK", 1, 0)
 		self.setConfigItem("VTKPath", "VTK", vtkpath, 0)
-		
 		self.setConfigItem("ImageFormat", "Output", "png", 0)
 		fpath = os.path.expanduser("~")
 		self.setConfigItem("FramePath", "Paths", fpath, 0)

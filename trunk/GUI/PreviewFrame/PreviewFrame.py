@@ -456,13 +456,14 @@ class PreviewFrame(InteractivePanel):
 				self.oldy = y
 			self.setImage(colorImage)
 			self.setZSlice(self.z)
-		
 			z = self.z
+		
 		if not self.imagedata:
 			Logging.info("No imagedata to preview", kw = "preview")
 			self.slice = None
 		else:
 			self.slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
+
 		self.paintPreview()
 		self.updateScrolling()
 		self.finalImage = colorImage

@@ -1767,7 +1767,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			autoRescale = conf.getConfigItem("AutoRescaleMapping", "Performance")
 			if autoRescale:
 				autoRescale = eval(autoRescale)
-			
+
 			if wantToRescale and bitness > 8:
 				if autoRescale:
 					lib.ImageOperations.rescaleDataUnits(dataunits, 0, 255)

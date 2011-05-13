@@ -2,7 +2,6 @@
 """
  Unit: BXDDataSource
  Project: BioImageXD
- Created: 03.11.2004, JM
  Description: A class that reprensets the .bxd files that list 
 			the individual .bxc files that belong to a given dataset
 

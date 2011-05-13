@@ -143,16 +143,15 @@ class BXCDataSource(DataSource):
 
 		self.setCurrentTimepoint(i)
 		data = self.loadVti(self.dataSets[i])
-		if not self.originalScalarRange:
-			self.originalScalarRange = 0, (2**self.getBitDepth()) - 1
+		self.originalScalarRange = self.getOriginalScalarRange()
 		#self.scalarRange = data.GetScalarRange()
 		if raw:
 			return data
-		
+
 		data = self.getResampledData(data, i)
 		
-		if data.GetScalarType() != 3 and not raw and self.settings.getType() != "Process":
-			data = self.getIntensityScaledData(data)
+		#if data.GetScalarType() != 3 and not raw and self.settings.getType() != "Process":
+		data = self.getIntensityScaledData(data)
 		
 		return data
 
@@ -313,6 +312,7 @@ class BXCDataSource(DataSource):
 				settings = settings.readFrom(self.parser)
 				dataunit.setSettings(settings)
 				dataunits.append(dataunit)
+
 		return dataunits
 
 	def getName(self):
@@ -344,9 +344,23 @@ class BXCDataSource(DataSource):
 				ctf = vtk.vtkColorTransferFunction()
 				ctf.AddRGBPoint(scalarRange[0], 0, 0, 0)
 				ctf.AddRGBPoint(scalarRange[1], 1, 1, 1)				  
-			else:
-				#Logging.info("Using CTF read from dataset", ctf, kw = "ctf")
-				pass
+
+			if self.explicitScale == 1:
+				scaledCtf = vtk.vtkColorTransferFunction()
+				ctfsize = ctf.GetSize()
+				scale = self.intensityScale
+				shift = self.intensityShift
+				tmp = [0,0,0,0,0,0]
+				coeff = 1
+				if ctfsize > 255:
+					coeff = int(ctfsize / 255.0)
+				for i in range(0,ctfsize,coeff):
+					ctf.GetNodeValue(i,tmp)
+					scaledCtf.AddRGBPoint((tmp[0] + shift) * scale,tmp[1], tmp[2], tmp[3])
+				ctf = scaledCtf
+				self.bitdepth = 8
+				self.scalarRange = (0, 255)
+			
 			self.ctf = ctf
 		return self.ctf
 

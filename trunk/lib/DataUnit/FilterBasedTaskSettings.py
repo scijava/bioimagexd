@@ -25,7 +25,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-__author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
+__author__ = "BioImageXD Project <http://www.bioimagexd.net/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 

@@ -3,7 +3,6 @@
 """
  Unit: InfoWidget.py
  Project: BioImageXD
- Created: 21.02.2005, KP
  Description:
 
  A widget that displays information about channels/dataset series selected in 
@@ -148,6 +147,7 @@ class InfoWidget(wx.Panel):
 			voxelsize = dataunit.getVoxelSize()
 			rsVoxelsize = lsize = dataunit.getResampledVoxelSize()
 			bitdepth = dataunit.getBitDepth()
+
 			em = dataunit.getEmissionWavelength()
 			ex = dataunit.getExcitationWavelength()
 			if not em:

@@ -249,7 +249,6 @@ class Scatterplot(wx.Panel):
 		self.updatePreview()
 		self.Refresh()
 		
-		
 	def markActionStart(self, event):
 		"""
 		Sets the starting position of rubber band for zooming
