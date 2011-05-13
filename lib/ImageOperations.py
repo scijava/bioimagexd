@@ -930,13 +930,13 @@ def getMaskFromPoints(points, mx, my, mz, value = 255):
 	image2 = append.GetOutput()
 	return image2
 	
-def equalize(imagedata, ctf):
+def equalize(imagedata, ctf, maxval):
 	"""
 	Creates a set of lookup values from a histogram from the imagedata parameter.
 	Then creates a color transfer function from these values and returns it.
 	"""
 	histogram = get_histogram(imagedata)
-	maxval = len(histogram)
+	histlen = len(histogram)
 	
 	def weightedValue(x):
 		if x < 2:
@@ -944,19 +944,19 @@ def equalize(imagedata, ctf):
 		return math.sqrt(x)
 	
 	intsum = weightedValue(histogram[0])
-	for i in range(1, maxval):
+	for i in range(1, histlen):
 		intsum += 2 * weightedValue(histogram[i])
 	intsum += weightedValue(histogram[-1])
 	
 	scale = maxval / float(intsum)
-	lut = [0] * (maxval + 1)
+	lut = [0] * (histlen + 1)
 	intsum = weightedValue(histogram[0])
-	for i in range(1, maxval):
+	for i in range(1, histlen):
 		delta = weightedValue(histogram[i])
 		intsum += delta
 		ceilValue = math.ceil(intsum * scale)
 		floorValue = math.floor(intsum * scale)
-# Changed the name of a to colorLookup, maybe not the clearest name yet though
+
 		colorLookup = floorValue
 		if abs(ceilValue - intsum * scale) < abs(floorValue - intsum * scale):
 			colorLookup = ceilValue
@@ -1023,11 +1023,10 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 		data = logscale.GetOutput()
 		
 	x0, x1 = data.GetScalarRange()
-	
 	if countVoxels:
 		Logging.info("Scalar range of scatterplot = ", x0, x1, kw = "imageop")
 		ctf = fire(x0, x1)
-		ctf = equalize(data, ctf)
+		ctf = equalize(data, ctf, x1)
 		maptocolor = vtk.vtkImageMapToColors()
 		maptocolor.SetInputConnection(data.GetProducerPort())
 		maptocolor.SetLookupTable(ctf)
@@ -1035,7 +1034,7 @@ def scatterPlot(imagedata1, imagedata2, z, countVoxels = True, wholeVolume = Tru
 		maptocolor.Update()
 		data = maptocolor.GetOutput()
 		ctf.originalRange = originalRange
-	
+
 	Logging.info("Scatterplot has dimensions: ", data.GetDimensions(), data.GetExtent(), kw = "imageop")						  
 	data.SetWholeExtent(data.GetExtent())
 	img = vtkImageDataToWxImage(data)
