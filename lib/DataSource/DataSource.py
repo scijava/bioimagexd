@@ -95,7 +95,7 @@ class DataSource:
 		self.currentTimepoint = 0
 		self.scalarRange = None
 		self.explicitScale = 0
-		self.originalScalarRange = (0, 255)
+		self.originalScalarRange = None
 		self.shift = None
 		self.originalDimensions = None
 		self.resampleFactors = None
@@ -188,6 +188,8 @@ class DataSource:
 		"""
 		Return the original scalar range for this dataset
 		"""
+		if self.originalScalarRange is None:
+			self.originalScalarRange = 0, (2**self.getBitDepth()) - 1
 		return self.originalScalarRange
 		
 	def getOriginalDimensions(self):
@@ -297,7 +299,7 @@ class DataSource:
 			return self.intensityScale
 		else:
 			minval, maxval = self.originalScalarRange
-			scale = 256.0 / (maxval + 1)
+			scale = 255.0 / maxval
 			return scale
 
 	def getIntensityShift(self):
@@ -341,7 +343,7 @@ class DataSource:
 			currScale = self.intensityScale
 		else:
 			minval, maxval = self.originalScalarRange
-			scale = 256.0 / (maxval + 1)
+			scale = 255.0 / maxval
 			self.shift.SetScale(scale)
 			currScale = scale
 		

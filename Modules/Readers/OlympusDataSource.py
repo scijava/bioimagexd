@@ -2,7 +2,6 @@
 """
  Unit: OlympusDataSource
  Project: BioImageXD
- Created: 16.02.2006, KP
  Description: A datasource for reading Olympus OIF files
 
  Copyright (C) 2005	 BioImageXD Project
@@ -197,7 +196,7 @@ class OlympusDataSource(DataSource):
 		
 		if not self.originalScalarRange:
 			self.originalScalarRange = 0, (2 ** self.getBitDepth()) - 1
-		
+
 		data = self.getResampledData(data, i)
 		data = self.getIntensityScaledData(data)
 		
@@ -290,7 +289,7 @@ class OlympusDataSource(DataSource):
 			self.explicitScale = 2
 		else:
 			minval, maxval = self.scalarRange
-		coeff = 65536.0 / (maxval + 1)
+		coeff = 65535.0 / maxval
 
 		red0, green0, blue0 = -1, -1, -1
 		for i in range(0, maxval + 1):

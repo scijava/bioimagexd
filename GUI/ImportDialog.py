@@ -297,7 +297,6 @@ class ImportDialog(wx.Dialog):
 		previewBox.Add(self.preview)
 		previewBox.Add(self.timeslider, 1, wx.EXPAND)
 		
-		
 		self.previewSizer = wx.StaticBoxSizer(self.previewBox, wx.HORIZONTAL)
 		self.previewSizer.Add(previewBox)
 		self.previewSizer.Add(self.zslider, 1, wx.EXPAND)        
@@ -309,19 +308,16 @@ class ImportDialog(wx.Dialog):
 
 		self.nlbl = wx.StaticText(self, -1, "Number of datasets:")
 		self.imageAmountLbl = wx.StaticText(self, -1, "1")
- 
-		
+
 		self.dimlbl = wx.StaticText(self, -1, "Dimension of single slice:")
 		self.dimensionLbl = wx.StaticText(self, -1, "")
-	
-		
+			
 		self.depthlbl = wx.StaticText(self, -1, "Depth of stack:")
 		self.depthEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
 
 		self.depthEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfSlices)
 		self.depthEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfSlices)
 		
-
 		self.tpLbl = wx.StaticText(self, -1, "Number of timepoints:")
 		#self.timepointLbl=wx.StaticText(self,-1,"1")
 		self.timepointEdit = wx.TextCtrl(self, -1, "1", style = wx.TE_PROCESS_ENTER)
@@ -329,7 +325,6 @@ class ImportDialog(wx.Dialog):
 		self.timepointEdit.Bind(wx.EVT_TEXT_ENTER, self.onUpdateNumberOfTimepoints)
 		self.timepointEdit.Bind(wx.EVT_KILL_FOCUS, self.onUpdateNumberOfTimepoints)
 
-		
 		self.voxelSizeLbl = wx.StaticText(self, -1, u"Voxel size:")
 		box = wx.BoxSizer(wx.HORIZONTAL)
 		self.voxelX = wx.TextCtrl(self, -1, "1.0", size = (50, -1), style = wx.TE_PROCESS_ENTER)
@@ -457,8 +452,7 @@ enter the information below.""")
 		#	return
 		#self.setNumberOfSlices(slices)
 		self.updateSelection(None, updatePreview = 1)
-		
-
+	
 	def onChangeZSlice(self, event):
 		"""
 		Set the zslice displayed in the preview

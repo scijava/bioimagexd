@@ -106,6 +106,8 @@ class RescaleDialog(wx.Dialog):
 		"""
 		for i, dataUnit in enumerate(self.dataUnits):
 			ds = dataUnit.getDataSource()
+			bitdepth = ds.getSingleComponentBitDepth()
+			self.scale = 255.0 / (2**bitdepth - 1)
 			print "Setting intensity scale",self.shift,self.scale
 			ds.setIntensityScale(self.shift, self.scale)
 			ds.resetColorTransferFunction()

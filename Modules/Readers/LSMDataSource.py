@@ -100,7 +100,6 @@ class LsmDataSource(DataSource):
 			self.readTimeStamps()
 			
 
-
 	def readTimeStamps(self):
 		"""
 		return the timestamp for given timepoint
