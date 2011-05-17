@@ -3,7 +3,6 @@
 """
  Unit: VisualizationMode
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A module that contains the base class for various view modes

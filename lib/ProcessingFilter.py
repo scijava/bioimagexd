@@ -503,7 +503,6 @@ class ProcessingFilter:
 		# If the input is a processed dataunit, i.e. output from a task,
 		# then we offer both the task output and the individual channels
 		if self.dataUnit.isProcessed():
-			print self.dataUnit.getSourceDataUnits()
 			for i, dataunit in enumerate(self.dataUnit.getSourceDataUnits()):
 				choices.append(dataunit.getName())
 		else:
@@ -607,7 +606,12 @@ class ProcessingFilter:
 		Return the number of input source units
 		"""
 		return len(self.sourceUnits)
-		
+
+	def updateSourceUnits(self, dataUnit):
+		self.setDataUnit(dataUnit)
+		if hasattr(self.dataUnit, 'getSourceDataUnits'):
+			self.sourceUnits = self.dataUnit.getSourceDataUnits()
+
 	def getInputFromChannel(self, unitIndex, timepoint = -1, dataUnit = 0):
 		"""
 		Return an imagedata object that is the current timepoint for channel #n

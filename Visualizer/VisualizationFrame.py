@@ -310,14 +310,27 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		"""
 		Select a module
 		"""
-		self.selected = event.GetSelection()
+		self.selectItem(event.GetSelection())
+
+	def selectItem(self, selection):
+		"""
+		Select an item in the moduleListbox
+		"""
+#		self.moduleListbox.Select(selection)
+		self.selected = selection
 		lbl = self.moduleListbox.GetStringSelection()
 		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().showConfiguration("%s")' % (lbl)
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 									desc = "Show configuration module '%s'"%lbl)
 		cmd.run()
-#		self.showConfiguration(self.selected)
-		
+
+	def refreshInput(self):
+		"""
+		This will recreate the configuration panel, updating the inputs.
+		"""
+		if self.currentConf:
+			self.selectItem(self.moduleListbox.GetSelection())
+
 	def showConfiguration(self, label):
 		"""
 		showConfiguration
@@ -331,7 +344,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.currentConfLbl = lbl
 		modname = lbl.split("#")[0].strip()
 		panel = self.mode.getConfigurationPanel(modname)
-	
 		self.currentConf = panel(self, self.visualizer, lbl)#, mode = self.mode)
 	 
 		self.sizer.Add(self.currentConf, (6, 0))
@@ -407,7 +419,6 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		if self.selected == -1:
 			GUI.Dialogs.showerror(self, "You have to select a module to be removed", "No module selected")
 			return
-		
 		lbl = self.moduleListbox.GetString(self.selected)
 		do_cmd = 'scripting.visualizer.getCurrentMode().getSidebarWindow().removeModule("%s")' % lbl
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \

@@ -1649,7 +1649,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		
 	def onMenuOpen(self, evt, evt2 = None, *args):
 		"""
-		Callback function for menu item "Open VTK File"
+		Callback function for menu item "Open dataset"
 		"""
 		if not evt2:
 			self.onMenuShowTree(show = True)
@@ -1674,6 +1674,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			if sep.lower() in ["tif", "tiff", "jpg", "jpeg", "png","bmp"]:
 				self.onMenuImport(None, askfile)
 				return
+			
 			fname = os.path.split(askfile)[-1]
 			self.SetStatusText("Loading " + fname + "...")
 			askfile = askfile.replace("\\", "\\\\")
