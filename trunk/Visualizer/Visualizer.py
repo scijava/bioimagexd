@@ -1022,6 +1022,13 @@ class Visualizer:
 
 		self.currentMode.setTimepoint(self.timepoint)
 		self.currentWindow.Show()
+
+		if hasattr(self.currentMode, 'configPanel') and hasattr(self.currentMode.configPanel, 'moduleListbox'):
+			modules = self.currentMode.getModules()
+			for module in modules:
+				module.updateSourceUnits(self.dataUnit)
+			self.currentMode.configPanel.refreshInput()
+
 		scripting.renderingEnabled = self.enabled
 		if hasattr(self.currentWindow, "enable"):
 			self.currentWindow.enable(self.enabled)

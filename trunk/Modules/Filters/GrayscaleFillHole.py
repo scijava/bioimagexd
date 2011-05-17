@@ -94,11 +94,11 @@ class GrayscaleFillHoleFilter(lib.ProcessingFilter.ProcessingFilter):
 			type,dim = self.getITKImageType(image)
 			self.filter = itk.SliceBySliceImageFilter[image,image].New()
 			fillHoles = eval("itk.GrayscaleFillholeImageFilter.I%s2I%s2.New()"%(type,type))
-			self.filter.SetFilter(fillHoles.GetPointer())
+			self.filter.SetFilter(fillHoles)
 			self.filter.SetInput(image)
 		else:
 			self.filter = itk.GrayscaleFillholeImageFilter[image,image].New()
-			self.filter.AddObserver(itk.ProgressEvent(),self.pc.GetPointer())
+			self.filter.AddObserver(itk.ProgressEvent(),self.pc)
 			self.filter.SetInput(image)
 
 		output = self.filter.GetOutput()
