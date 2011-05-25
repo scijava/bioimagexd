@@ -770,7 +770,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.parameters["AvgInt"]:
 			variances = 0.0
 			allVoxels = 0
-			for i in range(startIntensity, numberOfLabels):
+			for i in range(startIntensity, numberOfLabels+1):
 				if newITKStatistics:
 					try:
 						labelObj = labelMap.GetLabelObject(i)
