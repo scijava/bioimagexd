@@ -85,7 +85,7 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if parameter in ["X","Y","Z"]:
 			if self.dataUnit:
 				print (self.parameters["X"], self.parameters["Y"], self.parameters["Z"])
-				self.dataUnit.setNumberOfTimepoints(1)
+				#self.dataUnit.setNumberOfTimepoints(1)
 				self.dataUnit.setModifiedDimensions((self.parameters["X"], self.parameters["Y"], self.parameters["Z"]))
 				lib.messenger.send(None, "update_dataset_info")
 
@@ -147,6 +147,12 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 				return dataUnit.getExcitationWavelength()
 		return 0
 
+	def canSelectChannels(self):
+		"""
+		No channel selection for PSF generation filter
+		"""
+		return 0
+		
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
@@ -156,7 +162,7 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		lib.messenger.send(None, "update_dataset_info")
 		scripting.wantWholeDataset = 1
-			
+		
 		dataUnit = self.getInputDataUnit(1)
 #		dataSource = dataUnit.getDataSource()
 		self.vtkfilter.SetRefractionIndex(self.parameters["RefractionIndex"])
@@ -191,6 +197,7 @@ class PSFGenerationFilter(lib.ProcessingFilter.ProcessingFilter):
 #		ctf = vtk.vtkColorTransferFunction()
 		#ctf.AddRGBPoint(0, 0,0,0)
 		#ctf.AddRGBPoint(maxval, 0,255,0)
+
 		if not self.origCtf:
 			origCtf = self.dataUnit.getSettings().get("ColorTransferFunction")
 			self.origCtf = origCtf

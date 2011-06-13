@@ -4,7 +4,6 @@
 """
  Unit: Main
  Project: BioImageXD
- Created: 01.11.2004, KP
  Description:
 
  Module for building an application bundle for Windows or MacOS X
@@ -43,7 +42,6 @@ excludeFiles = ["SurfaceConstruction", "Reslice"]
 def get_files(directory, asmodule=0):
 	"""
 	Get all files from a directory, excluding SVN files
-	Docstring: 15.06.2007 twikstro
 	"""
 	modules = []
 	for root, dirs, files in os.walk(directory):
@@ -69,7 +67,6 @@ def get_files(directory, asmodule=0):
 def build():
 	"""
 	Builds the appropriate command-line options 
-	Docstring: 15.06.2007 twikstro
 	"""
 	print "build()"
 	excludeList = ['PyShell', 'dl', 'dotblas', 'hexdump', 'mx', 'win32com.gen_py',

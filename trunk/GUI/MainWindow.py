@@ -472,6 +472,9 @@ class MainWindow(wx.Frame):
 									undo_cmd, desc = "Unselect all in file tree")
 		cmd.run(recordOnly = 1)
 
+		# Bug-fix (Mac): double click on a multi-channeled dataset's parent in the file tree
+		if isinstance(data, str):
+			return
 		if data.dataSource.getResampling():
 			if scripting.resamplingDisabled:
 				self.visualizer.resamplingBtn.SetToggle(False)

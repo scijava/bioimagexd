@@ -129,7 +129,7 @@ ReadColorTransferFunction(vtkColorTransferFunction *ctf)
 }
 
 int vtkHandleColorTransferFunction::
-LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, int end)
+LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, float start, float end)
 {
   if (!this->InputString)
 	{
@@ -139,8 +139,10 @@ LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, in
 
   ctf->RemoveAllPoints();
 
-  int points = (end-start+1);
-  double *table = new double[points*3];
+  //int points = (end-start+1);
+  int points = this->InputStrLen / 3;
+  //double *table = new double[points*3];
+  double *table = new double[this->InputStrLen];
   double *tablePtr = table;
   double red;
   double green;
@@ -167,12 +169,13 @@ LoadColorTransferFunctionFromString(vtkColorTransferFunction *ctf, int start, in
 }
 
 int vtkHandleColorTransferFunction::
-ColorTransferFunctionToString(vtkColorTransferFunction *ctf, int perColor)
+ColorTransferFunctionToString(vtkColorTransferFunction *ctf, int perColor, int size = 0)
 {
   double min = 0.0;
   double max = 0.0;
   ctf->GetRange(min,max);
-  int size = static_cast<int>(max-min+1);
+  //if (size == 0) size = static_cast<int>(max-min+1);
+  if (size == 0) size = ctf->GetSize();
 
   const char *table;
   table = reinterpret_cast<const char*>(ctf->GetTable(min, max, size));

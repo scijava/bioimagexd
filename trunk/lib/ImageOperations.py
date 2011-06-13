@@ -272,8 +272,9 @@ def loadBXDLutFromString(lut, ctf):
 	lut = lut[8: ]
 	Logging.info("The palette is in range %d-%d" % (start, end), kw = "ctf")
 	j = 0
-	start = int(start)
-	end = int(end)
+
+	#start = int(start)
+	#end = int(end)
 
 	handle = vtkbxd.vtkHandleColorTransferFunction()
 	handle.SetInputString(lut,len(lut))
@@ -363,6 +364,7 @@ def lutToString(ctf, luttype = "ImageJ"):
 		perColor = maxval / 255
 	else:
 		perColor = 1
+	
 	if luttype == "BioImageXD":
 		stringOfLUT = "BXDLUT"
 		Logging.info("Adding to BXDLUT structure the minval=%f, maxval=%f" % (minval, maxval), kw = "ctf")
@@ -370,8 +372,12 @@ def lutToString(ctf, luttype = "ImageJ"):
 		stringOfLUT += struct.pack("f", minval)
 		stringOfLUT += struct.pack("f", maxval)
 
+	size = maxval-minval+1
+	if size < ctf.GetSize():
+		size = ctf.GetSize()
+	
 	handle = vtkbxd.vtkHandleColorTransferFunction()
-	handle.ColorTransferFunctionToString(ctf,int(perColor))
+	handle.ColorTransferFunctionToString(ctf, int(perColor), size)
 	ctfstr = handle.GetOutputString()
 	for i in xrange(0,ctfstr.GetNumberOfTuples()):
 		stringOfLUT += chr(ctfstr.GetValue(i))
