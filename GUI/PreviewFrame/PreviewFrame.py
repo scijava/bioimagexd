@@ -357,6 +357,7 @@ class PreviewFrame(InteractivePanel):
 			self.updatePreview()
 			self.Refresh()
 			return
+		
 		self.dataUnit = dataUnit
 		self.settings = dataUnit.getSettings()
 		self.updateColor()
@@ -380,7 +381,7 @@ class PreviewFrame(InteractivePanel):
 		if self.enabled:
 			self.Layout()
 			self.parent.Layout()
-			self.updatePreview(1)
+			#self.updatePreview(1) # This is commented out so that size of zoom is first calculated (setDataUnit needs to be called for that) and after that preview is updated
 		else:
 			Logging.info("PreviewFrame not enabled, won't update on DataUnit setting", kw="preview")
 

@@ -133,6 +133,9 @@ class InfoWidget(wx.Panel):
 			excitation = "n/a"
 			emission = "n/a"
 		else:
+        	# Bug-fix (Mac): double click on a multi-channeled dataset's parent in the file tree
+			if isinstance(dataunit, str):
+				return
 			dims = dataunit.getDimensions()
 			odims = (0, 0, 0)
 			resampledims = dataunit.dataSource.getResampleDimensions()

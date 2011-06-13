@@ -44,8 +44,8 @@ public:
 
   int SaveColorTransferFunction(vtkColorTransferFunction*);
   int ReadColorTransferFunction(vtkColorTransferFunction*);
-  int LoadColorTransferFunctionFromString(vtkColorTransferFunction*, int, int);
-  int ColorTransferFunctionToString(vtkColorTransferFunction*, int);
+  int LoadColorTransferFunctionFromString(vtkColorTransferFunction*, float, float);
+  int ColorTransferFunctionToString(vtkColorTransferFunction*, int, int);
   void CreateRandomColorTransferFunction(vtkColorTransferFunction*, int, int, double);
   int ScaleColorTransferFunction(vtkColorTransferFunction*, vtkColorTransferFunction*, double, double);
 

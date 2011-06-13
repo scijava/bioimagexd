@@ -594,7 +594,7 @@ class TreeWidget(wx.SashLayoutWindow):
 				
 		obj = self.tree.GetPyData(item)
 		if obj == "1":
-			self.tree.UnselectItem(item)
+			#self.tree.UnselectItem(item)
 			event.Veto()
 			return
 		elif obj == "2":

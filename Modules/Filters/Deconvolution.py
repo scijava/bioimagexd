@@ -110,6 +110,8 @@ class DeconvolutionFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
+		import pdb
+		pdb.set_trace()
 		image = self.getInput(1)
 		origType = image.GetScalarType()
 		origMin, origMax = image.GetScalarRange()
@@ -136,7 +138,7 @@ class DeconvolutionFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetInputConnection(0, image.GetProducerPort())
 		self.vtkfilter.SetInputConnection(1, psf.GetProducerPort())
 		
-		print "Setting antiring to ",self.parameters["AntiRing"]
+		print "Setting antiring to",self.parameters["AntiRing"]
 		print "anti ring =",self.getParameter("AntiRing")
 		self.vtkfilter.SetAntiRing(self.parameters["AntiRing"])
 		self.vtkfilter.SetDetectDivergence(self.parameters["DetectDivergence"])
