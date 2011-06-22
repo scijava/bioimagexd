@@ -2,7 +2,6 @@
 """
  Unit: RenderingInterface.py
  Project: BioImageXD
- Created: 17.11.2004, KP
  Description:
 
 		   

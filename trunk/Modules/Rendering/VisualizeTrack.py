@@ -62,8 +62,8 @@ class VisualizeTrackModule(VisualizationModule):
 		self.descs = {"TrackFile": "Tracks file", #"AllTracks": "Show all tracks", \
 					"MinLength": "Min. length of track (# of timepoints)",
 					"SphereRadius": "Sphere radius",
-					"TubeRadius": "Tube radius"}
-					#"SameStartingPoint":"Tracks start at same point"}
+					"TubeRadius": "Tube radius",
+					"SameStartingPoint": "Visualize tracks starting from same point"}
 		
 		self.showTracks = []
 			
@@ -104,13 +104,13 @@ class VisualizeTrackModule(VisualizationModule):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""
-		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",()], ["Settings",("MinLength","SphereRadius","TubeRadius")]]
+		return [["Read tracks", (("TrackFile", "Select track file to visualize", "*.csv"),)], ["Show tracks",()], ["Settings",("MinLength","SphereRadius","TubeRadius","SameStartingPoint")]]
 
 	def getParameterLevel(self, parameter):
 		"""
 		Return level of parameter
 		"""
-		if parameter in ["SphereRadius", "TubeRadius"]:
+		if parameter in ["SphereRadius", "TubeRadius", "SameStartingPoint"]:
 			return scripting.COLOR_EXPERIENCED
 		return scripting.COLOR_BEGINNER
 		
@@ -242,25 +242,25 @@ class VisualizeTrackModule(VisualizationModule):
 			currentActor.SetMapper(self.currentMapper)
 			currentActor.GetProperty().SetDiffuseColor(0, 0, 1)
 			
-			#dataw, datay, dataz = inputUnit.getDimensions()
+			dataw, datay, dataz = inputUnit.getDimensions()
 			for track in tracks:
-				#dx, dy, dz = 0,0,0
-				#if self.parameters["SameStartingPoint"]:
-				#	dx = -track[0][0]
-				#	dy = -track[0][1]
-				#	dz = -track[0][2]
-				#	dx+=dataw/2
-				#	dy+=datay/2
-				#	dz+=dataz/2
+				dx, dy, dz = 0,0,0
+				if self.parameters["SameStartingPoint"]:
+					dx = -track[0][1][0]
+					dy = -track[0][1][1]
+					dz = -track[0][1][2]
+					dx += dataw/2
+					dy += datay/2
+					dz += dataz/2
 
 				for i, (t,(x, y, z)) in enumerate(track[:-1]):
-				#	x+=dx
-				#	y+=dy
-				#	z+=dz
+					x += dx
+					y += dy
+					z += dz
 					t2, (x2,y2,z2) = track[i + 1]
-				#	x2+=dx
-				#	y2+=dy
-				#	z2+=dz
+					x2 += dx
+					y2 += dy
+					z2 += dz
 
 					if x != x2 or y != y2 or z != z2:
 						linesource = vtk.vtkLineSource()
@@ -276,8 +276,8 @@ class VisualizeTrackModule(VisualizationModule):
 					sph.SetPhiResolution(20)
 					sph.SetThetaResolution(20)
 					sph.SetCenter(x, y, z)
-
 					sph.SetRadius(sphereRadius)
+					
 					if t == timepoint:
 						appendCurrent.AddInput(sph.GetOutput())
 					elif i != 0:
@@ -287,23 +287,26 @@ class VisualizeTrackModule(VisualizationModule):
 					sph = vtk.vtkSphereSource()
 					sph.SetPhiResolution(20)
 					sph.SetThetaResolution(20)
-					sph.SetCenter(track[0][1])
+					x,y,z = track[0][1]
+					x += dx
+					y += dy
+					z += dz
+					sph.SetCenter((x,y,z))
 					sph.SetRadius(sphereRadius)
 					appendFirst.AddInput(sph.GetOutput())
 
+				sph = vtk.vtkSphereSource()
+				sph.SetPhiResolution(20)
+				sph.SetThetaResolution(20)
+				x,y,z = track[-1][1]
+				x += dx
+				y += dy
+				z += dz
+				sph.SetCenter((x,y,z))
+				sph.SetRadius(sphereRadius)
 				if timepoint != track[-1][0]:
-					sph = vtk.vtkSphereSource()
-					sph.SetPhiResolution(20)
-					sph.SetThetaResolution(20)
-					sph.SetCenter(track[-1][1])
-					sph.SetRadius(sphereRadius)         
 					appendLast.AddInput(sph.GetOutput())
 				else:
-					sph = vtk.vtkSphereSource()
-					sph.SetPhiResolution(20)
-					sph.SetThetaResolution(20)
-					sph.SetCenter(track[-1][1])
-					sph.SetRadius(sphereRadius)         
 					appendCurrent.AddInput(sph.GetOutput())
 
 			self.currentMapper.SetInput(appendCurrent.GetOutput())
@@ -384,8 +387,8 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 		self.readButton.Bind(wx.EVT_BUTTON, self.onReadTracks)
 
 		# Terrible hack!!!
-		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((1,0)).GetSizer().GetItem(0).GetSizer()
-		sizer.Add(box, (1,0))
+		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((3,0)).GetSizer()
+		sizer.Add(box, 1)
 
 		self.trackGrid = self.trackingGUI.TrackTableGrid(self.gui, self.module.dataUnit, self, canEnable = 1)
 		gridSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -400,9 +403,9 @@ class VisualizeTrackConfigurationPanel(ModuleConfigurationPanel):
 		btnBox.Add(self.deselectAllBtn)
 		
 		# Terrible hack!!!
-		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((2,0)).GetSizer().GetItem(0).GetSizer()
-		sizer.Add(btnBox, (0,0))
-		sizer.Add(gridSizer, (1,0))
+		sizer = self.gui.sizer.FindItemAtPosition((0,0)).GetSizer().GetItem(0).GetSizer().FindItemAtPosition((4,0)).GetSizer()
+		sizer.Add(btnBox, 0)
+		sizer.Add(gridSizer, 1)
 		
 	def setModule(self, module):
 		"""

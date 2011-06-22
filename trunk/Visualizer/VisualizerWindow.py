@@ -205,8 +205,7 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 			txt = "fps %.1f\ntime %.3fs" % (fps, renderTime) 
 			self.textActor.SetInput(txt)
 		
-		
-		
+	
 	def save_png(self, filename):
 		"""
 		Save the rendered screen as png
@@ -281,3 +280,8 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 			else:
 				self.renderer = collection.GetItemAsObject(0)
 		return self.renderer
+
+	def updatePreview(self):
+		"""
+		"""
+		self.Render()
