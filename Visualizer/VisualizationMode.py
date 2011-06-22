@@ -130,7 +130,13 @@ class VisualizationMode:
 		Method that is queried to determine whether
 					 to show the zslider
 		"""
-		return False   
+		return False
+
+	def showTimeSlider(self):
+		"""
+		Method that is queried to determine whether to show time slider
+		"""
+		return True
    
 	def showViewAngleCombo(self):
 		"""

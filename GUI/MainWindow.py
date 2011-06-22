@@ -1561,7 +1561,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				Logging.info("Setting dataunit for visualizer", kw = "main")
 				self.visualizer.setDataUnit(dataunit)
 				didSetDataUnit = True
-				
+			
 			self.visualizer.setVisualizationMode(mode)
 			lib.messenger.send(None, "update_progress", 0.3, "Loading %s view..." % mode)
 			self.showVisualization(self.visPanel)

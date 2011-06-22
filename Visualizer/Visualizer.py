@@ -180,8 +180,8 @@ class Visualizer:
 		self.sliderWin.SetOrientation(wx.LAYOUT_HORIZONTAL)
 		self.sliderWin.SetAlignment(wx.LAYOUT_BOTTOM)
 		self.sliderWin.SetSashVisible(wx.SASH_TOP, False)
-		self.sliderWin.SetDefaultSize((500, 64))
 		self.sliderWin.origSize = (500, 64)
+		self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
 		self.toggleTimeSlider(0)
 
 		self.zsliderWin = wx.SashLayoutWindow(self.parent, \
@@ -358,6 +358,8 @@ class Visualizer:
 			obj = self.toolWin
 		elif arg == "zslider":
 			obj = self.zsliderWin
+		elif arg == "timeslider":
+			obj = self.sliderWin
 		elif arg == "histogram":
 			obj = self.histogramWin
 			width, height = 0, 0
@@ -385,7 +387,8 @@ class Visualizer:
 			Logging.info("Showing ", arg)
 			if arg in self.sizes:
 				obj.SetDefaultSize(self.sizes[arg])
-			del self.sizes[arg]
+			if self.sizes.get(arg, False):
+				del self.sizes[arg]
 			
 		if evt == "show" and arg == "histogram":
 			if not self.histogramIsShowing:
@@ -970,10 +973,16 @@ class Visualizer:
 		if not self.currentMode.showSliceSlider():
 			if self.zsliderWin.GetSize()[0]:
 				self.toggleZSlider(0)
-				#self.zsliderWin.SetDefaultSize((0, 1024))
 		else:
 			if self.zsliderWin.GetSize() != self.zsliderWin.origSize:
 				self.zsliderWin.SetDefaultSize(self.zsliderWin.origSize)
+
+		if not self.currentMode.showTimeSlider():
+			if self.sliderWin.GetSize()[0]:
+				self.toggleTimeSlider(0)
+		else:
+			if self.sliderWin.GetSize() != self.sliderWin.origSize:
+				self.sliderWin.SetDefaultSize(self.sliderWin.origSize)
 
 		if self.currentMode.showViewAngleCombo():
 			self.viewCombo.Enable(1)
@@ -1138,7 +1147,6 @@ class Visualizer:
 			Logging.info("Setting time range to %d" % count, kw = "visualizer")
 			self.toggleTimeSlider(1)
 			self.timeslider.SetRange(1, count)
-
 
 	def setDataUnit(self, dataunit):
 		"""

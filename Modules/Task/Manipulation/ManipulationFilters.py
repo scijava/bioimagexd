@@ -299,7 +299,6 @@ class ITKAnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 
 class ITKLocalMaximumFilter(ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 29.05.2006, KP
 	Description: A class for finding the local maxima in an image
 	"""		
 	name = "Find local maxima"

@@ -73,7 +73,6 @@ infoStringResample = """<html><body bgcolor=%(bgcolor)s">
 
 class InfoWidget(wx.Panel):
 	"""
-	Created: 03.11.2004, KP
 	Description: A class for displaying information about selected datasets
 				 of given type
 	"""

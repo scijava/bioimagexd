@@ -2,7 +2,6 @@
 """
  Unit: Gallery
  Project: BioImageXD
- Created: 28.04.2005, KP
  Description:
 
  A gallery view for Visualizer
@@ -145,13 +144,14 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		self.SetupScrolling()
-
 		
 	def setDataUnit(self, dataUnit):
 		"""
 		Set the dataunit
 		"""
-		x, y, z = dataUnit.getDimensions()
+		self.x, self.y, self.z = dataUnit.getDimensions()
+		self.t = dataUnit.getNumberOfTimepoints()
+		self.setupSliders(0)
 		
 	def onSetViewMode(self, event):
 		"""
@@ -163,8 +163,27 @@ class GalleryConfigurationPanel(scrolled.ScrolledPanel):
 		else:
 			val = self.visualizer.getTimepoint()
 		self.mode.galleryPanel.setShowTimepoints(pos, val)
+		self.setupSliders(pos)
 
-		
+	def setupSliders(self, pos):
+		"""
+		Sets up time and z slider for visualizer
+		"""
+		if pos == 0:
+			if self.t > 1:
+				self.visualizer.toggleTimeSlider(1)
+			else:
+				self.visualizer.toggleTimeSlider(0)
+			self.visualizer.toggleZSlider(0)
+		else:
+			self.visualizer.toggleTimeSlider(0)
+			if self.z > 1:
+				self.visualizer.toggleZSlider(1)
+			else:
+				self.visualizer.toggleZSlider(0)
+		self.visualizer.OnSize(None)
+
+
 class GalleryMode(VisualizationMode):
 
 	def __init__(self, parent, visualizer):
@@ -189,6 +208,12 @@ class GalleryMode(VisualizationMode):
 	def showSliceSlider(self):
 		"""
 		Method that is queried to determine whether to show the zslider
+		"""
+		return False
+
+	def showTimeSlider(self):
+		"""
+		Method that is queried to determine whether to show time slider
 		"""
 		return True
 		
