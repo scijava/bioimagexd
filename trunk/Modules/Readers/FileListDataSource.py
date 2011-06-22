@@ -135,7 +135,10 @@ class FileListDataSource(DataSource):
 		"""
 		Set a flag indicating whether the image should be flipped vertically
 		"""
-		self.flipVertically = flag
+		if self.ext.lower() in ["png", "jpg", "jpeg"]:
+			self.flipVertically = not flag
+		else:
+			self.flipVertically = flag
 		
 	def setHorizontalFlip(self, flag):
 		"""
@@ -160,16 +163,16 @@ class FileListDataSource(DataSource):
 			if file not in self.imageDims:
 				print "Trying to open",type(file)
 				try:
-					ext = file.split(".")[-1].upper()
-					if ext == "TIF":
-						ext = "TIFF"
-					if ext == "JPG":
-						ext = "JPEG"
+					self.ext = file.split(".")[-1].upper()
+					if self.ext == "TIF":
+						self.ext = "TIFF"
+					if self.ext == "JPG":
+						self.ext = "JPEG"
 
-					if ext == "VTI":
+					if self.ext == "VTI":
 						reader = vtk.vtkXMLImageReader()
 					else:
-						reader = eval("vtk.vtk%sReader()"%ext)
+						reader = eval("vtk.vtk%sReader()"%self.ext)
 					reader.SetFileName(file)
 					reader.UpdateInformation()
 				except IOError, ex:
@@ -228,10 +231,13 @@ class FileListDataSource(DataSource):
 		print "Determining readers from ", self.filenames
 		
 		isRGB = 1
-		ext = files[0].split(".")[-1].lower()
-		dim = self.dimMapping[ext]
-		
-		if ext in ["tif", "tiff"]:
+		self.ext = files[0].split(".")[-1].lower()
+		dim = self.dimMapping[self.ext]
+		# Initially flip the image if it's tiff, png or jpg.
+		# In setVerticalFlip we negate the setting to have it set correctly.
+		if self.ext.lower() in ["png", "jpg", "jpeg"]:
+			self.flipVertically = True
+		if self.ext in ["tif", "tiff"]:
 			reader = vtkbxd.vtkExtTIFFReader()
 			reader.SetFileName(files[0])
 			reader.UpdateInformation()
@@ -240,7 +246,7 @@ class FileListDataSource(DataSource):
 			else:
 				print "MODE ISN'T RGB, THEREFOR NOT RGB"
 				isRGB = 0
-			rdr = self.getReaderByExtension(ext, isRGB)
+			rdr = self.getReaderByExtension(self.ext, isRGB)
 			rdr.SetFileName(files[0])
 			if not isRGB and rdr.GetNumberOfSubFiles() > 1:
 				dim = 3
@@ -250,12 +256,12 @@ class FileListDataSource(DataSource):
 		
 		dirName = os.path.dirname(files[0])
 		print "THERE ARE ", self.slicesPerTimepoint, "SLICES PER TIMEPOINT"
-		ext = files[0].split(".")[-1].lower()
+		self.ext = files[0].split(".")[-1].lower()
 		
 		if dim == 3:
 			totalFiles = len(files)
 			for i, file in enumerate(files):
-				rdr = self.getReaderByExtension(ext, isRGB)
+				rdr = self.getReaderByExtension(self.ext, isRGB)
 				rdr.SetFileName(file)
 				self.readers.append(rdr)
 			return
@@ -264,7 +270,7 @@ class FileListDataSource(DataSource):
 
 		imgAmnt = len(files)
 		if totalFiles == 1:
-			rdr = self.getReaderByExtension(ext, isRGB)
+			rdr = self.getReaderByExtension(self.ext, isRGB)
 			arr = vtk.vtkStringArray()
 			for fileName in files:
 				arr.InsertNextValue(os.path.join(dirName, fileName))
@@ -280,7 +286,7 @@ class FileListDataSource(DataSource):
 			filelst = files[:]
 			# dirn #TODO: what was this?
 			for tp in range(0, ntps):
-				rdr = self.getReaderByExtension(ext, isRGB)
+				rdr = self.getReaderByExtension(self.ext, isRGB)
 				arr = vtk.vtkStringArray()
 				for i in range(0, self.slicesPerTimepoint):
 					arr.InsertNextValue(filelst[0])
@@ -294,7 +300,7 @@ class FileListDataSource(DataSource):
 		
 		elif imgAmnt == 1:
 			# If only one file
-			rdr = self.getReaderByExtension(ext, isRGB)
+			rdr = self.getReaderByExtension(self.ext, isRGB)
 			rdr.SetDataExtent(0, self.x - 1, 0, self.y - 1, 0, self.slicesPerTimepoint - 1)
 			rdr.SetDataSpacing(self.spacing)
 			rdr.SetDataOrigin(0, 0, 0)
@@ -377,10 +383,10 @@ class FileListDataSource(DataSource):
 		assert filename, "Filename must be defined"
 		assert os.path.exists(filename), "File that we're retrieving information \
 										from (%s) needs to exist, but doesn't." % filename
-		ext  = filename.split(".")[-1].lower()
-		rdr = self.getReaderByExtension(ext)
+		self.ext  = filename.split(".")[-1].lower()
+		rdr = self.getReaderByExtension(self.ext)
 		
-		if ext == "bmp":
+		if self.ext == "bmp":
 			rdr.Allow8BitBMPOn()
 		rdr.SetFileName(filename)
 		data = rdr.GetOutput()

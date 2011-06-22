@@ -105,6 +105,10 @@ class MIPPreviewFrame(PreviewFrame.PreviewFrame):
 				imgType = "IF"
 			
 			self.convVTKtoITK = eval("itk.VTKImageToImageFilter.%s3.New()"%imgType)
+			if data.GetNumberOfScalarComponents() > 1:
+				imageLuminance = vtk.vtkImageLuminance()
+				imageLuminance.SetInput(data)
+				data = imageLuminance.GetOutput()
 			self.convVTKtoITK.SetInput(data)
 			self.convVTKtoITK.Update()
 			itkImg = self.convVTKtoITK.GetOutput()

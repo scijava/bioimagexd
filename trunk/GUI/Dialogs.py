@@ -31,6 +31,7 @@ __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
 import Configuration
+import os
 import os.path
 import wx
 
@@ -144,6 +145,11 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 		ext = wc.split(".")[-1]
 		if wc.count("*.") <= 2 and wc.find("*.%s" % currExt) == -1:        
 			filename += ".%s" % ext
-	
-	return filename
+
+	if filename:
+		if os.access(os.path.dirname(filename), os.W_OK):
+			return filename
+		else:
+			showerror(None, "Write access denied.", "Permission denied")
+			return None
 

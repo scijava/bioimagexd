@@ -61,7 +61,7 @@ class CTFButton(wx.BitmapButton):
 		self.ctf.AddRGBPoint(255, 1, 1, 1)
 		self.bmp = lib.ImageOperations.paintCTFValues(self.ctf)
 		self.SetBitmapLabel(self.bmp)
-		self.Bind(wx.EVT_LEFT_UP, self.onModifyCTF)
+		self.Bind(wx.EVT_LEFT_DOWN, self.onModifyCTF)
 		self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
 
 		self.ID_SAVE_PALETTE_IMAGE = wx.NewId()

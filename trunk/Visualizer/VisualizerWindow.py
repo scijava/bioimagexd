@@ -147,8 +147,6 @@ class VisualizerWindow(wxVTKRenderWindowInteractor):
 			cam.SetViewAngle(self.origViewAngle)
 		self.zoomFactor = factor
 		self.renderer.GetActiveCamera().Zoom(factor)
-	
-		self.renderer.Render()
 		
 	def setView(self, params):
 		"""
