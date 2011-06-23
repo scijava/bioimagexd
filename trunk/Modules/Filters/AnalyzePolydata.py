@@ -371,7 +371,7 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		distancesStdErr = []
 		comDistances = []
 		comDistancesStdErr = []
-		inOut=[]
+		inOut = []
 		for i in range(1, distArray.GetSize()):
 			value = distArray.GetValue(i)
 			distances.append(value)
@@ -478,11 +478,28 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 		if self.parameters["DistanceToSurface"]:
 			objComDistToSurf, objComDistToSurfCom = self.calculateDistancesToSurface(polydata, imgdata, objects[timepoint], centerOfMass)
 			avgDistToCom, avgDistToSurf, objInsideCount, avgDistToComStdErr, avgDistToSurfStdErr = self.calculateAverageDistancesToSurface(polydata, self.segmentedSource.getTimepoint(timepoint), objects[timepoint], centerOfMass)
+		else:
+			objComDistToSurf = []
+			objComDistToSurfCom = []
+			avgDistToSurf = []
+			avgDistToSurfStdErr = []
+			avgDistToCom = []
+			avgDistToComStdErr = []
+			objInsideCount = []
+			for i in range(len(objects[timepoint])):
+				objComDistToSurf.append(0.0)
+				objComDistToSurfCom.append(0.0)
+				avgDistToSurf.append(0.0)
+				avgDistToSurfStdErr.append(0.0)
+				avgDistToCom.append(0.0)
+				avgDistToComStdErr.append(0.0)
+				objInsideCount.append((0,0))
+
 		if self.parameters["InsideSurface"]:
 			insides = self.calculateIsInside(polydata, imgdata, objects[timepoint])
 			
-		print "# of objs=", len(objects[timepoint])
-		print "# of dists=",len(objComDistToSurf), len(avgDistToSurf), len(objComDistToSurfCom), len(avgDistToCom)
+		#print "# of objs=", len(objects[timepoint])
+		#print "# of dists=",len(objComDistToSurf), len(avgDistToSurf), len(objComDistToSurfCom), len(avgDistToCom)
 		data = [self.headers]
 		writeData = [self.writeHeaders]
 		aggrData = [["Quantity", "Value"]]
@@ -518,7 +535,11 @@ class AnalyzePolydataFilter(lib.ProcessingFilter.ProcessingFilter):
 				writeEntry.append("%.3f"%avgDistToComStdErr[i]) # 6
 				writeEntry.append("%d"%objInsideCount[i][0])
 				writeEntry.append("%d"%objInsideCount[i][1])
-				percInsideList.append(objInsideCount[i][0]/float(objInsideCount[i][0]+objInsideCount[i][1]))
+				objCount = float(objInsideCount[i][0]+objInsideCount[i][1])
+				if objCount != 0.0:
+					percInsideList.append(objInsideCount[i][0]/objCount)
+				else:
+					percInsideList.append(0.0)
 				
 				insideCountVox += objInsideCount[i][0]
 				outsideCountVox += objInsideCount[i][1]
