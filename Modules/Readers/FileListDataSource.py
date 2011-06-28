@@ -429,10 +429,11 @@ class FileListDataSource(DataSource):
 			extract = vtk.vtkExtractVOI()
 			extract.SetInput(self.reader.GetOutput())
 			extract.SetVOI(0, self.x - 1, 0, self.y - 1, minZ, maxZ)
-			translate = vtk.vtkImageTranslateExtent()
-			translate.SetInput(extract.GetOutput())
-			translate.SetTranslation((0,0,-minZ))
-			data = translate.GetOutput()
+			changeInfo = vtk.vtkImageChangeInformation()
+			changeInfo.SetInput(extract.GetOutput())
+			changeInfo.SetOutputOrigin(0, 0, 0)
+			changeInfo.SetExtentTranslation((0,0,-minZ))
+			data = changeInfo.GetOutput()
 		else:
 			if n >= len(self.readers):
 				n = 0
