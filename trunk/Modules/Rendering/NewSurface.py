@@ -273,6 +273,13 @@ class SurfaceModule(VisualizationModule):
 			cullers.InitTraversal()
 			culler = cullers.GetNextItem()
 			culler.SetSortingStyleToBackToFront()
+			#print cullers, culler
+			#self.parent.getRenderer().GetRenderWindow().SetAlphaBitPlanes(1)
+			#self.parent.getRenderer().GetRenderWindow().SetMultiSamples(0)
+			#self.parent.getRenderer().SetUseDepthPeeling(1)
+			#self.parent.getRenderer().SetMaximumNumberOfPeels(100)
+			#self.parent.getRenderer().SetOcclusionRatio(1.0)
+			#print self.parent.getRenderer().GetLastRenderingUsedDepthPeeling()
 		
 		self.actor.GetProperty().SetOpacity(opacity)
 		

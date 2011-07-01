@@ -468,6 +468,8 @@ enter the information below.""")
 		"""
 		assert self.timeslider.GetValue() > 0, "Cannot set negative timepoint"
 		self.preview.setTimepoint(self.timeslider.GetValue() - 1)
+		img = self.dataSource.getDataSet(self.timeslider.GetValue() - 1, raw = 1)
+		img.Update()
 		self.preview.updatePreview()
 		
 	def onUpdateVoxelSize(self, filename):

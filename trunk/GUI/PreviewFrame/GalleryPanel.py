@@ -276,16 +276,17 @@ class GalleryPanel(InteractivePanel):
 		for tp in range(0, count):
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(self.slice, 1, tp)
+				image.Update()
 				self.ctf = self.dataUnit.getSourceDataUnits()[0].getColorTransferFunction()
 				Logging.info("Using ", image, "for gallery", kw = "preview")
 			else:
 				image = self.dataUnit.getTimepoint(tp)
 				x, y, z = self.dataUnit.getDimensions()
 				image = optimize.optimize(image, updateExtent = (0, x - 1, 0, y - 1, self.slice, self.slice))
-				image = lib.ImageOperations.getSlice(image, self.slice)
-				image.Update()
 				self.ctf = self.dataUnit.getColorTransferFunction()
-			
+
+			image = lib.ImageOperations.getSlice(image, self.slice)
+			image.Update()
 			tp = vtk.vtkImageData()
 			tp.DeepCopy(image)
 			self.slices.append(tp)

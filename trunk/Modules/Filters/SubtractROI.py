@@ -83,13 +83,16 @@ class SubtractROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		imagedata.Update()
 
 		itkOrig = self.convertVTKtoITK(imagedata)
+		itkOrig.DisconnectPipeline()
 
 		mx, my, mz = self.dataUnit.getDimensions()
 		n, maskImage = lib.ImageOperations.getMaskFromROIs([roi], mx, my, mz)
-		vtkToItk2 = itk.VTKImageToImageFilter.IUC3.New()
-		vtkToItk2.SetInput(maskImage)
-		itkLabel = vtkToItk2.GetOutput()
-		itkLabel.Update()
+		itkLabel = self.convertVTKtoITK(maskImage)
+		itkLabel = self.castITKImage(itkLabel, itkOrig)
+		#vtkToItk2 = itk.VTKImageToImageFilter.IUC3.New()
+		#vtkToItk2.SetInput(maskImage)
+		#itkLabel = vtkToItk2.GetOutput()
+		#itkLabel.Update()
 
 		labelStats = itk.LabelStatisticsImageFilter[itkOrig, itkLabel].New()
 		labelStats.SetInput(0, itkOrig)
