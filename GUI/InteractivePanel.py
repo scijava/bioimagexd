@@ -33,6 +33,7 @@ import lib.ImageOperations
 import lib.messenger
 import Logging
 import math
+import MaskTray
 import wx.lib.ogl as ogl
 import platform
 import wx
@@ -121,6 +122,8 @@ class InteractivePanel(ogl.ShapeCanvas):
 	
 		self.lines = []
 		
+        # Annotations that have been converted to masks by right-clicking.
+		self.roiToMaskRC = []
 		self.subtractROI = None
 		self.rubberbandAllowed = 0
 		
@@ -142,27 +145,32 @@ class InteractivePanel(ogl.ShapeCanvas):
 		item = wx.MenuItem(self.menu, self.ID_CUBIC, "Cubic interpolation", kind = wx.ITEM_RADIO)
 		self.menu.AppendItem(item)
 		
-		#self.subbgMenu = wx.Menu()
-		#self.ID_SUB_BG = wx.NewId()
-		#item = wx.MenuItem(self.subbgMenu, self.ID_SUB_BG, "Subtract background")
-		#self.subbgMenu.AppendItem(item)
+		self.subbgMenu = wx.Menu()
+		self.ID_SUB_BG = wx.NewId()
+		item = wx.MenuItem(self.subbgMenu, self.ID_SUB_BG, "Subtract background")
+		self.subbgMenu.AppendItem(item)
 
-		#self.ID_ZERO_BG = wx.NewId()
-		#item = wx.MenuItem(self.subbgMenu, self.ID_ZERO_BG, "Set background to zero")
-		#self.subbgMenu.AppendItem(item)
+		self.ID_ZERO_BG = wx.NewId()
+		item = wx.MenuItem(self.subbgMenu, self.ID_ZERO_BG, "Set background to zero")
+		self.subbgMenu.AppendItem(item)
+
+		self.ID_CONV_SG_ROI_TO_MASK = wx.NewId()
+		item = wx.MenuItem(self.subbgMenu, self.ID_CONV_SG_ROI_TO_MASK, "Convert to mask")
+		self.subbgMenu.AppendItem(item)
 		
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_VARY)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_NONE)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_LINEAR)
 		self.Bind(wx.EVT_MENU, self.onSetInterpolation, id = self.ID_CUBIC)
-		#self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
-		#self.Bind(wx.EVT_MENU, self.onSetBackgroundToZero, id = self.ID_ZERO_BG)
+		self.Bind(wx.EVT_MENU, self.onSubtractBackground, id = self.ID_SUB_BG)
+		self.Bind(wx.EVT_MENU, self.onSetBackgroundToZero, id = self.ID_ZERO_BG)
+		self.Bind(wx.EVT_MENU, self.onConvertSingleROIToMask, id = self.ID_CONV_SG_ROI_TO_MASK)
 		
 		GUI.PainterHelpers.registerHelpers(self)
 
 		self.zoomFactor = 1
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onFinishPolygon)
-		#self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClickROI)
+		self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClickROI)
 		self.paintPreview()
 		
 		self.Unbind(wx.EVT_PAINT)
@@ -235,7 +243,36 @@ class InteractivePanel(ogl.ShapeCanvas):
 		disable the annotations
 		"""
 		self.annotationsEnabled = 0
-		
+
+
+	def onConvertSingleROIToMask(self, event):
+		"""
+		Converts selected (single) ROI to mask
+		"""
+		masks, names = self.getMasksAndNames([self.subtractROI])
+		for i in range(len(masks)):
+			#duplicate = False
+			#for item in self.roiToMaskRC:
+			#	if names[i] in item:
+			#		duplicate = True
+			#		break
+			#if not duplicate:
+			self.roiToMaskRC.append((masks[i], names[i]))
+		if hasattr(scripting.visualizer.currentWindow, "getRightClickedConvertedMasks"):
+			masksAndNames = scripting.visualizer.currentWindow.getRightClickedConvertedMasks()
+			dims = scripting.visualizer.dataUnit.getDimensions()
+			masks = []
+			for i in range(len(masksAndNames)):
+				masks.append(MaskTray.Mask(masksAndNames[i][1], dims, masksAndNames[i][0]))
+			scripting.visualizer.setMask(masks)
+
+
+	def getRightClickedConvertedMasks(self):
+		"""
+		Returns right-clicked converted masks along with their names
+		"""
+		return self.roiToMaskRC
+	
 	def onSubtractBackground(self, event):
 		"""
 		subtract a background using the given ROI
@@ -423,8 +460,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Convert the selected ROI to mask
 		"""
+		return self.getMasksAndNames(self.getRegionsOfInterest())
+
+	def getMasksAndNames(self, rois):
+		"""
+		Returns the masks and names of the given ROIs
+		"""
+		masksAndNames = []
 		mx, my, mz = self.dataUnit.getDimensions()
-		rois = self.getRegionsOfInterest()
 		names = [roi.getName() for roi in rois]
 		# This is a bit tricky. If the ROI is a 3D one, then we need
 		# to create one mask for every slice and then merge them
@@ -452,7 +495,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 				rois2D.append(roi)
 
 		masks.append(lib.ImageOperations.getMaskFromROIs(rois2D, mx, my, mz)[1])
-
+						
 		# Return all the masks and names.
 		return masks, names
 

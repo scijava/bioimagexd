@@ -249,15 +249,20 @@ class Visualizer:
 		"""
 		return self.masks
 
-	def setMask(self, mask):
+	def setMask(self, mask, onRightClick = False):
 		"""
 		Add mask in masks list
 		"""
-                if type(mask) == list:
-                        for m in mask:
-                                self.masks.insert(0, m)
-		else:
-                        self.masks.insert(0, mask)
+		# Remove duplicates
+		nonDuplicateMasks = []
+		names = []
+		for m in self.masks:
+			names.append(m.name)
+		for m in mask:
+			if not m.name in names:
+				nonDuplicateMasks.append(m)
+		for m in nonDuplicateMasks:
+			self.masks.insert(0, m)
 
 	def createSliders(self):
 		"""

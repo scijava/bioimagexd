@@ -472,12 +472,12 @@ class AnnotationToolbar(wx.Window):
 		"""
 		if hasattr(self.visualizer.currentWindow, "roiToMask"):
 			masks, names = self.visualizer.currentWindow.roiToMask()
-                        name = ",".join(names)
+			name = ",".join(names)
 			dims = self.visualizer.dataUnit.getDimensions()
 			for i in range(len(masks)):
-                                masks[i] = MaskTray.Mask(name, dims, masks[i])
+				masks[i] = MaskTray.Mask(name, dims, masks[i])
 			self.visualizer.setMask(masks)
-			
+					
 	def setAnnotationColor(self, evt):
 		"""
 		Changes the annotation color of the selected annotation(s)

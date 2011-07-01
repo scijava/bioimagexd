@@ -823,6 +823,8 @@ class MainWindow(wx.Frame):
 			parser = writer.getParser()
 			
 			dataUnit.getSettings().set("Name", dataUnit.getName())
+			dataUnit.getSettings().set("ExcitationWavelength", dataUnit.getExcitationWavelength())
+			dataUnit.getSettings().set("EmissionWavelength", dataUnit.getEmissionWavelength())
 			dataUnit.updateSettings()
 			dataUnit.getSettings().writeTo(parser)
 			writer.write()
@@ -1325,8 +1327,8 @@ class MainWindow(wx.Frame):
 				masksel = MaskTray.MaskTray(self)
 				dataUnit = self.visualizer.getDataUnit()
 				masks = self.visualizer.getMasks()
-                                for mask in masks:
-                                        masksel.addMask(mask = mask)
+				for mask in masks:
+					masksel.addMask(mask = mask)
 				masksel.setDataUnit(dataUnit)
 				masksel.Show()
 				return
