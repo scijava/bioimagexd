@@ -263,7 +263,8 @@ class DataUnitSettings:
 		okey = key
 		if n != -1:
 			key = nkey
-		if self.isPrivate[okey] == 1:
+
+		if self.isPrivate[okey] == 1 and (key in self.private or okey in self.private):
 			if (key in self.private):
 				value = self.private[key]
 			else:	
