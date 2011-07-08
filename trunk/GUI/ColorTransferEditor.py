@@ -288,13 +288,13 @@ class CTFPaintPanel(wx.Panel):
 		
 		xcoeff = maxval / self.maxx
 		rx *= xcoeff
-		print "Maxval=",maxval,"maxx=",self.maxx,"xcoeff=",xcoeff
+		#print "Maxval=",maxval,"maxx=",self.maxx,"xcoeff=",xcoeff
 		
 		if rx < 0:rx = 0
 		if ry < 0:ry = 0
 		if rx > maxval:rx = maxval
 		if ry > maxval:ry = maxval
-		print "toGraph(%d, %d) = (%d,%d)"%(x,y,rx,ry)
+		#print "toGraph(%d, %d) = (%d,%d)"%(x,y,rx,ry)
 		return (rx, ry)
 		
 	def onPaint(self, event):
@@ -696,35 +696,48 @@ class ColorTransferEditor(wx.Panel):
 		tot = 0
 		for i, pts in enumerate(self.points):
 			tot += len(pts)
-		
-		maxpts = self.maxNodes.GetValue()
-		if maxpts >= tot:
-			return
-		everyNth = float(tot) / maxpts
-		Logging.info("Removing every %f pts (pts=%d)" % (everyNth, maxpts))
-		n = 0
-		k = 1
-		toRemove = []
+
+		# Code contribution by: 4n0 undt anezthes.
+		#
+		# First and last indices are kept. Index 0 is added manually, for loop 1 decrease.
+        # 'l' keeps track of which indices are of interest.
+        #
+        # Round off the float value of idx to get an index appropriate value.
+        # 
+        # Iterating and modifying a list is not easy, so we mark unwanted elements
+        # with 'x' and remove them in a later stage.
+		maxPts = self.maxNodes.GetValue()
 		for i, pts in enumerate(self.points):
-			for j, point in enumerate(pts):
-				firstOrLast = (j == 0 or j == len(pts) - 1)
-				n += 1
-				if not firstOrLast and k < everyNth:
-					toRemove.append(point)
-					k += 1
-				else:
-					k = 1
-			for point in toRemove:
-				pts.remove(point)
-			toRemove = []
+			nrOfPts = len(pts)
+			Logging.info("Total number of points: %d" % nrOfPts)
+			Logging.info("Desired number of points: %d" % maxPts)
+			if maxPts > nrOfPts:
+				Logging.info("Total number of points for this channel deceed (read: Oxford dictionary) that of the maximum number of points allowed.")
+			else:
+				everyNth = float(nrOfPts-1) / (maxPts-1)
+				Logging.info("Removing every %f pts" % everyNth)
+				
+				# Calculate indices to keep.
+				idx = 0
+				l = []
+				l.append(0)
+				for i in range(0, maxPts-1):
+					idx += everyNth
+					l.append(round(idx))
+				remove = []
+				
+				# Mark and remove.
+				for j, point in enumerate(pts):
+					if j not in l:
+						pts[pts.index(point)] = 'x'
+				while (pts.__contains__('x')):
+					pts.remove('x')
+				Logging.info( "Number of points:", len(pts))
+				Logging.info( "Points kept:", pts)
 		
-		tot = 0
-		for i, pts in enumerate(self.points):
-			tot += len(pts)
-		Logging.info("Points left = %d" % tot)
 		self.upToDate = 0
 		self.updateGraph()
-				
+		
 		
 	def onDeletePoint(self, event):
 		"""
@@ -900,6 +913,19 @@ class ColorTransferEditor(wx.Panel):
 		self.pos = (x, y)
 		if not self.upToDate:
 			wx.FutureCall(250, self.updateCTFFromPoints)
+
+
+	def modifyOutmostPoint(self, oldPoint, y, first):
+		"""
+		Move an outmost (first or last) point in the CTF
+		"""
+		if self.points[self.color].__contains__(oldPoint):
+			if first:
+				self.points[self.color][self.points[self.color].index(oldPoint)] = (0, y)
+				self.selectedPoint = (0, y)
+			else:
+				self.points[self.color][self.points[self.color].index(oldPoint)] = (255, y)
+				self.selectedPoint = (255, y)
 		
 	def modifyPoint(self, oldPoint, newPoint):
 		"""
@@ -935,9 +961,16 @@ class ColorTransferEditor(wx.Panel):
 			else:
 				x, y = event.GetPosition()
 				x, y = self.canvas.toGraphCoords(x, y, self.maxval)
-	
 				if self.selectedPoint:
-					self.modifyPoint(self.selectedPoint, (x, y))
+					index = -1
+					if self.points[self.color].__contains__(self.selectedPoint):
+						index = self.points[self.color].index(self.selectedPoint)
+					if index == 0:
+						self.modifyOutmostPoint(self.selectedPoint, y, first = True)
+					elif index == len(self.points[self.color]) - 1:
+						self.modifyOutmostPoint(self.selectedPoint, y, first = False)
+					else:
+						self.modifyPoint(self.selectedPoint, (x, y))
 					self.upToDate = 0
 					self.updateGraph()
    
@@ -1278,8 +1311,9 @@ class ColorTransferEditor(wx.Panel):
 		col = wx.Colour(int(r), int(g), int(b))
 		self.colorBtn.SetColour(((int(r), int(g), int(b))))
 		self.colorBtn.Refresh()
-
-		self.updateGraph()
+		# We need to make sure there are no more nodes than given in the GUI.
+		self.onSetMaxNodes(None)
+		# self.updateGraph()
 		self.updateCTFView()
 		
 	def getOpacityTransferFunction(self):

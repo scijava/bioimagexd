@@ -110,8 +110,6 @@ class DeconvolutionFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
-		import pdb
-		pdb.set_trace()
 		image = self.getInput(1)
 		origType = image.GetScalarType()
 		origMin, origMax = image.GetScalarRange()

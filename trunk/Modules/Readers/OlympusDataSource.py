@@ -407,7 +407,7 @@ class OlympusDataSource(DataSource):
 	def getDyes(self, parser, numberOfChannels):
 		"""
 		Read the dye names for numberOfChannels channels
-		""" 
+		"""
 		names = []
 		exs = []
 		ems = []
