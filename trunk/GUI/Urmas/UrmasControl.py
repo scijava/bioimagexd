@@ -86,13 +86,13 @@ class UrmasControl:
 		p = UrmasPersist.UrmasPersist(self)
 		p.persist(filename)
 	
-	def getViewMode(self):return self.viewMode	  
+	def getViewMode(self):return self.viewMode
+	
 	def setViewMode(self, mode):
 		"""
 		Set the view mode of spline editor
 		"""	   
 		self.viewMode = mode
-
 
 	def resetAnimator(self):
 		"""
@@ -103,14 +103,12 @@ class UrmasControl:
 
 	def readFromDisk(self, filename):
 		"""
-		Read the whole control datastructures from disk by way of
-					 pickling
-		"""	   
+		Read the whole control data structures from disk by way of pickling
+		"""
 		self.clearGUI()
 		p = UrmasPersist.UrmasPersist(self)
 		p.depersist(filename)
 		self.updateLayouts()
-
 		
 	def clearGUI(self):
 		"""
@@ -143,7 +141,6 @@ class UrmasControl:
 		
 	def getFramesPerSecond(self):
 		"""
-		Creted: 09.10.2006, KP
 		Return the frames per second
 		"""
 		return self.frames / float(self.duration)
@@ -177,7 +174,6 @@ class UrmasControl:
 		Sets the timeline panel controlled by this
 		"""	   
 		self.timelinePanel = timelinepanel
-
 
 	def renderProject(self, preview, **kws):
 		"""
@@ -253,12 +249,10 @@ class UrmasControl:
 		self.timeline = timeline
 		self.getSelectedTrack = timeline.getSelectedTrack
 		
-		
 	def setTimelineConfig(self, config):
 		"""
 		Sets the timeline config panel controlled by this
-		"""	   
-	
+		"""
 		self.timelineConfig = config
 		
 	def setSplineInteractionCallback(self, cb):
@@ -268,7 +262,6 @@ class UrmasControl:
 		"""		   
 		self.splineEditor.setInteractionCallback(cb)
 	
-		
 	def configureTimeline(self, seconds, frames):
 		"""
 		Set the duration and frames of the movie

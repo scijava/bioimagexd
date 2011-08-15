@@ -173,7 +173,7 @@ class UrmasRenderer:
 	def render(self, control, preview = 0, **kws):
 		"""
 		Render the timeline
-		"""    
+		"""
 		self.startAnimation(self.control)
 		self.lastSplinePosition = None
 		renderpath = "."
@@ -220,7 +220,6 @@ class UrmasRenderer:
 		
 	def doRenderFrames(self, preview):
 		"""
-
 		Method that only does the rendering.
 					 This is separate from render() to make it
 					 easier to pause/resume rendering
@@ -431,10 +430,8 @@ class UrmasRenderer:
 				print "*** Using first splinepoint"
 			# else we fall back to using the earliest point
 			# defined by the camera interpolator
-			
-				
+		
 		if point and not point.isStopped():
-				
 			p0 = point.getPoint()
 			#self.dlg.Update(frame,"Rendering at %.2fs / %.2fs (frame %d / %d)"%(timepos,self.duration,frame,self.frames))
 			Logging.info("Rendering frame %d using timepoint %d, time is %f" % (frame, timepoint, timepos), kw = "animator")
@@ -450,7 +447,6 @@ class UrmasRenderer:
 			p, pos = self.control.splineEditor.getCameraPosition(n, p0, percentage)
 			x, y, z = pos
 			self.lastSplinePosition = (x, y, z)
-
 			self.lastSplinePoint = point
 			
 		elif point:

@@ -2,8 +2,6 @@
 """
  Unit: SplineEditor
  Project: BioImageXD
- Created: n/a
- Creator: Heikki Uuksulainen, KP
  Description:
 
  This module defines gui for editing the spline which defines the
@@ -43,7 +41,6 @@ import math
 			
 class SplineEditor:
 	"""
-	Created: Heikki Uuksulainen
 	Description: A class for editing a spline
 	"""           
 
@@ -292,9 +289,10 @@ class SplineEditor:
 		
 	def getCameraPosition(self, n, p0, percentage):
 		"""
-		Method that returns the camera position when it is located a given percentage
-					 of the way from point p0 (the nth control point) to next spline point
-		"""        
+		Method that returns the camera position when it is located a given
+		percentage of the way from point p0 (the nth control point) to next
+		spline point
+		"""
 		pps = self.getControlPoints()
 		cp0 = pps[n]
 		nskip = 0
@@ -349,8 +347,6 @@ class SplineEditor:
 					raise "Didn't get closest!"                    
 		n = pointindex + (pointindex2 - pointindex) * percentage
 		return (n, points.GetPoint(n))
-					
-	
 		
 	def updateData(self, data, ctf = None):
 		"""

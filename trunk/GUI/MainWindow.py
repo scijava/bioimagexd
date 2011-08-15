@@ -1659,7 +1659,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if not evt2:
 			self.onMenuShowTree(show = True)
 			asklist = []
-			wc = self.datasetWildcards + "|Encoding project (*.bxr)|*.bxr"
+			wc = self.datasetWildcards #+ "|Encoding project (*.bxr)|*.bxr"
 			asklist = Dialogs.askOpenFileName(self, "Open a volume dataset", wc)
 		else:
 			asklist = args
