@@ -4,7 +4,6 @@
 """
  Unit: UrmasPersist
  Project: BioImageXD
- Created: 11.04.2005, KP
  Description:
 
  URPO - The URMAS Persistent Objects
@@ -75,7 +74,6 @@ def setVTKState(obj, state):
 
 class UrmasPersist:
 	"""
-	Created: 11.04.2005, KP
 	Description: A class that persists / depersists an Urmas timeline
 	"""    
 	def __init__(self, control):
@@ -87,12 +85,12 @@ class UrmasPersist:
 	def persist(self, filename):
 		"""
 		Write the given control object out to the given file
-		"""    
+		"""
 		state_pickler.dump(self.control, open(filename, "w"))
 		
 	def depersist(self, filename):
 		"""
 		Read the given control object from a given file
-		"""               
+		"""
 		state = state_pickler.load_state(open(filename, "r"))
 		state_pickler.set_state(self.control, state)

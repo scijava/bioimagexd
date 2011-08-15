@@ -82,7 +82,6 @@ class VideoGenerationDialog(wx.Dialog):
 
 class VideoEncoder:
 	"""
-	Created: 22.09.2007, KP
 	Description: a class encapsulating the logic for rendering a list of frames into a movie
 	"""
 	def __init__(self):
@@ -487,7 +486,7 @@ class VideoGeneration(wx.Panel):
 			lib.messenger.connect(None, "rendering_done", self.cleanUp)
 			self.cleanUp()
 			return
-			
+		
 		# Do the rendering
 		lib.messenger.send(None, "set_play_mode")
 		lib.messenger.connect(None, "playback_stop", self.onCancelButton)
@@ -571,6 +570,7 @@ class VideoGeneration(wx.Panel):
 
 		if success and deleteFrames:
 			self.encoder.deleteFrames()
+		"""
 		elif not deleteFrames and not self.frameDeletionDisabled:
 			filename = GUI.Dialogs.askSaveAsFileName(self, "Save rendering project as", "rendering.bxr", \
 												"BioImageXD Rendering Project (*.bxr)|*.bxr")
@@ -585,6 +585,7 @@ class VideoGeneration(wx.Panel):
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 										desc = "Save a rendering project file")
 				cmd.run()
+		"""
 			
 	def readProjectFile(self, filename):
 		"""
@@ -771,7 +772,7 @@ class VideoGeneration(wx.Panel):
 		self.rendirLbl = wx.StaticText(self,
 		-1, "Save frames in directory:")
 		
-		self.saveProjectBox = wx.RadioBox(self,-1,"Save rendered frames", choices=["Delete frames after encoding video","Save frames and project file for later use"], majorDimension=2, style=wx.RA_SPECIFY_ROWS)
+		self.saveProjectBox = wx.RadioBox(self,-1,"Save rendered frames", choices=["Delete frames after encoding video","Save frames for later use"], majorDimension=2, style=wx.RA_SPECIFY_ROWS)
 		
 		self.dirBtn = wx.Button(self, -1, "...")
 		self.dirBtn.Bind(wx.EVT_BUTTON, self.onSelectDirectory)
