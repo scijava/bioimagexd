@@ -3,7 +3,6 @@
 """
  Unit: Track
  Project: BioImageXD
- Created: 05.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli

@@ -3,7 +3,6 @@
 """
  Unit: TrackItem
  Project: BioImageXD
- Created: 19.03.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -134,7 +133,7 @@ class TrackItem:
 	def __set_pure_state__(self, state):
 		"""
 		Update the item
-		"""       
+		"""
 		start, end = state.position
 		# don't update itemnum, since it should accurately represent the 
 		# number of spline points, and that is guaranteed by the track

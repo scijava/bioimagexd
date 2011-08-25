@@ -27,6 +27,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.74 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+from GUI import Dialogs
 from lib.DataUnit.DataUnit import DataUnit
 from lib.DataSource.BXDDataWriter import BXDDataWriter
 from lib.DataSource.BXCDataWriter import BXCDataWriter
@@ -65,6 +66,8 @@ class CombinedDataUnit(DataUnit):
 		self.outputChannels = {}
 		self.checkDimensions = 1
 		self.currentDimensions = None
+		self.currentSpacing = None
+		self.currentTimepoints = None
 		
 	def removeAllInputs(self):
 		"""
@@ -73,6 +76,8 @@ class CombinedDataUnit(DataUnit):
 		self.sourceunits = []
 		self.doOrig = 0
 		self.currentDimensions = None
+		self.currentSpacing = None
+		self.currentTimepoints = None
 		
 	def getOutputDirectory(self):
 		"""
@@ -350,13 +355,21 @@ class CombinedDataUnit(DataUnit):
 		# Let's just use the smallest number of timepoints as a starting point
 		if not self.getNumberOfTimepoints() or (self.getNumberOfTimepoints() > dataUnit.getNumberOfTimepoints()):
 			self.setNumberOfTimepoints(dataUnit.getNumberOfTimepoints())
-
-		if self.checkDimensions and self.currentDimensions and self.currentDimensions != dataUnit.getDimensions():
+		
+		if self.currentTimepoints and self.currentTimepoints != dataUnit.getNumberOfTimepoints():
+			Dialogs.showwarning(None, "The datasets have different amount of timepoints: the lesser amount will be used.", "Warning: Number of timepoints differ")
+		if self.currentSpacing and self.currentSpacing != dataUnit.getSpacing():
+			raise Logging.GUIError("Dataset have different spacing", \
+									"The spacings of the datasets differ: %s and %s" \
+									% (self.getSpacing(), dataUnit.getSpacing()))
+		if self.checkDimensions and self.currentDimensions and self.currentDimensions[:-1] != dataUnit.getDimensions()[:-1]:
 			raise Logging.GUIError("Datasets have different dimensions", \
 									"The dimensions of the datasets differ: %s and %s" \
 									%(self.currentDimensions, dataUnit.getDimensions()))
 		
 		self.currentDimensions = dataUnit.getDimensions()
+		self.currentSpacing = dataUnit.getSpacing()
+		self.currentTimepoints = dataUnit.getNumberOfTimepoints()
 		# The DataUnit to be added must have a different name than the
 		# previously added, or the dictionary won't work:
 
@@ -387,10 +400,11 @@ class CombinedDataUnit(DataUnit):
 		"""
 		Switch the source data units used
 		"""
-		if len(units) != len(self.sourceunits):
-			raise Logging.GUIError("Wrong number of dataunits", \
-									"Cannot switch the processed datasets: \
-									you've selected a wrong number of source dataunits.")
+		self.removeAllInputs()
+		#if len(units) != len(self.sourceunits):
+		#	raise Logging.GUIError("Wrong number of dataunits", \
+		#							"Cannot switch the processed datasets: \
+		#							you've selected a wrong number of source dataunits.")
 									
 		# Some tasks want only dataunits with the same dimensions, so there's a flag
 		# indicating whether they should be checked

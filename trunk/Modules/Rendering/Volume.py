@@ -441,7 +441,7 @@ class VolumeModule(VisualizationModule):
 		VisualizationModule.updateRendering(self, input)
 		self.parent.Render()
 		if self.parameters["Method"] == TEXTURE_MAPPING_3D:
-			if not self.mapper.IsRenderSupported(self.volumeProperty):
+			if not self.mapper.IsRenderSupported(self.volumeProperty, self.renderer):
 				lib.messenger.send(None, \
 								"show_error", \
 								"3D texture mapping not supported", \

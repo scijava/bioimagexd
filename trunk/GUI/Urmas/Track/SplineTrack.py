@@ -3,7 +3,6 @@
 """
  Unit: SplineTrack
  Project: BioImageXD
- Created: 05.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -402,6 +401,7 @@ class SplineTrack(Track):
 		""" 
 		Track.__set_pure_state__(self, state)
 		self.closed = state.closed
+		self.maintainUpDirection = state.maintainUpDirection
 		spc = 0
 		
 		for i, item in enumerate(state.items):

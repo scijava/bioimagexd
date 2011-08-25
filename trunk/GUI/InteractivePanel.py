@@ -234,8 +234,14 @@ class InteractivePanel(ogl.ShapeCanvas):
 		if self.zoomToFitFlag:
 			self.zoomToFit()
 		self.calculateBuffer()
+		
+		value = scripting.visualizer.zslider.GetValue()
+		if value > z: value = z
+		# This message works differently (index wise, 0-(z-1)) compared to zslider's range (1-z)
+		lib.messenger.send(None, "zslice_changed", value-1)
 		scripting.visualizer.zslider.SetRange(1, z)
 		self.updatePreview()
+		scripting.visualizer.zslider.SetValue(value)
 		
 		
 	def disableAnnotations(self):

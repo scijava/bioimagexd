@@ -210,6 +210,7 @@ class TaskPanel(ScrolledPanel):
 		if self.channelBox:
 			self.channelBox.clear()
 			self.channelBox.setDataUnit(self.dataUnit, toolImage = (TOOL_W, TOOL_H))
+		
 		self.createItemToolbar()
 		self.doPreviewCallback()
 
