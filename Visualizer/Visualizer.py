@@ -1332,6 +1332,8 @@ class Visualizer:
 
 		if arg is not None:
 			newz = arg
+			if arg > self.zslider.GetMax():
+				arg = self.zslider.GetMax() - 1
 			self.zslider.SetValue(arg + 1)
 		elif (not event and not arg) and obj:
 			newz = obj.GetPosition() - 1

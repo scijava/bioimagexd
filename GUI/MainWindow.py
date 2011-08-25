@@ -419,14 +419,19 @@ class MainWindow(wx.Frame):
 			self.closeVisualizer()
 			self.infoWidget.clearInfo()
 			self.loadVisualizer(mode)
-		
+
 	def onSwitchDataset(self, evt):
 		"""
 		Switch the datasets used by a task module
 		"""
+		# Z might change when changing datasets.
+		#z = self.visualizer.getZSliderValue() - 1
 		selectedFiles = self.tree.getSelectedDataUnits()
 		lib.messenger.send(None, "switch_datasets", selectedFiles)
-		
+		#if z > self.visualizer.zslider.GetMax():
+		#	z = self.visualizer.zslider.GetMax() - 1
+		#lib.messenger.send(None, "zslice_changed", z)
+
 	def showTip(self):
 		"""
 		Show a tip to the user
@@ -1005,10 +1010,9 @@ class MainWindow(wx.Frame):
 		if not scripting.TFLag:
 			mgr.addSeparator("visualization")
 			mgr.addMenuItem("visualization", MenuManager.ID_LIGHTS, "&Lights...*\tCtrl-L", "Configure lighting")
-		#mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
-		
 			mgr.disable(MenuManager.ID_LIGHTS)
-		#mgr.disable(MenuManager.ID_RENDERWIN)
+			#mgr.addMenuItem("visualization", MenuManager.ID_RENDERWIN, "&Render window", "Configure Render Window")
+			#mgr.disable(MenuManager.ID_RENDERWIN)
 
 
 		##### Animation menu #####
@@ -1659,7 +1663,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		if not evt2:
 			self.onMenuShowTree(show = True)
 			asklist = []
-			wc = self.datasetWildcards #+ "|Encoding project (*.bxr)|*.bxr"
+			wc = self.datasetWildcards + "|Encoding project (*.bxr)|*.bxr"
 			asklist = Dialogs.askOpenFileName(self, "Open a volume dataset", wc)
 		else:
 			asklist = args
@@ -1909,6 +1913,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				unit.addSourceDataUnit(dataunit)
 				#Logging.info("ctf of source=", dataunit.getSettings().get("ColorTransferFunction"), kw = "ctf")
 		except Logging.GUIError, ex:
+			lib.messenger.send(None, "update_progress", 1.0, "Loading task %s cancelled." % action)
 			ex.show()
 			self.closeTask()
 			return

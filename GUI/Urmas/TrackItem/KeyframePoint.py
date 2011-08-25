@@ -3,7 +3,6 @@
 """
  Unit: KeyframePoint
  Project: BioImageXD
- Created: 19.03.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -35,7 +34,6 @@
 __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
-
 
 
 import lib.ImageOperations
@@ -170,7 +168,6 @@ s		A method called when the item has been resized
 		TrackItem.TrackItem.__set_pure_state__(self, state)
 		self.point = state.point
 		self.cam = vtk.vtkCamera()
-		
 		GUI.Urmas.UrmasPersist.setVTKState(self.cam, state.cam)
 		self.parent.setSplinePoint(self.itemnum, self.point)
 		

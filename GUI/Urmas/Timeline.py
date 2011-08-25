@@ -2,7 +2,6 @@
 """
  Unit: Timeline
  Project: BioImageXD
- Created: 04.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -235,7 +234,7 @@ class Timeline(scrolled.ScrolledPanel):
 		"""
 		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
-		""" 
+		"""
 		Logging.info("Setting pure state of timeline", kw = "animator")
 		# We add these tracks so that when the tracks are depersisted, they will simply overwrite these
 		# since URPO doesn't know how to create the tracks, just how to load the contents

@@ -118,7 +118,7 @@ class SplineEditor:
 		self.spline = spline = vtk.vtkSplineWidget()
 		self.spline.GetLineProperty().SetColor(1, 0, 0)
 		self.spline.GetHandleProperty().SetColor(0, 1, 0)
-		self.spline.SetResolution(1000)
+		self.spline.SetResolution(10000)
 		
 		self.spline.SetInteractor(self.iren)
 		self.style = self.iren.GetInteractorStyle()
@@ -491,7 +491,9 @@ class SplineEditor:
 	def setSplinePoint(self, pos, point):
 		"""
 		Sets the a handle of the spline widget to a given point
-		"""        
+		"""
+		if self.spline.GetNumberOfHandles() < pos + 1:
+			self.spline.SetNumberOfHandles(pos+1)
 		self.spline.SetHandlePosition(pos, point)
 		
 	def initCamera(self):

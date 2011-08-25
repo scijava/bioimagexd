@@ -3,7 +3,6 @@
 """
  Unit: KeyframeTrack
  Project: BioImageXD
- Created: 05.02.2005, KP
  Description:
 
  URM/AS - The Unified Rendering Manager / Animator for Selli
@@ -88,9 +87,6 @@ class KeyframeTrack(SplineTrack):
 			self.Refresh()
 			return ret
 		return ret
-		
-
-		
 			
 	def onSetCamera(self, obj, evt, cam):
 		"""
@@ -206,9 +202,8 @@ class KeyframeTrack(SplineTrack):
 		"""
 		Method called by UrmasPersist to allow the object
 					 to refresh before it's items are created
-		""" 
-		SplineTrack.__set_pure_state__(self, state)
-		
+		"""
+		#SplineTrack.__set_pure_state__(self, state)
 		spc = 0
 		
 		for i, item in enumerate(state.items[:-1]):

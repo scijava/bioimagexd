@@ -77,6 +77,11 @@ class RendererConfiguration(wx.MiniFrame):
 		self.sizer.Add(self.line, (2, 0), flag = wx.EXPAND|wx.LEFT|wx.RIGHT)
 		self.sizer.Add(self.buttonBox, (3, 0))
 		
+		self.stereoChoice = None
+		self.modes = None
+		self.stereoLbl = None
+		self.stereoMode = None
+		
 		self.initializeGUI()
 		
 		self.panel.SetSizer(self.sizer)
@@ -89,26 +94,10 @@ class RendererConfiguration(wx.MiniFrame):
 		self.SetAutoLayout(1)
 		self.boxSizer.Fit(self)
 		
-		self.stereoChoice = None
-		self.color = None
-		self.modes = None
-		self.colorLbl = None 
-		self.stereoLbl = None
-		self.stereoMode = None
-		self.colorBtn = None
-		self.sizeLbl = None
-		self.sizeEdit = None
-		
 	def initializeGUI(self):
 		"""
 		Build up the configuration GUI
 		"""
-		self.colorLbl = wx.StaticText(self.panel, -1, "Background color: ")
-		self.colorBtn = csel.ColourSelect(self.panel, -1)
-		self.Bind(csel.EVT_COLOURSELECT, self.onSelectColor, id = self.colorBtn.GetId())
-		self.sizeLbl = wx.StaticText(self.panel, -1, "Window size: ")
-		self.sizeEdit = wx.TextCtrl(self.panel, -1, "512x512")
-
 		self.stereoLbl = wx.StaticText(self.panel, -1, "Stereo rendering: ")
 		self.modes = [None, "RedBlue", "CrystalEyes", "Dresden", "Interlaced", "Left", "Right"]
 		stereomodes = ["No stereo", "Red - Blue", "Crystal Eyes", "Dresden", "Interlaced", "Left", "Right"]
@@ -116,30 +105,16 @@ class RendererConfiguration(wx.MiniFrame):
 		
 		self.stereoChoice.Bind(wx.EVT_CHOICE, self.onSetStereoMode)
 		
-		self.contentSizer.Add(self.colorLbl, (0, 0))
-		self.contentSizer.Add(self.colorBtn, (0, 1))
-		self.contentSizer.Add(self.sizeLbl, (1, 0))
-		self.contentSizer.Add(self.sizeEdit, (1, 1))
 		self.contentSizer.Add(self.stereoLbl, (2, 0))
 		self.contentSizer.Add(self.stereoChoice, (2, 1))
-		self.color = None
 		self.stereoMode = None
 		
 	def onApply(self, event):
 		"""
 		Apply the changes
 		"""
-		if self.color:
-			red, green, blue = self.color
-			self.visualizer.setBackground(red, green, blue)
 		scripting.visualizer.getCurrentMode().setStereoMode(self.stereoMode)
-		try:
-			x, y = map(int, self.sizeEdit.GetValue().split("x"))
-			self.visualizer.setRenderWindowSize((x, y))
-		except:
-			pass
 		self.visualizer.Render()
-
 		
 	def onCancel(self, event):
 		"""
@@ -153,24 +128,14 @@ class RendererConfiguration(wx.MiniFrame):
 		""" 
 		self.onApply(None)
 		self.Close()
-		
-	def onSelectColor(self, event):
-		"""
-		Select the background color for render window
-		"""				
-		color = event.GetValue()
-		self.color = (color.Red(), color.Green(), color.Blue())
-		
+				
 	def onSetStereoMode(self, event):
 		"""
 		Set the stereo mode
 		"""
 		index = event.GetSelection()
 		mode = self.modes[index]
-	
 		self.stereoMode = mode
-			
-	
 
 class ConfigurationPanel(scrolled.ScrolledPanel):
 	"""
@@ -283,6 +248,17 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.lightSizer.Add(self.angleEdit, (4,1))
 		self.lightSizer.Add(self.colorLbl, (5,0))
 		self.lightSizer.Add(self.colorBtn, (5,1))
+		
+        # Stereo rendering
+		self.stereoLbl = wx.StaticText(self.lightPanel, -1, "Stereo rendering: ")
+		self.modes = [None, "RedBlue", "CrystalEyes", "Dresden", "Interlaced", "Left", "Right"]
+		stereomodes = ["No stereo", "Red - Blue", "Crystal Eyes", "Dresden", "Interlaced", "Left", "Right"]
+		self.stereoChoice = wx.Choice(self.lightPanel, -1, choices = stereomodes)
+		self.stereoChoice.Bind(wx.EVT_CHOICE, self.onSetStereoMode)
+		self.lightSizer.Add(self.stereoLbl, (6, 0))
+		self.lightSizer.Add(self.stereoChoice, (6, 1))
+		self.stereoMode = None
+        		
 		self.lightPanel.SetSizer(self.lightSizer)
 		self.lightSizer.Fit(self.lightPanel)
 		
@@ -297,7 +273,17 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		self.SetAutoLayout(1)
 		self.SetupScrolling()
 		self.currentConfLbl = None
-		
+	
+	def onSetStereoMode(self, event):
+		"""
+		Set the stereo mode
+		"""
+		index = event.GetSelection()
+		mode = self.modes[index]
+		self.stereoMode = mode
+		scripting.visualizer.getCurrentMode().setStereoMode(self.stereoMode)
+		self.visualizer.Render()
+	
 	def onConfigureRenderwindow(self, event):
 		"""
 		Configure the render window
