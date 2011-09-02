@@ -449,12 +449,14 @@ def setFromParameterList(iTF, listOfValuesToSet):
 	iTF.SetSmoothStartGamma(float(smoothStartGamma)),
 	iTF.SetSmoothEndGamma(float(smoothEndGamma))
 
-def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None):
+def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None, ctf = None):
 	"""
 	Converts vtk-ImageData to a WxImage
 	"""
 	if sliceNumber >= 0:
 		data = getSlice(data, sliceNumber, startpos, endpos)
+	if ctf != None:
+		data = imageDataTo3Component(data, ctf)
 	exporter = vtk.vtkImageExport()
 	data.SetUpdateExtent(data.GetWholeExtent())
 	data.Update()

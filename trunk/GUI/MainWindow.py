@@ -195,6 +195,7 @@ class MainWindow(wx.Frame):
 	
 		# A window for the visualization modes
 		self.visWin = wx.SashLayoutWindow(self, MenuManager.ID_VIS_WIN, style = wx.RAISED_BORDER | wx.SW_3D)
+		self.visWin.SetDoubleBuffered(True)
 		self.visWin.SetOrientation(wx.LAYOUT_VERTICAL)
 		self.visWin.SetAlignment(wx.LAYOUT_LEFT)
 		self.visWin.SetSashVisible(wx.SASH_RIGHT, False)
@@ -2133,9 +2134,13 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			conf.setConfigItem("FileList", "General", "[]")
 		conf.setConfigItem("CleanExit", "General", "True")
 		history = []
-		for i in range(0, self.filehistory.GetCount()):
-			filepath = self.filehistory.GetHistoryFile(i)
-			history.append(filepath)
+		#for i in range(0, self.filehistory.GetCount()):
+		#	filepath = self.filehistory.GetHistoryFile(i)
+		#	history.append(filepath)
+		i = self.filehistory.GetCount()-1
+		while i >= 0:
+			history.append(self.filehistory.GetHistoryFile(i))
+			i = i - 1
 		conf.setConfigItem("HistoryList", "General", str(history))
 		conf.writeSettings()
 		self.Cleanup()

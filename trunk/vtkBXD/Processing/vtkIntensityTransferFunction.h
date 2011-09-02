@@ -159,11 +159,13 @@ public:
 
   // Description:
   // Set / Get the smooth start
-  vtkSetClampMacro(SmoothStart,int,0,255);
+  //vtkSetClampMacro(SmoothStart,int,0,255);
+  vtkSetMacro(SmoothStart,int);
   vtkGetMacro(SmoothStart,int);
   // Description:
   // Set / Get the smooth end
-  vtkSetClampMacro(SmoothEnd,int,0,255);
+  //vtkSetClampMacro(SmoothEnd,int,0,255);
+  vtkSetMacro(SmoothEnd,int);
   vtkGetMacro(SmoothEnd,int);
 
   // Description:

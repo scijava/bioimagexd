@@ -1,9 +1,7 @@
-
 # -*- coding: iso-8859-1 -*-
 """
  Unit: BXDDataWriter
  Project: BioImageXD
- Created: 22.02.2005, KP
  Description:
 
  A writer of BioImageXD .bxd files
@@ -30,20 +28,16 @@ __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 
-#from ConfigParser import *
 from DataSource import DataWriter 
-#import vtk
 import os.path
-
+import codecs
 import Logging
-#import DataUnit
-		
+
+
 class BXDDataWriter(DataWriter):
 	"""
-	Created: 26.03.2005, KP
 	Description: A writer of BioImageXD data (.bxd) files
 	"""
-
 	def __init__(self, filename):
 		"""
 		Constructor
@@ -98,7 +92,7 @@ class BXDDataWriter(DataWriter):
 		Writes the given datasets and their information to a du file
 		"""
 		try:
-			fp = open(self.filename, "w")
+			fp = codecs.open(self.filename, "w", "latin1")
 		except IOError, ex:
 			Logging.error("Failed to write settings",
 			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" %(self.filename, str(ex)))

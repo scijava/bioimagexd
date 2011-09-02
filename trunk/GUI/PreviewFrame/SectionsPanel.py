@@ -34,6 +34,7 @@ import GUI.InteractivePanel
 import lib.ImageOperations
 import lib.messenger
 import Logging
+import time
 import math
 import wx
 import vtk
@@ -247,7 +248,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 	
 		lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.ctf)
 		
-		event.Skip()
+		#event.Skip()
 		
 	def onSize(self, event):
 		"""
@@ -274,8 +275,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.dataUnit = dataUnit
 		
 		self.dims = dataUnit.getDimensions()
-		#import pdb
-		#pdb.set_trace()
+
 		if self.dims != self.curDims:
 			self.curDims = self.dims
 			x, y, z = self.dims
@@ -312,6 +312,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 
 		xscale = 1
 		yscale = 1
+
 		if plane == "zy":
 			data.SetUpdateExtent(xCoordinate, xCoordinate, 0, dataHeight - 1, 0, dataDepth - 1)
 			self.permute.SetFilteredAxes(zAxis, yAxis, xAxis)
@@ -321,8 +322,6 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 	
 			self.voi.SetVOI(0, dataDepth - 1, 0, dataHeight - 1, xCoordinate, xCoordinate)
 	
-			#data.SetUpdateExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
-			#data.SetWholeExtent(0, dataDepth - 1, 0, dataHeight - 1, 0, 0)
 			xdim = dataDepth
 			ydim = dataHeight
 			
@@ -357,6 +356,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		"""
 		Set the timepoint
 		"""
+		start = time.time()
 		recalculate = False
 		# This doesn't work when adjust is open so now just recalculate every tim
 		recalculate = True
@@ -365,7 +365,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.timepoint = tp
 		if not scripting.renderingEnabled:
 			return
-		
+
 		if recalculate or not self.imagedata:
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
@@ -374,9 +374,9 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 				image = self.dataUnit.getTimepoint(tp)
 				image.SetUpdateExtent(image.GetWholeExtent())
 				self.ctf = self.dataUnit.getColorTransferFunction()
-			
+			image.Update()
 			self.cachedImage = image
-			self.imagedata = lib.ImageOperations.imageDataTo3Component(image, self.ctf)
+			self.imagedata = image#lib.ImageOperations.imageDataTo3Component(self.imagedata, self.ctf)
 			self.imagedata.Update()
 			self.zspacing = image.GetSpacing()[2]
 			self.dataUnitChanged = False
@@ -389,21 +389,25 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		self.dims = self.imagedata.GetDimensions()
 		self.slices = []
 
-#		obtain the slices
+		# obtain the slices
 		z = self.z / self.zoomZ
 		if self.zoomFactor != 1:
 			if self.interpolation:
-				imgslice = self.zoomImageWithInterpolation(self.imagedata, self.zoomFactor, self.interpolation, z)
+				imgslice = self.zoomImageWithInterpolation(self.imagedata, self.zoomFactor, self.interpolation, z, ctf = self.ctf)
 			else:
 				img = lib.ImageOperations.scaleImage(self.imagedata, self.zoomFactor, z)
-				imgslice = lib.ImageOperations.vtkImageDataToWxImage(img)
+				imgslice = lib.ImageOperations.vtkImageDataToWxImage(img, ctf = self.ctf)
 		else:
-			imgslice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z)
+			imgslice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, z, ctf = self.ctf)
 		
 		self.slices.append(imgslice)
 		
 		Logging.info("\n\nzspacing = %f\n"%self.zspacing, kw="preview")
+		
+		start = time.time()
 		imgslice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
+		print "GET ZY PLANE TOOK:", time.time()-start, "\n\n\n"
+		
 		w, h = imgslice.GetDimensions()[0:2]
 		interpolation = self.interpolation
 		if self.interpolation == -1:
@@ -412,15 +416,18 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 			interpolation = 1
 		if self.zoomFactor != 1 or self.zspacing != 1:
 			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = 1, xfactor = self.zspacing)
-		
-		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
-		self.slices.append(imgslice)
-		imgslice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
-		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
-			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = self.zspacing, xfactor = 1)
-		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice)
+		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice, ctf = self.ctf)
 		self.slices.append(imgslice)
 
+		start = time.time()
+		imgslice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
+		print "GET XZ PLANE TOOK:", time.time()-start, "\n\n\n"
+		
+		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
+			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = self.zspacing, xfactor = 1)
+		imgslice = lib.ImageOperations.vtkImageDataToWxImage(imgslice, ctf = self.ctf)
+		self.slices.append(imgslice)
+		
 		self.calculateBuffer()
 		if update:
 			self.updatePreview()

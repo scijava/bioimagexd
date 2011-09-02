@@ -50,10 +50,10 @@ ADD_ANNOTATION = 3
 ADD_ROI = 4
 SET_THRESHOLD = 5
 
-INTERPOLATION_VARY=-1
-INTERPOLATION_NONE=0
-INTERPOLATION_LINEAR=1
-INTERPOLATION_CUBIC=2
+INTERPOLATION_VARY =- 1
+INTERPOLATION_NONE = 0
+INTERPOLATION_LINEAR = 1
+INTERPOLATION_CUBIC = 2
 
 class InteractivePanel(ogl.ShapeCanvas):
 	"""
@@ -772,7 +772,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 			interpolation = INTERPOLATION_NONE
 		return interpolation
 		
-	def zoomImageWithInterpolation(self, image, zoomFactor, interpolation, z):
+	def zoomImageWithInterpolation(self, image, zoomFactor, interpolation, z, ctf = None):
 		"""
 		zoom an image with the given zoomFactor using the given interpolation
 		"""
@@ -792,7 +792,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 				return None
 
 		img = lib.ImageOperations.scaleImage(image, zoomFactor, z, interpolation)
-		return lib.ImageOperations.vtkImageDataToWxImage(img)
+		return lib.ImageOperations.vtkImageDataToWxImage(img, ctf = ctf)
 		
 	def changeScrollByDifference(self, start, end):
 		"""

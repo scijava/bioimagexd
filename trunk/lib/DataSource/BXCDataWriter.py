@@ -1,10 +1,7 @@
-
-
 # -*- coding: iso-8859-1 -*-
 """
  Unit: BXCDataWriter
  Project: BioImageXD
- Created: 22.02.2005, KP
  Description:
 
  A writer of BioImageXD .bxc channel files
@@ -38,6 +35,7 @@ import os.path
 import scripting
 import lib.messenger
 import Logging
+import codecs
 
 class BXCDataWriter(DataWriter):
 	"""
@@ -143,9 +141,9 @@ class BXCDataWriter(DataWriter):
 			parser.set("PolyData", "file_%d"%i, self.polyDataFiles[i])
 		for i in range(n):
 			parser.set("ImageData", "file_%d" % i, self.dataSets[i])
-		
+
 		try:
-			fp = open(self.filename, "w")
+			fp = codecs.open(self.filename, "w", "latin1")
 		except IOError, ex:
 			Logging.error("Failed to write settings",
 			"BXDDataSource Failed to open .bxd file %s for writing settings (%s)" % (self.filename, str(ex)))

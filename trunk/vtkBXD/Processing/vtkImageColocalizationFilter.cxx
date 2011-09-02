@@ -113,7 +113,7 @@ int vtkImageColocalizationFilter::RequestInformation (
 // This templated function executes the filter for any type of data.
 template <class T>
 void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int id,int NumberOfInputs,
-                           vtkImageData **inData,vtkImageData*outData,int outExt[6],
+                           vtkImageData **inData,vtkImageData *outData,int outExt[6],
                             T*)
 {
     int i, maxval = 0, n =0;
@@ -136,41 +136,35 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
     T** inPtrs;
     T* outPtr;
 
+    inPtrs = new T*[NumberOfInputs];
 
-    inPtrs=new T*[NumberOfInputs];
-
-    for(i=0; i < NumberOfInputs; i++) {
-        inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
+    for (i=0; i < NumberOfInputs; i++) {
+        inPtrs[i] = (T*)inData[i]->GetScalarPointerForExtent(outExt);
     }
-    outPtr=(T*)outData->GetScalarPointerForExtent(outExt);
+    outPtr = (T*)outData->GetScalarPointerForExtent(outExt);
 
-
-    inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
-    outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
+    inData[0]->GetContinuousIncrements(outExt, inIncX, inIncY, inIncZ);
+    outData->GetContinuousIncrements(outExt, outIncX, outIncY, outIncZ);
 
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    
 
-    maxval=int(pow(2.0f,8.0f*sizeof(T)))-1;
+    maxval = int(pow(2.0f,8.0f*sizeof(T)))-1;
     
-    if(OutputScalar < 0) {
-        OutputScalar = maxval;
-        
+    if (OutputScalar < 0) {
+        OutputScalar = maxval;    
     }
 
     char progressText[200];
     target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
     target++;
 
-
-    for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-
+    for (idxZ = 0; idxZ <= maxZ; idxZ++ ) {
         sprintf(progressText,"Calculating colocalization (slice %d / %d)",idxZ,maxZ);
         self->SetProgressText(progressText);
 
-        for(idxY = 0; idxY <= maxY; idxY++ ) {
+        for (idxY = 0; idxY <= maxY; idxY++ ) {
            if (!id)
            {
                 if (!(count%target))
@@ -179,41 +173,40 @@ void vtkImageColocalizationFilterExecute(vtkImageColocalizationFilter *self, int
                 }
                 count++;
            }             
-            
-          for(idxX = 0; idxX <= maxX; idxX++ ) {
+          
+          for (idxX = 0; idxX <= maxX; idxX++ ) {
             currScalar = n = 0;
             colocFlag = 1;
-            for(i=0; i < NumberOfInputs; i++ ) {
+            for (i=0; i < NumberOfInputs; i++ ) {
                 currScalar = *inPtrs[i];
                 if(currScalar >= ColocThresholds[i] && currScalar <= UpperThresholds[i]) {
                     ColocalizationScalar += currScalar;
                     n++;
-                } else {
+                } 
+				else {
                     colocFlag = 0;
                 }
                 inPtrs[i]++;
             }
-            if(colocFlag > 0) {
-
+            if (colocFlag > 0) {
                 if (BitDepth == 1 ) ColocalizationScalar = OutputScalar;
                 if (BitDepth == 8 ) {
-                    ColocalizationScalar /=n;
+                    ColocalizationScalar /= n;
                 }
-                if(ColocalizationScalar > maxval) ColocalizationScalar=maxval;
-
-            } else ColocalizationScalar = 0;
-
+                if (ColocalizationScalar > maxval) ColocalizationScalar=maxval;
+            }
+			else ColocalizationScalar = 0;
             
             *outPtr = (T)ColocalizationScalar;
             outPtr++;
             ColocalizationScalar = 0;
           }
-          for(i=0; i < NumberOfInputs; i++ ) {
+          for (i=0; i < NumberOfInputs; i++ ) {
               inPtrs[i]+=inIncY;
           }
           outPtr += outIncY;
         }
-        for(i=0; i < NumberOfInputs; i++ ) {
+        for (i=0; i < NumberOfInputs; i++ ) {
           inPtrs[i]+=inIncZ;
         }
         outPtr += outIncZ;      
@@ -256,7 +249,7 @@ void vtkImageColocalizationFilter::ThreadedRequestData (
   {
     vtkTemplateMacro(vtkImageColocalizationFilterExecute(this, id,
                     this->GetNumberOfInputConnections(0),inData[0],
-                    outData[0], outExt,static_cast<VTK_TT *>(0)));
+                    outData[0],outExt,static_cast<VTK_TT *>(0)));
   default:
     vtkErrorMacro(<< "Execute: Unknown ScalarType");
   return;
