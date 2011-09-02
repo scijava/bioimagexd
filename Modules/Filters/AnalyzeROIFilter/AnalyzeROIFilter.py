@@ -130,6 +130,7 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 		values = []
 
 		itkOrig = self.convertVTKtoITK(imagedata)
+		#coms = []
 		for mask in rois:
 			if not mask:
 				return imagedata
@@ -154,10 +155,11 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			labelStats.SetInput(0, itkOrig)
 			labelStats.SetLabelInput(itkLabel)
 			labelStats.Update()
+
 			for statval in statValues:
-		
 				n = labelStats.GetCount(statval)
-	
+				#x1,x2,y1,y2 = labelStats.GetBoundingBox(statval)
+				#coms.append((int((x2+x1)/2.0), int((y2+y1)/2.0)))
 				totint = labelStats.GetSum(statval)
 				maxval = labelStats.GetMaximum(statval)
 				minval = labelStats.GetMinimum(statval)
@@ -172,4 +174,5 @@ class AnalyzeROIFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.reportGUI.setMeasurements(values)
 			self.reportGUI.Refresh()
 		self.measurements = values
+		#print coms
 		return imagedata

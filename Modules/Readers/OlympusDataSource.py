@@ -308,6 +308,8 @@ class OlympusDataSource(DataSource):
 		"""
 		if not self.spacing:
 			aDimension, bDimension, cDimension = self.getVoxelSize()
+			if cDimension == 0:
+				cDimension = aDimension
 			self.spacing = [1, bDimension / aDimension, cDimension / aDimension]
 		return self.spacing
 		

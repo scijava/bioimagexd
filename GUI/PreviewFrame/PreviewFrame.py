@@ -433,6 +433,11 @@ class PreviewFrame(InteractivePanel):
 			colorImage = self.processOutputData(preview)
 		else:
 			colorImage = preview
+		# There's a bug where no icon (right menu bar) is selected and we still try to process
+		# the variable named colorImage, which in this turn of events is None.
+		if colorImage == None:
+			Logging.info("Nothing to preview (no channel, icon, data) selected.")
+			return
 		
 		usedUpdateExt = 0
 		uext = None

@@ -129,7 +129,7 @@ class SectionsMode(VisualizationMode):
 	def updateRendering(self):
 		"""
 		Update the rendering
-		"""      
+		"""
 		if self.iactivePanel:
 			self.iactivePanel.setTimepoint(self.timepoint)
 			self.iactivePanel.updatePreview()

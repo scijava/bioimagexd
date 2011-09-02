@@ -54,8 +54,6 @@ class Merging(Module):
 		self.thresholds = []
 		self.merge = None
 		self.running = False
-		
-
 		self.reset()
 
 	def reset(self):
@@ -80,19 +78,18 @@ class Merging(Module):
 		"""
 		Adds an input for the color merging filter
 		"""
-		
 		settings = dataunit.getSettings()
 		if not settings.get("PreviewChannel"):
 			Logging.info("Not including ", dataunit, "in merging", kw = "processing")
 			return
+		
 		Module.addInput(self, dataunit, data)
 
 		self.n += 1
 					
 		ctf = settings.get("ColorTransferFunction")
 		
-		
-#        Logging.info("ctf=",ctf,kw="processing")
+#		Logging.info("ctf=",ctf,kw="processing")
 		
 		self.ctfs.append(ctf)
 		

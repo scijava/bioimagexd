@@ -1210,14 +1210,13 @@ class Visualizer:
 		Logging.info("Setting dataunit to current mode", kw = "visualizer")
 		self.currentMode.setDataUnit(self.dataUnit)
 		lib.messenger.send(None, "zslice_changed", self.z)
-		self.currentMode.setTimepoint(self.timepoint)
+		self.currentMode.updateRendering()
 		if self.zoomToFitFlag:
 			Logging.info("Will zoom to fit", kw="visualizer")
 			self.currentMode.zoomToFit()
 		else:
 			self.currentMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
-		self.currentMode.updateRendering()
 		
 	def setZoomFactor(self, factor):
 		"""

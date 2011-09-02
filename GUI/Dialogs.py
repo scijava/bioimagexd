@@ -2,7 +2,6 @@
 """
  Unit: Dialogs
  Project: BioImageXD
- Created: 28.01.2005
  
  Description:
 
@@ -113,7 +112,7 @@ def askOpenFileName(parent, title, wc, remember =- 1, filetype = None):
 def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 	"""
 	A method to show a save as dialog
-	"""    
+	"""
 	initialDir = None
 	conf = Configuration.getConfiguration()
 	remember = conf.getConfigItem("RememberPath", "Paths")
@@ -145,6 +144,9 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 		ext = wc.split(".")[-1]
 		if wc.count("*.") <= 2 and wc.find("*.%s" % currExt) == -1:        
 			filename += ".%s" % ext
+	else:
+		showerror(None, "Write failed.", "Unsupported characters")
+		return None
 
 	if filename:
 		if os.access(os.path.dirname(filename), os.W_OK):
@@ -153,3 +155,4 @@ def askSaveAsFileName(parent, title, initFile, wc, ftype = None):
 			showerror(None, "Write access denied.", "Permission denied")
 			return None
 
+	return None
