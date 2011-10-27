@@ -73,7 +73,7 @@ class AutoBackgroundSubtractFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Return the type of the parameter
 		"""	   
-		if parameter in  ["SmallestNonZeroValue","FirstPeak", "MostCommon"]:
+		if parameter in ["SmallestNonZeroValue","FirstPeak", "MostCommon"]:
 			return GUI.GUIBuilder.RADIO_CHOICE
 		
 	def getDefaultValue(self, parameter):

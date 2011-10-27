@@ -78,6 +78,7 @@ class ManipulationPanel(GUI.FilterBasedTaskPanel.FilterBasedTaskPanel):
 		self.mainsizer.Layout()
 		self.mainsizer.Fit(self)
 		
+		lib.messenger.send(None, "enable_dataunits_cache", True)
 		lib.messenger.connect(None, "timepoint_changed", self.updateTimepoint)
 		
 	def updateTimepoint(self, obj, event, timePoint):

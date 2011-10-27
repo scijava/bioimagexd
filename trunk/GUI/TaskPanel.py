@@ -108,6 +108,7 @@ class TaskPanel(ScrolledPanel):
 		self.dataUnit = None
 		self.settings = None
 		self.settingsIndex = -1
+		#self.cacheDataUnits = {}
 		
 		self.createButtonBox()
 		self.createOptionsFrame()
@@ -313,6 +314,17 @@ class TaskPanel(ScrolledPanel):
 		A callback function for marking channels to be rendered
 					 in the preview.
 		"""
+		#print self.dataUnit.outputChannels, "BEFORE\n\n\n"
+		
+		#print dir(self)
+		#for key in self.dataUnit.outputChannels.keys():
+		#	if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
+		#		dataUnitKey = (key, True)
+		#	else:
+		#		dataUnitKey = (key, False)
+		#	self.cacheDataUnits[dataUnitKey] = self.dataUnit
+		#print self.cacheDataUnits
+		
 		flag0, flag1 = 0, 0
 		try:
 			flag0 = event.IsChecked()
@@ -325,6 +337,8 @@ class TaskPanel(ScrolledPanel):
 		flag = flag0 or flag1
 		self.dataUnit.setOutputChannel(index, flag)
 		self.doPreviewCallback(None)
+		
+		#print self.dataUnit.outputChannels, "AFTER\n\n\n"
 		
 	def selectItem(self, obj, event, index = -1):
 		"""
@@ -382,6 +396,9 @@ class TaskPanel(ScrolledPanel):
 		A callback for the button "Preview" and other events
 					 that wish to update the preview
 		"""
+		if hasattr(args[0], "GetEventObject"):
+			if args[0].GetEventObject() == self.previewButton:
+				lib.messenger.send(None, "clear_cache_dataunits")
 		Logging.info("Sending preview update event", kw = "event")
 		lib.messenger.send(None, "data_changed", -1)
 

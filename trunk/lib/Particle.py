@@ -162,7 +162,6 @@ class ParticleTracker:
 		self.particles = None	 
 		self.tracks = []
 		self.timeStamps = []
-		self.useNew = 1
 		
 	def setMinimumTrackLength(self, minlen):
 		"""
@@ -410,14 +409,10 @@ class ParticleTracker:
 		"""
 		get the particle list based on the given seed particles
 		"""
-		# The seed particles are organized as follows:
-		#[ [t1_p1, t1_p2, t1_p3], [t2_p1,t2_p2, t2_p3], ...]
-		# where t1_p1 = first particle in timepoint 1,
-		# t1_p2 = second particle in timepoint 1 etc
-		# Therefore, we can determine e.g. how many tracks there are to be calculated
-		# by looking at how many seed particles we are given
-
-		self.trackCount = len(seedParticles[0])
+		# Seed particles is list of particle indexes in time point used as seeds
+		# Therefore, we can determine e.g. how many tracks there are to be
+		# calculated by looking at how many seed particles we are given
+		self.trackCount = len(seedParticles)
 		tracks = []
 		for i in range(self.trackCount):
 			tracks.append([])
@@ -426,32 +421,30 @@ class ParticleTracker:
 		
 		# First remove all particles in the seed timepoints
 		# that are not listed as seed points
-		for timePoint, col in enumerate(seedParticles):
-			fromTimepoint = timePoint 
-			toRemove = []
-			objToParticle = {}
-			for i in particleList[timePoint]:
-				objval = i.objectNumber()
-				if objval not in col:
-					toRemove.append(i)
-				else:
-					objToParticle[objval] = i
-					
-			# remove the non-seed objects from the timepoint timePoint
-			for i in toRemove:
-				particleList[timePoint].remove(i)
+		toRemove = []
+		objToParticle = {}
+		for i in particleList[fromTimepoint]:
+			objval = i.objectNumber()
+			if objval not in seedParticles:
+				toRemove.append(i)
+			else:
+				objToParticle[objval] = i
 			
-			for tracknum, objVal in enumerate(col):
-				if objVal not in objToParticle:
-					print "Object", objVal, "not found"
-					if objVal in toRemove:
-						print objVal, "was removed"
-					continue
-				particle = objToParticle[objVal]
-				particle.inTrack = True
-				particle.trackNum = tracknum
-				print "Adding particle", objVal, "to track", tracknum
-				tracks[tracknum].append(particle)
+		# remove the non-seed objects from the timepoint timePoint
+		for i in toRemove:
+			particleList[fromTimepoint].remove(i)
+			
+		for tracknum, objVal in enumerate(seedParticles):
+			if objVal not in objToParticle:
+				print "Object", objVal, "not found"
+				if objVal in toRemove:
+					print objVal, "was removed"
+				continue
+			particle = objToParticle[objVal]
+			particle.inTrack = True
+			particle.trackNum = tracknum
+			print "Adding particle", objVal, "to track", tracknum
+			tracks[tracknum].append(particle)
 		return tracks, particleList
 		
 	def calculateAngleFactor(self, testParticle, track):
@@ -490,7 +483,7 @@ class ParticleTracker:
 			angleFactor = abs(angleFactor - 1)
 		return angleFactor
 		
-	def track(self, fromTimepoint = 0, seedParticles = []):# TODO: Test for this
+	def track(self, fromTimepoint = 0, seedParticles = []):
 		"""
 		Perform the actual tracking using the given particles and tracking
 		parameters.
@@ -517,7 +510,7 @@ class ParticleTracker:
 
 		timePoint = fromTimepoint
 		# Iterate over all time points
-		if self.useNew:
+		if not seedParticles:
 			for i in range(self.totalTimepoints):
 				self.trackTimepointParticles(i,tracks)
 		else:
@@ -526,7 +519,7 @@ class ParticleTracker:
 				#print "\nTracking particle %d / %d in timepoint %d" % (i, len(self.particleList[timePoint]), timePoint)
 				self.trackParticle(particle, fromTimepoint, tracks)
 		self.tracks = tracks
-			
+		
 	def trackParticle(self, particle, timePoint, tracks):
 		"""
 		Track the given particle from given timepoint on
@@ -625,7 +618,7 @@ class ParticleTracker:
 				print "|"
 				searchOn = False
 			oldParticle.copy(currentMatch)
-		tracks.append(track)
+		#tracks.append(track)
 		
 	def setVoxelSize(self, voxelSize):
 		"""

@@ -69,6 +69,9 @@ class PreviewFrame(InteractivePanel):
 		self.rawImages = []
 		self.rawImage = None
 		
+		self.cacheDataUnitsEnabled = False
+		self.cacheDataUnits = {}
+		
 		self.oldx, self.oldy = 0, 0
 		Logging.info("kws=", kws, kw = "preview")
 		self.fixedSize = kws.get("previewsize", None)
@@ -96,7 +99,6 @@ class PreviewFrame(InteractivePanel):
 		self.mapToColors = vtk.vtkImageMapToColors()
 		self.mapToColors.SetLookupTable(self.currentCt)
 		self.mapToColors.SetOutputFormatToRGB()
-		
 			
 		self.renewNext = 0
 		
@@ -143,6 +145,8 @@ class PreviewFrame(InteractivePanel):
 		self.drawableRect = self.GetClientRect()
 		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
 		lib.messenger.connect(None, "renew_preview", self.setRenewFlag)
+		lib.messenger.connect(None, "clear_cache_dataunits", self.clearCacheDataUnits)
+		lib.messenger.connect(None, "enable_dataunits_cache", self.enableDataUnitsCache)
 		
 	def deregister(self):
 		"""
@@ -385,6 +389,23 @@ class PreviewFrame(InteractivePanel):
 		else:
 			Logging.info("PreviewFrame not enabled, won't update on DataUnit setting", kw="preview")
 
+	def enableDataUnitsCache(self, obj, event, value):
+		if value == True:
+			Logging.info("Enabling dataunits cache", kw="preview")
+		elif value == False:
+			Logging.info("Disabling dataunits cache", kw="preview")
+		else:
+			return
+		self.cacheDataUnitsEnabled = value
+
+	def clearCacheDataUnits(self, *args):
+		"""
+		Resets the cacheDataUnits variable.
+		"""
+		Logging.info("Clearing cached dataunits", kw="preview")
+		#print "\n"*10
+		self.cacheDataUnits = {}
+
 	def updatePreview(self, renew = 1):
 		"""
 		Update the preview
@@ -407,6 +428,25 @@ class PreviewFrame(InteractivePanel):
 		if not self.running:
 			renew = 1
 			self.running = 1
+		
+		# If the data has already been processed, it might have been saved. Changes such as
+		# changing dataUnit and changing the filter list will (should) clear the cacheDataUnits variable.
+		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels") and self.cacheDataUnits != {}:
+			outputChannels = []
+			for key in self.dataUnit.outputChannels.keys():
+				if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
+					outputChannels.append(key)
+			if tuple(outputChannels) in self.cacheDataUnits.keys():
+				self.dataUnit, self.rawImage, self.currentImage, self.slice, self.finalImage = self.cacheDataUnits[tuple(outputChannels)]
+				# Shouldn't be necessary to set x and y.
+				# self.oldx
+				# self.oldy
+				self.setImage(self.currentImage)
+				self.setZSlice(self.z)
+				self.paintPreview()
+				self.updateScrolling()
+				self.Refresh()
+				return
 
 		if self.dataUnit.isProcessed():
 			try:
@@ -433,12 +473,13 @@ class PreviewFrame(InteractivePanel):
 			colorImage = self.processOutputData(preview)
 		else:
 			colorImage = preview
+
 		# There's a bug where no icon (right menu bar) is selected and we still try to process
 		# the variable named colorImage, which in this turn of events is None.
 		if colorImage == None:
 			Logging.info("Nothing to preview (no channel, icon, data) selected.")
 			return
-		
+
 		usedUpdateExt = 0
 		uext = None
 		if self.z != -1:
@@ -472,6 +513,18 @@ class PreviewFrame(InteractivePanel):
 
 		self.paintPreview()
 		self.updateScrolling()
+
+		# Save the processed data, speeding up switching some (not all) visualizations.
+		# For example, when choosing which channels are shown, this will help if one
+		# or several channels have been processed and you switch back and forth between
+		# which are to be shown.
+		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels"):
+			outputChannels = []
+			for key in self.dataUnit.outputChannels.keys():
+				if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
+					outputChannels.append(key)
+			self.cacheDataUnits[tuple(outputChannels)] = (self.dataUnit, self.rawImage, self.currentImage, self.slice, self.finalImage)
+
 		self.finalImage = colorImage
 		self.Refresh()
 		

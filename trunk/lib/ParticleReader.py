@@ -42,8 +42,8 @@ class ParticleReader:
 		"""
 		Initialize the reader and necessary information for the reader
 		"""
-		self.rdr = csv.reader(open(filename), dialect = "excel", delimiter = ";")
 		print "Reading file",filename
+		self.rdr = csv.reader(open(filename), dialect = "excel", delimiter = ";")
 		self.filterObjectVolume = filterObjectVolume
 		self.timepoint = -1  
 		self.volumes = []

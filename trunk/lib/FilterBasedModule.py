@@ -299,7 +299,6 @@ class FilterList:
 		
 	def getFilters(self):
 		"""
-		Created 13.11.2007, KP
 		get the list of filters
 		"""
 		return self.filters

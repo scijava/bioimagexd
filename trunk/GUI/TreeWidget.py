@@ -642,6 +642,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		if obj and type(obj) != types.StringType:
 			if self.lastobj != obj:
 				Logging.info("Switching to ", obj)
+				lib.messenger.send(None, "clear_cache_dataunits")
 				lib.messenger.send(None, "tree_selection_changed", obj)
 				self.markGreen([item])
 				self.lastobj = obj

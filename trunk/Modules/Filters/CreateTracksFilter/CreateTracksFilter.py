@@ -87,12 +87,13 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			"VelocityWeight": "Weight (0-100%):",
 			"ResultsFile": "File to store the results:",
 			"Track": "Track to visualize",
-			"UseROI": "Select seed objects using ROI:", "ROI": "ROI for tracking:"}
+			"UseROI": "Select seed objects using ROI:",
+			"ROI": "ROI for tracking:"}
 			
 		lib.messenger.connect(None, "selected_objects", self.onSetSelectedObjects)
 	
 		self.numberOfPoints = None
-		self.selectedTimepoint = 0
+		self.selectedTimepoint = scripting.visualizer.getTimepoint()
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 		self.filterDesc = "Create motion tracks of labeled time series image data\nInput: Object statistics file\nOutput: Track file"
 
@@ -386,7 +387,7 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.delayReading = 0
 		return gui
 		
-	def getObjectsForROI(self, roi):
+	def getObjectsForROI(self, roi, minsize = 1):
 		"""
 		return the intensity values of objects in a given roi
 		"""
@@ -399,10 +400,10 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		maskFilter.SetImageInput(imagedata)
 		maskFilter.Update()
 		data = maskFilter.GetOutput()
-		histogram = lib.ImageOperations.get_histogram(data)
+		histogram = lib.ImageOperations.get_histogram(data, maxrange = 1)
 		ret = []
-		for i in range(2, len(histogram)):
-			if histogram[i]:
+		for i in range(1, len(histogram)):
+			if histogram[i] >= minsize:
 				ret.append(i)
 		return ret
 		
@@ -493,6 +494,25 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.tracker.setVoxelSize(voxelSize)
 		self.tracker.setTimeStamps(timeStamps)
 		self.tracker.setFilterObjectSize(self.parameters["MinSize"])
+		self.updateObjects()
+		self.calcTrackBtn.Enable(1)
+
+	def onSelectAll(self, evt):
+		"""
+		Select all button event handler
+		"""
+		self.reportGUI.selectAll(True)
+
+	def onDeselectAll(self, evt):
+		"""
+		Deselect all button event handler
+		"""
+		self.reportGUI.selectAll(False)
+	
+	def updateObjects(self):
+		"""
+		update the objects list
+		"""
 		if not os.path.exists(self.particleFile):
 			GUI.Dialogs.showerror(None, "Could not read the selected particle file %s"%self.particleFile, "Cannot read particle file")
 			return
@@ -500,39 +520,15 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.tracker.readFromFile(self.particleFile, statsTimepoint = self.selectedTimepoint)
 		rdr = self.objectsReader = self.tracker.getReader()
 
-		self.reportGUI.setVolumes(rdr.getVolumes())
-		self.reportGUI.setCentersOfMass(rdr.getCentersOfMass())
-		avgints,avgintsstderr = rdr.getAverageIntensities()
-		self.reportGUI.setAverageIntensities(avgints,avgintsstderr)
-		self.reportGUI.setAreasUm(rdr.getAreas())
-		avgdists,avgdiststderr = rdr.getAverageDistances()
-		self.reportGUI.setAverageDistances(avgdists,avgdiststderr)
-		
-		self.calcTrackBtn.Enable(1)
-
-	def onSelectAll(self, evt):
-		"""
-		Select all button event handler
-		"""
-		pass
-
-	def onDeselectAll(self, evt):
-		"""
-		Deselect all button event handler
-		"""
-		pass
-	
-	def updateObjects(self):
-		"""
-		update the objects list
-		"""
-		if self.objectsReader and self.reportGUI:
-			rdr = self.objectsReader
-			rdr.read(statsTimepoint = self.selectedTimepoint)
+		if self.reportGUI:
+			self.reportGUI.DeleteAllItems()
 			self.reportGUI.setVolumes(rdr.getVolumes())
 			self.reportGUI.setCentersOfMass(rdr.getCentersOfMass())
-			avgints, avgintsstderr = rdr.getAverageIntensities()
+			avgints,avgintsstderr = rdr.getAverageIntensities()
 			self.reportGUI.setAverageIntensities(avgints,avgintsstderr)
+			self.reportGUI.setAreasUm(rdr.getAreas())
+			avgdists,avgdiststderr = rdr.getAverageDistances()
+			self.reportGUI.setAverageDistances(avgdists,avgdiststderr)
 			
 	def getObjectFromCoord(self, pt, timepoint = -1):
 		"""
@@ -561,7 +557,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.tracker.setMaxSpeed(self.parameters["MaxVelocity"]/1000000.0)
 		self.tracker.setMinSpeed(self.parameters["MinVelocity"]/1000000.0)
 		self.tracker.setSpeedDeviation(self.parameters["VelocityDeviation"]/ 100.0)
-
 		self.tracker.setSizeChange(self.parameters["MaxSizeChange"] / 100.0)
 		self.tracker.setIntensityChange(self.parameters["MaxIntensityChange"] / 100.0)
 		self.tracker.setAngleChange(self.parameters["MaxDirectionChange"])
@@ -570,21 +565,29 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		w3 = self.parameters["IntensityWeight"]
 		w4 = self.parameters["DirectionWeight"]
 		self.tracker.setWeights(w1, w2, w3, w4)
-		
+
 		objVals = []
-		pts = self.trackGrid.getSeedPoints()
-		print "Seed points=", pts
-		for i, col in enumerate(pts):
+		if self.parameters["UseROI"]:
+			index, roi = self.parameters["ROI"]
+			if roi :
+				objVals = self.getObjectsForROI(roi, self.parameters["MinSize"])
+		else:
+			objVals = self.reportGUI.getCheckedItems()
+			objVals = [x+1 for x in objVals]
+		#pts = self.trackGrid.getSeedPoints()
+		#print "Seed points=", pts
+		#for i, col in enumerate(pts):
 			# Following doesn't work as center of mass can be outside object
 			#f = lambda coord, tp = i: self.getObjectFromCoord(coord, timepoint = tp)
 			#its = map(f, col)
 			#objVals.append(its)
-			its = []
-			obj = 1
-			for point in col:
-				its.append(obj)
-				obj += 1
-			objVals.append(its)
+		#	its = []
+		#	obj = 1
+		#	for point in col:
+		#		its.append(obj)
+		#		obj += 1
+		#	objVals.append(its)
+		objVals.sort()
 		print "Objects=", objVals
 
 		#for timepoint in objVals:
@@ -595,9 +598,10 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		#	print "Removing object 1"
 		#	objVals.remove(1)
 		
-		fromTp = self.trackGrid.getTimepoint()
-		print "Tracking from timepoint", fromTp, "forward"
-		self.tracker.track(fromTimepoint = fromTp, seedParticles = objVals)
+		#fromTp = self.trackGrid.getTimepoint()
+
+		print "Tracking from timepoint", self.selectedTimepoint, "forward"
+		self.tracker.track(fromTimepoint = self.selectedTimepoint, seedParticles = objVals)
 		trackWriter = lib.ParticleWriter.ParticleWriter()
 		trackWriter.writeTracks(self.parameters["ResultsFile"], self.tracker.getTracks(), self.parameters["MinLength"], self.tracker.timeStamps)
 	

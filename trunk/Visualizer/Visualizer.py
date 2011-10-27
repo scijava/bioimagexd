@@ -1210,13 +1210,14 @@ class Visualizer:
 		Logging.info("Setting dataunit to current mode", kw = "visualizer")
 		self.currentMode.setDataUnit(self.dataUnit)
 		lib.messenger.send(None, "zslice_changed", self.z)
-		self.currentMode.updateRendering()
+		self.currentMode.setTimepoint(self.timepoint)
 		if self.zoomToFitFlag:
 			Logging.info("Will zoom to fit", kw="visualizer")
 			self.currentMode.zoomToFit()
 		else:
 			self.currentMode.setZoomFactor(self.zoomFactor)
 			scripting.zoomFactor = self.zoomFactor
+		self.currentMode.updateRendering()
 		
 	def setZoomFactor(self, factor):
 		"""
@@ -1462,7 +1463,6 @@ class Visualizer:
 		"""
 		if self.blockTpUpdate:
 			return
-			
 		
 		Logging.info("setTimepoint(%d)" % timepoint, kw = "visualizer")
 		# The timeslider has values that start from 1 whereas the internal time point values 
