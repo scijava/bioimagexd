@@ -389,9 +389,13 @@ class WatershedObjectList(wx.ListCtrl, listmix.CheckListCtrlMixin):
 		self.Refresh()
 		
 	def OnItemFocused(self, event):
+		"""
+		"""
 		event.Skip()
 		
 	def OnItemSelected(self, event):
+		"""
+		"""
 		#self.currentItem = event.m_itemIndex
 		#item = -1
 		
@@ -410,6 +414,8 @@ class WatershedObjectList(wx.ListCtrl, listmix.CheckListCtrlMixin):
 			self.counter = 0
 			
 	def OnItemActivated(self, event):
+		"""
+		"""
 		event.Skip()
 		#self.currentItem = event.m_itemIndex
 		
@@ -422,6 +428,8 @@ class WatershedObjectList(wx.ListCtrl, listmix.CheckListCtrlMixin):
 		#	lib.messenger.send(None, "update_helpers", 1)
 
 	def OnItemDeselected(self, evt):
+		"""
+		"""
 		evt.Skip()
 		#print ("OnItemDeselected: %s" % evt.m_itemIndex)
 
@@ -440,12 +448,33 @@ class WatershedObjectList(wx.ListCtrl, listmix.CheckListCtrlMixin):
 			lib.messenger.send(None, "update_helpers", 1)
 
 	def OnGetItemImage(self, item):
+		"""
+		"""
 		return - 1
 
 	def OnGetItemAttr(self, item):
+		"""
+		"""
 		if item % 2 == 1:
 			return self.attr1
 		elif item % 2 == 0:
 			return self.attr2
 		else:
 			return None
+
+	def selectAll(self, flag = True):
+		"""
+		Mark every item as selected or deselect every item
+		"""
+		for index,com in enumerate(self.centersOfMassList):
+			if flag and (index,com) not in self.checkedItems:
+				self.ToggleItem(index)
+			if not flag and (index,com) in self.checkedItems:
+				self.ToggleItem(index)
+
+	def getCheckedItems(self):
+		"""
+		Return a list of checked items
+		"""
+		return [index for index,com in self.checkedItems]
+	

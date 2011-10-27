@@ -425,6 +425,8 @@ class MainWindow(wx.Frame):
 		"""
 		Switch the datasets used by a task module
 		"""
+		#print "onSwitchDatasets"
+		lib.messenger.send(None, "clear_cache_dataunits")
 		# Z might change when changing datasets.
 		#z = self.visualizer.getZSliderValue() - 1
 		selectedFiles = self.tree.getSelectedDataUnits()
@@ -1813,6 +1815,8 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			raise "Couldn't find a task corresponding to id ", eid
 
 		if taskname == self.currentTaskWindowName:
+			if taskname == "Process":
+				lib.messenger.send(None, "enable_dataunits_cache", False)
 			Logging.info("Task", taskname, "already showing, will close", kw = "task")
 			tb.ToggleTool(eid, 0)
 			self.onCloseTaskPanel(None)

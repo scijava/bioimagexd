@@ -7,23 +7,23 @@ import scripting
 
 class BatchMainWindow:
 	"""
-	Created: 03.01.2008, KP
-	Description: a MainWindow object for handling the required user interface i/o like progress events
+	A MainWindow object for handling the required user interface i/o like progress events
 	"""
 	def __init__(self):
 		"""
 		initialize
 		"""
+	
 	def updateProgressBar(self, obj, evt, progress, text, *args):
 		"""
 		print progress report
 		"""
 		#print "%d%% %s"%(int(100*progress), text)
 		pass
+	
 class BXDBatchApplication:
 	"""
-	Created: 01.01.2008, KP
-	Description: Initialize the batch processor app
+	Initialize the batch processor app
 	"""
 	def __init__(self):
 		pluginLoader = Modules.DynamicLoader.getPluginLoader()

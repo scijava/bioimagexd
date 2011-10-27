@@ -898,11 +898,8 @@ def getMaskFromROIs(rois, mx, my, mz, value = 255):
 	for shape in rois:
 		print "Getting from shape",shape
 		insideMap.update(shape.getCoveredPoints())
-	insMap = {}
 	coveredPointAmount = len(insideMap.keys())
-	for x, y in insideMap.keys():
-		insMap[(x, y)] = 1    
-	return coveredPointAmount, getMaskFromPoints(insMap, mx, my, mz, value)
+	return coveredPointAmount, getMaskFromPoints(insideMap, mx, my, mz, value)
 	
 def getMaskFromPoints(points, mx, my, mz, value = 255):
 	"""

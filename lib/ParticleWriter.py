@@ -45,7 +45,7 @@ class ParticleWriter:
 		Write the particles
 		"""
 		fileToOpen = codecs.open(filename, "wb", "latin1")
-			
+		
 		writer = csv.writer(fileToOpen, dialect = "excel", delimiter = ";")
 		writer.writerow(["Track #", "Object #", "Timepoint", "X", "Y", "Z"])
 

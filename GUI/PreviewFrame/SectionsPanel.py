@@ -406,7 +406,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		
 		start = time.time()
 		imgslice = self.getPlane(self.imagedata, "zy", self.x, self.y, int(z))
-		print "GET ZY PLANE TOOK:", time.time()-start, "\n\n\n"
+		#print "GET ZY PLANE TOOK:", time.time()-start, "\n\n\n"
 		
 		w, h = imgslice.GetDimensions()[0:2]
 		interpolation = self.interpolation
@@ -421,7 +421,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 
 		start = time.time()
 		imgslice = self.getPlane(self.imagedata, "xz", self.x, self.y, z)
-		print "GET XZ PLANE TOOK:", time.time()-start, "\n\n\n"
+		#print "GET XZ PLANE TOOK:", time.time()-start, "\n\n\n"
 		
 		if self.zoomFactor != 1 or self.zoomZ != 1  or self.zspacing != 1:
 			imgslice = lib.ImageOperations.scaleImage(imgslice, self.zoomFactor, interpolation = interpolation, yfactor = self.zspacing, xfactor = 1)

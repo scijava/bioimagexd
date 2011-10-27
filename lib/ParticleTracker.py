@@ -283,14 +283,12 @@ class ParticleTracker:
 		# Return all the particles in given timepoint where the object number is within the given
 		# objects
 		return [i for i in self.particles[timepoint] if i.objectNumber() in objs]
-				
-		
+
 	def getTracks(self):
 		"""
 		@return the tracks
 		"""
 		return self.tracks
-		
 
 	def setFilterObjectSize(self, filterSize):
 		"""
