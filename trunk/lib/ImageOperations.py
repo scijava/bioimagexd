@@ -377,7 +377,7 @@ def lutToString(ctf, luttype = "ImageJ"):
 		size = ctf.GetSize()
 	
 	handle = vtkbxd.vtkHandleColorTransferFunction()
-	handle.ColorTransferFunctionToString(ctf, int(perColor), size)
+	handle.ColorTransferFunctionToString(ctf, int(perColor), int(size))
 	ctfstr = handle.GetOutputString()
 	for i in xrange(0,ctfstr.GetNumberOfTuples()):
 		stringOfLUT += chr(ctfstr.GetValue(i))
@@ -663,7 +663,7 @@ def fire(ctfLowerBound, ctfUpperBound):
 
 	ctf = vtk.vtkColorTransferFunction()
 	ctf.AddRGBPoint(0, 0, 0, 0)
-	for colorIndex in range(ctfLowerBound, maxColorIndex):
+	for colorIndex in range(int(ctfLowerBound), maxColorIndex):
 		red = reds[colorIndex] / 255.0
 		green = greens[colorIndex] / 255.0
 		blue = blues[colorIndex] / 255.0

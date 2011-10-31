@@ -465,7 +465,7 @@ class IntensityTransferEditor(wx.Panel):
 					 brightness slider in the GUI
 		"""
 		val = self.brightnessSlider.getScaledValue()
-		self.iTF.SetBrightness(val)
+		self.iTF.SetBrightness(int(val))
 		self.updateGraph()
 		self.updateGUI()
 		event.Skip()
