@@ -39,17 +39,20 @@ import platform
 
 # Add path to VTK and ITK libraries if we are running under Linux and this is
 # Linux package installation
-if platform.system() == "Linux":
+if platform.system() == "Linux" or platform.system()=="Darwin":
 	bxdPath = os.path.dirname(sys.argv[0])
 	if len(bxdPath) > 0:
 		curdir = os.path.abspath(bxdPath)
 	else:
 		curdir = os.path.abspath(os.path.curdir)
 
-	if os.path.exists(curdir + "/VTK") and os.path.exists(curdir + "/ITK"):
+	if platform.system() == "Linux" and os.path.exists(curdir + "/VTK") and os.path.exists(curdir + "/ITK"):
 		sys.path.append(curdir + '/VTK/lib/python2.6/site-packages/VTK-5.6.0-py2.6.egg')
 		sys.path.append(curdir + '/VTK/lib/python2.6/site-packages')
 		sys.path.append(curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
+	if platform.system()=="Darwin":
+		sys.path.append(curdir + '/Libraries/python2.7/site-packages/')
+		sys.path.append(curdir + '/Libraries/InsightToolkit/WrapITK/Python/')
 
 
 # We need to import VTK here so that it is imported before wxpython.

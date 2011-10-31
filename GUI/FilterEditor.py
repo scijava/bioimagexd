@@ -241,7 +241,8 @@ class FilterEditor(wx.Panel):
 		self.filterListbox.Clear()
 		filterList = self.filterList.getFilters()
 		labels = [x.getName() for x in filterList]
-		self.filterListbox.InsertItems(labels,0)
+		if labels:
+			self.filterListbox.InsertItems(labels,0)
 		for i, currFilter in enumerate(filterList):
 			self.filterListbox.Check(i, currFilter.getEnabled())
 		
