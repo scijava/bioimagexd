@@ -351,6 +351,7 @@ class SurfaceModule(VisualizationModule):
 		VisualizationModule.updateRendering(self, input)
 		self.parent.Render()
 
+
 class SurfaceConfigurationPanel(ModuleConfigurationPanel):
 	def __init__(self, parent, visualizer, name = "Surface rendering", **kws):
 		"""

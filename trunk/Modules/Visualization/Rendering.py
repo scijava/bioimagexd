@@ -507,7 +507,7 @@ class RenderingMode(VisualizationMode):
 		for module in state.modules:
 			name = module.moduleName
 			label = module.name
-			mod = self.loadModule(name, label)
+			mod = self.loadModule(name, label, 0)
 			self.configPanel.appendModuleToList(label)
 			mod.__set_pure_state__(module)
 

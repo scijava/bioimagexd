@@ -15,7 +15,7 @@ class BXDGUIApplication(wx.App):
 		self.SetAppName("BioImageXD")
 		iconpath = scripting.get_icon_dir()
 
-		splashimage = os.path.join(iconpath, "splash2.jpg")
+		splashimage = os.path.join(iconpath, "splash3.png")
 		self.splash = GUI.SplashScreen.SplashScreen(None, duration = 99000, bitmapfile = splashimage)
 		self.splash.Show()
 		self.splash.SetMessage("Loading BioImageXD...")

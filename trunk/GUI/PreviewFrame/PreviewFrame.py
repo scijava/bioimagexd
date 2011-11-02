@@ -437,6 +437,7 @@ class PreviewFrame(InteractivePanel):
 				if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
 					outputChannels.append(key)
 			if tuple(outputChannels) in self.cacheDataUnits.keys():
+				# print outputChannels, self.cacheDataUnits[tuple(outputChannels)], "CACHE", "\n"*10
 				self.dataUnit, self.rawImage, self.currentImage, self.slice, self.finalImage = self.cacheDataUnits[tuple(outputChannels)]
 				# Shouldn't be necessary to set x and y.
 				# self.oldx
@@ -521,9 +522,17 @@ class PreviewFrame(InteractivePanel):
 		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels"):
 			outputChannels = []
 			for key in self.dataUnit.outputChannels.keys():
-				if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
+				if self.dataUnit.outputChannels[key] and self.dataUnit.outputChannels[key] == 1:
 					outputChannels.append(key)
-			self.cacheDataUnits[tuple(outputChannels)] = (self.dataUnit, self.rawImage, self.currentImage, self.slice, self.finalImage)
+			ri = vtk.vtkImageData()
+			ri.DeepCopy(self.rawImage)
+			ci = vtk.vtkImageData()
+			ci.DeepCopy(self.currentImage)
+			sl = self.slice.Copy()
+			fi = vtk.vtkImageData()
+			fi.DeepCopy(self.finalImage)
+			self.cacheDataUnits[tuple(outputChannels)] = (self.dataUnit, ri, ci, sl, fi)
+			# print outputChannels, self.cacheDataUnits[tuple(outputChannels)], "NEW CACHE", "\n"*10
 
 		self.finalImage = colorImage
 		self.Refresh()

@@ -435,7 +435,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 		"""	   
 		wc = "3D view scene (*.3xd)|*.3xd"
 		filename = GUI.Dialogs.askOpenFileName(self, "Open 3D view scene", wc, 0)
-		if filename:		
+		if filename:
 			state = state_pickler.load_state(open(filename[0], "r"))
 			#state_pickler.set_state(self.mode, state)
 			self.moduleListbox.Clear()
@@ -454,7 +454,7 @@ class ConfigurationPanel(scrolled.ScrolledPanel):
 							wildcard = wc, \
 							style = wx.SAVE)
 		if dlg.ShowModal() == wx.ID_OK:
-			filename = dlg.GetPath()		  
+			filename = dlg.GetPath()
 		if filename:
 			p = state_pickler.dump(self.mode, open(filename, "w"))
 

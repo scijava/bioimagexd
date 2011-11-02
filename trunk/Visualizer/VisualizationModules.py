@@ -237,7 +237,10 @@ class VisualizationModule(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		self.name = state.name
 		self.moduleName = state.moduleName
-		self.showTimepoint(state.timepoint)
 		if hasattr(self, "actor"):
 			self.setVTKState(self.actor.GetProperty(), state.actorProperty)
 		self.setShading(state.shading)
+		for key in self.descs.keys():
+			if state.parameters.has_key(key):
+				self.setParameter(key, state.parameters[key])
+		self.showTimepoint(state.timepoint)
