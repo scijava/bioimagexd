@@ -1503,7 +1503,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 				break
 		if not name:
 			raise "Did not find a visualization mode corresponding to id ", eid
-			
+		
+		# Double buffering is only needed in slices mode and can cause troubles in 3d in Windows
+		if mode == 'slices':
+			self.visWin.SetDoubleBuffered(True)
+		else:
+			self.visWin.SetDoubleBuffered(False)
 			
 		do_cmd = "mainWindow.loadVisualizerMode('%s')" % (mode)
 		if scripting.currentVisualizationMode in self.visToId:
