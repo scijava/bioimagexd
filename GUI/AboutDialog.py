@@ -3,7 +3,6 @@
 """
  Unit: AboutDialog
  Project: BioImageXD
- Created: 22.02.2005, KP
  Description:
 
  A wxPython wx.Dialog window that is used to show an about dialog. The about 
@@ -120,7 +119,7 @@ aboutText = u"""
 <html>
 <body bgcolor = "%(bgcolor)s">
 <center><h2 > BioImageXD %(version)s</h2></center>
-<center><img src = "%(icondir)s/logo_medium.jpg"></center><br>
+<center><img src = "%(icondir)s/logo_medium2.png"></center><br>
 <p><b > BioImageXD</b > is a program for post - processing and visualizing
 three - and four - dimensional microscopy data.</p>
 
@@ -131,6 +130,12 @@ Lassi Paavolainen <br>
 Varpu Marjomäki <br>
 Jyrki Heino <br>
 Daniel White <br>
+</p>
+<p>
+<b>Developers:</b>
+</p>
+<p>
+Joacim Päivärinne
 </p>
 <p>
 <b> Former members of the main development team:</b>
@@ -478,44 +483,42 @@ at the < i > Licensing</i > directory.</p>
 </p>
 <hr>
 <p><a name="python"><h2>Python</h2></a>
-The license presented here is for Python version 2.4. For licenses of older versions of Python,
-see the file <i>Python-License</i> file in directory <i>Licensing</i>.
 </p>
 <p>
-<b>PSF LICENSE AGREEMENT FOR PYTHON 2.4<b><br>
+<b>PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2<b><br>
 </p>
 <p>
 1. This LICENSE AGREEMENT is between the Python Software Foundation
 ("PSF"), and the Individual or Organization ("Licensee") accessing and
-otherwise using Python 2.4 software in source or binary form and its
-associated documentation.
+otherwise using this software ("Python") in source or binary form and
+its associated documentation.
 </p><p>
 2. Subject to the terms and conditions of this License Agreement, PSF
 hereby grants Licensee a nonexclusive, royalty-free, world-wide
 license to reproduce, analyze, test, perform and/or display publicly,
-prepare derivative works, distribute, and otherwise use Python 2.4
+prepare derivative works, distribute, and otherwise use Python
 alone or in any derivative version, provided, however, that PSF's
 License Agreement and PSF's notice of copyright, i.e., "Copyright (c)
-2001, 2002, 2003, 2004 Python Software Foundation; All Rights Reserved"
-are retained in Python 2.4 alone or in any derivative version prepared
-by Licensee.
+2001, 2002, 2003, 2004, 2005, 2006 Python Software Foundation; All Rights
+Reserved" are retained in Python alone or in any derivative version 
+prepared by Licensee.
 </p><p>
 3. In the event Licensee prepares a derivative work that is based on
-or incorporates Python 2.4 or any part thereof, and wants to make
+or incorporates Python or any part thereof, and wants to make
 the derivative work available to others as provided herein, then
 Licensee hereby agrees to include in any such work a brief summary of
-the changes made to Python 2.4.
+the changes made to Python.
 </p><p>
-4. PSF is making Python 2.4 available to Licensee on an "AS IS"
+4. PSF is making Python available to Licensee on an "AS IS"
 basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
 IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND
 DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
-FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON 2.4 WILL NOT
+FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT
 INFRINGE ANY THIRD PARTY RIGHTS.
 </p><p>
 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON
-2.4 FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
-A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON 2.4,
+FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
+A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON,
 OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
 </p><p>
 6. This License Agreement will automatically terminate upon a material
@@ -527,7 +530,7 @@ Licensee.  This License Agreement does not grant permission to use PSF
 trademarks or trade name in a trademark sense to endorse or promote
 products or services of Licensee, or any third party.
 </p><p>
-8. By copying, installing or otherwise using Python 2.4, Licensee
+8. By copying, installing or otherwise using Python, Licensee
 agrees to be bound by the terms and conditions of this License
 Agreement.
 </p>
