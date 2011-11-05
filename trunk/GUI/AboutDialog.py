@@ -166,21 +166,12 @@ ISB - National Graduate School in Informational and Structural Biology <br>
 gplText = u"""
 <html>
 <body bgcolor = "%(bgcolor)s">
-<center><h2 > BioImageXD License</h2></center>
+<center><h2> BioImageXD License</h2></center>
 
-<!--<p><b > BioImageXD</b > is licensed under the General Public License.</p > -->
-<p>
-BioImageXD will be licensed under the General Public License.
-This version, however, is NOT yet a public release as specified by that license. 
-This version is incomplete and intended for private testing purposes only. 
-You must NOT modify or distribute this program, the source code or parts of it to anyone. 
-You are also expected to keep detailed information of this software confidential, and give 
-feedback only to the developers whose contact information you have been given. Use of this version
-for scientific work is not recommended, because some features and functions have not yet been confirmed to 
-perform properly and correctly.
-</p>
+<p><b>BioImageXD</b> is licensed under the General Public License.</p>
+
 <hr>
-<p><h2 > GNU GENERAL PUBLIC LICENSE</h2>
+<p><h2> GNU GENERAL PUBLIC LICENSE</h2>
 </p><p>
 Version 2, June 1991</p><p>
 Copyright (C) 1989, 1991 Free Software Foundation, Inc.
@@ -188,7 +179,7 @@ Copyright (C) 1989, 1991 Free Software Foundation, Inc.
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 </p><p>
-<h3 > Preamble</h3>
+<h3> Preamble</h3>
 </p><p>
   The licenses for most software are designed to take away your
 freedom to share and change it.  By contrast, the GNU General Public
@@ -239,8 +230,8 @@ patent must be licensed for everyone's free use or not licensed at all.
 modification follow.
 </p><p>
 
-<h3 > GNU GENERAL PUBLIC LICENSE</h3>
-<h3 > TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</h3>
+<h3>GNU GENERAL PUBLIC LICENSE</h3>
+<h3>TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</h3>
 </p><p>
   0. This License applies to any program or other work which contains
 a notice placed by the copyright holder saying it may be distributed
@@ -249,11 +240,11 @@ refers to any such program or work, and a "work based on the Program"
 means either the Program or any derivative work under copyright law:
 that is to say, a work containing the Program or a portion of it,
 either verbatim or with modifications and / or translated into another
-language.  (Hereinafter, translation is included without limitation in
-the term "modification".)  Each licensee is addressed as "you".
+language. (Hereinafter, translation is included without limitation in
+the term "modification".) Each licensee is addressed as "you".
 </p><p>
 Activities other than copying, distribution and modification are not
-covered by this License; they are outside its scope.  The act of
+covered by this License; they are outside its scope. The act of
 running the Program is not restricted, and the output from the Program
 is covered only if its contents constitute a work based on the
 Program (independent of having been made by running the Program).
@@ -294,11 +285,11 @@ above, provided that you also meet all of these conditions:
 	does not normally print such an announcement, your work based on
 	the Program is not required to print an announcement.)
 </p><p>
-These requirements apply to the modified work as a whole.  If
+These requirements apply to the modified work as a whole. If
 identifiable sections of that work are not derived from the Program,
 and can be reasonably considered independent and separate works in
 themselves, then this License, and its terms, do not apply to those
-sections when you distribute them as separate works.  But when you
+sections when you distribute them as separate works. But when you
 distribute the same sections as part of a whole which is a work based
 on the Program, the distribution of the whole must be on the terms of
 this License, whose permissions for other licensees extend to the
@@ -330,16 +321,16 @@ Sections 1 and 2 above provided that you also do one of the following:
 	customarily used for software interchange; or,
 </p><p>
 	c) Accompany it with the information you received as to the offer
-	to distribute corresponding source code.  (This alternative is
+	to distribute corresponding source code. (This alternative is
 	allowed only for noncommercial distribution and only if you
 	received the program in object code or executable form with such
 	an offer, in accord with Subsection b above.)
 </p><p>
 The source code for a work means the preferred form of the work for
-making modifications to it.  For an executable work, complete source
+making modifications to it. For an executable work, complete source
 code means all the source code for all modules it contains, plus any
 associated interface definition files, plus the scripts used to
-control compilation and installation of the executable.  However, as a
+control compilation and installation of the executable. However, as a
 special exception, the source code distributed need not include
 anything that is normally distributed (in either source or binary
 form) with the major components (compiler, kernel, and so on) of the
@@ -353,7 +344,7 @@ distribution of the source code, even though third parties are not
 compelled to copy the source along with the object code.
 </p><p>
   4. You may not copy, modify, sublicense, or distribute the Program
-except as expressly provided under this License.  Any attempt
+except as expressly provided under this License. Any attempt
 otherwise to copy, modify, sublicense or distribute the Program is
 void, and will automatically terminate your rights under this License.
 However, parties who have received copies, or rights, from you under
@@ -361,9 +352,9 @@ this License will not have their licenses terminated so long as such
 parties remain in full compliance.
 </p><p>
   5. You are not required to accept this License, since you have not
-signed it.  However, nothing else grants you permission to modify or
-distribute the Program or its derivative works.  These actions are
-prohibited by law if you do not accept this License.  Therefore, by
+signed it. However, nothing else grants you permission to modify or
+distribute the Program or its derivative works. These actions are
+prohibited by law if you do not accept this License. Therefore, by
 modifying or distributing the Program (or any work based on the
 Program), you indicate your acceptance of this License to do so, and
 all its terms and conditions for copying, distributing or modifying
@@ -372,7 +363,7 @@ the Program or works based on it.
   6. Each time you redistribute the Program (or any work based on the
 Program), the recipient automatically receives a license from the
 original licensor to copy, distribute or modify the Program subject to
-these terms and conditions.  You may not impose any further
+these terms and conditions. You may not impose any further
 restrictions on the recipients' exercise of the rights granted herein.
 You are not responsible for enforcing compliance by third parties to
 this License.
@@ -381,10 +372,10 @@ this License.
 infringement or for any other reason (not limited to patent issues),
 conditions are imposed on you (whether by court order, agreement or
 otherwise) that contradict the conditions of this License, they do not
-excuse you from the conditions of this License.  If you cannot
+excuse you from the conditions of this License. If you cannot
 distribute so as to satisfy simultaneously your obligations under this
 License and any other pertinent obligations, then as a consequence you
-may not distribute the Program at all.  For example, if a patent
+may not distribute the Program at all. For example, if a patent
 license would not permit royalty - free redistribution of the Program by
 all those who receive copies directly or indirectly through you, then
 the only way you could satisfy both it and this License would be to
@@ -438,7 +429,7 @@ make exceptions for this.  Our decision will be guided by the two goals
 of preserving the free status of all derivatives of our free software and
 of promoting the sharing and reuse of software generally.
 </p><p>
-<h3 > NO WARRANTY</h3>
+<h3> NO WARRANTY</h3>
 </p><p>
   11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
 FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
@@ -469,9 +460,9 @@ licensingText = u"""
 <body bgcolor = "%(bgcolor)s">
 <center><h2 > Licensing of Libraries</h2></center>
 
-<p><b > BioImageXD</b > is a based on many open source programs and libraries. The licenses of these programs are
+<p><b> BioImageXD</b> is a based on many open source programs and libraries. The licenses of these programs are
 presented here. You can also find the full licenses of each program or library at
-at the < i > Licensing</i > directory.</p>
+at the <i> Licensing</i> directory.</p>
 <p>
 <ul>
 <li><a href = "#python">Python</a></li>
@@ -536,7 +527,7 @@ Agreement.
 </p>
 <hr>
 <p>
-<p><a name="vtk"><h2>The Visualization Toolkit</h2></a>
+<a name="vtk"><h2>The Visualization Toolkit</h2></a>
 </p>
 <p>
 This is an open-source copyright as follows:</p>
@@ -556,7 +547,6 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </p>
 <hr>
-<p>
 <p><a name="itk"><h2>Insight Segmentation and Registration Toolkit</h2></a>
 </p>
 <p> 
