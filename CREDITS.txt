@@ -1,6 +1,6 @@
 The BioImageXD Project:
 
-BioImageXD Copyright (C) 2004-2007 The development team
+BioImageXD Copyright (C) 2004-2011 The development team
 
 The main development team:
 
@@ -9,6 +9,10 @@ Lassi Paavolainen
 Varpu Marjomäki
 Jyrki Heino
 Daniel White
+
+Developer:
+
+Joacim Päivärinne
 
 Former member of the main development team:
 
