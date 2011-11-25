@@ -440,6 +440,7 @@ class Visualizer:
 		"""
 		Go to next timepoint
 		"""
+		lib.messenger.send(None, "clear_cache_dataunits")
 		undo_cmd = "scripting.visualizer.prevTimepoint()"
 		do_cmd = "scripting.visualizer.nextTimepoint()"
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to next timepoint")
@@ -449,6 +450,7 @@ class Visualizer:
 		"""
 		Go to previous timepoint
 		"""
+		lib.messenger.send(None, "clear_cache_dataunits")
 		undo_cmd = "scripting.visualizer.nextTimepoint()"
 		do_cmd = "scripting.visualizer.prevTimepoint()"
 		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = "Switch to previous timepoint")
@@ -1482,6 +1484,7 @@ class Visualizer:
 		"""
 		# if this call is not from a user caused event, and there has been a request
 		# to change the timepoint 1/100 of a second ago, then wait a bit
+		lib.messenger.send(None, "clear_cache_dataunits")
 		if not evt:
 			diff = abs(time.time() - self.changing)
 			if diff < 0.01:

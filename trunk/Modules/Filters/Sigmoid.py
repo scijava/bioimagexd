@@ -90,9 +90,9 @@ class SigmoidFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		image = self.getInput(1)
 		image = self.convertVTKtoITK(image, cast = types.FloatType)
-		if not self.itkFilter:
-			self.itkFilter = itk.SigmoidImageFilter.IF3IF3.New()
-
+		dim = image.GetLargestPossibleRegion().GetImageDimension()
+		
+		self.itkFilter = eval("itk.SigmoidImageFilter.IF%dIF%d.New()"%(dim,dim))
 		self.itkFilter.SetOutputMinimum(self.parameters["Minimum"])
 		self.itkFilter.SetOutputMaximum(self.parameters["Maximum"])
 		self.itkFilter.SetAlpha(self.parameters["Alpha"])
@@ -101,12 +101,12 @@ class SigmoidFilter(lib.ProcessingFilter.ProcessingFilter):
 		try:
 			self.itkFilter.SetInput(image)
 		except:
-			image = self.castITKImage(image,itk.Image.F3)
+			image = self.castITKImage(image,eval("itk.Image.F%d"%dim))
 			self.itkFilter.SetInput(image)
 		
-		self.setImageType("F3")
+		self.setImageType("F%d"%dim)
 		data = self.itkFilter.GetOutput()
 		if update:
 			data.Update()
 
-		return data			   
+		return data

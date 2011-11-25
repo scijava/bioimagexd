@@ -342,6 +342,10 @@ class FilterBasedModule(lib.Module.Module):
 		self.reset()
 		self.currentExecutingFilter = None
 		self.polyDataOutput = None
+		self.cacheDataUnits = {}
+		self.cacheDataUnitsEnabled = True
+		lib.messenger.connect(None, "clear_cache_dataunits", self.clearCacheDataUnits)
+		lib.messenger.connect(None, "enable_dataunits_cache", self.enableDataUnitsCache)
 		
 	def setPolyDataOutput(self, polydata):
 		"""
@@ -447,6 +451,13 @@ class FilterBasedModule(lib.Module.Module):
 		polydata = None
 		x = 1.0/(1+len(enabledFilters))
 
+		# A very specific cache is needed, to prevent the "result" channel
+		# being re-processed when being merged to the "original" channel(s).
+		key = (self.settings.dataunit, self.timepoint)
+		if key in self.cacheDataUnits and self.cacheDataUnitsEnabled:
+			Logging.info("Returning cached dataunit", kw="pipeline")
+			return self.cacheDataUnits[key]
+		
 		for i, currfilter in enumerate(enabledFilters):
 			if currfilter.requireWholeDataset:
 				wantWhole = True
@@ -503,4 +514,31 @@ class FilterBasedModule(lib.Module.Module):
 		filterlist.setModified(0)
 		self.setPolyDataOutput(polydata)
 		
+		if self.cacheDataUnitsEnabled:
+			print data.GetUpdateExtent()
+			x0, x1, y0, y1, z0, z1 = data.GetUpdateExtent()
+			if (z0 - z1) < 0:
+				copy = vtk.vtkImageData()
+				copy.DeepCopy(data)
+				copy.Update()
+				key = (self.settings.dataunit, self.timepoint)
+				self.cacheDataUnits[key] = copy
+				Logging.info("Caching dataunit", kw="pipeline")
+
 		return data
+		
+	def clearCacheDataUnits(self, *args):
+		"""
+		Resets the cacheDataUnits variable.
+		"""
+		Logging.info("Clearing cached dataunits", kw="pipeline")
+		self.cacheDataUnits = {}
+        
+	def enableDataUnitsCache(self, obj, event, value):
+		if value == True:
+			Logging.info("Enabling dataunits cache", kw="pipeline")
+		elif value == False:
+			Logging.info("Disabling dataunits cache", kw="pipeline")
+		else:
+			return
+		self.cacheDataUnitsEnabled = value

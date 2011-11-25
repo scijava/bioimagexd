@@ -147,7 +147,7 @@ class Merging(Module):
 		self.merge = vtkbxd.vtkImageColorMerge()
 		self.merge.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.merge, 'ProgressEvent', self.updateProgress)
-		
+
 		if self.doAlpha:
 			self.merge.BuildAlphaOn()
 			if self.alphaMode[0] == 0:
@@ -157,9 +157,11 @@ class Merging(Module):
 				Logging.info("Alpha mode = average, threshold = ", self.alphaMode[1], kw = "processing")
 				self.merge.AverageModeOn()
 				self.merge.SetAverageThreshold(self.alphaMode[1])
-			else:
+			elif self.alphaMode[0] == 2:
 				self.merge.LuminanceModeOn()
 				Logging.info("Alpha mode = luminance", kw = "processing")
+			else:
+				self.merge.BuildAlphaOff()
 		else:
 			self.merge.BuildAlphaOff()
 		

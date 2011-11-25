@@ -111,6 +111,9 @@ class ParticleWriter:
 					"Center of Mass Y (micrometers)", "Center of Mass Z (micrometers)",	"Avg. Intensity", "Avg. Intensity std. error",  "Avg. distance to objects", "Avg. distance to objects std. error", "Area (micrometers)", "Roundness", "Intensity sum", "Major axis length (micrometers)", "Minor axis length (micrometers)", "Elongation", "Angle between major and X axes", "Angle between major and Y axes", "Angle between major and Z axes", "Angle between minor and X axes", "Angle between minor and Y axes", "Angle between minor and Z axes", "Smoothness"])
 
 		for i, volume in enumerate(self.objects['volume']):
+			objnum = i+1
+			if self.objects.get('objnum',-1) >= 0:
+				objnum = self.objects['objnum'][i]
 			volumeum = self.objects['volumeum'][i]
 			cog = self.objects['centerofmass'][i]
 			umcog = self.objects['umcenterofmass'][i]
@@ -167,6 +170,6 @@ class ParticleWriter:
 				smoothness = self.objects['smoothness'][i]
 			except:
 				smoothness = 0.0
-			w.writerow([str(i + 1), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm), str(roundness), str(intSum), str(majorLen), str(minorLen), str(elongation), str(angleMajX), str(angleMajY), str(angleMajZ), str(angleMinX), str(angleMinY), str(angleMinZ), str(smoothness)])
+			w.writerow([str(objnum), str(volumeum), str(volume), cog[0], cog[1], cog[2], umcog[0], umcog[1], umcog[2], str(avgint), str(avgintstderr), str(avgdist), str(avgdiststderr), str(areaUm), str(roundness), str(intSum), str(majorLen), str(minorLen), str(elongation), str(angleMajX), str(angleMajY), str(angleMajZ), str(angleMinX), str(angleMinY), str(angleMinZ), str(smoothness)])
 		
 		f.close()

@@ -179,7 +179,6 @@ def scaleImage(data, factor = 1.0, zDimension = -1, interpolation = 1, xfactor =
 	"""    
 	if zDimension != -1:
 		data = getSlice(data, zDimension)
-	
 	data.SetSpacing(1, 1, 1)
 	xDimension, yDimension, zDimension = data.GetDimensions()
 	data.SetOrigin(xDimension / 2.0, yDimension / 2.0, 0)
@@ -468,6 +467,7 @@ def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None
 	exporter.Export()
 	width, height = data.GetDimensions()[0:2]
 	image = wx.EmptyImage(width, height)
+	# print len(structString), "\n"*10
 	image.SetData(structString)
 	return image
 	
@@ -870,7 +870,7 @@ def histogram(imagedata, colorTransferFunction = None, bg = (200, 200, 200), log
 			#dc.DrawLine(xoffset + i, x1 - c, xoffset + i, x1 - c-2)
 			
 	if colorTransferFunction:
-		for i in range(minval, maxval + d, d):
+		for i in range(int(minval), int(maxval + d), int(d)):
 			val = [0, 0, 0]
 			colorTransferFunction.GetColor(i, val)
 			r, g, b = val
@@ -1116,8 +1116,9 @@ def getSlice(volume, zslice, startpos = None, endpos = None):
 	else:
 		#startx, starty = 0, 0
 		#endx, endy = volume.GetDimensions()[0:2]
-		startx, endx, starty, endy, a,b = map(int, volume.GetExtent())
-	voi.SetVOI(startx, endx, starty, endy, zslice, zslice)
+		startx, endx, starty, endy, a,b = volume.GetExtent()
+	
+	voi.SetVOI((int(startx), int(endx), int(starty), int(endy), int(zslice), int(zslice)))
 	voi.Update()
 	data = voi.GetOutput()
 	return data
@@ -1143,7 +1144,7 @@ def saveImageAs(imagedata, zslice, filename):
 def imageDataTo3Component(image, ctf):
 	"""
 	Processes image data to get it to proper 3 component RGB data
-	"""			
+	"""
 	image.UpdateInformation()
 	ncomps = image.GetNumberOfScalarComponents()
 	
