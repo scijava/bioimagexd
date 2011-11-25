@@ -604,5 +604,6 @@ class CreateTracksFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.tracker.track(fromTimepoint = self.selectedTimepoint, seedParticles = objVals)
 		trackWriter = lib.ParticleWriter.ParticleWriter()
 		trackWriter.writeTracks(self.parameters["ResultsFile"], self.tracker.getTracks(), self.parameters["MinLength"], self.tracker.timeStamps)
-
+	
 		self.onReadTracks(None)
+
