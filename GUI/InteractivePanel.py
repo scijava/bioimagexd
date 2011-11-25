@@ -790,7 +790,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 				Logging.info("Using no interpolation", kw = "preview")
 				interpolation = INTERPOLATION_NONE
 				return None
-
 		img = lib.ImageOperations.scaleImage(image, zoomFactor, z, interpolation)
 		return lib.ImageOperations.vtkImageDataToWxImage(img, ctf = ctf)
 		

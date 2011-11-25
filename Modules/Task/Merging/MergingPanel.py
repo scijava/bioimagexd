@@ -104,7 +104,7 @@ class MergingPanel(TaskPanel.TaskPanel):
 		self.editAlphaSizer = wx.GridBagSizer()
 
 		self.alphaModeBox = wx.RadioBox(self.editAlphaPanel, -1, "Alpha channel construction",
-		choices = ["Maximum Mode", "Average Mode", "Image Luminance"], \
+		choices = ["Maximum Mode", "Average Mode", "Image Luminance", "No alpha"], \
 					majorDimension = 2, style = wx.RA_SPECIFY_COLS)
 		
 		self.alphaModeBox.SetForegroundColour(scripting.COLOR_EXPERIENCED)

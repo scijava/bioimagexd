@@ -847,5 +847,5 @@ class VideoGeneration(wx.Panel):
 		filename = GUI.Dialogs.askSaveAsFileName(self, "Select output filename", "movie.%s" % ext, wc)
 		if filename:
 			self.videofile.SetValue(filename)
-			self.encoder.setVideoFile(filename)
+			self.encoder.setVideoFileName(filename)
 			

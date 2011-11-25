@@ -292,9 +292,14 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				objs = self.createFluctuations(objs)
 			self.objects.append(objs)
 
+		clusteredObjects = []
 		if self.parameters["Clustering"]:
 			print "Introducing clustering"
-			self.clusterObjects(self.objects)
+			clusteredObjects = self.clusterObjects(self.objects)
+		
+		# Sort objects
+		for tpObjs in self.objects:
+			tpObjs.sort()
 		
 		self.tracks = []
 		for tp, objs in enumerate(self.objects):
@@ -304,6 +309,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				p = lib.Particle.Particle((x,y,z), (x,y,z), tp, size, objInt, objN)
 				p.setVoxelSize(self.voxelSize)
 				self.tracks[objN-1].append(p)
+			# Set same particle in track of clustered particles
+			for ctp,objN,clusObj in clusteredObjects:
+				if tp == ctp:
+					p = lib.Particle.Particle(clusObj[1], clusObj[1], ctp, clusObj[2], clusObj[3], clusObj[0])
+					p.setVoxelSize(self.voxelSize)
+					self.tracks[objN-1].append(p)
+
 
 		if self.parameters["ObjectsCreateSource"]:
 			for tp, objs in enumerate(self.objects):
@@ -313,7 +325,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		Create clustering of objects
 		"""
-		#combine = []
+		combine = []
 		clustered = {}
 		#clusteredObjN = {}
 		removedByTP = []
@@ -323,8 +335,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		for tp,objs in enumerate(objects):
 			if tp == 0: continue
 			toremove = []
-			toadd = []
-			combine = []
+			toadd = {}
+			#combine = []
 			for i, (objN1, (x1,y1,z1), size1, objInt1) in enumerate(objs):
 				for j, (objN2, (x2,y2,z2), size2, objInt2) in enumerate(objs):
 					if objN1 == objN2: continue
@@ -337,7 +349,6 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 							# Mark as combined in this and coming time points
 							#for combTP in range(tp,len(objects)):
 							#	combine.append((combTP,objN,i,objN2,j))
-							#combine.append((tp,objN,i,objN2,j))
 							#combine.append((objN,i,objN2,j))
 							#clustered[(tp,objN2)] = 1
 							#clustered[(tp,objN)] = 1
@@ -348,7 +359,13 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 							y3 = (y1+y2)/2
 							z3 = (z1+z2)/2
 							int3 = int((objInt1+objInt2) * 0.7)
-							toadd.append((objN1, (x3,y3,z3), size3, int3))
+							#toadd.append((objN1, (x3,y3,z3), size3, int3))
+							if size1 >= size2:
+								toadd[objN1] = (objN1,(x3-x1,y3-y1,z3-z1), size3, int3)
+								combine.append((tp,objN2,(objN1, (x3,y3,z3), size3, int3)))
+							else:
+								toadd[objN2] = (objN2,(x3-x2,y3-y2,z3-z2), size3, int3)
+								combine.append((tp,objN1,(objN2, (x3,y3,z3), size3, int3)))
 							toremove.append(objN1)
 							toremove.append(objN2)
 							clustered[(tp,objN1)] = 1
@@ -359,10 +376,18 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 					if remObj[0] in toremove:
 						objects[remTP].remove(remObj)
 						removedByTP[remTP] += 1
+						if toadd.get(remObj[0],False):
+							addObj = toadd.get(remObj[0])
+							loc = list(addObj[1])
+							for dim in range(3):
+								loc[dim] += remObj[1][dim]
+							addObj = (addObj[0], tuple(loc), addObj[2], addObj[3])
+							objects[remTP].append(addObj)
+							removedByTP[remTP] -=1
 
-			for addObj in toadd:
-				objects[tp].append(addObj)
-				removedByTP[tp] -= 1
+			#for addObj in toadd:
+			#	objects[tp].append(addObj)
+			#	removedByTP[tp] -= 1
 
 			#for objN,i,objN2,j in combine:
 			#	ob1 = objects[tp][i]
@@ -407,6 +432,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		for remtp in range(len(self.objects)):
 			print "Removed from timepoint %d: %d"%(remtp,removedByTP[remtp])
+		return combine
 	
 	def createFluctuations(self, objects):
 		"""
@@ -893,6 +919,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 		settings = dataUnit.getSettings()
 		settings.set("StatisticsFile", filename)
 
+		objnums = []
 		volumes = []
 		volumeums = []
 		coms = []
@@ -935,7 +962,8 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 				dist = math.sqrt(dx*dx + dy*dy + dz*dz)
 				distList.append(dist)
 			avgDist, avgDistStd, avgDistStdErr = lib.Math.meanstdeverr(distList)
-				
+			
+			objnums.append(objN)
 			com = tuple(com)
 			comums.append(com)
 			volumeums.append(volume * voxelVolume)
@@ -946,6 +974,7 @@ class TestDataFilter(lib.ProcessingFilter.ProcessingFilter):
 			areaum.append(0.0)
 
 		writer = lib.ParticleWriter.ParticleWriter()
+		writer.setObjectValue('objnum', objnums)
 		writer.setObjectValue('volume', volumes)
 		writer.setObjectValue('volumeum', volumeums)
 		writer.setObjectValue('centerofmass', coms)

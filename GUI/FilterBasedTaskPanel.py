@@ -53,6 +53,7 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		"""
 		A callback for when filter parameters change
 		"""
+		lib.messenger.send(None, "clear_cache_dataunits")
 		if self.filterEditor:
 			self.filterEditor.setModified(1)
 		  

@@ -369,6 +369,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		if recalculate or not self.imagedata:
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
+				image.ReleaseDataFlagOff()
 				self.ctf = self.dataUnit.getColorTransferFunction()
 			else:
 				image = self.dataUnit.getTimepoint(tp)
@@ -377,7 +378,6 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 			image.Update()
 			self.cachedImage = image
 			self.imagedata = image#lib.ImageOperations.imageDataTo3Component(self.imagedata, self.ctf)
-			self.imagedata.Update()
 			self.zspacing = image.GetSpacing()[2]
 			self.dataUnitChanged = False
 		

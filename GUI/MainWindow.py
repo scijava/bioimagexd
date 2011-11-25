@@ -425,7 +425,6 @@ class MainWindow(wx.Frame):
 		"""
 		Switch the datasets used by a task module
 		"""
-		#print "onSwitchDatasets"
 		lib.messenger.send(None, "clear_cache_dataunits")
 		# Z might change when changing datasets.
 		#z = self.visualizer.getZSliderValue() - 1

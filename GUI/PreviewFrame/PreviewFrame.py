@@ -403,7 +403,6 @@ class PreviewFrame(InteractivePanel):
 		Resets the cacheDataUnits variable.
 		"""
 		Logging.info("Clearing cached dataunits", kw="preview")
-		#print "\n"*10
 		self.cacheDataUnits = {}
 
 	def updatePreview(self, renew = 1):
@@ -429,24 +428,22 @@ class PreviewFrame(InteractivePanel):
 			renew = 1
 			self.running = 1
 		
-		# If the data has already been processed, it might have been saved. Changes such as
-		# changing dataUnit and changing the filter list will (should) clear the cacheDataUnits variable.
+		copy = None
+		# @cache Check cache if the data has already been processed.
 		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels") and self.cacheDataUnits != {}:
 			outputChannels = []
 			for key in self.dataUnit.outputChannels.keys():
 				if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
 					outputChannels.append(key)
 			if tuple(outputChannels) in self.cacheDataUnits.keys():
-				# print outputChannels, self.cacheDataUnits[tuple(outputChannels)], "CACHE", "\n"*10
-				self.dataUnit, self.rawImage, self.currentImage, self.slice, self.finalImage = self.cacheDataUnits[tuple(outputChannels)]
-				# Shouldn't be necessary to set x and y.
-				# self.oldx
-				# self.oldy
-				self.setImage(self.currentImage)
-				self.setZSlice(self.z)
+				self.dataUnit, copy = self.cacheDataUnits[tuple(outputChannels)]
+				self.setImage(copy)
+				self.slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, self.z)
 				self.paintPreview()
 				self.updateScrolling()
+				self.finalImage = self.imagedata
 				self.Refresh()
+				Logging.info("Returning cached dataunit", kw="preview")
 				return
 
 		if self.dataUnit.isProcessed():
@@ -515,24 +512,26 @@ class PreviewFrame(InteractivePanel):
 		self.paintPreview()
 		self.updateScrolling()
 
-		# Save the processed data, speeding up switching some (not all) visualizations.
-		# For example, when choosing which channels are shown, this will help if one
-		# or several channels have been processed and you switch back and forth between
-		# which are to be shown.
+		# @cache
 		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels"):
+			Logging.info("Caching dataunit %s" % self.dataUnit, kw = "preview")
 			outputChannels = []
 			for key in self.dataUnit.outputChannels.keys():
 				if self.dataUnit.outputChannels[key] and self.dataUnit.outputChannels[key] == 1:
 					outputChannels.append(key)
-			ri = vtk.vtkImageData()
-			ri.DeepCopy(self.rawImage)
-			ci = vtk.vtkImageData()
-			ci.DeepCopy(self.currentImage)
-			sl = self.slice.Copy()
-			fi = vtk.vtkImageData()
-			fi.DeepCopy(self.finalImage)
-			self.cacheDataUnits[tuple(outputChannels)] = (self.dataUnit, ri, ci, sl, fi)
-			# print outputChannels, self.cacheDataUnits[tuple(outputChannels)], "NEW CACHE", "\n"*10
+
+			updateExtent = self.imagedata.GetUpdateExtent()
+			wholeExtent = self.imagedata.GetWholeExtent()
+			self.imagedata.SetUpdateExtent(wholeExtent)
+			self.imagedata.Update()
+			copy = vtk.vtkImageData()
+			copy.DeepCopy(self.imagedata)
+			copy.Update()
+			self.imagedata.SetUpdateExtent(updateExtent)
+			self.imagedata.Update()
+			
+			# print copy
+			self.cacheDataUnits[tuple(outputChannels)] = (self.dataUnit, copy)
 
 		self.finalImage = colorImage
 		self.Refresh()
@@ -734,7 +733,6 @@ class PreviewFrame(InteractivePanel):
 		Logging.info("Zoom factor for painting =", self.zoomFactor, kw = "preview")
 		if self.zoomFactor != 1 or self.zoomFactor != self.oldZoomFactor:
 			self.oldZoomFactor = self.zoomFactor
-			
 			if self.interpolation != 0:
 				bmp = self.zoomImageWithInterpolation(self.imagedata, self.zoomFactor, self.interpolation, self.z)
 			if not self.interpolation or not bmp:

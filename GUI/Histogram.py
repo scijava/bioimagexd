@@ -2,7 +2,6 @@
 """
  Unit: Histogram
  Project: BioImageXD
- Created: 30.10.2004, KP
  Description:
 
  A widget used to view a histogram

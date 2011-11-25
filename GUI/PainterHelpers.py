@@ -67,8 +67,7 @@ class PainterHelper:
 		
 class VisualizeTracksHelper(PainterHelper):
 	"""
-	Created: 21.11.2006, KP
-	Description: A helper for painting the tracks
+	A helper for painting the tracks
 	"""
 	def __init__(self, parent):
 		"""
@@ -184,8 +183,7 @@ class CenterOfMassHelper(PainterHelper):
 	
 class AnnotationHelper(PainterHelper):
 	"""
-	Created: 06.10.2006, KP
-	Description: A class that capsulates the behaviour of drawing the annotations
+	A class that capsulates the behaviour of drawing the annotations
 	"""
 	def __init__(self, parent):
 		PainterHelper.__init__(self, parent)
