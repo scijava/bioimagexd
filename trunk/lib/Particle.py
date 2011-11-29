@@ -3,7 +3,6 @@
 """
  Unit: Particle
  Project: BioImageXD
- Created: 13.04.2006, KP
  Description:
 
  A module containing classes for manipulating the tracked particles
@@ -171,7 +170,6 @@ class ParticleTracker:
 		self.minimumTrackLength = minlen
 		
 	def setWeights(self, velocityWeight, sizeWeight, intensityWeight, directionWeight):	
-
 		"""
 		Set the weighting factors for velocity change, 
 					size change, intensity change and direction change
@@ -181,7 +179,7 @@ class ParticleTracker:
 		self.intensityWeight = intensityWeight
 		self.directionWeight = directionWeight
 		
-	def getReader(self):	
+	def getReader(self):
 		"""
 		Return the particle reader
 		"""
@@ -358,8 +356,7 @@ class ParticleTracker:
 					and none otherwise	  
 		"""
 		distance = testParticle.distance(oldParticle)
-		# If a particle is within search radius +- tolerance and doesn't belong in a
-		# track yet
+		# If a particle is within search radius +- tolerance
 		if distance > self.maxSpeed*(1+self.speedDeviation):
 #			print "Distance",distance,"is too large",self.maxSpeed, self.speedDeviation
 			return None, None, None
@@ -370,20 +367,27 @@ class ParticleTracker:
 		#print "Found a particle with matching distance",distance		
 		if distance <= self.maxSpeed and distance >= self.minSpeed:
 			distFactor = 1
-		elif distance < self.minSpeed:
-			distFactor = distance / self.minSpeed
-		elif distance > self.maxSpeed:
-			distFactor = self.maxSpeed / distance
-		#print "new size=",testParticle.size, "old size=",oldParticle.size
+		elif distance < self.minSpeed and self.speedDeviation > 0:
+			distFactor = (self.minSpeed - distance) / self.minSpeed
+			distFactor /= self.speedDeviation
+			distFactor = abs(distFactor - 1)
+		elif distance > self.maxSpeed and self.speedDeviation > 0:
+			distFactor = (distance - self.maxSpeed) / self.maxSpeed
+			distFactor /= self.speedDeviation
+			distFactor = abs(distFactor - 1)
+		else:
+			distFactor = 0
+
 		sizeChange = float(abs(testParticle.volume - oldParticle.volume))
-		#print "sizeChange=",sizeChange, "old size=",oldParticle.size
 		sizeFactor = sizeChange / oldParticle.volume
 		
 		if sizeFactor > self.sizeChange:
-			#print "Size change=",self.sizeChange,"size factor=",sizeFactor
 			return None,None,None
-		sizeFactor /= self.sizeChange
-		sizeFactor = abs(sizeFactor - 1)
+		if self.sizeChange > 0:
+			sizeFactor /= self.sizeChange
+			sizeFactor = abs(sizeFactor - 1)
+		else:
+			sizeFactor = 0
 		
 		intChange =  float(abs(testParticle.averageIntensity - oldParticle.averageIntensity))
 		if oldParticle.averageIntensity == 0:
@@ -392,8 +396,12 @@ class ParticleTracker:
 		intFactor = intChange / oldParticle.averageIntensity
 		if intFactor > self.intensityChange:
 			return None, None, None
-		intFactor /= self.intensityChange
-		intFactor = abs(intFactor - 1)
+		if self.intensityChange > 0:
+			intFactor /= self.intensityChange
+			intFactor = abs(intFactor - 1)
+		else:
+			intFactor = 0
+		
 		return (distFactor, sizeFactor, intFactor)
 
 	def toScore(self, distFactor, sizeFactor, intFactor, angleFactor = 0):
@@ -641,6 +649,7 @@ class ParticleTracker:
 	def trackTimepointParticles(self, timePoint, tracks):
 		"""
 		"""
+		# Add particles to tracks
 		if not self.seedParticles and timePoint == 0:
 			for i,particle in enumerate(self.particleList[timePoint]):
 				track = []
@@ -666,7 +675,7 @@ class ParticleTracker:
 					oldParticle = track[timePoint-1]
 				except:
 					continue
-				
+
 				# Calculate how many times same particle is in different tracks (track only once)
 				if not oldParticles.get(tuple(oldParticle.posInPixels), False):
 					oldParticles[tuple(oldParticle.posInPixels)] = 0
@@ -684,7 +693,7 @@ class ParticleTracker:
 				# If we got a match between the previous particle (oldParticle)
 				# and the currently tested particle (testParticle) and testParticle
 				# is not in a track
-				if (not failed):#and (not testParticle.inTrack):
+				if (not failed):
 					currScore = self.toScore(distFactor, sizeFactor, intFactor, angleFactor)
 					trackLen = 0
 					for trackPart in track:
@@ -698,7 +707,7 @@ class ParticleTracker:
 			else:
 				return cmp(b["Score"], a["Score"])
 		scores.sort(compareScore)
-		
+	
 		trackUsage = {}
 		particleUsage = {}
 		tracksScores = {}
@@ -755,7 +764,7 @@ class ParticleTracker:
 				if timePoint > 0 and not oldParticles.get(tuple(tracks[i][timePoint-1].posInPixels), True):
 					trackUsage[i] = 0
 					continue
-					
+
 				if timePoint > 0:
 					oldParticles[tuple(tracks[i][timePoint-1].posInPixels)] = 0
 				trackUsage[i] = particleNum

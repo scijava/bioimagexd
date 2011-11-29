@@ -437,7 +437,7 @@ class FilterBasedModule(lib.Module.Module):
 		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
 
 		data = self.images
-		if not filterlist:
+		if filterlist.getCount() == 0:
 			Logging.info("No filters, returning original dat", kw="pipeline")
 			return self.images[0]
 		try:
@@ -517,7 +517,7 @@ class FilterBasedModule(lib.Module.Module):
 		if self.cacheDataUnitsEnabled:
 			print data.GetUpdateExtent()
 			x0, x1, y0, y1, z0, z1 = data.GetUpdateExtent()
-			if (z0 - z1) < 0:
+			if z1 >= 0:
 				copy = vtk.vtkImageData()
 				copy.DeepCopy(data)
 				copy.Update()
