@@ -3,7 +3,6 @@
 """
  Unit: Track
  Project: BioImageXD
- Created: 12.07.2006, KP
  Description:
 
  A module containing the classes for manipulating tracks
@@ -39,8 +38,7 @@ import vtk
 
 class Track:
 	"""
-	Created: 23.11.2006, KP
-	Description: A class representing a track
+	A class representing a track
 	"""
 	def __init__(self):
 		self.points = {}
@@ -352,8 +350,7 @@ class Track:
 
 class TrackReader:
 	"""
-	Created: 12.07.2006, KP
-	Description: A class for reading tracks from a file
+	A class for reading tracks from a file
 	"""
 	def __init__(self, filename = ""):
 		"""
@@ -432,7 +429,6 @@ class TrackReader:
 		"""
 		def isLongerThanOrEqual(trackObject, minimumLength):
 			"""
-			Created 12.07.2006, KP
 			Returns whether trackObjects length is greater than minimumLength
 			"""
 			return len(trackObject) >= minimumLength
