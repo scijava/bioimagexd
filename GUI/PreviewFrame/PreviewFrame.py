@@ -69,9 +69,6 @@ class PreviewFrame(InteractivePanel):
 		self.rawImages = []
 		self.rawImage = None
 		
-		self.cacheDataUnitsEnabled = False
-		self.cacheDataUnits = {}
-		
 		self.oldx, self.oldy = 0, 0
 		Logging.info("kws=", kws, kw = "preview")
 		self.fixedSize = kws.get("previewsize", None)
@@ -145,8 +142,6 @@ class PreviewFrame(InteractivePanel):
 		self.drawableRect = self.GetClientRect()
 		lib.messenger.connect(None, "zslice_changed", self.setPreviewedSlice)
 		lib.messenger.connect(None, "renew_preview", self.setRenewFlag)
-		lib.messenger.connect(None, "clear_cache_dataunits", self.clearCacheDataUnits)
-		lib.messenger.connect(None, "enable_dataunits_cache", self.enableDataUnitsCache)
 		
 	def deregister(self):
 		"""
@@ -389,22 +384,6 @@ class PreviewFrame(InteractivePanel):
 		else:
 			Logging.info("PreviewFrame not enabled, won't update on DataUnit setting", kw="preview")
 
-	def enableDataUnitsCache(self, obj, event, value):
-		if value == True:
-			Logging.info("Enabling dataunits cache", kw="preview")
-		elif value == False:
-			Logging.info("Disabling dataunits cache", kw="preview")
-		else:
-			return
-		self.cacheDataUnitsEnabled = value
-
-	def clearCacheDataUnits(self, *args):
-		"""
-		Resets the cacheDataUnits variable.
-		"""
-		Logging.info("Clearing cached dataunits", kw="preview")
-		self.cacheDataUnits = {}
-
 	def updatePreview(self, renew = 1):
 		"""
 		Update the preview
@@ -428,24 +407,6 @@ class PreviewFrame(InteractivePanel):
 			renew = 1
 			self.running = 1
 		
-		copy = None
-		# @cache Check cache if the data has already been processed.
-		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels") and self.cacheDataUnits != {}:
-			outputChannels = []
-			for key in self.dataUnit.outputChannels.keys():
-				if self.dataUnit.outputChannels[key] or self.dataUnit.outputChannels[key] == 1:
-					outputChannels.append(key)
-			if tuple(outputChannels) in self.cacheDataUnits.keys():
-				self.dataUnit, copy = self.cacheDataUnits[tuple(outputChannels)]
-				self.setImage(copy)
-				self.slice = lib.ImageOperations.vtkImageDataToWxImage(self.imagedata, self.z)
-				self.paintPreview()
-				self.updateScrolling()
-				self.finalImage = self.imagedata
-				self.Refresh()
-				Logging.info("Returning cached dataunit", kw="preview")
-				return
-
 		if self.dataUnit.isProcessed():
 			try:
 				z = self.z
@@ -511,27 +472,6 @@ class PreviewFrame(InteractivePanel):
 
 		self.paintPreview()
 		self.updateScrolling()
-
-		# @cache
-		if self.cacheDataUnitsEnabled and hasattr(self.dataUnit, "outputChannels"):
-			Logging.info("Caching dataunit %s" % self.dataUnit, kw = "preview")
-			outputChannels = []
-			for key in self.dataUnit.outputChannels.keys():
-				if self.dataUnit.outputChannels[key] and self.dataUnit.outputChannels[key] == 1:
-					outputChannels.append(key)
-
-			updateExtent = self.imagedata.GetUpdateExtent()
-			wholeExtent = self.imagedata.GetWholeExtent()
-			self.imagedata.SetUpdateExtent(wholeExtent)
-			self.imagedata.Update()
-			copy = vtk.vtkImageData()
-			copy.DeepCopy(self.imagedata)
-			copy.Update()
-			self.imagedata.SetUpdateExtent(updateExtent)
-			self.imagedata.Update()
-			
-			# print copy
-			self.cacheDataUnits[tuple(outputChannels)] = (self.dataUnit, copy)
 
 		self.finalImage = colorImage
 		self.Refresh()

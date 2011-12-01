@@ -467,7 +467,6 @@ def vtkImageDataToWxImage(data, sliceNumber = -1, startpos = None, endpos = None
 	exporter.Export()
 	width, height = data.GetDimensions()[0:2]
 	image = wx.EmptyImage(width, height)
-	# print len(structString), "\n"*10
 	image.SetData(structString)
 	return image
 	
