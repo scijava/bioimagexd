@@ -31,6 +31,15 @@ echo "Remove bin/build_innosetup.sh from commit"
 rm bin/build_innosetup.sh
 echo "Remove vtkBXD/Processing/CMakeLists.txt from commit"
 rm vtkBXD/Processing/CMakeLists.txt
+echo "Remove lib/Track.py from commit"
+rm lib/Track.py
+echo "Remove lib/Particle.py from commit"
+rm lib/Particle.py
+echo "Remove lib/ParticleWriter.py from commit"
+rm lib/ParticleWriter.py
+echo "Remove Modules/Filters/CreateTracksFilter/CreateTracksFilter.py from commit"
+rm Modules/Filters/CreateTracksFilter/CreateTracksFilter.py
+
 echo
 echo "Possibly modified files:"
 svn stat|grep "^?"|grep -v ".pyc$"

@@ -787,6 +787,7 @@ class MainWindow(wx.Frame):
 		"""
 		Process the dataset
 		"""
+		lib.messenger.send(None, "clear_cache_dataunits")
 		if self.currentTaskWindow:
 			do_cmd = "mainWindow.processDataset(modal = 0)"
 			cmd = lib.Command.Command(lib.Command.VISUALIZATION_CMD, None, None, do_cmd, "", \
