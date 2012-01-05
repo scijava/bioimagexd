@@ -82,7 +82,7 @@ class ColocalizationFilter(lib.ProcessingFilter.ProcessingFilter):
 							"M2":					"M2",
 							"K1":					"K1",
 							"K2":					"K2",
-							"DiffStainIntCh1":		"Diff.stain ch1/h2 (intensity)",
+							"DiffStainIntCh1":		"Diff.stain ch1/ch2 (intensity)",
 							"DiffStainIntCh2":		"Diff.stain ch2/ch1 (intensity)",
 							"DiffStainVoxelsCh1":	"Diff.stain of ch1/ch2 (# of voxels)",
 							"DiffStainVoxelsCh2":	"Diff.stain of ch2/ch1 (# of voxels)",

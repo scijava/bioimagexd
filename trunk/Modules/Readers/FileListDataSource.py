@@ -125,7 +125,7 @@ class FileListDataSource(DataSource):
 									and cannot be imported into the same dataset.")		 
 		self.getReadersFromFilenames()
 		self.numberOfImages = len(filenames)
-		if self.is3D and not self.isRGB:
+		if self.is3D:
 			if self.readers:
 				self.numberOfImages = 0
 				for rdr in self.readers:
@@ -202,15 +202,13 @@ class FileListDataSource(DataSource):
 		mpr = self.extMapping[ext]
 		prefix="vtk"
 		# If it's a tiff file, we use our own, extended TIFF reader
-		if self.extMapping[ext] == "TIFF" and not isRGB:
+		if self.extMapping[ext] == "TIFF":
 			mpr = "ExtTIFF"
 			prefix="vtkbxd"
 		self.rdrstr = "%s.vtk%sReader()" % (prefix, mpr)
 		rdr = eval(self.rdrstr)
 		if ext == "bmp":
 			rdr.Allow8BitBMPOn()
-		if mpr == "ExtTIFF" and not isRGB:
-			rdr.RawModeOn()
 		if ext == "tiff":
 			rdr.SetFileLowerLeft(self.flipVertically)
 		return rdr
@@ -229,7 +227,7 @@ class FileListDataSource(DataSource):
 					
 		files = self.filenames
 		print "Determining readers from ", self.filenames
-		
+
 		isRGB = 1
 		self.ext = files[0].split(".")[-1].lower()
 		dim = self.dimMapping[self.ext]
@@ -244,18 +242,18 @@ class FileListDataSource(DataSource):
 			if reader.GetNumberOfScalarComponents() >= 3:
 				print "MODE IS RGB, IS AN RGB IMAGE"
 			else:
-				print "MODE ISN'T RGB, THEREFOR NOT RGB"
+				print "MODE ISN'T RGB, THEREFORE NOT RGB"
 				isRGB = 0
 			rdr = self.getReaderByExtension(self.ext, isRGB)
 			rdr.SetFileName(files[0])
-			if not isRGB and rdr.GetNumberOfSubFiles() > 1:
+			if rdr.GetNumberOfSubFiles() > 1:
 				dim = 3
 				
 		self.isRGB = isRGB
 		self.is3D = (dim == 3)
 		
 		dirName = os.path.dirname(files[0])
-		print "THERE ARE ", self.slicesPerTimepoint, "SLICES PER TIMEPOINT"
+		print "THERE ARE", self.slicesPerTimepoint, "SLICES PER TIMEPOINT"
 		self.ext = files[0].split(".")[-1].lower()
 		
 		if dim == 3:
@@ -389,6 +387,11 @@ class FileListDataSource(DataSource):
 		if self.ext == "bmp":
 			rdr.Allow8BitBMPOn()
 		rdr.SetFileName(filename)
+		if rdr.IsA("vtkExtTIFFReader"):
+			rdr.UpdateInformation()
+			if rdr.GetNumberOfScalarComponents() == 1:
+				rdr.RawModeOn()
+
 		data = rdr.GetOutput()
 		data.Update()
 		self.numberOfComponents = data.GetNumberOfScalarComponents()
@@ -450,9 +453,8 @@ class FileListDataSource(DataSource):
 
 		if onlyDims:
 			return
-
-		return data		   
-	
+		
+		return data
 
 	def getDimensions(self):
 		"""

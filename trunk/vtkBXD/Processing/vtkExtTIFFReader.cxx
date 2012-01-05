@@ -342,7 +342,7 @@ void vtkExtTIFFReaderUpdate(vtkExtTIFFReader *self, vtkImageData *data, OT *outP
     //data->GetUpdateExtent(uExtent);
   data->GetIncrements(outIncr);
   //printf("out extent=%d,%d,%d,%d,%d,%d\n",outExtent[0],outExtent[1],outExtent[2],outExtent[3],outExtent[4],outExtent[5]);
-   //printf("update extent=%d,%d,%d,%d,%d,%d\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
+  //printf("update extent=%d,%d,%d,%d,%d,%d\n",uExtent[0],uExtent[1],uExtent[2],uExtent[3],uExtent[4],uExtent[5]);
   long pixSize = data->GetNumberOfScalarComponents()*sizeof(OT);  
 
   //printf("out increments=%d,%d,%d\n",outIncr[0],outIncr[1],outIncr[2]);  
@@ -435,10 +435,10 @@ int vtkExtTIFFReader::RequestUpdateExtent (
   return 1;    
 }
 
-unsigned int vtkExtTIFFReader::GetFormat( )
+unsigned int vtkExtTIFFReader::GetFormat()
 {
   unsigned int cc; 
-  if(this->RawMode) return vtkExtTIFFReader::GRAYSCALE;
+  if (this->RawMode) return vtkExtTIFFReader::GRAYSCALE;
   if ( this->ImageFormat != vtkExtTIFFReader::NOFORMAT )
     {
     return this->ImageFormat;
@@ -553,7 +553,7 @@ void vtkExtTIFFReader::InitializeColors()
   this->ColorGreen  = 0;
   this->ColorBlue   = 0;
   this->TotalColors = -1;  
-  if(RawMode) { this->ImageFormat = vtkExtTIFFReader::GRAYSCALE; }
+  if (RawMode) { this->ImageFormat = vtkExtTIFFReader::GRAYSCALE; }
   else this->ImageFormat = vtkExtTIFFReader::NOFORMAT;
 }
 
@@ -648,14 +648,16 @@ void vtkExtTIFFReader::ReadImageInternal(void* vtkNotUsed(in), void* outPtr,
             {
             if (TIFFReadScanline(InternalImage->Image, buf, row, 0) <= 0)
               {
-                vtkErrorMacro( << "Problem reading the row: " << row <<"of file"<<GetInternalFileName());
+                vtkErrorMacro(<< "Problem reading the row: " << row << " of file " << GetInternalFileName());
                 break;
               }
 
-              unsigned char* buf2 = (unsigned char*)buf;
-              for(cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel) {
-                    *image++ = *buf2++;
-              }
+			unsigned char* buf2 = (unsigned char*)buf;
+			//			for (cc = 0; cc < isize; cc += InternalImage->SamplesPerPixel)
+			for (cc = 0; cc < isize; cc += 1)
+			  {
+				*image++ = *buf2++;
+			  }
             }
 		  _TIFFfree(buf);
 		  return;
