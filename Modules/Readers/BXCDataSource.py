@@ -370,13 +370,16 @@ class BXCDataSource(DataSource):
 		"""
 		if not self.scalarRange:
 			self.getBitDepth()
-			if self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.dataSets) != 1:
+			data = self.getDataSet(0, raw = 1)
+			data.Update()
+
+			if (self.singleBitDepth == 32 or self.singleBitDepth == 64) and data.GetScalarType() != 10 and data.GetScalarType() != 11:
+				self.scalarRange = (0, int(self.settings.get("PaletteColors")))
+			elif self.singleBitDepth == 8 or self.singleBitDepth == 12 or len(self.dataSets) != 1:
 				minVal = 0
 				maxVal = 2**self.singleBitDepth - 1
 				self.scalarRange = (int(minVal),int(maxVal))
 			else:
-				data = self.getDataSet(0, raw = 1)
-				data.Update()
 				self.scalarRange = data.GetScalarRange()
 		
 		return self.scalarRange

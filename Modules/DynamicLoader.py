@@ -3,7 +3,6 @@
 """
  Unit: DynamicLoader
  Project: BioImageXD
- Created: 02.07.2005, KP
  Description:
 
  A module for managing the dynamic loading of various modules for
@@ -51,7 +50,7 @@ class PluginLoader:
 		self.mcache = {}
 		# One problem with ignore is that it does not care about the directory of the module.
 		# We can't load ModuleDir1/ModuleName.py and ignore ModuleDir2/ModuleName.py at the same time.
-		self.ignore = ["Modules/Rendering/ScaleBar.py", "Modules/Rendering/Spline.py", "Modules/Rendering/ArbitrarySlicer.py", "Modules/Task/__init__.py", "Modules/Filters/GradientMagnitudeITK.py", "Modules/Filters/ImplicitModelling.py", "Modules/Filters/Watershed.py", "Modules/Filters/Solitary.py", "Modules/Rendering/PolydataVisualization.py", "Modules/Filters/CombineDiffIntensityRangeImages"]
+		self.ignore = ["Modules/Rendering/ScaleBar.py", "Modules/Rendering/Spline.py", "Modules/Rendering/ArbitrarySlicer.py", "Modules/Task/__init__.py", "Modules/Filters/GradientMagnitudeITK.py", "Modules/Filters/ImplicitModelling.py", "Modules/Filters/Watershed.py", "Modules/Filters/Solitary.py", "Modules/Rendering/PolydataVisualization.py", "Modules/Filters/CombineDiffIntensityRangeImages.py"]
 		
 		self.moduleTypes = {"Filters":"*", "Task":"*"}
 		
