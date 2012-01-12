@@ -358,6 +358,9 @@ def lutToString(ctf, luttype = "ImageJ"):
 	Write a lut to a string
 	"""
 	stringOfLUT = ""
+	if ctf is None:
+		return stringOfLUT
+
 	minval, maxval = ctf.GetRange()
 	if luttype == "ImageJ":
 		perColor = maxval / 255

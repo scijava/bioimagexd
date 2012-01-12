@@ -38,7 +38,6 @@ from lib.FilterTypes import *
 
 class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
-	Created: 13.04.2006, KP
 	Description: A base class for image mathematics filters
 	"""     
 	name = "Math filter"
@@ -76,11 +75,18 @@ class MathFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		lib.ProcessingFilter.ProcessingFilter.execute(self, inputs)
 		image = self.getInput(1)
+		image2 = self.getInput(2)
 		self.vtkfilter.SetClampOverflow(self.parameters["ClampOverflow"])
 	
 		if self.numberOfInputs[0] > 1:
+			if image.GetScalarType != image2.GetScalarType():
+				cast = vtk.vtkImageCast()
+				cast.SetOutputScalarType(image.GetScalarType())
+				cast.SetInput(image2)
+				cast.Update()
+				image2 = cast.GetOutput()
 			self.vtkfilter.SetInput1(image)
-			self.vtkfilter.SetInput2(self.getInput(2))
+			self.vtkfilter.SetInput2(image2)
 		else:
 			self.vtkfilter.SetInput1(image)
 			self.vtkfilter.SetInput2(image)
@@ -248,7 +254,6 @@ class SubtractFilter(MathFilter):
 
 class AddFilter(MathFilter):
 	"""
-	Created: 15.04.2006, KP
 	Description: A filter for adding two channels
 	"""     
 	name = "Add"
@@ -266,7 +271,6 @@ class AddFilter(MathFilter):
 class DivideFilter(MathFilter):
 	"""
 	Class: DivideFilter
-	Created: 15.04.2006, KP
 	Description: A filter for dividing two channels
 	"""     
 	name = "Divide"
@@ -284,7 +288,6 @@ class DivideFilter(MathFilter):
 class MultiplyFilter(MathFilter):
 	"""
 	Class: MultiplyFilter
-	Created: 15.04.2006, KP
 	Description: A filter for multiplying two channels
 	"""     
 	name = "Multiply"
@@ -302,7 +305,6 @@ class MultiplyFilter(MathFilter):
 class SinFilter(MathFilter):
 	"""
 	Class: SinFilter
-	Created: 15.04.2006, KP
 	Description: A filter for calculating sine of input
 	"""     
 	name = "Sin"
@@ -320,7 +322,6 @@ class SinFilter(MathFilter):
 class CosFilter(MathFilter):
 	"""
 	Class: CosFilter
-	Created: 15.04.2006, KP
 	Description: A filter for calculating cosine of input
 	"""     
 	name = "Cos"
