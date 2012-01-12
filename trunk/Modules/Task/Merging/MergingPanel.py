@@ -245,13 +245,16 @@ class MergingPanel(TaskPanel.TaskPanel):
 		
 		sources =  dataUnit.getSourceDataUnits()
 		totmax = 0
-		
+
 		for i in sources:
 			minval, maxval = i.getScalarRange()
 			ctf = i.getColorTransferFunction()
 			ctfmin, ctfmax = ctf.GetRange()
-			bitmax = (2**i.getSingleComponentBitDepth()-1)
-			maxval = max(ctfmax, maxval,bitmax)
+			bitmax = 0
+			sBitDepth = i.getSingleComponentBitDepth()
+			if sBitDepth == 8 or sBitDepth == 12:
+				bitmax = (2**i.getSingleComponentBitDepth()-1)
+			maxval = max(ctfmax, maxval, bitmax)
 			if maxval > totmax:
 				totmax = maxval
 
