@@ -703,6 +703,7 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	"""
 	width = abs(width)
 	height = abs(height)
+	if width < 2: width = 2
 	size = width * height * 3
 	formatString = "%ds" % size	
 	red, green, blue = color
@@ -720,6 +721,7 @@ def getOverlayBorders(width, height, color, alpha, lineWidth = 1):
 	lengthOfStructStr = len(structString)
 	structString = structString[: lengthOfStructStr  - (2 * width)] + chr(alpha) * 2 * width
 	twochar = chr(alpha) + chr(alpha)
+	
 	for i in range(0, width * height, width):
 		if i:
 			structString = structString[: i - 2] + 2 * twochar + structString[i + 2: ]
