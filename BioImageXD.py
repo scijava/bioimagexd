@@ -51,8 +51,8 @@ if platform.system() == "Linux" or platform.system()=="Darwin":
 		sys.path.insert(0,curdir + '/VTK/lib/python2.6/site-packages')
 		sys.path.insert(0,curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
 	if platform.system()=="Darwin":
-		sys.path.append(curdir + '/Libraries/python2.7/site-packages/')
-		sys.path.append(curdir + '/Libraries/InsightToolkit/WrapITK/Python/')
+		sys.path.insert(0,curdir + '/Libraries/python2.7/site-packages/')
+		sys.path.insert(0,curdir + '/Libraries/InsightToolkit/WrapITK/Python/')
 
 
 # We need to import VTK here so that it is imported before wxpython.
