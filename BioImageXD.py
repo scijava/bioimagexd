@@ -47,9 +47,9 @@ if platform.system() == "Linux" or platform.system()=="Darwin":
 		curdir = os.path.abspath(os.path.curdir)
 
 	if platform.system() == "Linux" and os.path.exists(curdir + "/VTK") and os.path.exists(curdir + "/ITK"):
-		sys.path.append(curdir + '/VTK/lib/python2.6/site-packages/VTK-5.6.0-py2.6.egg')
-		sys.path.append(curdir + '/VTK/lib/python2.6/site-packages')
-		sys.path.append(curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
+		sys.path.insert(0,curdir + '/VTK/lib/python2.6/site-packages/VTK-5.6.0-py2.6.egg')
+		sys.path.insert(0,curdir + '/VTK/lib/python2.6/site-packages')
+		sys.path.insert(0,curdir + '/ITK/lib/InsightToolkit/WrapITK/Python')
 	if platform.system()=="Darwin":
 		sys.path.append(curdir + '/Libraries/python2.7/site-packages/')
 		sys.path.append(curdir + '/Libraries/InsightToolkit/WrapITK/Python/')
