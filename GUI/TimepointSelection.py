@@ -46,16 +46,17 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 				 so that this can be also embedded in any other dialog.
 	"""
 	def __init__(self, parent, parentStr = "scripting.processingManager"):
-		scrolled.ScrolledPanel.__init__(self, parent, size = (640, 300))
+		scrolled.ScrolledPanel.__init__(self, parent, size = (760, 300))
 		self.mainsizer = wx.GridBagSizer(10, 10)
 		self.configFrame = None
 		
 		self.parentPath = parentStr
 		self.dataUnit = None
 		self.numberOfTimepoints = 1
+		self.lastNumber = -1
 
 		self.timepointButtonSizer = wx.GridBagSizer()
-		self.buttonFrame = wx.Panel(self, -1, size = (640, 300))
+		self.buttonFrame = wx.Panel(self, -1, size = (760, 300))
 		self.buttonFrame.SetSizer(self.timepointButtonSizer)
 		self.buttonFrame.SetAutoLayout(True)
 		
@@ -149,7 +150,7 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			if ncol == 30:
 				nrow += 1
 				ncol = 0
-			btn = buttons.GenButton(self.buttonFrame, -1, "%d" % i, size = (24, 24))
+			btn = buttons.GenButton(self.buttonFrame, -1, "%d"%(i+1), size = (24, 24))
 			btn.SetFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
 			btn.Bind(wx.EVT_BUTTON, lambda e, btn = btn, i = i: self.buttonClickedCallback(btn, i))
 			btn.origColor = btn.GetBackgroundColour()
@@ -167,18 +168,29 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 		A method called when user clicks a button representing 
 					 a time point
 		"""
-		flag = False
-		if number in self.selectedFrames:
-			flag = not self.selectedFrames[number]
-		do_cmd = self.parentPath + ".timepointSelection.setTimepoint(%d, %s)" % (number, str(flag))
-		undo_cmd = self.parentPath + ".timepointSelection.setTimepoint(%d, %s)" % (number, str(not flag))
+		shift = wx.GetKeyState(wx.WXK_SHIFT)
+		numbers = []
+		minNum, maxNum = number, number
+		if shift and self.lastNumber >= 0:
+			minNum = min(number, self.lastNumber)
+			maxNum = max(number, self.lastNumber)
+		for num in range(minNum, maxNum+1):
+			flag = not self.selectedFrames.get(num,False)
+			if num == self.lastNumber: flag = not flag
+			numbers.append((num,flag))
+
+		for num,flag in numbers:
+			do_cmd = self.parentPath + ".timepointSelection.setTimepoint(%d, %s)" % (num, str(flag))
+			undo_cmd = self.parentPath + ".timepointSelection.setTimepoint(%d, %s)" % (num, str(not flag))
 		
-		if flag:
-			descstr = "Select timepoint %d for processing" % number
-		else:
-			descstr = "Unselect timepoint %d for processing" % number
-		cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = descstr)
-		cmd.run()
+			if flag:
+				descstr = "Select timepoint %d for processing" % num
+			else:
+				descstr = "Unselect timepoint %d for processing" % num
+			cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, undo_cmd, desc = descstr)
+			cmd.run()
+
+		self.lastNumber = number
 
 	def setTimepoint(self, number, flag):
 		"""
@@ -188,12 +200,12 @@ class TimepointSelectionPanel(scrolled.ScrolledPanel):
 			self.selectedFrames[number] = 0
 		button = self.buttonList[number]
 		
-		if self.selectedFrames[number]:
-			self.selectedFrames[number] = 0
-			self.setButtonState(button, 0)
-		else:
+		if flag:
 			self.selectedFrames[number] = 1
 			self.setButtonState(button, 1)
+		else:
+			self.selectedFrames[number] = 0
+			self.setButtonState(button, 0)
 
 	def setButtonState(self, button, flag):
 		"""
