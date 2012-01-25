@@ -247,7 +247,7 @@ class TrackTableGrid(gridlib.Grid):
 		
 		self.Bind(gridlib.EVT_GRID_CELL_RIGHT_CLICK, self.OnRightDown)  
 		self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnLeftDown) 
-		lib.messenger.connect(None, "get_voxel_at", self.onUpdateCell)
+		lib.messenger.connect(None, "one_click_center", self.onUpdateCell)
 		lib.messenger.connect(None, "timepoint_changed", self.onSetTimepoint)
 		
 	def getTable(self):
@@ -261,7 +261,7 @@ class TrackTableGrid(gridlib.Grid):
 		self.table.setEnabledColumn(timepoint)
 		self.ForceRefresh()
 		
-	def onUpdateCell(self, obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, ctf):
+	def onUpdateCell(self, obj, event, x, y, z):
 		"""
 		Store a coordinate in the cell
 		"""
@@ -274,7 +274,6 @@ class TrackTableGrid(gridlib.Grid):
 			possibleObjects = []
 			added = []
 			for zval in range(0, zdim):
-				
 				val = int(image.GetScalarComponentAsDouble(x, y, zval, 0))
 				if val not in [0, 1] and val not in added:
 					possibleObjects.append((val, zval))

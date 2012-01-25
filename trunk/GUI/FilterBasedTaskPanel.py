@@ -45,7 +45,6 @@ class FilterBasedTaskPanel(TaskPanel.TaskPanel):
 		"""
 		self.filterEditor = None
 		TaskPanel.TaskPanel.__init__(self, parent, tb, wantNotebook = wantNotebook)
-
 		self.filterList = lib.FilterBasedModule.FilterList(self.filtersModule)
 		self.currentSelected = -1
 

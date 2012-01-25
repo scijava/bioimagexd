@@ -647,7 +647,7 @@ class MainWindow(wx.Frame):
 		"""
 		z += 1
 		if scalar != 0xdeadbeef:
-			print obj,event,x,y,z,scalar, rval, gval, bval, r,g,b,a
+			#print obj,event,x,y,z,scalar, rval, gval, bval, r,g,b,a
 			if type(scalar) == types.TupleType:
 				if len(scalar) > 1:
 					lst = map(str, map(int, scalar))
@@ -673,7 +673,7 @@ class MainWindow(wx.Frame):
 		bg = 0, 0, 0 # Black
 		fg = 255, 255, 255 # White
 		self.colorLbl.setColor(fg, bg)
-		wx.GetApp().Yield(1)
+		#wx.GetApp().Yield(1)
 		#wx.SafeYield()
 		
 	def sortModes(self, x, y):

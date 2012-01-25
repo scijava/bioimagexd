@@ -70,6 +70,7 @@ class PreviewFrame(InteractivePanel):
 		self.rawImage = None
 		
 		self.oldx, self.oldy = 0, 0
+		self.curPos = (-1,-1)
 		Logging.info("kws=", kws, kw = "preview")
 		self.fixedSize = kws.get("previewsize", None)
 		size = kws.get("previewsize", (1024, 1024))
@@ -132,7 +133,8 @@ class PreviewFrame(InteractivePanel):
 		self.addListener(wx.EVT_RIGHT_DOWN, self.onRightClick)
 		
 		self.Bind(wx.EVT_SIZE, self.onSize)
-		self.Bind(wx.EVT_LEFT_DOWN, self.getVoxelValue)
+		self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
+		self.Bind(wx.EVT_MOTION, self.onMouseMotion)
 		self.SetHelpText("This window displays the selected dataset slice by slice.")
 		
 		if not self.show["SCROLL"]:
@@ -255,21 +257,43 @@ class PreviewFrame(InteractivePanel):
 		if shape:
 			event.Skip()
 
-	def getVoxelValue(self, event):
+	def onLeftDown(self, event):
+		"""
+		Handle left mouse button down event
+		"""
+		InteractivePanel.onLeftDown(self, event)
+		event.Skip()
+		pos = event.GetPosition()
+		voxelInfo = self.getVoxelValue(pos)
+		if voxelInfo is not None:
+			rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha = voxelInfo
+		else:
+			rx, ry, rz = -1, -1, -1
+		lib.messenger.send(None, "one_click_center", rx, ry, rz)
+		
+	def onMouseMotion(self, event):
+		"""
+		Handle mouse motion event
+		"""
+		pos = event.GetPosition()
+		if self.curPos != pos:
+			self.curPos = pos
+			InteractivePanel.onMouseMotion(self, event)
+			self.getVoxelValue(pos)
+		event.Skip()
+
+	def getVoxelValue(self, (x,y)):
 		"""
 		Send an event containing the current voxel position
 		"""
-		self.onLeftDown(event)
-		event.Skip()
-
 		if not self.rawImage and not self.rawImages:
 			return
+		
 		if self.rawImage and not self.rawImages:
 			self.rawImages = [self.rawImage]
 		elif self.rawImages and not self.rawImage:
 			self.rawImage = self.rawImages[0]
 
-		x, y = event.GetPosition()
 		x -= self.xoffset
 		y -= self.yoffset
 
@@ -279,10 +303,9 @@ class PreviewFrame(InteractivePanel):
 		x -= x0
 		y -= y0
 		z = self.z
-		if z==-1: z=0
-	
-		dims = [x, y, z]
-		rx, ry, rz = dims
+		if z == -1: z = 0
+
+		rx, ry, rz = x, y, z
 
 		# ensure x, y are not below zero
 		x = max(x, 0)
@@ -291,10 +314,10 @@ class PreviewFrame(InteractivePanel):
 			x = self.dataDimX - 1
 		if y >= self.dataDimY:
 			y = self.dataDimY - 1
-		Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
-                lib.messenger.send(None, "one_click_center", (rx, ry, rz))
+
+		#Logging.info("Returning x,y,z=(%d,%d,%d)" % (rx, ry, rz), kw = "preview")
 		ncomps = self.rawImage.GetNumberOfScalarComponents()
-		Logging.info("Number of scalar components in image = %d"%ncomps, kw="preview")
+		#Logging.info("Number of scalar components in image = %d"%ncomps, kw="preview")
 
 		if ncomps == 1:
 			rv, gv, bv = -1, -1, -1
@@ -321,7 +344,9 @@ class PreviewFrame(InteractivePanel):
 		if ncomps > 3:
 			alpha = self.currentImage.GetScalarComponentAsDouble(x, y, z, 3)
 
-		lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.currentCt)
+		if rx >= 0 and ry >= 0 and rx < self.dataDimX and ry < self.dataDimY:
+			lib.messenger.send(None, "get_voxel_at", rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha, self.currentCt)
+		return (rx, ry, rz, scalar, rv, gv, bv, r, g, b, alpha)
 			
 	def setPreviewedSlice(self, obj, event, newz = -1):
 		"""

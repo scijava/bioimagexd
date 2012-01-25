@@ -40,7 +40,6 @@ import Logging
 import lib.messenger
 import scripting
 import traceback
-
 import GUI.GUIBuilder
 
 class ProcessingFilter:
@@ -206,7 +205,7 @@ class ProcessingFilter:
 		"""
 		Callback for when the filter is removed
 		"""
-		pass
+		self.gui.onRemove(self)
 
 	def onEnable(self):
 		"""

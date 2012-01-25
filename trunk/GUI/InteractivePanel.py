@@ -742,6 +742,7 @@ class InteractivePanel(ogl.ShapeCanvas):
 				self.Refresh()
 				
 		pos = event.GetPosition()
+
 		if self.currentSketch:
 			self.actionend = pos
 			x0, y0, w, h = self.GetClientRect()
