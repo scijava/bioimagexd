@@ -39,6 +39,8 @@ echo "Remove lib/ParticleWriter.py from commit"
 rm lib/ParticleWriter.py
 echo "Remove Modules/Filters/CreateTracksFilter/CreateTracksFilter.py from commit"
 rm Modules/Filters/CreateTracksFilter/CreateTracksFilter.py
+echo "Remove itkBXD/Wrapping/CMakeLists.txt from commit"
+rm itkBXD/Wrapping/CMakeLists.txt
 
 echo
 echo "Possibly modified files:"

@@ -6,7 +6,7 @@
  Description:
 
  A module containing the classes for building a GUI for all the manipulation filters
-							
+ 
  Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
@@ -464,11 +464,9 @@ class GUIBuilder(wx.Panel):
 		self.items[itemName] = background
 
 		#obj, event, x, y, z, scalar, rval, gval, bval, r, g, b, a, colorTransferFunction)
-		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
-							r, g, b, alpha, currentCt, its = items, \
-							f = currentFilter:self.onAddPixel(obj, event, rx, ry, rz, r, g, b, \
-																alpha, currentCt, its, f, seedbox)
-		lib.messenger.connect(None, "get_voxel_at", getVoxelSeedFunc)
+		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, its = items, \
+							f = currentFilter:self.onAddPixel(obj, event, rx, ry, rz, its, f, seedbox)
+		lib.messenger.connect(None, "one_click_center", getVoxelSeedFunc)
 		self.itemSizer.Add(background, (0, 0))							   
 		onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
 				s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
@@ -501,11 +499,9 @@ class GUIBuilder(wx.Panel):
 		background.Layout()
 		self.itemSizer.Add(background, (0, 0))
 		self.items[itemName] = background
-		getVoxelFunc = lambda obj, event, rx, ry, rz, scalar, rval, gval, bval, \
-						r, g, b, alpha, currentCt, its = item, \
-						f = currentFilter:self.onSetPixel(obj, event, rx, ry, rz, r, g, b, \
-															alpha, currentCt, its, f, label)
-		lib.messenger.connect(None, "get_voxel_at", getVoxelFunc)
+		getVoxelFunc = lambda obj, event, rx, ry, rz, its = item, \
+						f = currentFilter:self.onSetPixel(obj, event, rx, ry, rz, its, f, label)
+		lib.messenger.connect(None, "one_click_center", getVoxelFunc)
 
 		onSetPixelFunc = lambda obj, event, arg, label = label, i = itemName, \
 					s = self: s.onSetPixelFromFilter(label, i, arg)
@@ -1055,8 +1051,7 @@ class GUIBuilder(wx.Panel):
 		seeds.remove(seedPoint)
 		currFilter.setParameter(item, seeds)
 
-	def onAddPixel(self, obj, event, rx, ry, rz, r, g, b, alpha, \
-					colorTransferFunction, item, currFilter, listbox):
+	def onAddPixel(self, obj, event, rx, ry, rz, item, currFilter, listbox):
 		"""
 		Add a value to the pixel listbox
 		"""
@@ -1068,11 +1063,10 @@ class GUIBuilder(wx.Panel):
 			listbox.selectPixel = 0
 
 			
-	def onSetPixel(self, obj, event, rx, ry, rz, r, g, b, alpha, \
-					colorTransferFunction, item, currFilter, valueLabel):
+	def onSetPixel(self, obj, event, rx, ry, rz, item, currFilter, valueLabel):
 		"""
 		Set the value of the pixel label
-		"""				
+		"""
 		if valueLabel.selectPixel:
 			currFilter.setParameter(item[0], (rx, ry, rz))
 			valueLabel.SetLabel("(%d, %d, %d)" % (rx, ry, rz))
@@ -1177,3 +1171,10 @@ class GUIBuilder(wx.Panel):
 		"""
 		pass
 	
+	def onRemove(self, item):
+		"""
+		Disconnect global events
+		"""
+		lib.messenger.disconnect(None, "one_click_center")
+		lib.messenger.disconnect(None, "update_annotations")
+		
