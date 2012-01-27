@@ -79,6 +79,7 @@ class GUIBuilder(wx.Panel):
 		# store the histograms so that the filters can access them if they need
 		# to
 		self.histograms = []
+		self.events = []
 		self.currentBackground = None
 		self.currentBackgroundSizer = None
 		self.items = {}
@@ -467,6 +468,9 @@ class GUIBuilder(wx.Panel):
 		getVoxelSeedFunc = lambda obj, event, rx, ry, rz, its = items, \
 							f = currentFilter:self.onAddPixel(obj, event, rx, ry, rz, its, f, seedbox)
 		lib.messenger.connect(None, "one_click_center", getVoxelSeedFunc)
+		if "one_click_center" not in self.events:
+			self.events.append("one_click_center")
+		
 		self.itemSizer.Add(background, (0, 0))							   
 		onSetPixelsFunc = lambda obj, event, arg, seedbox = seedbox, i = itemName, \
 				s = self: s.onSetPixelsFromFilter(seedbox, i, arg)
@@ -502,6 +506,8 @@ class GUIBuilder(wx.Panel):
 		getVoxelFunc = lambda obj, event, rx, ry, rz, its = item, \
 						f = currentFilter:self.onSetPixel(obj, event, rx, ry, rz, its, f, label)
 		lib.messenger.connect(None, "one_click_center", getVoxelFunc)
+		if "one_click_center" not in self.events:
+			self.events.append("one_click_center")
 
 		onSetPixelFunc = lambda obj, event, arg, label = label, i = itemName, \
 					s = self: s.onSetPixelFromFilter(label, i, arg)
@@ -550,6 +556,8 @@ class GUIBuilder(wx.Panel):
 			fi = currentFilter, s = self: updateROIs(fi, i, choice)
 		lib.messenger.connect(currentFilter, "update_%s" % itemName, updateRoiFunc) 
 		lib.messenger.connect(None, "update_annotations", updateRoiFunc)
+		if "update_annotations" not in self.events:
+			self.events.append("update_annotations")
 		
 		box.Add(choice, 1)
 		# was (y, 0)
@@ -1175,6 +1183,6 @@ class GUIBuilder(wx.Panel):
 		"""
 		Disconnect global events
 		"""
-		lib.messenger.disconnect(None, "one_click_center")
-		lib.messenger.disconnect(None, "update_annotations")
-		
+		for event in self.events:
+			lib.messenger.disconnect(None, event)
+		self.events = []
