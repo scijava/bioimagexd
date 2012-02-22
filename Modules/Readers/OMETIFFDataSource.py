@@ -43,6 +43,7 @@ def getClass():
 
 class OMETIFFDataSource(DataSource):
 	"""
+	OMETIFFDataSource class
 	"""
 	def __init__(self, filename = "", imageNum = 0, channelNum = 0):
 		"""
@@ -120,6 +121,18 @@ class OMETIFFDataSource(DataSource):
 			return "Ch-%d"%(self.currentChannel + 1)
 		return channelName
 
+	def getExcitationWavelength(self):
+		"""
+		Returns excitation wavelength of this channel
+		"""
+		return self.reader.GetExcitationWavelength()
+
+	def getEmissionWavelength(self):
+		"""
+		Returns emission wavelength of this channel
+		"""
+		return self.reader.GetEmissionWavelength()
+		
 	def internalGetDimensions(self):
 		"""
 		Returns the (x,y,z,t) dimensions of the dataset this dataunit contains
@@ -164,6 +177,7 @@ class OMETIFFDataSource(DataSource):
 					datasource = OMETIFFDataSource(filename,i,c)
 					dataunit = DataUnit.DataUnit()
 					dataunit.setDataSource(datasource)
+					dataunit.updateSettings()
 					dataUnits.append((imageName,dataunit))
 		else:
 			Logging.error("Failed to read OME header",

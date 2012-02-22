@@ -3,15 +3,12 @@
 """
  Unit: UIElements
  Project: BioImageXD
- Created: 09.02.2005, KP
  Description:
 
  UIElements is a module with functions for generating various pieces
  of GUI that would otherwise require lots of repetitive code, like 
  label-field pairs or path field - browse button pairs
  
- Modified: 12.03.2005 KP - Created the module
-
  Copyright (C) 2005	 BioImageXD Project
  See CREDITS.txt for details
 
@@ -167,7 +164,6 @@ class MyStaticBox(wx.StaticBox):
 
 class DimensionInfo(wx.Window):
 	"""
-	Created: 1.11.2006, KP
 	Description: A static box replacement that allows us to control how it is painted
 	"""
 	def __init__(self, parent, wid, pos = wx.DefaultPosition, \
@@ -277,7 +273,6 @@ class DimensionInfo(wx.Window):
 
 class NamePanel(wx.Window):
 	"""
-	Created: 05.05.2005, KP
 	Description: A panel that paints a string it's given
 	"""
 	def __init__(self, parent, label, color, **kws):
@@ -422,7 +417,7 @@ def getImageFormatMenu(parent, label = "Image Format: "):
 	sizer = wx.BoxSizer(wx.HORIZONTAL)
 	lbl = wx.StaticText(parent, -1, label)
 	sizer.Add(lbl)
-	formats = ["PNG", "JPEG", "TIFF"]
+	formats = ["TIFF", "PNG", "JPEG"]
 	menu = wx.Choice(parent, -1, choices = formats)
 	sizer.Add(menu)
 	sizer.menu = menu

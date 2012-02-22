@@ -30,20 +30,22 @@ __author__ = "BioImageXD Project"
 __version__ = "$Revision: 1.40 $"
 __date__ = "$Date: 2005/01/13 14:52:39 $"
 
+import uuid
 import Logging
 import os.path
 import re
 import UIElements
 import vtk
+import vtkbxd
 import wx
-import  wx.lib.filebrowsebutton as filebrowse
+import wx.lib.filebrowsebutton as filebrowse
 import Configuration
 
 class ExportDialog(wx.Dialog):
 	"""
 	A dialog for export dataset to various formats
 	"""
-	def __init__(self, parent, dataUnit, imageMode = 1):
+	def __init__(self, parent, dataUnits, imageMode = 1):
 		"""
 		Initialize the dialog
 		"""    
@@ -51,20 +53,21 @@ class ExportDialog(wx.Dialog):
 		
 		self.conf = Configuration.getConfiguration()       
 
-		self.dataUnit = dataUnit
-		x, y, z = dataUnit.getDimensions()
+		self.dataUnit = dataUnits[0]
+		self.dataUnits = dataUnits
+		x, y, z = self.dataUnit.getDimensions()
 		self.x, self.y, self.z = x, y, z
-		self.n = dataUnit.getNumberOfTimepoints()
-		self.imageAmnt = z * self.n
-		self.sizer = wx.GridBagSizer(5, 5)
-		if imageMode == 1:
-			self.createImageExport()
-			self.sizer.Add(self.imagePanel, (0, 0), flag = wx.EXPAND | wx.ALL)
-		else:
-			self.createVTIExport()
-			self.sizer.Add(self.vtkPanel, (0, 0), flag = wx.EXPAND | wx.ALL)
+		self.t = self.dataUnit.getNumberOfTimepoints()
+		self.c = len(dataUnits)
 		self.imageMode = imageMode
+		if self.imageMode == 1:
+			self.imageAmnt = z * self.t * self.c
+		else:
+			self.imageAmnt = self.t * self.c
 
+		self.sizer = wx.GridBagSizer(5, 5)
+		self.createImageExport()
+		self.sizer.Add(self.imagePanel, (0, 0), flag = wx.EXPAND | wx.ALL)
 		self.btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
 		
 		self.sizer.Add(self.btnsizer, (5, 0), flag = wx.EXPAND | wx.RIGHT | wx.LEFT)
@@ -96,8 +99,9 @@ class ExportDialog(wx.Dialog):
 		ext = self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()
 		writer = "vtk.vtk%sWriter()" % (ext.upper())
 		writer = eval(writer)
-		if ext.upper()=="TIFF":
+		if ext == "tiff":
 			writer.SetCompressionToNoCompression()
+		
 		prefix = dirname + os.path.sep
 		n = pattern.count("%")
 		Logging.info("Number of images =", n, kw = "io")
@@ -109,9 +113,9 @@ class ExportDialog(wx.Dialog):
 			n = 1
 		Logging.info("Prefix = ", prefix, "pattern = ", pattern, kw = "io")
 		writer.SetFilePrefix(prefix)
-		for t in range(self.n):
+		for t in range(self.t):
 			Logging.info("Writing timepoint %d" % t, kw = "io")
-			# If the numbering uses two separate numbers (one for timepoint, one for slice)
+			# If the numbering uses two separate numbers (one for time point, one for slice)
 			# then we modify the pattern to account for the timepoint
 			if n == 2:
 				begin = pattern.rfind("%")
@@ -165,43 +169,81 @@ class ExportDialog(wx.Dialog):
 	def writeDatasets(self, event = None):
 		"""
 		A method that writes the datasets
-		"""        
-		dirname = self.vtkbrowsedir.GetValue()
-		pattern = self.vtkpatternEdit.GetValue()
-		n = pattern.count("%")
-		fext = self.vtkmenu.GetString(self.vtkmenu.GetSelection())
-		self.dlg = wx.ProgressDialog("Writing", "Writing dataset %d / %d" % (0, 0), maximum = self.n, parent = self,
-		style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
-		if fext.find("XML") != -1:
-			ext = "vti"
-			writer = vtk.vtkXMLImageDataWriter()
-		else:
-			ext = "vtk"
-			writer = vtk.vtkDataSetWriter()
-		if n == 0:
-			pattern = pattern + "%d"
-			n = 1
-		for i in range(self.n):
-			try:
-				file = os.path.join(dirname, pattern % i) + ".%s" % ext
-			except:
-				return
+		"""
+		dirname = self.browsedir.GetValue()
+		pattern = self.patternEdit.GetValue()
 
-			self.dlg.Update(i, "Writing dataset %d / %d" % (i+1, self.n))
-			writer.SetFileName(file)
-			data = self.dataUnit.getTimepoint(i)
-			writer.SetInput(data)
-			writer.Write()
-		self.dlg.Destroy()
-		 
+		if self.imageMode == 0:
+			ext = "ome.tif"
+			writer = vtkbxd.vtkOMETIFFWriter()
+		elif self.imageMode == 2:
+			fext = self.vtkmenu.GetString(self.vtkmenu.GetSelection())		
+			if fext.find("XML") != -1:
+				ext = "vti"
+				writer = vtk.vtkXMLImageDataWriter()
+			else:
+				ext = "vtk"
+				writer = vtk.vtkDataSetWriter()
+		else:
+			return
+
+		pattern = os.path.join(dirname,pattern) + "." + ext
+		self.dlg = wx.ProgressDialog("Writing", "Writing dataset %d / %d" % (0, 0), maximum = self.imageAmnt, parent = self, style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_AUTO_HIDE)
+
+		filenames = self.sourceListbox.GetItems()
+		if len(filenames) != self.c * self.t:
+			return
+
+		if self.imageMode == 0: # vtkOMETIFFWriter specific
+			writer.SetFileNamePattern(pattern)
+			writer.SetTimePoints(self.t)
+			writer.SetChannels(self.c)
+			# Create uuids
+			if self.imageAmnt > 1:
+				for i in range(self.imageAmnt):
+					uid = uuid.uuid4()
+					writer.SetUUID(i,uid.get_urn())
+			
+			for c in range(self.c):
+				ch_name = self.dataUnits[c].getName()
+				excitation = self.dataUnits[c].getExcitationWavelength()
+				emission = self.dataUnits[c].getEmissionWavelength()
+				writer.SetChannelInfo(ch_name, excitation, emission)
 		
+		i = 0
+		for c in range(self.c):
+			imageName = self.dataUnits[c].getImageName()
+			voxelSize = self.dataUnits[c].getVoxelSize()
+			
+			for t in range(self.t):
+				filenm = filenames[i]
+				i += 1
+				self.dlg.Update(i, "Writing dataset %d / %d" % (i, self.imageAmnt))
+				if self.imageMode == 0:
+					writer.SetCurrentChannel(c)
+					writer.SetCurrentTimePoint(t)
+					writer.SetImageName(imageName)
+					writer.SetXResolution(voxelSize[0] * 10**6)
+					writer.SetYResolution(voxelSize[1] * 10**6)
+					writer.SetZResolution(voxelSize[2] * 10**6)
+				writer.SetFileName(filenm)
+				data = self.dataUnits[c].getTimepoint(t)
+				data.SetUpdateExtent(data.GetWholeExtent())
+				data.Update()
+				writer.SetInput(data)
+				writer.Write()
+		self.dlg.Destroy()
+
 	def createImageExport(self):
 		"""
-		Creates a panel for importing of images as slices of a volume
-		"""            
+		Creates similar parts of every export dialog
+		"""
 		self.imagePanel = wx.Panel(self, -1, size = (640, 480))
 		self.imageSizer = wx.GridBagSizer(5, 5)
-		self.imageSourcebox = wx.StaticBox(self.imagePanel, -1, "Target Directory for Images")
+		if self.imageMode == 1:
+			self.imageSourcebox = wx.StaticBox(self.imagePanel, -1, "Target for Images")
+		else:
+			self.imageSourcebox = wx.StaticBox(self.imagePanel, -1, "Target for Datasets")
 		self.imageSourceboxsizer = wx.StaticBoxSizer(self.imageSourcebox, wx.VERTICAL)
 		
 		self.imageSourceboxsizer.SetMinSize((600, 100))
@@ -209,63 +251,110 @@ class ExportDialog(wx.Dialog):
 		initialDir = self.conf.getConfigItem("ExportDirectory", "Paths")
 		if not initialDir:
 			initialDir = "."
-		self.browsedir = filebrowse.DirBrowseButton(self.imagePanel, -1, labelText = "Image Directory: ", changeCallback = self.updateListOfImages,\
-				startDirectory = initialDir)
+
+		if self.imageMode == 1:
+			self.browsedir = filebrowse.DirBrowseButton(self.imagePanel, -1, labelText = "Image Directory: ", changeCallback = self.updateListOfImages, startDirectory = initialDir)
+		else:
+			self.browsedir = filebrowse.DirBrowseButton(self.imagePanel, -1, labelText = "Dataset Directory: ", changeCallback = self.updateListOfImages, startDirectory = initialDir)
+			
 		self.sourcesizer = wx.BoxSizer(wx.VERTICAL)
 		
 		self.imageSourceboxsizer.Add(self.browsedir, 0, wx.EXPAND)
-		ptr = self.dataUnit.getName() + "_%d"
-		self.patternEdit = wx.TextCtrl(self.imagePanel, -1, ptr, style = wx.TE_PROCESS_ENTER)
+
+		if self.c > 1:
+			ptr = self.dataUnit.getImageName() + "_C%d"
+		else:
+			ptr = self.dataUnit.getName()
+
+		if self.t > 1:
+			ptr += "_T%d"
+			
+		if self.imageMode == 1 and self.z > 1:
+			ptr += "_Z%d"
+
+		self.patternEdit = wx.TextCtrl(self.imagePanel, -1, ptr, size = (300,-1), style = wx.TE_PROCESS_ENTER)
 		self.patternEdit.Bind(wx.EVT_TEXT_ENTER, self.updateListOfImages)
 		self.patternEdit.Bind(wx.EVT_TEXT, self.updateListOfImages)
 		
-		self.patternLbl = wx.StaticText(self.imagePanel, -1, "Filename pattern:")
+		self.patternLbl = wx.StaticText(self.imagePanel, -1, "Filename Pattern: ")
 		self.patternBox = wx.BoxSizer(wx.HORIZONTAL)
 		self.patternBox.Add(self.patternLbl, 1)
-		self.patternBox.Add(self.patternEdit, 1, wx.EXPAND | wx.LEFT | wx.RIGHT)
-		self.sourcesizer.Add(self.patternBox)        
-		
-		self.outputFormat = UIElements.getImageFormatMenu(self.imagePanel)
-		self.outputFormat.menu.SetSelection(0)
-		self.outputFormat.menu.Bind(wx.EVT_CHOICE, self.updateListOfImages)
-		self.sourcesizer.Add(self.outputFormat)
-		
+		self.patternBox.Add(self.patternEdit, 0)
+		self.sourcesizer.Add(self.patternBox)
+
+		if self.imageMode == 1:
+			self.outputFormat = UIElements.getImageFormatMenu(self.imagePanel)
+			self.outputFormat.menu.SetSelection(0)
+			self.outputFormat.menu.Bind(wx.EVT_CHOICE, self.updateListOfImages)
+			self.sourcesizer.Add(self.outputFormat)
+		elif self.imageMode == 2:
+			sizer = wx.BoxSizer(wx.HORIZONTAL)
+			lbl = wx.StaticText(self.imagePanel, -1, "VTK Dataset Format")
+			sizer.Add(lbl)
+			formats = ["XML Image Data", "VTK Image Data"]
+			self.vtkmenu = wx.Choice(self.imagePanel, -1, choices = formats)
+			self.vtkmenu.SetSelection(0)
+			sizer.Add(self.vtkmenu)
+			self.vtkmenu.Bind(wx.EVT_CHOICE, self.updateListOfImages)
+			self.sourcesizer.Add(sizer)
+
 		self.sourceListbox = wx.ListBox(self.imagePanel, -1, size = (600, 100), style = wx.LB_ALWAYS_SB | wx.LB_EXTENDED)
-		self.listlbl = wx.StaticText(self.imagePanel, -1, "List of Images:")
+		if self.imageMode == 1:
+			self.listlbl = wx.StaticText(self.imagePanel, -1, "List of Images:")
+		else:
+			self.listlbl = wx.StaticText(self.imagePanel, -1, "List of Datasets:")
+		
 		self.sourcesizer.Add(self.listlbl)
 		self.sourcesizer.Add(self.sourceListbox)
 		
 		self.imageSourceboxsizer.Add(self.sourcesizer, 1, wx.EXPAND)
 		
-		self.imageInfoBox = wx.StaticBox(self.imagePanel, -1, "Image Information")
+		self.imageInfoBox = wx.StaticBox(self.imagePanel, -1, "Dataset Information")
 		self.imageInfoSizer = wx.StaticBoxSizer(self.imageInfoBox, wx.VERTICAL)
 		
 		self.infosizer = wx.GridBagSizer(5, 5)
 
-		self.nlbl = wx.StaticText(self.imagePanel, -1, "Number of images:")
 		self.imageAmountLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.imageAmnt)
+		if self.imageMode == 1:
+			self.nlbl = wx.StaticText(self.imagePanel, -1, "Number of Images:")
+			self.dimlbl = wx.StaticText(self.imagePanel, -1, "Image Dimensions:")
+		else:
+			self.nlbl = wx.StaticText(self.imagePanel, -1, "Number of Datasets:")
+			self.dimlbl = wx.StaticText(self.imagePanel, -1, "Dataset Dimensions:")
 
-		self.dimlbl = wx.StaticText(self.imagePanel, -1, "Image dimensions:")
-		self.dimensionLbl = wx.StaticText(self.imagePanel, -1, "%d x %d" % (self.x, self.y))
-	
-		self.depthlbl = wx.StaticText(self.imagePanel, -1, "Depth of Stack:")
-		self.depthLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.z)
+		if self.imageMode == 1:
+			self.dimensionLbl = wx.StaticText(self.imagePanel, -1, "%d x %d" % (self.x, self.y))
+			self.depthlbl = wx.StaticText(self.imagePanel, -1, "Depth of Stack:")
+			self.depthLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.z)
+		else:
+			self.dimensionLbl = wx.StaticText(self.imagePanel, -1, "%d x %d x %d" %(self.x, self.y, self.z))
 		
 		self.tpLbl = wx.StaticText(self.imagePanel, -1, "Number of Timepoints:")
-		self.timepointLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.n)
-		
-		
-		self.infosizer.Add(self.nlbl, (0, 0))
-		self.infosizer.Add(self.imageAmountLbl, (0, 1), flag = wx.EXPAND | wx.ALL)
-		
-		self.infosizer.Add(self.dimlbl, (1, 0))
-		self.infosizer.Add(self.dimensionLbl, (1, 1), flag = wx.EXPAND | wx.ALL)
-		
-		self.infosizer.Add(self.tpLbl, (2, 0))
-		self.infosizer.Add(self.timepointLbl, (2, 1), flag = wx.EXPAND | wx.ALL)
+		self.timepointLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.t)
 
-		self.infosizer.Add(self.depthlbl, (3, 0))
-		self.infosizer.Add(self.depthLbl, (3, 1), flag = wx.EXPAND | wx.ALL)
+		self.cLbl = wx.StaticText(self.imagePanel, -1, "Number of Channels:")
+		self.channelLbl = wx.StaticText(self.imagePanel, -1, "%d" % self.c)
+
+		yloc = 0
+		self.infosizer.Add(self.nlbl, (yloc, 0))
+		self.infosizer.Add(self.imageAmountLbl, (yloc, 1), flag = wx.EXPAND | wx.ALL)
+		yloc += 1
+		
+		self.infosizer.Add(self.dimlbl, (yloc, 0))
+		self.infosizer.Add(self.dimensionLbl, (yloc, 1), flag = wx.EXPAND | wx.ALL)
+		yloc += 1
+
+		if self.imageMode == 1:
+			self.infosizer.Add(self.depthlbl, (yloc, 0))
+			self.infosizer.Add(self.depthLbl, (yloc, 1), flag = wx.EXPAND | wx.ALL)
+			yloc += 1
+
+		self.infosizer.Add(self.tpLbl, (yloc, 0))
+		self.infosizer.Add(self.timepointLbl, (yloc, 1), flag = wx.EXPAND | wx.ALL)
+		yloc += 1
+
+		self.infosizer.Add(self.cLbl, (yloc, 0))
+		self.infosizer.Add(self.channelLbl, (yloc, 1), flag = wx.EXPAND | wx.ALL)
 
 		self.imageInfoSizer.Add(self.infosizer)
 		
@@ -275,82 +364,8 @@ class ExportDialog(wx.Dialog):
 		self.imagePanel.SetSizer(self.imageSizer)
 		self.imagePanel.SetAutoLayout(1)
 		self.imageSizer.Fit(self.imagePanel)
-	
-	def createVTIExport(self):
-		"""
-		Creates a panel for exporting data as vtk datasets
-		"""            
-		self.vtkPanel = wx.Panel(self, -1, size = (640, 480))
-		self.vtkSizer = wx.GridBagSizer(5, 5)
-		self.vtkSourcebox = wx.StaticBox(self.vtkPanel, -1, "Source of Datasets")
-		self.vtkSourceboxsizer = wx.StaticBoxSizer(self.vtkSourcebox, wx.VERTICAL)
-		
-		self.vtkSourceboxsizer.SetMinSize((600, 100))
-		
-		initialDir = self.conf.getConfigItem("ExportDirectory", "Paths")
-		if not initialDir:
-			initialDir = "."
-		self.vtkbrowsedir = filebrowse.DirBrowseButton(self.vtkPanel, -1, labelText = "Dataset Directory: ", changeCallback = self.updateListOfDatasets, startDirectory = initialDir)
-		
-		self.vtksourcesizer = wx.BoxSizer(wx.VERTICAL)
-		
-		self.vtkSourceboxsizer.Add(self.vtkbrowsedir, 0, wx.EXPAND)
-		ptr = self.dataUnit.getName() + "_%d"
-		self.vtkpatternEdit = wx.TextCtrl(self.vtkPanel, -1, ptr, style = wx.TE_PROCESS_ENTER)
-		self.vtkpatternEdit.Bind(wx.EVT_TEXT_ENTER, self.updateListOfDatasets)
-		self.vtkpatternEdit.Bind(wx.EVT_TEXT, self.updateListOfDatasets)
-		
-		self.vtkpatternLbl = wx.StaticText(self.vtkPanel, -1, "Filename pattern:")
-		self.vtkpatternBox = wx.BoxSizer(wx.HORIZONTAL)
-		self.vtkpatternBox.Add(self.vtkpatternLbl, 1)
-		self.vtkpatternBox.Add(self.vtkpatternEdit, 1, wx.EXPAND | wx.LEFT | wx.RIGHT)
-		self.vtksourcesizer.Add(self.vtkpatternBox)        
-		
-		sizer = wx.BoxSizer(wx.HORIZONTAL)
-		lbl = wx.StaticText(self.vtkPanel, -1, "VTK Dataset Format")
-		sizer.Add(lbl)
-		formats = ["XML Image Data", "VTK Image Data"]
-		self.vtkmenu = wx.Choice(self.vtkPanel, -1, choices = formats)
-		self.vtkmenu.SetSelection(0)
-		sizer.Add(self.vtkmenu)
-		
-		self.vtkmenu.Bind(wx.EVT_CHOICE, self.updateListOfDatasets)
-		self.vtksourcesizer.Add(sizer)
 
-		self.vtksourceListbox = wx.ListBox(self.vtkPanel, -1, size = (400, 100), style = wx.LB_ALWAYS_SB | wx.LB_EXTENDED)
-		self.vtklistlbl = wx.StaticText(self.vtkPanel, -1, "List of Datasets:")
-		self.vtksourcesizer.Add(self.vtklistlbl)
-		self.vtksourcesizer.Add(self.vtksourceListbox)
-		
-		self.vtkSourceboxsizer.Add(self.vtksourcesizer, 1, wx.EXPAND)
-		
-		self.vtkInfoBox = wx.StaticBox(self.vtkPanel, -1, "Dataset Information")
-		self.vtkInfoSizer = wx.StaticBoxSizer(self.vtkInfoBox, wx.VERTICAL)
-		
-		self.vtkinfosizer = wx.GridBagSizer(5, 5)
-		
-		self.vtkdimlbl = wx.StaticText(self.vtkPanel, -1, "Dataset dimensions:")
-		self.vtkdimensionLbl = wx.StaticText(self.vtkPanel, -1, "%d x %d x %d" % (self.x, self.y, self.z))
-	
-		self.vtktpLbl = wx.StaticText(self.vtkPanel, -1, "Number of Timepoints:")
-		self.vtktimepointLbl = wx.StaticText(self.vtkPanel, -1, "%d" % self.n)
-		
-		self.vtkinfosizer.Add(self.vtkdimlbl, (0, 0))
-		self.vtkinfosizer.Add(self.vtkdimensionLbl, (0, 1), flag = wx.EXPAND | wx.ALL)
-		
-		self.vtkinfosizer.Add(self.vtktpLbl, (1, 0))
-		self.vtkinfosizer.Add(self.vtktimepointLbl, (1, 1), flag = wx.EXPAND | wx.ALL)
-		
-		self.vtkInfoSizer.Add(self.vtkinfosizer)
-		
-		self.vtkSizer.Add(self.vtkInfoSizer, (0, 0), flag = wx.EXPAND | wx.ALL, border = 5)
-		self.vtkSizer.Add(self.vtkSourceboxsizer, (1, 0), flag = wx.EXPAND | wx.ALL, border = 5)
-		
-		self.vtkPanel.SetSizer(self.vtkSizer)
-		self.vtkPanel.SetAutoLayout(1)
-		self.vtkSizer.Fit(self.vtkPanel)
 
-	
 	def sortNumerically(self, item1, item2):
 		"""
 		A method that compares two filenames and sorts them by the number in their filename
@@ -366,78 +381,69 @@ class ExportDialog(wx.Dialog):
 		"""
 		A method that updates a list of images to a listbox based on the selected input type
 		"""
+		dirname = self.browsedir.GetValue()
+		pattern = self.patternEdit.GetValue()
+		self.sourceListbox.Clear()
+		lstbox = self.sourceListbox
+
 		if self.imageMode == 1:
-			dirname = self.browsedir.GetValue()
-			pattern = self.patternEdit.GetValue()
-			self.sourceListbox.Clear()
-			lstbox = self.sourceListbox
-			ext = self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()    
-		else:
-			lstbox = self.vtksourceListbox
-			dirname = self.vtkbrowsedir.GetValue()
-			pattern = self.vtkpatternEdit.GetValue()
-			self.vtksourceListbox.Clear()
+			ext = self.outputFormat.menu.GetString(self.outputFormat.menu.GetSelection()).lower()
+		elif self.imageMode == 2:
 			fext = self.vtkmenu.GetString(self.vtkmenu.GetSelection())
 			if fext.find("XML") != -1:
 				ext = "vti"
 			else:
 				ext = "vtk"
+		else:
+			ext = "ome.tif"
+
 		if dirname:
 			self.conf.setConfigItem("ExportDirectory", "Paths", dirname)
 		self.conf.writeSettings()
 		
 		n = pattern.count("%")
-				
-		if n == 0:
+		if n == 0 and self.imageMode == 1:
 			pattern = pattern + "%d"
 			n = 1
-		# If the pattert is not proper, return
+		
+		# If the pattern is not proper, return
 		try:
 			if n == 1:
-				a = pattern % 0
+				a = pattern %0
 			if n == 2:
-				a = pattern % (0, 0)
+				a = pattern %(0, 0)
+			if n == 3:
+				a = pattern %(0, 0, 0)
 		except:
 			return
 
+		# Check pattern structure
+		numPat = 0
+		ptr = "("
+		if self.c > 1:
+			ptr += "c,"
+			numPat += 1
+		if self.t > 1:
+			ptr += "t,"
+			numPat += 1
+		if self.z > 1 and self.imageMode == 1:
+			ptr += "z"
+			numPat += 1
+		ptr += ")"
+		
 		if n == 1:
+			for i in range(1,self.imageAmnt+1):
+				filenm = os.path.join(dirname, pattern%i) + ".%s"%ext
+				lstbox.Append(filenm)
+		elif numPat == n:
 			if self.imageMode == 1:
-				amount = self.imageAmnt
+				slices = self.z + 1
 			else:
-				amount = self.n
-			
-			for i in range(amount):
-				file = os.path.join(dirname, pattern % i) + ".%s" % ext
-				lstbox.Append(file)
-		else:
-			for t in range(self.n):
-				for z in range(self.z):
-					file = os.path.join(dirname, pattern % (t, z)) + ".%s" % ext
-					lstbox.Append(file)
-					
-	def updateListOfDatasets(self, event = None):
-		"""
-		A method that updates a list of datasets to a listbox based on the selected input type
-		"""        
-		dirname = self.vtkbrowsedir.GetValue()
-		pattern = self.vtkpatternEdit.GetValue()
-		self.vtksourceListbox.Clear()
-		n = pattern.count("%")
-		fext = self.vtkmenu.GetString(self.vtkmenu.GetSelection())
-		if fext.find("XML") != -1:
-			ext = "vti"
-			writer = vtk.vtkXMLImageDataWriter()
-		else:
-			ext = "vtk"
-			writer = vtk.vtkDataSetWriter()
-		if n == 0:
-			pattern = pattern + "%d"
-			n = 1
-		for i in range(self.n):
-			try:
-				filename = os.path.join(dirname, pattern % i) + ".%s" % ext
-			except:
-				return
-			
-			self.vtksourceListbox.Append(filename)
-			
+				slices = 2
+
+			for c in range(1,self.c+1):
+				for t in range(1,self.t+1):
+					for z in range(1,slices):
+						idx = eval(ptr)
+						filenm = os.path.join(dirname, pattern%idx) + ".%s" % ext
+						lstbox.Append(filenm)

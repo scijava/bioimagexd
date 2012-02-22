@@ -1380,7 +1380,7 @@ int vtkLSMReader::RequestData(
     ussarray->SetArray((unsigned short *)buf, numberOfPixels, 0);
     data->GetPointData()->SetScalars(ussarray);
     
-    ussarray->Delete();     
+    ussarray->Delete();
   }
   else
   {

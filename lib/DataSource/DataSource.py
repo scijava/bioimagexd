@@ -103,6 +103,7 @@ class DataSource:
 		self.timestamps = []
 		self.absoluteTimestamps = []
 		self.dimensions = None
+		self.imageName = ""
 		
 		self.resampling = False
 
@@ -527,7 +528,7 @@ class DataSource:
 		
 	def getScalarRange(self):
 		"""
-		Return the bit depth of data
+		Return the scalar range of data
 		"""
 		self.getBitDepth()
 		return self.scalarRange
@@ -615,3 +616,8 @@ class DataSource:
 		self.ctf = None
 		return self.getColorTransferFunction()
 	
+	def getImageName(self):
+		"""
+		Return image name
+		"""
+		return self.imageName

@@ -172,7 +172,7 @@
 #define VTK_FILE_BYTE_ORDER_BIG_ENDIAN 0
 #define VTK_FILE_BYTE_ORDER_LITTLE_ENDIAN 1
 
-#include "vtkBXDProcessingWin32Header.h"                                            
+#include "vtkBXDProcessingWin32Header.h"
 
 class VTK_BXD_PROCESSING_EXPORT vtkLSMReader : public vtkImageAlgorithm
 {

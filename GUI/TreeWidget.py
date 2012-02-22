@@ -99,6 +99,7 @@ class TreeWidget(wx.SashLayoutWindow):
 		self.interfilefiles = None
 		self.liffiles = None
 		self.mrcfiles = None
+		self.ometiffiles = None
 		self.lastSelection = None
 		
 		self.dataUnitItems = []
@@ -231,6 +232,8 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.liffiles = None
 			elif i == self.mrcfiles:
 				self.mrcfiles = None
+			elif i == self.ometiffiles:
+				self.ometiffiles = None
 
 			parent = self.tree.GetItemParent(i)
 			self.tree.Delete(i)
@@ -391,8 +394,8 @@ class TreeWidget(wx.SashLayoutWindow):
 		folderOpenIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN, wx.ART_OTHER, imageSize))
 		fileIndex = il.Add(wx.ArtProvider_GetBitmap(wx.ART_REPORT_VIEW, wx.ART_OTHER, imageSize))
 
-		if objtype in ["lif", "lei", "txt"]:
-			path = path + name
+		#if objtype in ["lif", "lei", "txt", "ome.tif"]:
+		#	path = path + name
 		
 		for i in range(0, len(objs)):
 			if not path in self.items:
@@ -509,6 +512,20 @@ class TreeWidget(wx.SashLayoutWindow):
 				self.tree.SetItemImage(self.mrcfiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
 
 			item = self.mrcfiles
+			self.tree.Expand(item)
+			item = self.tree.AppendItem(item, name)
+			self.tree.Expand(item)
+			self.tree.SetPyData(item, "2")
+			self.tree.SetItemImage(item, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
+
+		elif objtype == "ome.tif":
+			if not self.ometiffiles:
+				self.ometiffiles = self.tree.AppendItem(self.root, "OME-TIFF files")
+				self.tree.SetPyData(self.ometiffiles, "1")
+				self.tree.SetItemImage(self.ometiffiles, folderIndex, which = wx.TreeItemIcon_Normal)
+				self.tree.SetItemImage(self.ometiffiles, folderOpenIndex, which = wx.TreeItemIcon_Expanded)
+
+			item = self.ometiffiles
 			self.tree.Expand(item)
 			item = self.tree.AppendItem(item, name)
 			self.tree.Expand(item)

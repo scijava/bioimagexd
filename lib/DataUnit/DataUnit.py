@@ -75,8 +75,6 @@ class DataUnit:
 
 	def getDimensions(self):
 		"""
-		@since: 27.07.2007
-		@author: SG
 		Abstract method for getting the dimensions of this DataUnit
 		"""
 		raise bxdexceptions.AbstractMethodCalled()
@@ -218,7 +216,7 @@ class DataUnit:
 			self.settings.set("ColorTransferFunction", ctf)
 			#if ctf and self.settings.get("Type") == "ColorMergingSettings":
 			#	 self.settings.set("MergingColorTransferFunction", ctf)
-		
+
 		if self.dataSource:
 			self.settings.set("VoxelSize", self.dataSource.getVoxelSize())
 			self.settings.set("Spacing", self.dataSource.getSpacing())
@@ -299,6 +297,7 @@ class DataUnit:
 		self.getEmissionWavelength = dataSource.getEmissionWavelength
 		self.getExcitationWavelength = dataSource.getExcitationWavelength
 		self.getNumericalAperture = dataSource.getNumericalAperture
+		self.getImageName = dataSource.getImageName
 	
 	def getFileName(self):
 		"""

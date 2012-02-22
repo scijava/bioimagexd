@@ -231,7 +231,14 @@ int vtkOMETIFFReader::CreateImages(vtkXMLDataElement* imageElement)
 int vtkOMETIFFReader::CreateImage(vtkXMLDataElement* imageElement, vtkXMLDataElement* pixelsElement)
 {
   OMEImage* Image = new OMEImage();
-  const char* attr_name = imageElement->GetAttribute("Name");
+  const char* attr_name = NULL;
+  attr_name = imageElement->GetAttribute("Name");
+  if (attr_name == NULL) 
+	{
+	  char* attr_name2 = new char[1];
+	  attr_name2[0] = '\0';
+	  attr_name = attr_name2;
+	}
   const char* attr_dimorder = pixelsElement->GetAttribute("DimensionOrder");
   const char* attr_type = pixelsElement->GetAttribute("Type");
   if (attr_type == NULL) attr_type = pixelsElement->GetAttribute("PixelType");
@@ -283,7 +290,9 @@ int vtkOMETIFFReader::CreateImage(vtkXMLDataElement* imageElement, vtkXMLDataEle
 	  if (!strcmp(name,"Channel"))
 		{
 		  OMEChannel* Channel = new OMEChannel();
-		  Channel->Name = nestedIter->GetAttribute("Name");
+		  const char* ch_name = nestedIter->GetAttribute("Name");
+		  Channel->Name = new char[strlen(ch_name)+1];
+		  strcpy(Channel->Name,ch_name);
 		  nestedIter->GetScalarAttribute("Color", Channel->Color);
 		  nestedIter->GetScalarAttribute("EmissionWavelength", Channel->EmissionWavelength);
 		  nestedIter->GetScalarAttribute("ExcitationWavelength", Channel->ExcitationWavelength);
@@ -431,7 +440,6 @@ void vtkOMETIFFReader::CreateImageMapping()
 				  unsigned int file_position = this->FindFilePosition(z,t,c,zinc,tinc,cinc);
 				  position -= file_position * imagesPerFile;
 				  position += earlierImages;
-				  printf("Add to mapping (%d,%d)\n",file_position,position);
 				  Tuple* tpl = new Tuple(file_position, position);
 				  this->Mapping->push_back(tpl);
 				}
@@ -768,7 +776,7 @@ const char* vtkOMETIFFReader::GetChannelName()
 {
   if (!this->HeaderRead)
 	{
-	  vtkErrorMacro(<< "Channel not defined");
+	  vtkErrorMacro(<< "Header not read");
 	  return "";
 	}
 
@@ -778,6 +786,40 @@ const char* vtkOMETIFFReader::GetChannelName()
 	return pixels->Channels->at(this->CurrentChannel)->Name;
   else
 	return "";
+}
+
+int vtkOMETIFFReader::GetExcitationWavelength()
+{
+  if (!this->HeaderRead)
+	{
+	  vtkErrorMacro(<< "Header not read");
+	  return 0;
+	}
+
+  OMEPixels* pixels = this->Images->at(this->CurrentImage)->Pixels;
+  if (pixels->Channels->size() > this->CurrentChannel)
+	{
+	  return pixels->Channels->at(this->CurrentChannel)->ExcitationWavelength;
+	}
+
+  return 0;
+}
+
+int vtkOMETIFFReader::GetEmissionWavelength()
+{
+  if (!this->HeaderRead)
+	{
+	  vtkErrorMacro(<< "Header not read");
+	  return 0;
+	}
+
+  OMEPixels* pixels = this->Images->at(this->CurrentImage)->Pixels;
+  if (pixels->Channels->size() > this->CurrentChannel)
+	{
+	  return pixels->Channels->at(this->CurrentChannel)->EmissionWavelength;
+	}
+
+  return 0;
 }
 
 int vtkOMETIFFReader::GetNumberOfTimePoints()
