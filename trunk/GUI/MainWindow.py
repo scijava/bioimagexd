@@ -891,8 +891,9 @@ class MainWindow(wx.Frame):
 
 		mgr.createMenu("export", "&Export", place = 0)
 		mgr.addSubMenu("file", "export", "&Export images", MenuManager.ID_EXPORT)
-		mgr.addMenuItem("export", MenuManager.ID_EXPORT_VTIFILES, "&VTK dataset series\tCtrl-E", self.onMenuExport)
+		mgr.addMenuItem("export", MenuManager.ID_EXPORT_OMEFILES, "&OME-TIFF dataset series\tCtrl-E", self.onMenuExport)
 		mgr.addMenuItem("export", MenuManager.ID_EXPORT_IMAGES, "&Stack of images\tShift-Ctrl-E", self.onMenuExport)
+		mgr.addMenuItem("export", MenuManager.ID_EXPORT_VTIFILES, "&VTK dataset series", self.onMenuExport)
 
 		mgr.addSeparator("file")
 		#mgr.addMenuItem("file", MenuManager.ID_CLOSE_TASKWIN, "&Close task panel\tCtrl-W", \
@@ -1469,8 +1470,19 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		"""
 		selectedFiles = self.tree.getSelectedDataUnits()
 		if len(selectedFiles) > 1:
-			Dialogs.showerror(self, "You can only export one dataunit at a time", "Cannot export multiple datasets")
-			return
+			dataunit = selectedFiles[0]
+			dims1 = dataunit.getDimensions()
+			tps1 = dataunit.getNumberOfTimepoints()
+			vs1 = dataunit.getSettings().get("VoxelSize")
+			bd1 = dataunit.getSettings().get("BitDepth")
+			for dataunit in selectedFiles:
+				dims2 = dataunit.getDimensions()
+				tps2 = dataunit.getNumberOfTimepoints()
+				vs2 = dataunit.getSettings().get("VoxelSize")
+				bd2 = dataunit.getSettings().get("BitDepth")
+				if dims1 != dims2 or tps1 != tps2 or vs1 != vs2 or bd1 != bd2:
+					Dialogs.showerror(self, "You can only export dataunits that have same spatial and temporal dimensions, voxel size and bit depth", "Cannot export selected datasets")
+					return
 		elif len(selectedFiles) < 1:
 			Dialogs.showerror(self, "You need to select a dataunit to be exported.", "Select dataunit to be exported")
 			return
@@ -1478,7 +1490,9 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		imageMode = 0
 		if eid == MenuManager.ID_EXPORT_IMAGES:
 			imageMode = 1
-		self.exportdlg = ExportDialog.ExportDialog(self, selectedFiles[0], imageMode)
+		elif eid == MenuManager.ID_EXPORT_VTIFILES:
+			imageMode = 2
+		self.exportdlg = ExportDialog.ExportDialog(self, selectedFiles, imageMode)
 		
 		self.exportdlg.ShowModal()
 		
@@ -1687,10 +1701,14 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 											desc = "Load encoding project %s" % fname)
 				cmd.run()		
 				continue
-			
+
 			if sep.lower() in ["tif", "tiff", "jpg", "jpeg", "png","bmp"]:
-				self.onMenuImport(None, askfile)
-				return
+				sep2 = askfile.split(".")[-2]
+				if sep2.lower() == "ome":
+					pass
+				else:
+					self.onMenuImport(None, askfile)
+					return
 			
 			fname = os.path.split(askfile)[-1]
 			self.SetStatusText("Loading " + fname + "...")
@@ -1733,7 +1751,12 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 		dataunit = None
 		if self.tree.hasItem(path):
 			return
+		
 		ext = ext.lower()
+		if ext in ["tif", "tiff"]:
+			ext2 = path.split(".")[-2].lower()
+			if ext2 == "ome":
+				ext = "ome."+ext
 
 		if ext not in self.extToSource.keys():
 			return

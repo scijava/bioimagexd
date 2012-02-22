@@ -29,6 +29,7 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.22 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import uuid # OME-TIFF writer will crash if not imported first
 import sys
 import StringIO
 import os.path

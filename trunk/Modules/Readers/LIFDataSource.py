@@ -2,10 +2,9 @@
 """
  Unit: LIFDataSource.py
  Project: BioImageXD
- Created: 2007/07/19, LP
  Description: Class for managing 4D LIF data located on disk
 
- Copyright (C) 2005	BioImageXD Project
+ Copyright (C) 2007	BioImageXD Project
  See CREDITS.txt for details
 
  This program is free software; you can redistribute it and/or modify
@@ -43,7 +42,6 @@ class LIFDataSource(DataSource):
 	"""
 	Manages 4D data stored in a LIF-file.
 	"""
-
 	def __init__(self, filename = "", imageNum = -1, channelNum = -1, reader = None):
 		"""
 		Constructor of LIF DataSource
@@ -100,7 +98,7 @@ class LIFDataSource(DataSource):
 		"""
 		Returns the file name with image name
 		"""
-		return self.filename + "_" + self.imageName;
+		return self.filename + "_" + self.imageName
 
 	def getDataSet(self, i, raw = 0):
 		"""

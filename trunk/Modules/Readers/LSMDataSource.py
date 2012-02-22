@@ -58,6 +58,8 @@ class LsmDataSource(DataSource):
 		DataSource.__init__(self)
 		# Name and path of the lsm-file:
 		self.filename = filename
+		if len(os.path.basename(self.filename)) > 4:
+			self.imageName = os.path.basename(self.filename)[:-4]
 		self.numericalAperture = 0
 		self.excitationWavelength = 0
 		self.timepoint = -1
@@ -87,7 +89,7 @@ class LsmDataSource(DataSource):
 				f = open(filename)
 				f.close()
 			except IOError, ex:
-				Logging.error("Failed to open LSM File",
+				Logging.error("Failed to open LSM file",
 				"Failed to open file %s for reading: %s" % (filename, str(ex)))
 				return
 				

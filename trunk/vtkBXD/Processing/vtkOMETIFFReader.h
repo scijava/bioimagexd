@@ -74,8 +74,10 @@ public:
   int GetNumberOfTimePoints();
   int GetNumberOfChannels();
   const char* GetImageName();
-  const char* GetChannelName();
   unsigned int GetPixelType();
+  const char* GetChannelName();
+  int GetExcitationWavelength();
+  int GetEmissionWavelength();
 
   // Public Get macros
   vtkGetStringMacro(FileName);
@@ -141,19 +143,19 @@ class OMEChannel
 public:
   OMEChannel()
   {
-	Name = NULL;
-	Color = 0xffffff;
-	EmissionWavelength = ExcitationWavelength = 0.0;
+	this->Name = NULL;
+	this->Color = 0xffffff;
+	this->EmissionWavelength = this->ExcitationWavelength = 0;
   }
   ~OMEChannel()
   {
-	if (Name) delete[] Name;
+	if (this->Name) delete[] this->Name;
   }
 
-  const char* Name;
+  char* Name;
   int Color;
-  double EmissionWavelength;
-  double ExcitationWavelength;
+  int EmissionWavelength;
+  int ExcitationWavelength;
 };
 
 // Plane data class
