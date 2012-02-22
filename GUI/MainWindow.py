@@ -720,10 +720,7 @@ class MainWindow(wx.Frame):
 		modules = self.taskPanels.values()
 		modules.sort(self.sortModes)
 
- 		if platform.system() == "Darwin":
-			pass
-		else:
-			tb.AddSeparator()
+		tb.AddSeparator()
 		
 		for (moduletype, windowtype, mod) in modules:
 			name = mod.getName()
@@ -734,12 +731,8 @@ class MainWindow(wx.Frame):
 			tb.DoAddTool(tid, name, bmp, kind = wx.ITEM_CHECK, shortHelp = shortDesc)
 			wx.EVT_TOOL(self, tid, self.onMenuShowTaskWindow)
 			self.taskIds.append(tid)
-
- 		if platform.system() == "Darwin":
-			pass
-		else:
-			tb.AddSeparator()
-		
+			
+		tb.AddSeparator()
 				
 		modes = self.visualizationModes.values()
 		modes.sort(self.sortModes)
@@ -758,18 +751,12 @@ class MainWindow(wx.Frame):
 			
 			sepBefore, sepAfter = module.showSeparator()
 			if sepBefore:
-				if platform.system() == "Darwin":
-					pass
-				else:
-					tb.AddSeparator()
+				tb.AddSeparator()
 			
 			tb.DoAddTool(vid, module.getShortDesc(), bmp, kind = wx.ITEM_CHECK, shortHelp = module.getShortDesc())
 			
 			if sepAfter:
-				if platform.system() == "Darwin":
-					pass
-				else:
-					tb.AddSeparator()
+				tb.AddSeparator()
 			
 			wx.EVT_TOOL(self, vid, self.onMenuVisualizer)
 			self.visIds.append(vid)
