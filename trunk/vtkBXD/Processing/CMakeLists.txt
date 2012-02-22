@@ -27,6 +27,7 @@ vtkImageLabelDistanceToSurface.cxx
 vtkHandleColorTransferFunction.cxx
 vtkTestMemory.cxx
 vtkImageMathematicsClamp.cxx
+vtkOMETIFFReader.cxx
 )
 
 # --------------------------------------------------------------------------

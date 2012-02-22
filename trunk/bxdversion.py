@@ -1,1 +1,1 @@
-VERSION="beta-474"
+VERSION="1.0 Release Candidate 1"
