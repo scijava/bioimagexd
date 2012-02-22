@@ -34,6 +34,7 @@ import types
 import itk
 import time
 import GUI.GUIBuilder
+import lib.Progress
 
 class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""
@@ -55,7 +56,6 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 					  "Iterations" : "Max iterations",
 					  "Seed": "Seed voxel",
 					  "InitialDistance": "Initial distance to seed",
-					  "UsePrevious": "Use previous output as initialization",
 					  "Alpha": "Sigmoid alpha",
 					  "Beta": "Sigmoid beta"}
 
@@ -69,7 +69,7 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		self.smooth = None
 		self.gradient = None
 		self.sigmoid = None
-		self.previousOutput = None
+		self.progressObj = lib.Progress.Progress()
 
 	def getParameters(self):
 		"""
@@ -78,7 +78,7 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		return [["Seed", ("Seed", "InitialDistance")],
 				["Scaling parameters", ("PropagationScaling","CurvatureScaling","AdvectionScaling")],
 				["Speed and accuracy parameters",("MaxRMSError","Iterations")],
-				["Settings",("Alpha","Beta","UsePrevious")]]
+				["Settings",("Alpha","Beta")]]
 
 	def getType(self, param):
 		"""
@@ -89,8 +89,6 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 			return types.IntType
 		if param == "Seed":
 			return GUI.GUIBuilder.PIXELS
-		if param == "UsePrevious":
-			return types.BooleanType
 		return types.FloatType
 
 	def getDefaultValue(self, param):
@@ -112,8 +110,6 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 			return []
 		if param == "InitialDistance":
 			return 100
-		if param == "UsePrevious":
-			return False
 		if param == "Alpha":
 			return -0.5
 		if param == "Beta":
@@ -124,21 +120,17 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		Returns the level of knowledge for using the parameter
 		@param param Parameter name
 		"""
-		if param == "Iterations" or param == "MaxRMSError" or param == "UsePrevious":
+		if param == "Iterations" or param == "MaxRMSError":
 			return scripting.COLOR_INTERMEDIATE
 		return scripting.COLOR_EXPERIENCED
 
-	#def updateProgress(self):
-		#import pdb
-		#pdb.set_trace()
-		#data = self.filter.GetOutput()
-		#zeroCrossing = itk.ZeroCrossingImageFilter.IF2IF2.New()
-		#zeroCrossing.SetBackgroundValue(0)
-		#zeroCrossing.SetForegroundValue(255)
-		#zeroCrossing.SetInput(data)
-		#data = self.zeroCrossing.GetOutput()
-		#data.Update()
-		#i = self.filter.GetElapsedIterations()
+	def updateProgress(self):
+		"""
+		Progress event handle
+		"""
+		i = self.filter.GetElapsedIterations()
+		self.progressObj.setProgress(i / float(self.parameters["Iterations"]))
+		lib.ProcessingFilter.ProcessingFilter.updateProgress(self, None, "ProgressEvent")
 
 	def execute(self, inputs = (2,2), update = 0, last = 0):
 		"""
@@ -149,6 +141,8 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self,inputs):
 			return None
 
+		self.progressObj.setProgress(0.0)
+		lib.ProcessingFilter.ProcessingFilter.updateProgress(self, None, "ProgressEvent")
 		initialModel = self.getInput(1)
 		featureImage = self.getInput(2)
 
@@ -183,60 +177,11 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		self.sigmoid.SetAlpha(self.parameters["Alpha"])
 		self.sigmoid.SetBeta(self.parameters["Beta"])
 		self.sigmoid.SetInput(self.gradient.GetOutput())
-		#self.sigmoid.SetInput(featureImage)
 
-		# Test new idea
 		cast = eval("itk.RescaleIntensityImageFilter.IF%dIUC%d.New()"%(dim,dim))
 		cast.SetInput(self.sigmoid.GetOutput())
 		cast.SetOutputMinimum(0)
 		cast.SetOutputMaximum(255)
-		#writer = itk.ImageFileWriter.IUC2.New()
-		#writer.SetInput(cast.GetOutput())
-		#writer.SetFileName("/tmp/test0.tiff")
-		#writer.Update()
-		#writer = itk.ImageSeriesWriter.IUC3IUC2.New()
-		#nameGenerator = itk.NumericSeriesFileNames.New()
-		#nameGenerator.SetSeriesFormat("/home/lopaavol/BioImageXD/testfiles/SpeedImage/Smooth5GreenGeodesic%03d.tiff")
-		#nameGenerator.SetStartIndex(0)
-		#nameGenerator.SetEndIndex(24)
-		#writer.SetFileNames(nameGenerator.GetFileNames())
-		#writer.SetInput(cast.GetOutput())
-		#writer.Update()
-		#initImage = itk.Image.F3.New()
-		#largestRegion = initialModel.GetLargestPossibleRegion()
-		#size = largestRegion.GetSize()
-		#initImage.SetRegions(largestRegion)
-		#initImage.Allocate()
-
-		#for x in range(0,size.GetElement(0)):
-		#	for y in range(0,size.GetElement(1)):
-		#		for z in range(0,size.GetElement(2)):
-		#			initImage.SetPixel((x,y,z),0.0)
-
-		#for x in range(0,size.GetElement(0)):
-		#	for y in range(0,size.GetElement(1)):
-		#		initImage.SetPixel((x,y,0),1.0)
-		#		initImage.SetPixel((x,y,size.GetElement(2)-1),1.0)
-
-		#for z in range(0,size.GetElement(2)):
-		#	for x in range(0,size.GetElement(0)):
-		#		initImage.SetPixel((x,0,z),1.0)
-		#		initImage.SetPixel((x,size.GetElement(1)-1,z),1.0)
-		#	for y in range(0,size.GetElement(1)):
-		#		initImage.SetPixel((0,y,z),1.0)
-		#		initImage.SetPixel((size.GetElement(0)-1,y,z),1.0)
-		#initImage.SetPixel((128,128,12),1.0)
-
-		#pdb.set_trace()
-		#dan = itk.DanielssonDistanceMapImageFilter.IF3IF3.New()
-		#dan.SetInput(initImage)
-		#danOutput = dan.GetOutput()
-		#danOutput.Update()
-		#ss = itk.ShiftScaleImageFilter.IF3IF3.New()
-		#ss.SetScale(-1.0)
-		#ss.SetInput(danOutput)
-		#danOutput = ss.GetOutput()
-		#danOutput.Update()
 
 		seedPoints = self.parameters["Seed"]
 		seeds = eval("itk.VectorContainer.UILSNF%d.New()"%dim)
@@ -254,42 +199,26 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 			node.SetIndex(seedPos)
 			seeds.InsertElement(i, node)
 
-		if not self.parameters["UsePrevious"] or self.previousOutput is None:
-			fastMarch = itk.FastMarchingImageFilter[imagetype,imagetype].New()
-			fastMarch.SetTrialPoints(seeds)
-			fastMarch.SetSpeedConstant(1.0)
-			fastMarch.SetOutputSize(initialModel.GetLargestPossibleRegion().GetSize())
-			fastMarch.SetOutputSpacing(initialModel.GetSpacing())
-			fastMarch.SetOutputOrigin(initialModel.GetOrigin())
+		fastMarch = itk.FastMarchingImageFilter[imagetype,imagetype].New()
+		fastMarch.SetTrialPoints(seeds)
+		fastMarch.SetSpeedConstant(1.0)
+		fastMarch.SetOutputSize(initialModel.GetLargestPossibleRegion().GetSize())
+		fastMarch.SetOutputSpacing(initialModel.GetSpacing())
+		fastMarch.SetOutputOrigin(initialModel.GetOrigin())
 
-		#maurer = itk.SignedMaurerDistanceMapImageFilter.IF3IF3.New()
-		#maurer.SetInput(initialModel)
-		#maurer.SetUseImageSpacing(1)
-		#maurer.SetBackgroundValue(0)
-		#maurer.Update()
-		#return maurer.GetOutput()
-
-		#pc = itk.PyCommand.New()
-		#pc.SetCommandCallable(self.updateProgress)
+		pc = itk.PyCommand.New()
+		pc.SetCommandCallable(self.updateProgress)
 
 		self.filter = eval("itk.GeodesicActiveContourLevelSetImageFilter.IF%dIF%dF.New()"%(dim,dim))
 		self.filter.SetPropagationScaling(self.propagationScaling)
 		self.filter.SetCurvatureScaling(self.curvatureScaling)
 		self.filter.SetAdvectionScaling(self.advectionScaling)
 		self.filter.SetMaximumRMSError(self.maxRMSError)
-		#self.filter.SetInput(initialModel)
-		#self.filter.SetInput(danOutput)
-		if self.parameters["UsePrevious"] and self.previousOutput is not None:
-			self.filter.SetInput(self.previousOutput)
-			self.iterations = int(self.iterations / 5)
-		else:
-			self.filter.SetInput(fastMarch.GetOutput())
-			self.previousOutput = None
-		#self.filter.SetInput(maurer.GetOutput())
+
+		self.filter.SetInput(fastMarch.GetOutput())
 		self.filter.SetFeatureImage(self.sigmoid.GetOutput())
-		#self.filter.SetFeatureImage(initialModel)
 		self.filter.SetNumberOfIterations(self.iterations)
-		#self.filter.AddObserver(itk.ProgressEvent(),pc.GetPointer())
+		self.filter.AddObserver(itk.ProgressEvent(),pc)
 		
 		start = time.clock()
 		self.filter.Update()
@@ -301,9 +230,6 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		print "No. elapsed iterations: %d"%(self.filter.GetElapsedIterations())
 		print "RMS change: %.3f"%(self.filter.GetRMSChange())
 
-		self.previousOutput = self.filter.GetOutput()
-		self.previousOutput.DisconnectPipeline()
-
 		self.zeroCrossing = itk.ZeroCrossingImageFilter[imagetype,imagetype].New()
 		self.zeroCrossing.SetBackgroundValue(0)
 		self.zeroCrossing.SetForegroundValue(255)
@@ -311,8 +237,11 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		data = self.zeroCrossing.GetOutput()
 		data.Update()
 
-		self.dataUnit.getSettings().set("BitDepth", 32)
-		#if last:
-		#	data = self.castITKImage(data,eval("itk.Image.UC%d"%dim))
+		#self.dataUnit.getSettings().set("BitDepth", 32)
+		self.dataUnit.getSettings().set("BitDepth", 8)
+		data = self.castITKImage(data, eval("itk.Image.UC%d"%dim))
+		
+		self.progressObj.setProgress(1.0)
+		lib.ProcessingFilter.ProcessingFilter.updateProgress(self, None, "ProgressEvent")
 		
 		return data
