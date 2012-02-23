@@ -76,7 +76,7 @@ vtkOMETIFFReader::~vtkOMETIFFReader()
   delete this->Files;
 }
 
-int vtkOMETIFFReader::Clean()
+void vtkOMETIFFReader::Clean()
 {
   this->Files->clear();
   this->Images->clear();
@@ -223,12 +223,19 @@ int vtkOMETIFFReader::CreateImages(vtkXMLDataElement* imageElement)
   // to handle
   int numOfNestedElements = imageElement->GetNumberOfNestedElements();
   vtkXMLDataElement* nestedIter;
+  int createdImages = 0;
   for (int i = 0; i < numOfNestedElements; ++i)
 	{
 	  nestedIter = imageElement->GetNestedElement(i);
 	  const char* name = nestedIter->GetName();
-	  if (!strcmp(name,"Pixels")) this->CreateImage(imageElement, nestedIter);
+	  if (!strcmp(name,"Pixels"))
+	  {
+	  this->CreateImage(imageElement, nestedIter);
+	  createdImages++;
+	  }
 	}
+
+  return createdImages;
 }
 
 int vtkOMETIFFReader::CreateImage(vtkXMLDataElement* imageElement, vtkXMLDataElement* pixelsElement)
