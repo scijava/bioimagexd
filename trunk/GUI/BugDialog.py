@@ -3,7 +3,6 @@
 """
  Unit: BugDialog
  Project: BioImageXD
- Created: 25.06.2007, KP
  Description:
 
  A dialog for reporting a bug to the BioImageXD developers
@@ -33,7 +32,6 @@ __date__ = "$Date: 2005/01/13 14:52:39 $"
 
 
 import GUI.Dialogs
-#import lib.email
 from lib.email.mime.multipart import MIMEMultipart
 from lib.email.mime.text import MIMEText
 from lib.email.mime.base import MIMEBase
@@ -42,12 +40,14 @@ import smtplib
 import wx	# This module uses the new wx namespace
 import Configuration
 import platform
+import bxdversion
 
 def createSystemReport():
 	"""
 	create a report of the system
 	"""
 	ret = "System report for machine %s (%s)\n"%(platform.node(),platform.system())
+	ret += "BioImageXD version: %s\n"%bxdversion.VERSION
 	ret += "Version: %s\n"%platform.version()
 	ret += "Platform: %s\n"%platform.platform()
 	ret += "Machine type (processor): %s (%s)\n"%(platform.machine(), platform.processor())
