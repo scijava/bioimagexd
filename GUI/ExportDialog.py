@@ -103,67 +103,90 @@ class ExportDialog(wx.Dialog):
 			writer.SetCompressionToNoCompression()
 		
 		prefix = dirname + os.path.sep
-		n = pattern.count("%")
-		Logging.info("Number of images =", n, kw = "io")
 		self.dlg = wx.ProgressDialog("Writing", "Writing image %d / %d" % (0, 0),
 		maximum = self.imageAmnt, parent = self, style = wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_AUTO_HIDE)
 		
 		if n == 0:
 			pattern = pattern + "%d"
 			n = 1
-		Logging.info("Prefix = ", prefix, "pattern = ", pattern, kw = "io")
+		Logging.info("Prefix =", prefix, "pattern =", pattern, kw = "io")
 		writer.SetFilePrefix(prefix)
-		for t in range(self.t):
-			Logging.info("Writing timepoint %d" % t, kw = "io")
-			# If the numbering uses two separate numbers (one for time point, one for slice)
-			# then we modify the pattern to account for the timepoint
-			if n == 2:
-				begin = pattern.rfind("%")
-				beginstr = pattern[:begin - 1]
-				currpattern = beginstr % t + pattern[begin - 1:]
-				Logging.info("beginstr=%s, currpattern=%s" % (beginstr, beginstr % t + pattern[begin - 1:]), kw = "io")
-			else:
-				# otherwise we put an underscore (_) in the name
-				# then later on it will be renamed to the proper name and underscore removed
-				# this is done so that if we write many timepoints, the files can be named
-				# with the correct numbers, because the image writer would otherwise write
-				# every timepoint with slice numbers from 0 to z
-				currpattern = "_" + pattern
-			currpattern += ".%s" % ext
-			currpattern = "%s" + currpattern
-			Logging.info("Setting pattern %s" % currpattern, kw = "io")
-			writer.SetFilePattern(currpattern)
-			data = self.dataUnit.getTimepoint(t)
-			data.SetUpdateExtent(data.GetWholeExtent())
-			data.Update()
-			writer.SetInput(data)
-			writer.SetFileDimensionality(2)
 
-			self.dlg.Update((t+1) * self.z, "Writing image %d / %d" % ((t+1) * self.z, self.imageAmnt))
+		# Do vertical flip to each image
+		flip = vtk.vtkImageFlip()
+		flip.SetFilteredAxis(1)
+		for c in range(self.c):
+			for t in range(self.t):
+				Logging.info("Writing timepoint %d" % t, kw = "io")
+				# If the numbering uses two separate numbers (one for time point, one for slice)
+				# then we modify the pattern to account for the timepoint
+				if n == 3:
+					end = pattern.rfind("%")
+					endstr = pattern[end:]
+					middle = pattern.rfind("%",0,end)
+					middlestr = pattern[middle:end]
+					beginstr = pattern[:middle]
+					currpattern = beginstr%c + middlestr%t + endstr
+				elif n == 2:
+					end = pattern.rfind("%")
+					endstr = pattern[end:]
+					beginstr = pattern[:end]
+					currpattern = beginstr%t + endstr
+					currpattern = "_" + currpattern
+				else:
+					# otherwise we put an underscore (_) in the name then later
+					# on it will be renamed to the proper name and underscore
+					# removed this is done so that if we write many timepoints,
+					# the files can be named with the correct numbers, because
+					# the image writer would otherwise write
+					# every timepoint with slice numbers from 0 to z
+					currpattern = "_" + pattern
+				currpattern += ".%s" % ext
+				currpattern = "%s" + currpattern
+				Logging.info("Setting pattern %s" % currpattern, kw = "io")
+				writer.SetFilePattern(currpattern)
+				data = self.dataUnits[c].getTimepoint(t)
+				data.SetUpdateExtent(data.GetWholeExtent())
+				data.Update()
+				flip.SetInput(data)
+				writer.SetInput(flip.GetOutput())
+				writer.SetFileDimensionality(2)
 
-			Logging.info("Writer = ", writer, kw = "io")
-			writer.Update()
-			writer.Write()
-			overwrite = None
-			if n == 1:
-				for z in range(self.z):
-					img = prefix + "_" + pattern % z + ".%s" % ext
-					num = t * self.z + z
-					newname = prefix + pattern % num + ".%s" % ext
-					fileExists = os.path.exists(newname)
-					if fileExists and overwrite == None:
-						dlg = wx.MessageDialog(self, 
-						"A file called '%s' already exists. Overwrite?"%os.path.basename(newname),
-						"Overwrite existing file",
-						wx.YES_NO|wx.YES_DEFAULT)
-						if dlg.ShowModal()==wx.ID_YES:
-							overwrite=1
-							os.remove(newname)
+				self.dlg.Update((c+1) * (t+1) * self.z, "Writing image %d / %d" % ((c+1) * (t+1) * self.z, self.imageAmnt))
+
+				Logging.info("Writer = ", writer, kw = "io")
+				writer.Update()
+				writer.Write()
+				overwrite = None
+
+				if n == 1 or n == 2:
+					for z in range(self.z):
+						if n == 1:
+							img = prefix + "_" + pattern % z + ".%s" % ext
 						else:
-							break
-					elif fileExists and overwrite==1:
-						os.remove(newname)
-					os.rename(img, newname)
+							img = prefix + "_" + pattern%(t,z) + ".%s" % ext
+
+						if n == 1:
+							num = c * self.t * self.z + t * self.z + z
+							newname = prefix + pattern % num + ".%s" % ext
+						else:
+							newname = prefix + pattern%(t,z) + ".%s" % ext
+						
+						fileExists = os.path.exists(newname)
+						if fileExists and overwrite == None:
+							dlg = wx.MessageDialog(self, 
+												   "A file called '%s' already exists. Overwrite?"%os.path.basename(newname),
+												   "Overwrite existing file",
+												   wx.YES_NO|wx.YES_DEFAULT)
+							if dlg.ShowModal()==wx.ID_YES:
+								overwrite=1
+								os.remove(newname)
+							else:
+								break
+						elif fileExists and overwrite == 1:
+							os.remove(newname)
+						os.rename(img, newname)
+		
 		self.dlg.Destroy()
 			
 	def writeDatasets(self, event = None):
