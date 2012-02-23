@@ -426,6 +426,7 @@ class FilterBasedModule(lib.Module.Module):
 			modified = filterlist.getModified()
 		else:
 			modified = 0
+		
 		if preview and not modified and self.cached and self.timepoint == self.cachedTimepoint:
 			Logging.info("--> Returning cached data, timepoint=%d, cached timepoint=%d" % 
 				(self.timepoint, self.cachedTimepoint), kw = "pipeline")
@@ -437,7 +438,7 @@ class FilterBasedModule(lib.Module.Module):
 		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
 
 		data = self.images
-		if filterlist.getCount() == 0:
+		if not modified or filterlist.getCount() == 0:
 			Logging.info("No filters, returning original dat", kw="pipeline")
 			return self.images[0]
 		try:
