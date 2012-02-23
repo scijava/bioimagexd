@@ -75,6 +75,7 @@ public:
   vtkBooleanMacro(UseXML, int);
   vtkSetStringMacro(ImageName);
   vtkSetStringMacro(FileNamePattern);
+  vtkSetMacro(TimeIncrement, double);
 
   vtkGetMacro(XResolution, double);
   vtkGetMacro(YResolution, double);
@@ -87,6 +88,7 @@ public:
   vtkGetMacro(Channels, int);
   vtkGetStringMacro(ImageName);
   vtkGetStringMacro(FileNamePattern);
+  vtkGetMacro(TimeIncrement, double);
 
 protected:
   vtkOMETIFFWriter();
@@ -107,6 +109,7 @@ protected:
   double XResolution; // Pixels physical size in x-direction in um
   double YResolution; // Pixels physical size in y-direction in um
   double ZResolution; // Pixels physical size in z-direction in um
+  double TimeIncrement;
   unsigned int CurrentTimePoint; // Time point of input data
   unsigned int CurrentChannel; // Channel number of input data
   char* ImageName;

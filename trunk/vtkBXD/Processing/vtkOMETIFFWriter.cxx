@@ -61,6 +61,7 @@ vtkOMETIFFWriter::vtkOMETIFFWriter()
   this->XResolution = 0.0;
   this->YResolution = 0.0;
   this->ZResolution = 0.0;
+  this->TimeIncrement = 0.0;
   this->TimePoints = 1;
   this->Channels = 1;
   this->ImageName = NULL;
@@ -268,6 +269,11 @@ int vtkOMETIFFWriter::WriteXMLHeader(TIFF* tiff, vtkImageData* image, int* wext,
 	{
 	  sprintf(phys_size, "%6.4f", this->ZResolution);
 	  pixelsElement->SetAttribute("PhysicalSizeZ", phys_size);
+	}
+  if (this->TimeIncrement > std::numeric_limits<float>::epsilon())
+	{
+	  sprintf(phys_size, "%6.4f", this->TimeIncrement);
+	  pixelsElement->SetAttribute("TimeIncrement", phys_size);
 	}
   imageElement->AddNestedElement(pixelsElement);
 

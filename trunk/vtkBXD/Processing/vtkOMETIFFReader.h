@@ -78,6 +78,7 @@ public:
   const char* GetChannelName();
   int GetExcitationWavelength();
   int GetEmissionWavelength();
+  double GetTimeIncrement();
 
   // Public Get macros
   vtkGetStringMacro(FileName);
