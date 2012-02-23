@@ -129,7 +129,6 @@ int vtkOMETIFFReader::SetFileName(const char* filename)
   const char* path = str.substr(0, str.find_last_of(sep) + 1).c_str();
   this->FilePath = new char[strlen(path)+1];
   strcpy(this->FilePath, path);
-  this->Files->push_back(this->FileName);
 
   return 1;
 }
@@ -211,6 +210,10 @@ int vtkOMETIFFReader::ParseXMLHeader(const char* header, size_t chars)
 	  return 0;
 	}
 
+  // Make sure that this->Files has at least one file if no uuid elements were
+  // found
+  if (this->Files->size() == 0) this->Files->push_back(this->FileName);
+
   return 1;
 }
 
@@ -291,8 +294,11 @@ int vtkOMETIFFReader::CreateImage(vtkXMLDataElement* imageElement, vtkXMLDataEle
 		{
 		  OMEChannel* Channel = new OMEChannel();
 		  const char* ch_name = nestedIter->GetAttribute("Name");
-		  Channel->Name = new char[strlen(ch_name)+1];
-		  strcpy(Channel->Name,ch_name);
+		  if (ch_name)
+			{
+			  Channel->Name = new char[strlen(ch_name)+1];
+			  strcpy(Channel->Name,ch_name);
+			}
 		  nestedIter->GetScalarAttribute("Color", Channel->Color);
 		  nestedIter->GetScalarAttribute("EmissionWavelength", Channel->EmissionWavelength);
 		  nestedIter->GetScalarAttribute("ExcitationWavelength", Channel->ExcitationWavelength);
