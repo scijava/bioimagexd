@@ -597,7 +597,6 @@ class DataSource:
 		currentTimepoint = self.getCurrentTimepoint()
 		timestamp = self.getTimeStamp(currentTimepoint)
 		msg = "Reading channel %s of %s"%(self.getName(), self.getShortName())
-		
 		if currentTimepoint >= 0 and self.getDataSetCount() > 1:
 			msg += " (timepoint %d / %d" % (currentTimepoint+1, self.getDataSetCount())
 			msg+=", %.1fs)"%timestamp

@@ -31,6 +31,7 @@ from lib.DataUnit import DataUnit
 import Logging
 import vtk
 import vtkbxd
+import lib.messenger
 
 def getExtensions():
 	return ["ome.tif", "ome.tiff"]
@@ -53,11 +54,14 @@ class OMETIFFDataSource(DataSource):
 		self.filename = filename
 		self.numImages = 1
 		self.numChannels = 1
+		self.numTimePoints = 1
 		self.currentImage = imageNum
 		self.currentChannel = channelNum
-		self.currentTimePoint = 0
+		self.currentTimepoint = 0
 		self.imageName = ""
 		self.reader = vtkbxd.vtkOMETIFFReader()
+		self.reader.AddObserver('ProgressEvent', lib.messenger.send)
+		lib.messenger.connect(self.reader, 'ProgressEvent', self.updateProgress)
 
 		self.ctf = None
 		
@@ -77,12 +81,14 @@ class OMETIFFDataSource(DataSource):
 			self.imageName = self.reader.GetImageName()
 			if self.imageName == "":
 				self.imageName = "Image-%d"%(self.currentImage+1)
+			self.numTimePoints = self.reader.GetNumberOfTimePoints()
+			self.createTimeStamps()
 
 	def getDataSetCount(self):
 		"""
 		Returns the count of time points of the selected OME image
 		"""
-		return self.reader.GetNumberOfTimePoints()
+		return self.numTimePoints
 		
 	def getFileName(self):
 		"""
@@ -101,6 +107,7 @@ class OMETIFFDataSource(DataSource):
 						  "Time point %d requested is out of bounds"%i)
 			return None
 
+		self.currentTimepoint = i
 		self.reader.SetCurrentTimePoint(i)
 		data = self.reader.GetOutput()
 		if raw:
@@ -142,7 +149,7 @@ class OMETIFFDataSource(DataSource):
 		dim = list(dim)
 		dim.append(self.reader.GetNumberOfTimePoints())
 		for i in range(4):
-			if  dim[i] <= 0:
+			if dim[i] <= 0:
 				dim[i] = 1
 		
 		dim = tuple(dim)
@@ -246,6 +253,24 @@ class OMETIFFDataSource(DataSource):
 
 		return self.bitdepth
 
+	def createTimeStamps(self):
+		"""
+		Creates time stamps for setTimeStamps and setAbsoluteTimeStamps methods
+		Currently supports only relative timestamps
+		"""
+		timeIncrement = self.reader.GetTimeIncrement()
+		if timeIncrement == 0.0:
+			return
+
+		absoluteTimeStamps = [0.0]
+		relativeTimeStamps = [0.0]
+		for tp in range(1,self.numTimePoints+1):
+			relativeTimeStamps.append(relativeTimeStamps[tp-1] + timeIncrement)
+			absoluteTimeStamps.append(absoluteTimeStamps[tp-1] + timeIncrement)
+
+		self.setTimeStamps(relativeTimeStamps)
+		self.setAbsoluteTimeStamps(absoluteTimeStamps)
+		
 	def uniqueID(self):
 		"""
 		Return a unique string identifying the dataset

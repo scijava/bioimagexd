@@ -282,6 +282,7 @@ int vtkOMETIFFReader::CreateImage(vtkXMLDataElement* imageElement, vtkXMLDataEle
   pixelsElement->GetScalarAttribute("PhysicalSizeX", Image->Pixels->PhysicalSizeX);
   pixelsElement->GetScalarAttribute("PhysicalSizeY", Image->Pixels->PhysicalSizeY);
   pixelsElement->GetScalarAttribute("PhysicalSizeZ", Image->Pixels->PhysicalSizeZ);
+  pixelsElement->GetScalarAttribute("TimeIncrement", Image->Pixels->TimeIncrement);
 
   // Create channel and plane objects
   int numOfNestedElements = pixelsElement->GetNumberOfNestedElements();
@@ -826,6 +827,17 @@ int vtkOMETIFFReader::GetEmissionWavelength()
 	}
 
   return 0;
+}
+
+double vtkOMETIFFReader::GetTimeIncrement()
+{
+  if (!this->HeaderRead)
+	{
+	  vtkErrorMacro(<< "Header not read");
+	  return 0.0;
+	}
+
+  return this->Images->at(this->CurrentImage)->Pixels->TimeIncrement;
 }
 
 int vtkOMETIFFReader::GetNumberOfTimePoints()
