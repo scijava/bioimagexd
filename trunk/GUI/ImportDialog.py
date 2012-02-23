@@ -219,8 +219,28 @@ class ImportDialog(wx.Dialog):
 	def createImageImport(self):
 		"""
 		Creates a panel for importing of images as slices of a volume
-		"""            
+		"""
 		self.imageSizer = wx.GridBagSizer(5, 5)
+		self.textbox = wx.StaticBox(self, -1, "Instructions")
+		self.textsizer = wx.StaticBoxSizer(self.textbox, wx.VERTICAL)
+		self.infolbl = wx.StaticText(self, -1,
+"""
+
+1. Click "Browse" and choose any of the images you wish to import as one dataset (all must
+    have the same directory, dimensions, and file name prefix followed by a running number).
+
+2. Choose "All files in same directory" or "Files following pattern" (alter suggested pattern
+    if needed) and click "Update".
+
+3. Choose images from "List of Input Data" (all are imported as default).
+
+4. Specify "Volume information" (required for correct image processing, must be entered when
+    importing regular image files from which it cannot be read automatically).
+
+5. Click "OK". A BioImageXD dataset is created and opened (if importing RGB color images,
+    it will have 4 channels: 1 color + 3 greyscale for components R, G, B).
+""")
+		self.textsizer.Add(self.infolbl, wx.EXPAND)
 		self.imageSourcebox = wx.StaticBox(self, -1, "Source file")
 		self.imageSourceboxsizer = wx.StaticBoxSizer(self.imageSourcebox, wx.VERTICAL)
 		
@@ -361,13 +381,13 @@ class ImportDialog(wx.Dialog):
 		self.spacingLbl = wx.StaticText(self, -1, "1.00 x 1.00 x 1.00")
 		
 		n = 0
-		msglbl = wx.StaticText(self, -1,
-"""You are opening images from which we cannot read certain pieces of information,
-such as voxel sizing and number of slices in a single timepoint. This information 
-is important for the correct visualization and processing of the images. Please 
-enter the information below.""")
-		self.infosizer.Add(msglbl, (n, 0), span = (1, 2))
-		n += 1
+		#msglbl = wx.StaticText(self, -1,
+#"""You are opening images from which we cannot read certain pieces of information,
+#such as voxel sizing and number of slices in a single timepoint. This information 
+#is important for the correct visualization and processing of the images. Please 
+#enter the information below.""")
+		#self.infosizer.Add(msglbl, (n, 0), span = (1, 2))
+		#n += 1
 	  
 		self.infosizer.Add(self.nameLbl, (n, 0))
 		self.infosizer.Add(self.nameEdit, (n, 1), flag = wx.EXPAND | wx.LEFT | wx.RIGHT)
@@ -408,19 +428,18 @@ enter the information below.""")
 		self.infosizer.Add(self.flipHorizBox, (n, 1))
 		
 		n+=1
-		self.updateBtn = wx.Button(self, -1, "Update information")
+		#self.updateBtn = wx.Button(self, -1, "Update information")
 		
-		self.infosizer.Add(self.updateBtn, (n, 0), span = (1, 2))
+		#self.infosizer.Add(self.updateBtn, (n, 0), span = (1, 2))
 		
-		self.updateBtn.Bind(wx.EVT_BUTTON, self.onUpdatePreview)
+		#self.updateBtn.Bind(wx.EVT_BUTTON, self.onUpdatePreview)
 		
 		self.imageInfoSizer.Add(self.infosizer, 1, wx.EXPAND | wx.ALL)
-		
-		
-		self.imageSizer.Add(self.imageSourceboxsizer, (0, 0), flag = wx.EXPAND | wx.ALL, border = 5, span = (1, 2) )
-		self.imageSizer.AddGrowableRow(0)
-		self.imageSizer.AddGrowableCol(0)
-		self.imageSizer.Add(self.imageInfoSizer, (1, 0), flag = wx.EXPAND | wx.ALL, border = 5)
+		self.imageSizer.Add(self.textsizer, (0,0), flag = wx.EXPAND | wx.ALL, border = 5)
+		self.imageSizer.Add(self.imageInfoSizer, (0, 1), flag = wx.EXPAND | wx.ALL, border = 5)
+		#self.imageSizer.AddGrowableRow(0)
+		#self.imageSizer.AddGrowableCol(0)
+		self.imageSizer.Add(self.imageSourceboxsizer, (1, 0), flag = wx.EXPAND | wx.ALL, border = 5)
 		self.imageSizer.Add(self.previewSizer, (1, 1), border = 5)
 		
 		if self.inputFile:
