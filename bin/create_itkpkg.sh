@@ -60,7 +60,7 @@ cp /cygdrive/c/BioImageXD/wrapITK/Languages/Python/Configuration/*.py Python/Con
 # was copied.
 for extproj in ItkVtkGlue #labelShape
 do
-	BASE="/cygdrive/c/BioImageXD/wrapitk-svn/ExternalProjects/${extproj}"
+	BASE="/cygdrive/c/BioImageXD/wrapITK/maint-read-only/ExternalProjects/${extproj}"
 	cp $BASE/lib/*.py Python/Release
 	cp $BASE/lib/Release/*.pyd lib/Release
 	cp $BASE/Wrapping/Languages/Python/Configuration/* Python/Configuration

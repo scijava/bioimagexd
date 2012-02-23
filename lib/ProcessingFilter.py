@@ -205,7 +205,8 @@ class ProcessingFilter:
 		"""
 		Callback for when the filter is removed
 		"""
-		self.gui.onRemove(self)
+		if self.gui:
+			self.gui.onRemove(self)
 
 	def onEnable(self):
 		"""
