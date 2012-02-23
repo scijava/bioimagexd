@@ -238,7 +238,10 @@ class ExportDialog(wx.Dialog):
 			imageName = self.dataUnits[c].getImageName()
 			voxelSize = self.dataUnits[c].getVoxelSize()
 			if self.t > 1:
-				timeInc = self.dataUnits[c].getTimeStamp(1) - self.dataUnits[c].getTimeStamp(0)
+				try:
+					timeInc = self.dataUnits[c].getTimeStamp(1) - self.dataUnits[c].getTimeStamp(0)
+				except:
+					timeInc = 0.0
 			
 			for t in range(self.t):
 				filenm = filenames[i]
@@ -251,7 +254,8 @@ class ExportDialog(wx.Dialog):
 					writer.SetXResolution(voxelSize[0] * 10**6)
 					writer.SetYResolution(voxelSize[1] * 10**6)
 					writer.SetZResolution(voxelSize[2] * 10**6)
-					writer.SetTimeIncrement(timeInc)
+					if self.t > 1:
+						writer.SetTimeIncrement(timeInc)
 				writer.SetFileName(filenm)
 				data = self.dataUnits[c].getTimepoint(t)
 				data.SetUpdateExtent(data.GetWholeExtent())
