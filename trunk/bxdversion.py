@@ -1,1 +1,1 @@
-VERSION="beta-474"
+VERSION="1.0RC2 (r1767)"
