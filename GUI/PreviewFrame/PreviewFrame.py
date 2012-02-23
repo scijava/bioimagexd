@@ -332,6 +332,7 @@ class PreviewFrame(InteractivePanel):
 				scalar = tuple(scalar)
 
 		else:
+			self.rawImage.Update()
 			rv = self.rawImage.GetScalarComponentAsDouble(x, y, z, 0)
 			gv = self.rawImage.GetScalarComponentAsDouble(x, y, z, 1)
 			bv = self.rawImage.GetScalarComponentAsDouble(x, y, z, 2)
