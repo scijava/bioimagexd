@@ -39,6 +39,7 @@ import lib.ParticleReader
 import lib.Particle
 import lib.ParticleWriter
 import lib.Math
+import lib.Progress
 
 DIST_UNIFORM = 0
 DIST_NORM = 1
@@ -51,6 +52,7 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 	"""		
 	name = "4D particle simulation"
 	category = lib.FilterTypes.SIMULATION
+	level = scripting.COLOR_EXPERIENCED
 
 	def __init__(self):
 		"""
@@ -67,13 +69,14 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.voxelSize = (1.0, 1.0, 1.0)
 		self.cellCOM = None
 		self.modified = 1
+		self.progressObj = lib.Progress.Progress()
 		self.descs = {"X":"X:", "Y":"Y:", "Z":"Z:","Time":"Number of timepoints",
 		"Coloc":"Create colocalization between channels", 
 		"ColocAmountStart":"Coloc. amnt (at start)",
 		"ColocAmountEnd":"Coloc. amnt (at end)",
-		"Shift":"Create shift in the data",
-		"ShiftStart":"Min. shift (in x,y px size):",
-		"ShiftEnd":"Max. shift (in x,y px size)",
+		#"Shift":"Create shift in the data",
+		#"ShiftStart":"Min. shift (in x,y px size):",
+		#"ShiftEnd":"Max. shift (in x,y px size)",
 		"ShotNoiseAmount":"% of shot noise",
 		"ShotNoiseMin":"Min. intensity of shot noise",
 		"ShotNoiseMax":"Max. intensity of shot noise",
@@ -86,8 +89,8 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"ObjSizeStart":"Min. size of object (in px)",
 		"ObjSizeEnd":"Max. size of object (in px)",
 		"ObjSizeDistribution":"Size distribution",
-		"ObjectFluctuationStart":"Min. change in object #",
-		"ObjectFluctuationEnd":"Max. change in object #",
+		#"ObjectFluctuationStart":"Min. change in object #",
+		#"ObjectFluctuationEnd":"Max. change in object #",
 		"ObjMinInt":"Min. intensity of objects at the first time point",
 		"ObjMaxInt":"Max. intensity of objects at the first time point",
 		"IntChange":"Max. intensity change (in %)",
@@ -111,15 +114,15 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 		"TimeDifference":"Time difference between time points",
 		"TargetPointsInside":"Target points inside radius (in x,y px size)"}
 
-		self.filterDesc = "Generate simulated image data\nInput: None\nOutput: Grayscale image"
+		self.filterDesc = "Generate 4D particle simulation data. In addition to image data, produces also ground truth object and track statistics.\nInput: None (optional cell surface)\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],["Shift", ("Shift","ShiftStart","ShiftEnd")],
+		return [ ["Caching",("Cache","CacheAmount","CreateAll")],["Dimensions",("X","Y","Z","Time","TimeDifference")],#["Shift", ("Shift","ShiftStart","ShiftEnd")],
 			["Noise",("CreateNoise","ShotNoiseAmount","ShotNoiseMin","ShotNoiseMax","ShotNoiseDistribution","BackgroundNoiseMin","BackgroundNoiseMax")],
-			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjSizeDistribution","SizeChange","ObjMinInt","ObjMaxInt","IntChange","ObjectFluctuationStart","ObjectFluctuationEnd","ObjectsCreateSource", "SigmaDistSurface")],
+			["Objects",(("ReadObjects", "Select object statistics file", "*.csv"),"NumberOfObjectsStart","NumberOfObjectsEnd","ObjSizeStart","ObjSizeEnd","ObjSizeDistribution","SizeChange","ObjMinInt","ObjMaxInt","IntChange","ObjectsCreateSource", "SigmaDistSurface")],#"ObjectFluctuationStart","ObjectFluctuationEnd",
 			#["Colocalization",("Coloc","ColocAmountStart","ColocAmountEnd")],
 			["Movement strategy",("RandomMovement","MoveTowardsPoint","TargetPoints","TargetPointsInside","MovePercentage","SpeedStart","SpeedEnd")],
 			["Clustering",("Clustering","ClusterPercentage","ClusterDistance")],
@@ -244,52 +247,52 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 		shiftDir=[0,0,0]
 		shiftAmnt = 0
 		for tp in range(0, self.parameters["Time"]):
-			if self.parameters["Shift"]:
-				print "Creating shift amounts for timepoint %d"%tp
+			#if self.parameters["Shift"]:
+			#	print "Creating shift amounts for timepoint %d"%tp
 				# If shifting is requested, then in half the cases, create some jitter
 				# meaning shift of 1-5 pixels in X and Y and 0-1 pixels in Z
-				if random.random() < 0.5:
-					jitterx = random.randint(1,5)
-					jittery = random.randint(1,5)
-					jitterz = random.randint(0,1)
-					self.jitters.append((jitterx, jittery, jitterz))
+			#	if random.random() < 0.5:
+			#		jitterx = random.randint(1,5)
+			#		jittery = random.randint(1,5)
+			#		jitterz = random.randint(0,1)
+			#		self.jitters.append((jitterx, jittery, jitterz))
 				
 				# If we're in the middle of a shift, then continue to that direction
-				if shiftAmnt > 0:
-					shiftx = shiftDir[0]*random.randint(self.parameters["ShiftStart"], self.parameters["ShiftEnd"])
-					shifty = shiftDir[1]*random.randint(self.parameters["ShiftStart"], self.parameters["ShiftEnd"])
-					shiftz = shiftDir[2]*random.randint(self.parameters["ShiftStart"], self.parameters["ShiftEnd"])
-					self.shifts.append((shiftx, shifty, shiftz))
-					shiftAmnt -= 1
+			#	if shiftAmnt > 0:
+			#		shiftx = shiftDir[0]*random.randint(self.parameters["ShiftStart"], self.parameters["ShiftEnd"])
+			#		shifty = shiftDir[1]*random.randint(self.parameters["ShiftStart"], self.parameters["ShiftEnd"])
+			#		shiftz = shiftDir[2]*random.randint(self.parameters["ShiftStart"], self.parameters["ShiftEnd"])
+			#		self.shifts.append((shiftx, shifty, shiftz))
+			#		shiftAmnt -= 1
 				# If no shift is going on, then create a shift in some direction
-				else:
-					shiftAmnt = random.randint(2, 4)
+			#	else:
+			#		shiftAmnt = random.randint(2, 4)
 					# There's a 50% chance that there's no shift, and 2x25% chance of the shift being
 					# in either direction
-					shiftDir[0] = random.choice([-1,0,0,1])
-					shiftDir[1] = random.choice([-1,0,0,1])
+			#		shiftDir[0] = random.choice([-1,0,0,1])
+			#		shiftDir[1] = random.choice([-1,0,0,1])
 					# there's 60% chance of having shift in z dir
-					shiftDir[2] = random.choice([-1,-1,-1,0,0,0,0,1,1,1])
+			#		shiftDir[2] = random.choice([-1,-1,-1,0,0,0,0,1,1,1])
 					
 				
 				# in 5% of cases, create a jolt of 2 to 5 px in z direction 
-				if random.random() < 0.05:
-					direction = random.choice([-1,1])
-					x,y,z = self.shifts[-1]
-					z += random.randint(2,5)*direction
-					if len(shifts) == 1:
-						pass
-					else:
-						self.shifts[-1] = (x,y,z)
-			else:
-				self.shifts.append((0,0,0))
+			#	if random.random() < 0.05:
+			#		direction = random.choice([-1,1])
+			#		x,y,z = self.shifts[-1]
+			#		z += random.randint(2,5)*direction
+			#		if len(shifts) == 1:
+			#			pass
+			#		else:
+			#			self.shifts[-1] = (x,y,z)
+			#else:
+			#	self.shifts.append((0,0,0))
 				
 			print "Creating objects for timepoint %d"%tp
 			objs = self.createObjectsForTimepoint(tp)
 
-			if self.parameters["ObjectFluctuationEnd"]:
-				print "Adding fluctuations to object numbers"
-				objs = self.createFluctuations(objs)
+			#if self.parameters["ObjectFluctuationEnd"]:
+			#	print "Adding fluctuations to object numbers"
+			#	objs = self.createFluctuations(objs)
 			self.objects.append(objs)
 
 		clusteredObjects = []
@@ -655,13 +658,13 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 			image.SetScalarComponentFromDouble(rx,ry,rz,0,shotInt)
 			noiseAmount -= 1
 
-		shiftx, shifty, shiftz = self.shifts[currentTimepoint]
+		#shiftx, shifty, shiftz = self.shifts[currentTimepoint]
 		
 		print "Creating objects",currentTimepoint
 		for oIter, (objN, (rx,ry,rz), size, objInt) in enumerate(self.objects[currentTimepoint]):
-			rx += shiftx
-			ry += shifty
-			rz += shiftz
+			#rx += shiftx
+			#ry += shifty
+			#rz += shiftz
 
 			(rx,ry,rz), realSize, intList, voxelList = self.createObjectAt(image, rx,ry,rz, size, objInt)
 			objMean, objStd, objStdErr = lib.Math.meanstdeverr(intList)
@@ -716,6 +719,10 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 			self.imageCache[items[0]].ReleaseData()
 			del self.imageCache[items[0]]
 		self.imageCache[currentTimepoint] = image
+
+		self.progressObj.setProgress(currentTimepoint/self.parameters["Time"])
+		self.updateProgress(None, "ProgressEvent")
+
 		return image
 		
 	def pointInsideEllipse(self, pt, majorAxis, f1 = None, f2 = None):
@@ -1020,6 +1027,9 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 
+		self.progressObj.setProgress(0.0)
+		self.updateProgress(None, "ProgressEvent")
+
 		currentTimepoint = self.getCurrentTimepoint()
 		inputImage = self.getInput(1)
 		
@@ -1067,15 +1077,18 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 			# Read com of the largest object from input data
 			particleFile = inputDataUnit.getSettings().get("StatisticsFile")
 			if particleFile is None or not os.path.exists(particleFile):
-				path = inputDataUnit.getDataSource().path
-				for fileName in os.listdir(path):
-					if ".csv" in fileName:
-						particleFile = os.path.join(path,fileName)
+				pass
+				#path = inputDataUnit.getDataSource().path
+				#for fileName in os.listdir(path):
+				#	if ".csv" in fileName:
+				#		particleFile = os.path.join(path,fileName)
 			
 			if not particleFile is None and os.path.exists(particleFile):
 				reader = lib.ParticleReader.ParticleReader(particleFile, 0)
 				comObjs = reader.read()
 				self.cellCOM = comObjs[0][0].getCenterOfMass()
+			else:
+				self.cellCOM = (self.parameters["X"] / 2, self.parameters["Y"] / 2, self.parameters["Z"] / 2)
 
 			polydata = self.getPolyDataInput(1)
 			if polydata:
@@ -1093,6 +1106,7 @@ class ParticleSimulationFilter(lib.ProcessingFilter.ProcessingFilter):
 		distanceX = (com1[0] - com2[0]) * voxelSize[0]
 		distanceY = (com1[1] - com2[1]) * voxelSize[1]
 		distanceZ = (com1[2] - com2[2]) * voxelSize[2]
+
 		return math.sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ)
 	
 	def generateDistributionValue(self, distr, minValue, maxValue):

@@ -70,6 +70,7 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		self.gradient = None
 		self.sigmoid = None
 		self.progressObj = lib.Progress.Progress()
+		self.filterDesc = "Segments image using Geodesic active contours. Contours are initialized using seed points as centers and distance as circle or ball radius. Positive propagation values make contours expand, negative contract.\nInput: Grayscale image\nOutput: Binary image"
 
 	def getParameters(self):
 		"""

@@ -56,7 +56,7 @@ class ObjectSeparationFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		self.origCtf = None
 		self.ignoreObjects = 1
-		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Capable of separating objects touching each other.\nInput: Binary image\nOutput: Label image";
+		self.filterDesc = "After an image has been separated into two classes (foreground and background) by e.g. thresholding, this divides the foreground into separate objects and labels them. Capable of separating objects touching each other.\nInput: Binary image\nOutput: Label image"
 
 	def getDefaultValue(self, parameter):
 		"""
