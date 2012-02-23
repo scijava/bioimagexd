@@ -764,7 +764,7 @@ class ImportDialog(wx.Dialog):
 		"""
 		print "trying range", startFrom,"-", endTo, "pattern=", pattern
 		matches = []
-		for i in range(startFrom, endTo):
+		for i in xrange(startFrom, endTo):
 			try:
 				filename = pattern % i
 			except:
