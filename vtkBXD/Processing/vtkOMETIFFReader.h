@@ -106,7 +106,7 @@ protected:
 				  vtkInformationVector**,
 				  vtkInformationVector*);
 
-  int Clean();
+  void Clean();
   int ParseXMLHeader(const char*, size_t);
   int CreateImages(vtkXMLDataElement*);
   int CreateImage(vtkXMLDataElement*, vtkXMLDataElement*);

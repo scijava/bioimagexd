@@ -23,10 +23,11 @@
 #define __vtkExtXMLUtilities_h
 
 #include "vtkObject.h"
+#include "vtkBXDProcessingWin32Header.h"
 
 class vtkXMLDataElement;
 
-class VTK_IO_EXPORT vtkExtXMLUtilities : public vtkObject
+class VTK_BXD_PROCESSING_EXPORT vtkExtXMLUtilities : public vtkObject
 {
 public:
   static vtkExtXMLUtilities* New();
