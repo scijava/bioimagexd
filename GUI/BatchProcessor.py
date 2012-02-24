@@ -593,7 +593,8 @@ class ProcedurePanel(wx.ScrolledWindow):
 		for i, dataUnit in enumerate(self.analysis.getSourceDataUnits()):
 			fileNames.append(os.path.basename(dataUnit.getFileName()) +": "+dataUnit.getName())
 		print fileNames
-		self.fileListBox.InsertItems(fileNames, 0)
+		if fileNames:
+			self.fileListBox.InsertItems(fileNames, 0)
 			
 	def onSaveAnalysis(self, evt = None):
 		"""
