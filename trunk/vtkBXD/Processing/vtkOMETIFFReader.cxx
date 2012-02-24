@@ -119,16 +119,27 @@ int vtkOMETIFFReader::SetFileName(const char* filename)
 
   this->FileName = new char[strlen(filename)+1];
   strcpy(this->FileName, filename);
-  std::string str(this->FileName);
-  std::string sep("/");
 
+  //const char* path = str.substr(0, str.find_last_of(sep) + 1).c_str();
 #ifdef _WIN32
-  sep = "\\";
+  const char* path = strrchr(filename, '\\');
+#else
+  const char* path = strrchr(filename, '/');
 #endif
-
-  const char* path = str.substr(0, str.find_last_of(sep) + 1).c_str();
-  this->FilePath = new char[strlen(path)+1];
-  strcpy(this->FilePath, path);
+  int pathlen = 0;
+  if (path == NULL)
+  {
+  path = filename;
+  pathlen = strlen(filename);
+  }
+  else
+  {
+  path += 1; // Take also last path separator
+  pathlen = path - filename;
+  }
+  this->FilePath = new char[pathlen+1];
+  strncpy(this->FilePath, filename, pathlen);
+  this->FilePath[pathlen] = '\0';
 
   return 1;
 }

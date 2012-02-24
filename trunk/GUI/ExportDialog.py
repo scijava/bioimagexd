@@ -229,8 +229,8 @@ class ExportDialog(wx.Dialog):
 			
 			for c in range(self.c):
 				ch_name = self.dataUnits[c].getName()
-				excitation = self.dataUnits[c].getExcitationWavelength()
-				emission = self.dataUnits[c].getEmissionWavelength()
+				excitation = int(self.dataUnits[c].getExcitationWavelength())
+				emission = int(self.dataUnits[c].getEmissionWavelength())
 				writer.SetChannelInfo(ch_name, excitation, emission)
 		
 		i = 0
