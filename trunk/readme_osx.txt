@@ -19,6 +19,6 @@ ${BXD_PATH}/Libraries/python2.7/site-packages/vtkbxd/
 ${BXD_PATH}/Libraries/vtk-5.6/
 ${BXD_PATH}/Libraries/InsightToolkit/
 
-For example add following lines to your .bashrc_profile file:
+For example add following lines to your .bash_profile file:
 BXD_PATH="Put your path to BioImageXD here"
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:${BXD_PATH}/Libraries/:${BXD_PATH}/Libraries/python2.7/site-packages/vtkbxd/:${BXD_PATH}/Libraries/vtk-5.6/:${BXD_PATH}/Libraries/InsightToolkit/
