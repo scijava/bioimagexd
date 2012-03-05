@@ -53,14 +53,14 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.AddObserver("ProgressEvent", lib.messenger.send)
 		lib.messenger.connect(self.vtkfilter, 'ProgressEvent', self.updateProgress)
 		self.eventDesc = "Applying a shift and scale to image intensity"
-		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to max range of data type", "NoOverflow":"Prevent over/underflow"}
+		self.descs = {"Shift": "Shift:", "Scale": "Scale:", "AutoScale": "Scale to max range of data type", "NoOverflow":"Prevent over/underflow", "Scale8bit": "Scale to 8-bit range (0-255)"}
 		self.filterDesc = "Shifts pixel/voxel intensities and then scales them, corresponding roughly to the adjustment of brightness and contrast, respectively\nInput: Grayscale image\nOutput: Grayscale image"
 	
 	def getParameters(self):
 		"""
 		Return the list of parameters needed for configuring this GUI
 		"""			   
-		return [["", ("Shift", "Scale", "AutoScale", "NoOverflow")]]
+		return [["", ("Shift", "Scale", "AutoScale", "Scale8bit", "NoOverflow")]]
 		
 		
 	def getLongDesc(self, parameter):
@@ -75,14 +75,14 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""	   
 		if parameter in ["Shift", "Scale"]:
 			return types.FloatType
-		elif parameter in  ["AutoScale","NoOverflow"]:
+		elif parameter in  ["AutoScale","NoOverflow","Scale8bit"]:
 			return types.BooleanType
 		
 	def getDefaultValue(self, parameter):
 		"""
 		Return the default value of a parameter
 		"""		
-		if parameter == "Shift":
+		if parameter in ["Shift","Scale8bit"]:
 			return 0
 		if parameter == "Scale":
 			return 1
@@ -93,9 +93,10 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 		Set value for the parameter
 		"""
 		lib.ProcessingFilter.ProcessingFilter.setParameter(self, parameter, value)
-		if parameter == "AutoScale" and self.gui:
-			self.gui.items["Shift"].GetChildren()[1].Enable(not value)
-			self.gui.items["Scale"].GetChildren()[1].Enable(not value)
+		if parameter in ["AutoScale","Scale8bit"] and self.gui:
+			enabled = self.parameters["AutoScale"] or self.parameters["Scale8bit"]
+			self.gui.items["Shift"].GetChildren()[1].Enable(not enabled)
+			self.gui.items["Scale"].GetChildren()[1].Enable(not enabled)
 
 	def getGUI(self, parent, taskPanel):
 		"""
@@ -149,13 +150,19 @@ class ShiftScaleFilter(lib.ProcessingFilter.ProcessingFilter):
 			print "Scale =", scale
 			self.vtkfilter.SetShift(shift)
 			self.vtkfilter.SetScale(scale)
+		elif self.parameters["Scale8bit"]:
+			minRange,maxRange = image.GetScalarRange()
+			shift = -minRange
+			scale = 255.0 / (maxRange-minRange)
+			self.vtkfilter.SetShift(shift)
+			self.vtkfilter.SetScale(scale)
 		else:
 			self.vtkfilter.SetShift(self.parameters["Shift"])
 			self.vtkfilter.SetScale(self.parameters["Scale"])
 			
 			print "Shift=",self.parameters["Shift"], "scale=",self.parameters["Scale"]
-			self.vtkfilter.Update()
-			print "New Scalar range=", self.vtkfilter.GetOutput().GetScalarRange()
+			#self.vtkfilter.Update()
+			#print "New Scalar range=", self.vtkfilter.GetOutput().GetScalarRange()
 		
 #		if update:
 #			self.vtkfilter.Update()
