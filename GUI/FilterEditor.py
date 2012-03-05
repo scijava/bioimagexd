@@ -43,6 +43,7 @@ import lib.FilterBasedModule
 import Modules.DynamicLoader
 
 import os.path
+import sys
 import types
 import wx
 
@@ -169,7 +170,7 @@ class FilterEditor(wx.Panel):
 		#self.addTrackingBtn.Bind(wx.EVT_LEFT_DOWN, f)
 		
 		self.presetBtn.Bind(wx.EVT_LEFT_DOWN, self.onShowPresetsMenu)
-				
+		
 		vertbtnBox = wx.BoxSizer(wx.VERTICAL)
 		#bmp = wx.ArtProvider_GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))        
 		#self.remove = wx.BitmapButton(self, -1, bmp)
@@ -435,12 +436,16 @@ class FilterEditor(wx.Panel):
 			presetDir = scripting.get_preset_dir()
 			presetFiles = os.path.join(presetDir,"*.bxp")
 			files = glob.glob(presetFiles)
-			for file in files:
-				name = ".".join(os.path.basename(file).split(".")[:-1])
+			for filenm in files:
+				name = ".".join(os.path.basename(filenm).split(".")[:-1])
 				fileId = wx.NewId()
 				fileItem = wx.MenuItem(self.presetMenu, fileId, name)
-				file = file.replace("\\", "\\\\")
-				do_cmd = "%s.loadPreset('%s')" % (self.scriptingId, file)
+				filenm = filenm.replace("\\", "\\\\")
+				if self.system == "Windows":
+					filenm = filename.encode('mbcs')
+				else:
+					filenm = filename.encode(sys.getfilesystemencoding())
+				do_cmd = "%s.loadPreset('%s')" % (self.scriptingId, filenm)
 			   
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
 											desc = "Load preset %s" % name)

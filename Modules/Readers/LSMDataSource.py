@@ -86,7 +86,7 @@ class LsmDataSource(DataSource):
 			Logging.info("LsmDataSource created with file %s and channelNum=%d"%\
 			(self.filename, channelNum), kw = "lsmreader")
 			try:
-				f = open(filename)
+				f = open(self.convertFileName(filename))
 				f.close()
 			except IOError, ex:
 				Logging.error("Failed to open LSM file",
