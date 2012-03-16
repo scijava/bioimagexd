@@ -44,6 +44,7 @@ import Modules.DynamicLoader
 
 import os.path
 import sys
+import platform
 import types
 import wx
 
@@ -441,10 +442,10 @@ class FilterEditor(wx.Panel):
 				fileId = wx.NewId()
 				fileItem = wx.MenuItem(self.presetMenu, fileId, name)
 				filenm = filenm.replace("\\", "\\\\")
-				if self.system == "Windows":
-					filenm = filename.encode('mbcs')
+				if platform.system == "Windows":
+					filenm = filenm.encode('mbcs')
 				else:
-					filenm = filename.encode(sys.getfilesystemencoding())
+					filenm = filenm.encode(sys.getfilesystemencoding())
 				do_cmd = "%s.loadPreset('%s')" % (self.scriptingId, filenm)
 			   
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
