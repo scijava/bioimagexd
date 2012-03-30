@@ -574,22 +574,21 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
   char *nameBuff,*colorBuff,*name,*tempBuff;
   unsigned char component;
 
-  colorBuff = new char[5];
-
   pos = start;
   // Read size of structure
-
   sizeOfStructure = this->ReadInt(f,&pos);
-  //vtkDebugMacro(<<"size of structure = "<<sizeOfStructure<<"\n");
+  vtkDebugMacro(<<"size of structure = "<<sizeOfStructure<<"\n");
   // Read number of colors
   colNum = this->ReadInt(f,&pos);
   // Read number of names
   nameNum = this->ReadInt(f,&pos);
-  //vtkDebugMacro(<<"nameNum="<<nameNum);
+  vtkDebugMacro(<<"nameNum="<<nameNum);
   sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
-  //vtkDebugMacro(<<"sizeofNames="<<sizeOfNames<<"\n");
+  vtkDebugMacro(<<"sizeofNames="<<sizeOfNames<<"\n");
+
   nameBuff = new char[sizeOfNames+1];
   name = new char[sizeOfNames+1];
+  colorBuff = new char[5];
 
   if(colNum != this->GetNumberOfChannels())
     {
@@ -752,7 +751,8 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // Read OffsetChannelColors, which is an offset to channel colors and names
   this->ChannelInfoOffset = this->ReadUnsignedInt(f,&pos);
   vtkDebugMacro(<<"Channel info offset (from addr"<<pos<<")="<<this->ChannelInfoOffset<<"\n");
-  this->ReadChannelColorsAndNames(f,this->ChannelInfoOffset);
+  if (this->ChannelInfoOffset != 0)
+	this->ReadChannelColorsAndNames(f,this->ChannelInfoOffset);
 
   // Skip time interval in seconds (8 bytes)
   //pos += 1*8;
@@ -1530,7 +1530,7 @@ void vtkLSMReader::CalculateExtentAndSpacing(int extent[6],double spacing[3])
 
 int vtkLSMReader::GetChannelColorComponent(int ch, int component)
 {
-  if(ch < 0 || ch > this->GetNumberOfChannels()-1 || component < 0 || component > 2)
+  if(ch < 0 || ch > this->GetNumberOfChannels()-1 || component < 0 || component > 2 || ch >= this->ChannelColors->GetNumberOfTuples())
   {
     return 0;
   }
