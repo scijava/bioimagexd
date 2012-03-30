@@ -287,8 +287,13 @@ class LsmDataSource(DataSource):
 			r /= 255.0
 			g /= 255.0
 			b /= 255.0
+			# If no LUT available
+			if r == 0.0 and g == 0.0 and b == 0.0:
+				r = 1.0
+				g = 1.0
+				b = 1.0
+
 			minval, maxval = self.getScalarRange()
-			
 			if self.explicitScale:
 				shift = self.intensityShift
 				if self.intensityShift:
@@ -332,11 +337,13 @@ class LsmDataSource(DataSource):
 				currentTrack = self.channelNum
 			else:
 				currentTrack = int(m.group(1))
-				
+
 			wavelengths = self.reader.GetTrackWavelengths()
-			wavelength = wavelengths.GetValue(currentTrack-1)
+			if wavelengths.GetNumberOfTuples() >= currentTrack and wavelengths.GetNumberOfTuples() > 0:
+				wavelength = wavelengths.GetValue(currentTrack - 1)
+			else:
+				wavelength = 0.0
 			self.excitationWavelength = wavelength
-			print "Excitation wavelength for track",currentTrack,"is",wavelength
 			
 		return self.excitationWavelength
 		
@@ -350,7 +357,11 @@ class LsmDataSource(DataSource):
 			"LSM Data Source got a request for the name of the channel, "
 			"but no channel number has been specified")
 			return ""
-		return self.reader.GetChannelName(self.channelNum)
+
+		channelName = self.reader.GetChannelName(self.channelNum)
+		if channelName == "":
+			channelName = "Ch"+str(self.channelNum+1)
+		return channelName
 
 	def uniqueId(self):
 		"""
