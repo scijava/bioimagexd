@@ -1695,7 +1695,6 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			asklist = args
 		
 		for askfile in asklist:
-
 			sep = askfile.split(".")[-1]
 			if sep.lower() == "bxr":
 				do_cmd = 'mainWindow.loadEncodingProject(ur"%s")' % (askfile)

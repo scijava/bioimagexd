@@ -159,6 +159,7 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		"""
 		if not lib.ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
+		
 		image = self.getInput(1)
 		min,max = self.dataUnit.getSourceDataUnits()[0].getScalarRange()
 		self.eventDesc="Thresholding image"
@@ -169,10 +170,8 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 				if self.gui:
 					self.gui.histograms[0].setReplacementCTF(None)
 					self.gui.histograms[0].updatePreview(renew = 1)
-			self.vtkfilter.SetInput(image)
 			
-			#self.vtkfilter.ThresholdByLower(self.parameters["UpperThreshold"])
-			#self.vtkfilter.ThresholdByUpper(self.parameters["LowerThreshold"])
+			self.vtkfilter.SetInput(image)
 			self.vtkfilter.ThresholdBetween(self.parameters["LowerThreshold"],self.parameters["UpperThreshold"])
 
 			self.vtkfilter.SetReplaceIn(self.parameters["ReplaceIn"])
@@ -183,8 +182,8 @@ class ThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 			if self.parameters["ReplaceOut"]:
 				self.vtkfilter.SetOutValue(self.parameters["ReplaceOutValue"])
 
-			if update:
-				self.vtkfilter.Update()
+			#if update:
+			self.vtkfilter.Update()
 			return self.vtkfilter.GetOutput()
 
 		else:
