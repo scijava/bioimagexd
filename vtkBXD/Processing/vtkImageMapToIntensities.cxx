@@ -105,8 +105,6 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
   unsigned long count = 0;
   unsigned long target;    
 
-  
-  printf("Getting ITF\n");  
   vtkIntensityTransferFunction * IntensityTransferFunction;
     
   IntensityTransferFunction = self->GetIntensityTransferFunction();
@@ -116,9 +114,9 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
       vtkErrorWithObjectMacro(self,"No IntensityTransferFunction specified");
       return;
   }
-  printf("Getting data pointer\n");
+  //printf("Getting data pointer\n");
   table = IntensityTransferFunction->GetDataPointer();
-  printf("Getting pointers for extent %d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+  //printf("Getting pointers for extent %d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
  
   inPtr = (T*) inData[0]->GetScalarPointerForExtent(outExt);
   
@@ -127,7 +125,7 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
 //  output->SetExtent(output->GetWholeExtent());
 //  output->AllocateScalars();
   if (IntensityTransferFunction->IsIdentical()) {
-      printf("Identical function, just copying\n");
+	//printf("Identical function, just copying\n");
       //outData->DeepCopy(inData[0]);
       vtkImageMapToIntensitiesCopyData(inData[0], outData, outExt);
       return;
@@ -142,7 +140,7 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
   maxY = outExt[3] - outExt[2];
   maxZ = outExt[5] - outExt[4];
   maxC = inData[0]->GetNumberOfScalarComponents();
-  printf("maxX=%d, maxY=%d, maxZ=%d\n",maxX,maxY,maxZ);
+  //printf("maxX=%d, maxY=%d, maxZ=%d\n",maxX,maxY,maxZ);
   #define GET_AT(x,y,z,c,ptr) *(ptr+(z)*inIncZ+(y)*inIncY+(x)*inIncX+c)
   #define SET_AT(x,y,z,c,ptr,val) *(ptr+(z)*outIncZ+(y)*outIncY+(x)*outIncX+c)=val
   target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
@@ -150,7 +148,7 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
 
   char progressText[200];
   for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {
-    sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxZ,maxZ);
+	//    sprintf(progressText,"Applying intensity transfer function (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
 
     for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
@@ -183,8 +181,6 @@ void vtkImageMapToIntensitiesExecute(vtkImageMapToIntensities *self, int id,int 
     inPtr += inIncZ;
     outPtr += outIncZ;      
   }
-  //printf("done\n");
-  
 }
 
 //----------------------------------------------------------------------------
@@ -200,7 +196,6 @@ void vtkImageMapToIntensities::ThreadedRequestData (
   vtkImageData **outData,
   int outExt[6], int id)
 {
-    printf("vtkImageMapToIntensities ThreadedRequestData outExt=%d,%d,%d,%d,%d,%d\n",outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
   if (inData[0][0] == NULL)
     {
     vtkErrorMacro(<< "Input " << 0 << " must be specified.");
@@ -241,7 +236,3 @@ void vtkImageMapToIntensities::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "IntensityTransferFunction "<< this->IntensityTransferFunction << "\n";
 
 }
-
-
-
-
