@@ -77,7 +77,6 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     unsigned long count = 0;
     unsigned long target;    
 
-    printf("Executing colorMerging id=%d\n",id);
     unsigned char **ctfs;        
     int **itfs;
     int itfCount = self->GetITFCount();
@@ -87,24 +86,21 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     int MaxMode = self->GetMaximumMode();                   
     int AvgMode = self->GetAverageMode();
     int LuminanceMode = self->GetLuminanceMode();
-    if(!MaxMode&&!AvgMode)AvgMode=1;
+    if (!MaxMode && !AvgMode) AvgMode = 1;    
     
-    
-    if(self->GetCTFCount() != NumberOfInputs) {
+    if (self->GetCTFCount() != NumberOfInputs) {
         vtkErrorWithObjectMacro(self,<< "Number of lookup tables ("<< self->GetCTFCount() <<") != number of inputs"<<NumberOfInputs);
     }
-    if(itfCount && itfCount != NumberOfInputs) {
+    if (itfCount && itfCount != NumberOfInputs) {
         vtkErrorWithObjectMacro(self, "Number of ITFs ("<<itfCount<<") != number of inputs"<<NumberOfInputs);
     }
     
     T** inPtrs;
     unsigned char* outPtr;
     itfs = new int*[NumberOfInputs];
-    
     ctfs = new unsigned char*[NumberOfInputs];
     
-
-    inPtrs=new T*[NumberOfInputs];
+    inPtrs = new T*[NumberOfInputs];
     int moreThanOne = 0;
     int *scalarComponents = new int[NumberOfInputs];
     int allIdentical = 1;
@@ -113,20 +109,17 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     vtkColorTransferFunction* ctf;
     int isIdentical = 0;
 
-    printf("Out ext=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4],outExt[5]);
-
     const unsigned char* map;
     
-    for(i=0; i < NumberOfInputs; i++) {
+    for (i = 0; i < NumberOfInputs; i++) {
         ctfs[i] = 0;
         itfs[i] = 0;
         scalarComponents[i] = inData[i]->GetNumberOfScalarComponents();        
-        inPtrs[i]=(T*)inData[i]->GetScalarPointerForExtent(outExt);
-        if(scalarComponents[i]>1) {
+        inPtrs[i] = (T*)inData[i]->GetScalarPointerForExtent(outExt);
+        if (scalarComponents[i] > 1) {
             moreThanOne=1;
             continue;
         }
-        
 
         isIdentical = 1;
         ctf = self->GetColorTransferFunction(i);
@@ -134,58 +127,40 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
         ctf->GetRange(range);
         int n = int(range[1]-range[0])+1;
 //  n++;
-        printf("Getting table with range %d,%d with %d values\n",(int)range[0],(int)range[1],n);
         map = ctf->GetTable(range[0],range[1],n);
-        //printf("Got table\n");
         //ctfs[i] = self->GetColorTransferFunction(i)->GetTable(0,255,256);
         ctfs[i] = new unsigned char[n*3];
 
-        if( itfCount ) {
-            printf("Got %d itfs\n",itfCount);
+        if (itfCount) {
             itf = self->GetIntensityTransferFunction(i);
-
-            //printf("ITF%d has range %d\n",i,itf->GetRangeMax());
             itfs[i] = itf->GetDataPointer();
             
-            if( !itf->IsIdentical() ) {
+            if (!itf->IsIdentical()) {
                 isIdentical = 0;
                 allIdentical = 0;                
             }
         }
 
-		if (i == 0 && itfs[i] != NULL)
-		  {
-			printf("Value of function 1 at 255=%d\n",itfs[0][255]);
+        for (int x = 0,xx = 0; xx < n; xx++) {
+		  if (!isIdentical) {
+			x = itfs[i][xx];
 		  }
-		if (i == 1 && itfs[i] != NULL)
-		  {
-			printf("Value of function 2 at 255=%d\n",itfs[1][255]);
-		  }
+		  else x = xx;
 
-        for(int x=0,xx = 0; xx < n; xx++) {
-                if(!isIdentical) {
-
-                    x=itfs[i][xx];
-                } else x=xx;
-
-                ctfs[i][3*xx] = map[3*x];
-                ctfs[i][3*xx+1] = map[3*x+1];
-                ctfs[i][3*xx+2] = map[3*x+2];
-                
+		  ctfs[i][3*xx] = map[3*x];
+		  ctfs[i][3*xx+1] = map[3*x+1];
+		  ctfs[i][3*xx+2] = map[3*x+2];
         } 
     }
-//    printf("Out extent=%d,%d,%d,%d,%d,%d\n", outExt[0], outExt[1], outExt[2], outExt[3], outExt[4], outExt[5]);
-    printf("Created the ctfs\n");
+
     outPtr=(unsigned char*)outData->GetScalarPointerForExtent(outExt);
-    
     
     inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
     outData->GetContinuousIncrements(outExt,outIncX, outIncY, outIncZ);
     maxX = outExt[1] - outExt[0];
     maxY = outExt[3] - outExt[2];
     maxZ = outExt[5] - outExt[4];
-    printf("inIncX, inIncY,inIncZ=%d,%d,%d\n",inIncX,inIncY,inIncZ);
-    printf("outIncX, outIncY,outIncZ=%d,%d,%d\n",outIncX,outIncY,outIncZ);
+
     int currScalar = 0;
     int alphaScalar; 
     int n = 0;
@@ -200,14 +175,13 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
     target = (unsigned long)((maxZ+1)*(maxY+1)/50.0);
     target++;
     
-    
-    for(idxZ = 0; idxZ <= maxZ; idxZ++ ) {        
+    for (idxZ = 0; idxZ <= maxZ; idxZ++ ) {        
 //        printf("id=%d Set progress text to %s\n",id, progressText);
 //        printf("id=%d, Setting progress to %d / %d = %f\n",id,idxZ+1,maxZ+1,(idxZ+1)/float(maxZ+1));
          sprintf(progressText,"Merging channels (slice %d / %d)",idxZ+1,maxZ+1);
          self->SetProgressText(progressText);
 
-        for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
+        for (idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
             if (!id)
             {
                 if (!(count%target))
@@ -216,89 +190,80 @@ void vtkImageColorMergeExecute(vtkImageColorMerge *self, int id,int NumberOfInpu
                 }
                 count++;
            }  
-          for(idxX = 0; idxX <= maxX; idxX++ ) {
+          for (idxX = 0; idxX <= maxX; idxX++ ) {
             alphaScalar =  currScalar = n = 0;
 //            if(id==1)printf("idxX = %d, idxY = %d, idxZ = %d\n",idxX, idxY, idxZ);
-
-            for(i=0; i < NumberOfInputs; i++ ) {
+            for (i = 0; i < NumberOfInputs; i++ ) {
                 currScalar = (int)*inPtrs[i];
 //                if(id==1)printf("thread 1 got as input %d\n",currScalar);
-
-
                 
-                if(BuildAlpha) {
-                  if(MaxMode) {
-                        if(alphaScalar < currScalar) {
+                if (BuildAlpha) {
+                  if (MaxMode) {
+                        if (alphaScalar < currScalar) {
                             alphaScalar = currScalar;
                         }
                     // If the alpha channel should be in "average mode"
                     // then we take an average of all the scalars in the
                     // current voxel that are above the AverageThreshold
-                  } else if(AvgMode && currScalar > AvgThreshold) {
+                  }
+				  else if (AvgMode && currScalar > AvgThreshold) {
                         n++;
                         alphaScalar += currScalar;
                   }
                 }
-                if(!(moreThanOne&&scalarComponents[i]>1)) {                    
+                if (!(moreThanOne && scalarComponents[i] > 1)) {
                     r += ctfs[i][3*currScalar];
                     g += ctfs[i][3*currScalar+1];
                     b += ctfs[i][3*currScalar+2];
 
-                } else {
-                    //printf("Reading components straight from data, ncomps=%d\n",scalarComponents[i]);
+                }
+				else {
                     r += currScalar;
                     inPtrs[i]++;
                     g += (int)*inPtrs[i];
                     inPtrs[i]++;
                     b += (int)*inPtrs[i];
                 }
-                
-                //scalar += currScalar;
+
                 inPtrs[i]++;
             }
 
-            *outPtr++ = (r>maxval?maxval:(unsigned char)r);
-            *outPtr++ = (g>maxval?maxval:(unsigned char)g);
-            *outPtr++ = (b>maxval?maxval:(unsigned char)b);
+            *outPtr++ = (r > maxval ? maxval : (unsigned char)r);
+            *outPtr++ = (g > maxval ? maxval : (unsigned char)g);
+            *outPtr++ = (b > maxval ? maxval : (unsigned char)b);
             
-            if(BuildAlpha) {
-                if(AvgMode && n>0) alphaScalar /= n;
+            if (BuildAlpha) {
+                if (AvgMode && n > 0) alphaScalar /= n;
                 else if(LuminanceMode) {
                     alphaScalar = int(0.30*r + 0.59*g + 0.11*b);
                 }   
                     
-                if(alphaScalar > maxval)alphaScalar=maxval;
+                if (alphaScalar > maxval) alphaScalar=maxval;
                 *outPtr++ = (unsigned char)alphaScalar;
             }
             r=g=b=0;
           }
-            
-            
           
-          for(i=0; i < NumberOfInputs; i++ ) {
-              inPtrs[i]+=inIncY;
+          for (i = 0; i < NumberOfInputs; i++ ) {
+              inPtrs[i] += inIncY;
           }
           outPtr += outIncY;
         }  
-        for(i=0; i < NumberOfInputs; i++ ) {
-          inPtrs[i]+=inIncZ;
+        for(i = 0; i < NumberOfInputs; i++ ) {
+          inPtrs[i] += inIncZ;
         }
         outPtr += outIncZ;      
     }
-    //printf("Processing done\n");
-    for(int i = 0; i < NumberOfInputs; i++) {        
-        if(ctfs[i])
+
+    for (int i = 0; i < NumberOfInputs; i++) {        
+        if (ctfs[i])
             delete[] ctfs[i];
     }
-    //printf("Deleting itfs[]\n");
-    delete[]itfs;
-    //delete modctfs;
-    //printf("deleting ctfs\n");
-    delete ctfs;
-    //printf("deleting inptrs\n");
-    delete[] inPtrs;
+
     delete[] scalarComponents;
-    
+    delete[] inPtrs;
+    delete[] ctfs;
+    delete[] itfs;
 }
 
 
@@ -372,12 +337,9 @@ int vtkImageColorMerge::RequestInformation (
 
   inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext);
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(),ext,6);
-
-    
     
   int n = 4;
-  if(!this->BuildAlpha) n = 3;
-      
+  if (!this->BuildAlpha) n = 3;
 
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, VTK_UNSIGNED_CHAR,n);
   return 1;
@@ -389,17 +351,3 @@ void vtkImageColorMerge::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

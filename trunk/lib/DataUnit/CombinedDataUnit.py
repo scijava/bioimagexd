@@ -497,7 +497,7 @@ class CombinedDataUnit(DataUnit):
 				preview = preview[0]
 
 		if preview is not None:
-			isMultiComponent = preview.GetNumberOfScalarComponents()>1 # doesn't work when preview isn't updated
+			isMultiComponent = preview.GetNumberOfScalarComponents() > 1 # doesn't work when preview isn't updated
 		else:
 			isMultiComponent = False
 		
@@ -531,6 +531,7 @@ class CombinedDataUnit(DataUnit):
 				data, ctf = merged[0]
 				if not self.maptocolor:
 					self.maptocolor = vtk.vtkImageMapToColors()
+					self.maptocolor.SetNumberOfThreads(1)
 					self.maptocolor.SetOutputFormatToRGB()
 				else:
 					self.maptocolor.RemoveAllInputs()
