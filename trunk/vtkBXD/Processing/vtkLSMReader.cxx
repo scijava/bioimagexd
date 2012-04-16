@@ -445,10 +445,10 @@ const char *vtkLSMReader::GetDataByteOrderAsString()
 
 char* vtkLSMReader::GetChannelName(int chNum)
 {
-  if(!this->ChannelNames || chNum < 0 || chNum > this->GetNumberOfChannels()-1)
+  if (!this->ChannelNames || chNum < 0 || chNum > this->GetNumberOfChannels()-1)
     {
     vtkDebugMacro(<<"GetChannelName: Illegal channel index!");
-    return "";
+    return '\0';
     }
   return this->ChannelNames[chNum];
 }
@@ -461,13 +461,13 @@ int vtkLSMReader::ClearChannelNames()
     return 0;
     }
 
-  for(int i=0;i<this->GetNumberOfChannels();i++)
+  for (int i = 0; i < this->GetNumberOfChannels(); i++)
     {
     delete [] this->ChannelNames[i];
     }
-    vtkDebugMacro(<<"almost done\n");
+
   delete [] this->ChannelNames;
- vtkDebugMacro(<<"done");
+  vtkDebugMacro(<<"done");
   return 0;
 }
 
@@ -741,6 +741,13 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // 10 point mode
   this->ScanType = this->ReadShort(f,&pos);
   vtkDebugMacro("ScanType="<<this->ScanType<<"\n");
+
+  if (this->ScanType == 1)
+	{
+	  int tmp = this->Dimensions[1];
+	  this->Dimensions[1] = this->Dimensions[2];
+	  this->Dimensions[2] = tmp;
+	}
 
   // skip over SpectralScan flag
   // if 0, no spectral scan
@@ -1476,9 +1483,9 @@ int vtkLSMReader::RequestInformation (
       vtkErrorMacro("Did not found LSM specific info!");
       return 0;
     }
-  if( !(this->ScanType == 6 || this->ScanType == 0 || this->ScanType == 3) )
+  if( !(this->ScanType == 6 || this->ScanType == 0 || this->ScanType == 3 || this->ScanType == 1) )
     {
-      vtkErrorMacro("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z) or type 3 (2D + time). Type of this File is " <<this->ScanType);
+      vtkErrorMacro("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z) or type 3 (2D + time) or type 1 (x-z scan). Type of this File is " <<this->ScanType);
       return 0;
     }
   
@@ -1494,14 +1501,14 @@ int vtkLSMReader::RequestInformation (
     this->NumberOfScalarComponents = 1;
     
   int channel = this->GetUpdateChannel();
-  dataType = this->GetDataTypeForChannel(channel);  
+  dataType = this->GetDataTypeForChannel(channel);
   if(dataType > 1)
     {
       this->DataScalarType = VTK_UNSIGNED_SHORT;
     }
   else
     {
-        this->DataScalarType = VTK_UNSIGNED_CHAR;
+	  this->DataScalarType = VTK_UNSIGNED_CHAR;
     }
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, this->DataScalarType, 
   this->NumberOfScalarComponents);
@@ -1513,24 +1520,22 @@ int vtkLSMReader::RequestInformation (
 
 void vtkLSMReader::CalculateExtentAndSpacing(int extent[6],double spacing[3])
 {
-  
   extent[0] = extent[2] = extent[4] = 0;
-  extent[1] = this->Dimensions[0]-1;
-  extent[3] = this->Dimensions[1]-1;
-  extent[5] = this->Dimensions[2]-1;
-
+  extent[1] = this->Dimensions[0] - 1;
+  extent[3] = this->Dimensions[1] - 1;
+  extent[5] = this->Dimensions[2] - 1;
 
   spacing[0] = int(this->VoxelSizes[0]*1000000);
-  if(spacing[0]<1)spacing[0]=1;
-  spacing[1] = this->VoxelSizes[1]/this->VoxelSizes[0];
-  spacing[2] = this->VoxelSizes[2]/this->VoxelSizes[0];
+  if (spacing[0] < 1.0) spacing[0] = 1.0;
+  spacing[1] = this->VoxelSizes[1] / this->VoxelSizes[0];
+  spacing[2] = this->VoxelSizes[2] / this->VoxelSizes[0];
 }
 
 //----------------------------------------------------------------------------
 
 int vtkLSMReader::GetChannelColorComponent(int ch, int component)
 {
-  if(ch < 0 || ch > this->GetNumberOfChannels()-1 || component < 0 || component > 2 || ch >= this->ChannelColors->GetNumberOfTuples())
+  if (ch < 0 || ch > this->GetNumberOfChannels()-1 || component < 0 || component > 2 || ch >= this->ChannelColors->GetNumberOfTuples())
   {
     return 0;
   }
