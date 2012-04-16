@@ -139,7 +139,7 @@ class ImageCastFilter(lib.ProcessingFilter.ProcessingFilter):
 			handleCtf.ScaleColorTransferFunction(ctf,scaledCtf,minVal,maxVal)
 			settings.set("ColorTransferFunction",scaledCtf)
 
-		if update:
-			self.vtkfilter.Update()
+		#if update:
+		self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()
 		

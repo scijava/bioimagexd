@@ -2,7 +2,6 @@
 """
  Unit: OtsuThreshold.py
  Project: BioImageXD
- Created: 5.6.2008, LP
  Description:
 
  A module containing the Otsu threshold filter for the processing task.
@@ -86,7 +85,11 @@ class OtsuThresholdFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.itkfilter = itk.OtsuThresholdImageFilter[image,image].New()
 		self.itkfilter.SetInput(image)
 		self.itkfilter.SetInsideValue(0)
-		self.itkfilter.SetOutsideValue(255)
+		if self.getDataUnit().getSingleComponentBitDepth() == 12:
+			self.itkfilter.SetOutsideValue(4095)
+		else:
+			self.itkfilter.SetOutsideValue(255)
+		
 		self.itkfilter.SetNumberOfHistogramBins(255)
 
 		data = self.itkfilter.GetOutput()

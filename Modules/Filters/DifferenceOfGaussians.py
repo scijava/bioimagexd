@@ -127,7 +127,7 @@ class DifferenceOfGaussiansFilter(lib.ProcessingFilter.ProcessingFilter):
 		imageMath.SetClampOverflow(True)
 		data = imageMath.GetOutput()
 		
-		if update:
-			data.Update()
+		#if update:
+		data.Update()
 		
 		return data
