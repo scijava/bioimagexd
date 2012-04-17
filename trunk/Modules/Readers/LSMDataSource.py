@@ -316,6 +316,8 @@ class LsmDataSource(DataSource):
 		"""
 		if not self.numericalAperture:
 			objective = self.reader.GetObjective()
+			if objective == None:
+				objective = ""
 			print "\n\nObjective for file",self.getName(),"is",objective 
 			# Plan-Apochromat 63x/1.40 Oil DIC M27
 			naRE = re.compile('(\d+)\.(\d+)')
