@@ -1774,6 +1774,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 									"Unrecognized extension")
 			return
 		dataunits = []
+
 		try:
 			dataunits = datasource.loadFromFile(path)
 			Logging.info("Loaded from file %s %d dataunits" % (path, len(dataunits)), kw = "io")
@@ -1785,7 +1786,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 			if not noWarn:
 				Dialogs.showerror(self, "Failed to read dataset %s." % path, "Failed to read dataset")
 			return
-		
+
 		Logging.info("Got %d dataunits"%len(dataunits), kw="io")
 		# We might get tuples from leica
 		d = GUI.TreeWidget.OrderedDict()
@@ -1825,7 +1826,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 						dlg.Destroy()
 						return
 					dlg.Destroy()
-					
+
 			self.tree.addToTree(name, path, ext, dataunits)
 		self.visualizer.enable(1)
 
