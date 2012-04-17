@@ -443,12 +443,12 @@ const char *vtkLSMReader::GetDataByteOrderAsString()
 }
 
 
-char* vtkLSMReader::GetChannelName(int chNum)
+const char* vtkLSMReader::GetChannelName(int chNum)
 {
   if (!this->ChannelNames || chNum < 0 || chNum > this->GetNumberOfChannels()-1)
     {
     vtkDebugMacro(<<"GetChannelName: Illegal channel index!");
-    return '\0';
+	return "";
     }
   return this->ChannelNames[chNum];
 }
