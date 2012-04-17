@@ -147,7 +147,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		nx, ny = self.x, self.y
 		nz = arg
 		self.z = arg
-		#self.drawPos = [x * self.zoomFactor for x in (nx, ny, nz)]
+		self.drawPos = [x * self.zoomFactor for x in (nx, ny, nz)]
 		
 		self.setTimepoint(self.timepoint)
 		
