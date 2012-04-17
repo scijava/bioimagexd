@@ -217,6 +217,7 @@ vtkLSMReader::vtkLSMReader()
   this->TrackWavelengths = 0;
   this->ImageOffsets = 0;
   this->ReadSizes = 0;
+  this->Objective = NULL;
   this->Clean();
 }
 
@@ -291,7 +292,6 @@ void vtkLSMReader::SetFileName(const char *name)
 
 void vtkLSMReader::Clean()
 {
-  
   this->IntUpdateExtent[0] = this->IntUpdateExtent[1] = this->IntUpdateExtent[2] = this->IntUpdateExtent[4] = 0;
   this->IntUpdateExtent[3] = this->IntUpdateExtent[5] = 0;
     
@@ -326,13 +326,17 @@ void vtkLSMReader::Clean()
   this->PlanarConfiguration = 0;
   this->ColorMapOffset = 0;
   this->LSMSpecificInfoOffset = 0;
-  this->NumberOfIntensityValues[0] = this->NumberOfIntensityValues[1] = 
-  this->NumberOfIntensityValues[2] = this->NumberOfIntensityValues[3] = 0;
+  this->NumberOfIntensityValues[0] = this->NumberOfIntensityValues[1] = this->NumberOfIntensityValues[2] = this->NumberOfIntensityValues[3] = 0;
   this->ScanType = 0;
   this->DataType = 0;
   this->ChannelColors = vtkIntArray::New();
   this->ChannelNames = NULL;
   this->TimeStampInformation = vtkDoubleArray::New();
+  if (this->Objective) 
+  {
+  delete[] this->Objective;
+  this->Objective = NULL;
+  }
 }
 
 int vtkLSMReader::OpenFile()
@@ -884,6 +888,11 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 continue;
                 break;
             case RECORDING_ENTRY_OBJETIVE:
+				if (this->Objective)
+				    {
+					delete[] this->Objective;
+					this->Objective = NULL;
+					}
                 Objective = new char[size+1];
                 this->ReadData(f, &pos, size, Objective);
                 continue;
