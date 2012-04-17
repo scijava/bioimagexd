@@ -238,7 +238,8 @@ class UrmasRenderer:
 				start = self.pauseFrame
 			self.pausedRendering = 0
 		self.rendering = 1
-
+		wx.Yield()
+		
 		for n in range(start, self.frames + 1):
 			Logging.info("Rendering frame %d, spf=%f"%(n, self.spf))
 			if self.stopFlag:

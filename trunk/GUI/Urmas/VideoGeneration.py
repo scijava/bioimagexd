@@ -508,8 +508,8 @@ class VideoGeneration(wx.Panel):
 			imageExt = self.outputExts[0][formatNum]
 			Logging.info("Setting output image format to ", imageExt, kw = "animator")
 			renderingInterface.setType(imageExt)
-		
-		Logging.info("Setting duration to ", self.durationInSecs, "and frames to", self.frames, kw = "animator")
+
+		Logging.info("Setting duration to", self.durationInSecs, "and frames to", self.frames, kw = "animator")
 		self.control.configureTimeline(self.durationInSecs, self.frames)
 
 		Logging.info("Will produce %s, rendered frames go to %s" % (file, path), kw = "animator")
