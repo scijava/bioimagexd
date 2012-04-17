@@ -331,6 +331,8 @@ class LsmDataSource(DataSource):
 		"""
 		if not self.excitationWavelength:
 			name = self.reader.GetChannelName(self.channelNum)
+			if name == None:
+				name = ""
 			trackRE=re.compile('.*-T(\d+)')
 			m = trackRE.match(name)
 			if not m:
@@ -359,7 +361,7 @@ class LsmDataSource(DataSource):
 			return ""
 
 		channelName = self.reader.GetChannelName(self.channelNum)
-		if channelName == "":
+		if channelName == "" or channelName == None:
 			channelName = "Ch"+str(self.channelNum+1)
 		return channelName
 
