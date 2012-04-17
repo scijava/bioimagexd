@@ -90,7 +90,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 		
 		self.voxelSize = (0, 0, 0)
 		self.x, self.y, self.z = 0, 0, 0
-
+		self.maxClientSizeX, self.maxClientSizeY = self.GetClientSize()
 		
 		self.timepoint = 0
 		self.paintPreview()
@@ -370,11 +370,11 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 			if self.dataUnit.isProcessed():
 				image = self.dataUnit.doPreview(scripting.WHOLE_DATASET_NO_ALPHA, 1, self.timepoint)
 				image.ReleaseDataFlagOff()
-				self.ctf = self.dataUnit.getColorTransferFunction()
 			else:
 				image = self.dataUnit.getTimepoint(tp)
+				image.UpdateInformation()
 				image.SetUpdateExtent(image.GetWholeExtent())
-				self.ctf = self.dataUnit.getColorTransferFunction()
+			self.ctf = self.dataUnit.getColorTransferFunction()
 			image.Update()
 			self.cachedImage = image
 			self.imagedata = image#lib.ImageOperations.imageDataTo3Component(self.imagedata, self.ctf)
@@ -391,6 +391,7 @@ class SectionsPanel(GUI.InteractivePanel.InteractivePanel):
 
 		# obtain the slices
 		z = self.z / self.zoomZ
+
 		if self.zoomFactor != 1:
 			if self.interpolation:
 				imgslice = self.zoomImageWithInterpolation(self.imagedata, self.zoomFactor, self.interpolation, z, ctf = self.ctf)
