@@ -199,7 +199,7 @@ public:
   int OpenFile();
 
   int GetChannelColorComponent(int,int);
-  char* GetChannelName(int);
+  const char* GetChannelName(int);
   void SetFileName(const char *);
   //void ExecuteInformation();
   int RequestInformation (
