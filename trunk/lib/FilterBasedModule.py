@@ -438,7 +438,7 @@ class FilterBasedModule(lib.Module.Module):
 		Logging.info("Creating preview, filters = %s"%str(filterlist), kw="pipeline")
 
 		data = self.images
-		if filterlist.getCount() == 0:
+		if not filterlist or type(filterlist) == types.ListType or filterlist.getCount() == 0:
 			Logging.info("No filters, returning original dat", kw="pipeline")
 			return self.images[0]
 		
