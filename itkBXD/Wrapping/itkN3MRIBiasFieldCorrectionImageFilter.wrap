@@ -1,0 +1,4 @@
+itk_wrap_class("itk::N3MRIBiasFieldCorrectionImageFilter" POINTER)
+  UNIQUE(masktype "UC")
+  itk_wrap_image_filter_combinations("${WRAP_ITK_SCALAR}" "${masktype}")
+itk_end_wrap_class()
