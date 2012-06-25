@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+
+<!-- Sitemap 1.0 -->
+
+</HEAD><BODY>
+
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+
+<UL>
+		<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="User's Guide">
+			<param name="Local" value="usersguide.html">
+			</OBJECT>
+		<UL>
+    		<LI> <OBJECT type="text/sitemap">
+    			<param name="Name" value="Start here">
+    			<param name="Local" value="starthere.html">
+    			</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Application reference">
+			<param name="Local" value="reference.html">
+			</OBJECT>
+		<UL>
+    
+    		<LI> <OBJECT type="text/sitemap">
+    			<param name="Name" value="Visualizer">
+    			<param name="ID" value=34>
+    			</OBJECT>
+    		<UL>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Slices view">
+    				<param name="Local" value="slices.html">
+    				</OBJECT>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Gallery view">
+    				<param name="Local" value="gallery.html">
+    				</OBJECT>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Sections view">
+    				<param name="Local" value="sections.html">
+    				</OBJECT>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="3D view">
+    				<param name="Local" value="3d.html">
+    				</OBJECT>
+    		</UL>
+    
+    		<LI> <OBJECT type="text/sitemap">
+    			<param name="Name" value="Task modules">
+    			<param name="ID" value=34>
+    			</OBJECT>
+    		<UL>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Adjust">
+    				<param name="Local" value="adjust.html">
+    				</OBJECT>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Process">
+    				<param name="Local" value="process.html">
+    				</OBJECT>
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Colocalization">
+    				<param name="Local" value="colocalization.html">
+    				</OBJECT>                                
+    			<LI> <OBJECT type="text/sitemap">
+    				<param name="Name" value="Merging">
+    				<param name="Local" value="merge.html">
+    				</OBJECT>
+    
+    		</UL>
+    </UL>
+</UL>
+</BODY></HTML>
+

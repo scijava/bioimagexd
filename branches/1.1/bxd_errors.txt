@@ -1,0 +1,594 @@
+(1/245) ./build_app.py:
+(2/245) ./unittest/test_particle.py:
+(3/245) ./unittest/test_renderingInterface.py:
+(4/245) ./unittest/test_command.py:
+(5/245) ./unittest/test_Scripting.py:
+(6/245) ./unittest/test_DataSource.py:
+(7/245) ./unittest/test_guiBuilder.py:
+(8/245) ./unittest/test_module.py:
+(9/245) ./unittest/test_imageoperations.py:
+(10/245) ./unittest/test_Interpolation.py:
+(11/245) ./unittest/test_processingFilter.py:
+(12/245) ./unittest/test_track.py:
+(13/245) ./unittest/bxdTestUtils.py:
+(14/245) ./unittest/test_DynamicLoader.py:
+(15/245) ./unittest/test_FilterBasedModule.py:
+(16/245) ./unittest/testdata/FakeModulesDir/FakeModule/Box.py:
+(17/245) ./unittest/testdata/FakeModulesDir/FakeModule/TestingBox.py:
+(18/245) ./unittest/test_menuManager.py:
+(19/245) ./unittest/test_manipulationFilters.py:
+(20/245) ./scripting.py:
+(21/245) ./GUI/CSVListView.py:
+(22/245) ./GUI/SettingsWindow.py:
+(23/245) ./GUI/ChannelTray.py:
+(24/245) ./GUI/CameraView.py:
+(25/245) ./GUI/BugDialog.py:
+(26/245) ./GUI/ColorTransferEditor.py:
+(27/245) ./GUI/RescaleDialog.py:
+(28/245) ./GUI/TimepointSelection.py:
+(29/245) ./GUI/MenuManager.py:
+(30/245) ./GUI/PainterHelpers.py:
+(31/245) ./GUI/ProcessingManager.py:
+
+
+(32/245) ./GUI/RangedSlider.py:
+(33/245) ./GUI/OGLAnnotations.py:
+
+(34/245) ./GUI/Urmas/UrmasWindow.py:
+(35/245) ./GUI/Urmas/Track/Track.py:
+(36/245) ./GUI/Urmas/Track/KeyframeTrack.py:
+(37/245) ./GUI/Urmas/Track/__init__.py:
+(38/245) ./GUI/Urmas/Track/SplineTrack.py:
+(39/245) ./GUI/Urmas/Track/TimepointTrack.py:
+(40/245) ./GUI/Urmas/UrmasRenderer.py:
+(41/245) ./GUI/Urmas/Animation/__init__.py:
+(42/245) ./GUI/Urmas/VideoGeneration.py:
+(43/245) ./GUI/Urmas/TrackItem/KeyframePoint.py:
+(44/245) ./GUI/Urmas/TrackItem/__init__.py:
+(45/245) ./GUI/Urmas/TrackItem/TrackItem.py:
+E:270:TrackItem.drawThumbnail: Instance of 'list' has no 'GetSize' member (but some types could not be inferred)
+
+(46/245) ./GUI/Urmas/TrackItem/SplinePoint.py:
+(47/245) ./GUI/Urmas/__init__.py:
+(48/245) ./GUI/Urmas/UrmasPersist.py:
+(49/245) ./GUI/Urmas/PlaybackControl.py:
+(50/245) ./GUI/Urmas/UrmasControl.py:
+E: 84: invalid syntax
+
+(51/245) ./GUI/Urmas/TimeScale.py:
+(52/245) ./GUI/Urmas/UrmasPalette.py:
+(53/245) ./GUI/Urmas/RenderingConfigPanel.py:
+(54/245) ./GUI/Urmas/Timeline.py:
+(55/245) ./GUI/Urmas/SplineEditor.py:
+(56/245) ./GUI/Urmas/TimelinePanel.py:
+(57/245) ./GUI/InfoWidget.py:
+(58/245) ./GUI/Toolbar.py:
+(59/245) ./GUI/UndoListBox.py:
+(60/245) ./GUI/UIElements.py:
+(61/245) ./GUI/MaskTray.py:
+E:171:MaskTray.addMask: Module 'bxdexceptions' has no 'MissingParameterException' member
+
+(62/245) ./GUI/FilterBasedTaskPanel.py:
+E: 73:FilterBasedTaskPanel.__init__: Instance of 'FilterBasedTaskPanel' has no 'filtersModule' member
+E:156:FilterBasedTaskPanel.updateSettings: Instance of 'FilterBasedTaskPanel' has no 'addFilter' member
+
+(63/245) ./GUI/ImportDialog.py:
+(64/245) ./GUI/ExportDialog.py:
+(65/245) ./GUI/InteractivePanel.py:
+E:178:InteractivePanel.onSubtractBackground: Undefined variable 'z'
+E:178:InteractivePanel.onSubtractBackground: Undefined variable 'renew'
+E:185:InteractivePanel.onSubtractBackground: Module 'itk' has no 'VTKImageToImageFilter' member
+E:187:InteractivePanel.onSubtractBackground: Module 'itk' has no 'VTKImageToImageFilter' member
+E:196:InteractivePanel.onSubtractBackground: Module 'itk' has no 'VTKImageToImageFilter' member
+E:201:InteractivePanel.onSubtractBackground: Module 'itk' has no 'LabelStatisticsImageFilter' member
+E:216:InteractivePanel.onSubtractBackground: Instance of 'InteractivePanel' has no 'updatePreview' member
+E:243:InteractivePanel.onSetInterpolation: Instance of 'InteractivePanel' has no 'updatePreview' member
+E:275:InteractivePanel.unOffset: Undefined variable 'types'
+E:343:InteractivePanel.getRegionsOfInterest: Undefined variable 'OGLAnnotation'
+E:573:InteractivePanel.executeAction: Instance of 'InteractivePanel' has no 'setThreshold' member
+E:748:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'zoomx' member
+E:749:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'zoomx' member
+E:750:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'zoomy' member
+E:751:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'zoomy' member
+E:758:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'setZoomFactor' member
+E:760:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'zoomx' member
+E:760:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'zoomy' member
+E:762:InteractivePanel.zoomToRubberband: Instance of 'InteractivePanel' has no 'updatePreview' member
+E:871:InteractivePanel.paintPreview: Instance of 'InteractivePanel' has no 'zoomx' member
+E:872:InteractivePanel.paintPreview: Instance of 'InteractivePanel' has no 'zoomy' member
+
+(66/245) ./GUI/Dialogs.py:
+(67/245) ./GUI/ogl/_drawn.py:
+E:408:PseudoMetaFile.LoadFromMetaFile: Module 'posixpath' has no 'exist' member (but some types could not be inferred)
+E:408:PseudoMetaFile.LoadFromMetaFile: Module 'ntpath' has no 'exist' member (but some types could not be inferred)
+E:408:PseudoMetaFile.LoadFromMetaFile: Module 'os2emxpath' has no 'exist' member (but some types could not be inferred)
+E:408:PseudoMetaFile.LoadFromMetaFile: Module 'macpath' has no 'exist' member (but some types could not be inferred)
+E:801:DrawnShape.DrawPolygon: Undefined variable 'AttachmentPoint'
+
+(68/245) ./GUI/ogl/_bmpshape.py:
+(69/245) ./GUI/ogl/_lines.py:
+E:1407:LineShape.DeleteArrowHeadId: Undefined variable 'arrowId'
+E:1422:LineShape.FindMinimumWidth: Undefined variable 'GetSpacing'
+
+(70/245) ./GUI/ogl/_canvas.py:
+(71/245) ./GUI/ogl/_diagram.py:
+(72/245) ./GUI/ogl/_composit.py:
+(73/245) ./GUI/ogl/__init__.py:
+(74/245) ./GUI/ogl/_divided.py:
+E:399:DividedShape.OnRightClick: Undefined variable 'KEY_CTRL'
+
+(75/245) ./GUI/ogl/_basic.py:
+E:563:Shape.FormatText: Instance of 'Shape' has no 'CalculateSize' member (but some types could not be inferred)
+
+(76/245) ./GUI/ogl/_oglmisc.py:
+(77/245) ./GUI/__init__.py:
+(78/245) ./GUI/ColorSelectionDialog.py:
+(79/245) ./GUI/MainWindow.py:
+E:375:MainWindow.onMenuUndo: Instance of 'False' has no 'canUndo' member (but some types could not be inferred)
+E:376:MainWindow.onMenuUndo: Instance of 'False' has no 'undo' member (but some types could not be inferred)
+E:1077:MainWindow.onMenuShowScriptEditor: Access to member 'scriptEditor' before its definition line 1079
+
+(80/245) ./GUI/TaskPanel.py:
+E:228:TaskPanel.getChannelItemBitmap: Instance of 'tuple' has no 'GetColor' member (but some types could not be inferred)
+E:297:TaskPanel.onHelp: Instance of 'TaskPanel' has no 'operationName' member
+E:360:TaskPanel.doOperation: Instance of 'TaskPanel' has no 'operationName' member
+E:365:TaskPanel.doOperation: Module 'scripting' has no 'modal' member
+E:426:TaskPanel.setCombinedDataUnit: Instance of 'TaskPanel' has no 'operationName' member
+
+(81/245) ./GUI/Scatterplot.py:
+(82/245) ./GUI/PreviewFrame/PreviewFrame.py:
+E:492:PreviewFrame.processOutputData: Instance of 'vtkImageSimpleMIP' has no 'SetInput' member
+E:494:PreviewFrame.processOutputData: Instance of 'vtkImageSimpleMIP' has no 'GetOutput' member
+
+(83/245) ./GUI/PreviewFrame/SectionsPanel.py:
+(84/245) ./GUI/PreviewFrame/__init__.py:
+(85/245) ./GUI/PreviewFrame/GalleryPanel.py:
+(86/245) ./GUI/ResampleDialog.py:
+(87/245) ./GUI/GUIBuilder.py:
+E:471:GUIBuilder.buildGUI: Undefined variable 's'
+E:503:GUIBuilder.buildGUI: Undefined variable 's'
+E:558:GUIBuilder.buildGUI: Undefined variable 's'
+E:591:GUIBuilder.buildGUI: Undefined variable 's'
+E:622:GUIBuilder.buildGUI: Undefined variable 's'
+
+(88/245) ./GUI/IntensityTransferEditor.py:
+E:174:PaintPanel.paintTransferFunction: Assigning to function call which doesn't return
+E:484:IntensityTransferEditor.setProcessingThreshold: Instance of 'IntensityTransferEditor' has no 'minProcess' member
+E:540:IntensityTransferEditor.updateProcessingThreshold: Instance of 'IntensityTransferEditor' has no 'minProcess' member
+
+(89/245) ./GUI/Histogram.py:
+(90/245) ./GUI/SplashScreen.py:
+E: 36:SplashScreen.__init__: Class 'SystemSettings' has no 'GetSystemMetric' member
+E: 38:SplashScreen.__init__: Module 'wx' has no 'SystemSettings_GetSystemMetric' member
+
+(91/245) ./GUI/AboutDialog.py:
+(92/245) ./GUI/ScriptEditor.py:
+(93/245) ./GUI/AnnotationToolbar.py:
+E:196:AnnotationToolbar.onRecord: Instance of 'AnnotationToolbar' has no 'playBtn' member
+E:197:AnnotationToolbar.onRecord: Instance of 'AnnotationToolbar' has no 'stopBtn' member
+
+(94/245) ./GUI/TreeWidget.py:
+(95/245) ./scripts/bxd_findinsource.py:
+(96/245) ./scripts/coverage.py:
+(97/245) ./scripts/bxd_showlatestsvnlog.py:
+(98/245) ./scripts/bxd_finddiffs.py:
+(99/245) ./scripts/bxd_cleanup.py:
+(100/245) ./lib/ProcessingFilter.py:
+E:187:ProcessingFilter.convertVTKtoITK: Module 'itk' has no 'VTKImageToImageFilter' member
+E:190:ProcessingFilter.convertVTKtoITK: Module 'itk' has no 'VTKImageToImageFilter' member
+E:195:ProcessingFilter.convertVTKtoITK: Module 'itk' has no 'VTKImageToImageFilter' member
+E:199:ProcessingFilter.convertVTKtoITK: Module 'itk' has no 'VTKImageToImageFilter' member
+E:203:ProcessingFilter.convertVTKtoITK: Module 'itk' has no 'VTKImageToImageFilter' member
+E:233:ProcessingFilter.convertITKtoVTK: Module 'itk' has no 'ImageToVTKImageFilter' member
+
+(101/245) ./lib/messenger.py:
+(102/245) ./lib/Track.py:
+(103/245) ./lib/persistence/versioned_unpickler.py:
+E: 87:VersionedUnpickler.add_updater: Undefined variable '__replacement_setstate__'
+
+(104/245) ./lib/persistence/project_loader.py:
+(105/245) ./lib/persistence/updater.py:
+E: 27:Updater.get_latest: Instance of 'Updater' has no 'refactorings' member
+
+(106/245) ./lib/persistence/version_registry.py:
+(107/245) ./lib/persistence/file_path.py:
+(108/245) ./lib/persistence/__init__.py:
+(109/245) ./lib/persistence/state_pickler.py:
+(110/245) ./lib/Command.py:
+E:147:Command.__init__: Undefined variable 'f'
+E:152:Command.__init__: Undefined variable 'f'
+
+(111/245) ./lib/FilterBasedModule.py:
+(112/245) ./lib/Particle.py:
+(113/245) ./lib/Interpolation.py:
+(114/245) ./lib/DataUnit/DataUnitSetting.py:
+(115/245) ./lib/DataUnit/FilterBasedTaskSettings.py:
+E:107:FilterBasedTaskSettings.deserialize: Instance of 'FilterBasedTaskSettings' has no 'filterModule' member
+
+(116/245) ./lib/DataUnit/__init__.py:
+(117/245) ./lib/DataUnit/CombinedDataUnit.py:
+E: 59:CombinedDataUnit.__init__: Assigning to function call which doesn't return
+E: 97:CombinedDataUnit.getSingleComponentBitDepth: An attribute inherited from DataUnit hide this method
+E:106:CombinedDataUnit.getDimensions: An attribute inherited from DataUnit hide this method
+E:110:CombinedDataUnit.getSpacing: An attribute inherited from DataUnit hide this method
+E:114:CombinedDataUnit.getVoxelSize: An attribute inherited from DataUnit hide this method
+E:118:CombinedDataUnit.getBitDepth: An attribute inherited from DataUnit hide this method
+E:431:CombinedDataUnit.doPreview: Instance of 'vtkImageColorMerge' has no 'AddInput' member
+E:433:CombinedDataUnit.doPreview: Instance of 'vtkImageColorMerge' has no 'GetOutput' member
+E:368:CombinedDataUnit.doPreview: Access to member 'origPreview' before its definition line 445
+
+(118/245) ./lib/DataUnit/DataUnit.py:
+E: 75:DataUnit.getDimensions: An attribute inherited from DataUnit hide this method
+
+(119/245) ./lib/RenderingInterface.py:
+(120/245) ./lib/DataSource/BXDDataWriter.py:
+(121/245) ./lib/DataSource/BXCDataWriter.py:
+(122/245) ./lib/DataSource/__init__.py:
+(123/245) ./lib/DataSource/DataSource.py:
+E:216:DataSource.getResampledVoxelSize: Instance of 'DataSource' has no 'getVoxelSize' member
+E:227:DataSource.getResampleDimensions: Assigning to function call which doesn't return
+E:286:DataSource.getMIPdata: Assigning to function call which doesn't return
+E:477:DataSource.getBitDepth: Assigning to function call which doesn't return
+
+(124/245) ./lib/DataSource/RGBComponentDataSource.py:
+(125/245) ./lib/__init__.py:
+(126/245) ./lib/email/header.py:
+(127/245) ./lib/email/generator.py:
+(128/245) ./lib/email/mime/nonmultipart.py:
+(129/245) ./lib/email/mime/application.py:
+(130/245) ./lib/email/mime/multipart.py:
+(131/245) ./lib/email/mime/audio.py:
+(132/245) ./lib/email/mime/__init__.py:
+(133/245) ./lib/email/mime/text.py:
+(134/245) ./lib/email/mime/image.py:
+(135/245) ./lib/email/mime/base.py:
+(136/245) ./lib/email/mime/message.py:
+(137/245) ./lib/email/errors.py:
+(138/245) ./lib/email/base64mime.py:
+(139/245) ./lib/email/iterators.py:
+(140/245) ./lib/email/__init__.py:
+(141/245) ./lib/email/encoders.py:
+(142/245) ./lib/email/quoprimime.py:
+(143/245) ./lib/email/parser.py:
+(144/245) ./lib/email/utils.py:
+(145/245) ./lib/email/charset.py:
+(146/245) ./lib/email/message.py:
+E:128:Message.as_string: No name 'Generator' in module 'email'
+E:193:Message.get_payload: Module 'email.utils' has no '_qdecode' member
+E:763:Message.get_content_charset: Instance of 'tuple' has no 'lower' member (but some types could not be inferred)
+E:784:Message: No name 'Iterators' in module 'email'
+
+(147/245) ./lib/email/feedparser.py:
+(148/245) ./lib/email/_parseaddr.py:
+(149/245) ./lib/ImageOperations.py:
+E:484:getMIP: Instance of 'vtkImageSimpleMIP' has no 'SetInputConnection' member
+E:490:getMIP: Instance of 'vtkImageSimpleMIP' has no 'GetOutput' member
+E:494:getMIP: Instance of 'vtkImageSimpleMIP' has no 'GetOutputPort' member
+
+(150/245) ./lib/Module.py:
+(151/245) ./BioImageXD.py:
+(152/245) ./Visualizer/ModuleConfiguration.py:
+(153/245) ./Visualizer/Lights.py:
+(154/245) ./Visualizer/Visualizer.py:
+(155/245) ./Visualizer/VisualizationModules.py:
+E:189:VisualizationModule.disableRendering: Instance of 'VisualizationModule' has no 'actor' member
+E:197:VisualizationModule.enableRendering: Instance of 'VisualizationModule' has no 'actor' member
+E:205:VisualizationModule.setProperties: Instance of 'VisualizationModule' has no 'actor' member
+E:217:VisualizationModule.setShading: Instance of 'VisualizationModule' has no 'actor' member
+E:246:VisualizationModule.__getstate__: Instance of 'VisualizationModule' has no 'actor' member
+E:258:VisualizationModule.__set_pure_state__: Instance of 'VisualizationModule' has no 'actor' member
+
+(156/245) ./Visualizer/VisualizationFrame.py:
+E:413:ConfigurationPanel.onSaveScene: Assigning to function call which doesn't return
+
+(157/245) ./Visualizer/__init__.py:
+(158/245) ./Visualizer/VisualizerWindow.py:
+(159/245) ./Visualizer/VisualizationMode.py:
+(160/245) ./Logging.py:
+(161/245) ./Configuration.py:
+(162/245) ./Modules/Task/Coloc/ColocalizationSettings.py:
+(163/245) ./Modules/Task/Coloc/Colocalization.py:
+E: 65:Colocalization.reset: Instance of 'vtkImageColocalizationFilter' has no 'AddObserver' member
+E: 68:Colocalization.reset: Instance of 'vtkImageColocalizationFilter' has no 'AddObserver' member
+E: 70:Colocalization.reset: Instance of 'vtkImageAutoThresholdColocalization' has no 'GetOutput' member
+E: 71:Colocalization.reset: Instance of 'vtkImageAutoThresholdColocalization' has no 'AddObserver' member
+E:122:Colocalization.doOperation: Instance of 'vtkImageAutoThresholdColocalization' has no 'AddInput' member
+E:123:Colocalization.doOperation: Instance of 'vtkImageAutoThresholdColocalization' has no 'AddInput' member
+E:141:Colocalization.doOperation: Instance of 'vtkImageAutoThresholdColocalization' has no 'Update' member
+E:195:Colocalization.doOperation: Instance of 'vtkImageColocalizationFilter' has no 'AddInput' member
+E:201:Colocalization.doOperation: Instance of 'vtkImageColocalizationFilter' has no 'GetOutput' member
+
+(164/245) ./Modules/Task/Coloc/__init__.py:
+(165/245) ./Modules/Task/Coloc/ColocalizationPanel.py:
+E:492:ColocalizationPanel.getPValue: Instance of 'vtkImageColocalizationTest' has no 'AddInput' member
+E:493:ColocalizationPanel.getPValue: Instance of 'vtkImageColocalizationTest' has no 'AddObserver' member
+E:495:ColocalizationPanel.getPValue: Instance of 'vtkImageColocalizationTest' has no 'Update' member
+E:1020:ColocalizationPanel.createItemToolbar: Instance of 'vtkImageColocalizationFilter' has no 'AddInput' member
+E:1024:ColocalizationPanel.createItemToolbar: Instance of 'vtkImageColocalizationFilter' has no 'Update' member
+E:1030:ColocalizationPanel.createItemToolbar: Instance of 'vtkImageColocalizationFilter' has no 'GetOutput' member
+
+(166/245) ./Modules/Task/Manipulation/ManipulationFilters.py:
+E:338:SolitaryFilter.execute: Instance of 'vtkImageSolitaryFilter' has no 'SetInput' member
+E:345:SolitaryFilter.execute: Instance of 'vtkImageSolitaryFilter' has no 'Update' member
+E:346:SolitaryFilter.execute: Instance of 'vtkImageSolitaryFilter' has no 'GetOutput' member
+E:704:TimepointCorrelationFilter.execute: Instance of 'vtkImageAutoThresholdColocalization' has no 'AddInput' member
+E:705:TimepointCorrelationFilter.execute: Instance of 'vtkImageAutoThresholdColocalization' has no 'AddInput' member
+E:715:TimepointCorrelationFilter.execute: Instance of 'vtkImageAutoThresholdColocalization' has no 'Update' member
+E:811:ROIIntensityFilter.execute: Module 'itk' has no 'LabelStatisticsImageFilter' member
+E:1104:ITKAnisotropicDiffusionFilter.execute: Module 'itk' has no 'GradientAnisotropicDiffusionImageFilter' member
+E:1104:ITKAnisotropicDiffusionFilter.execute: Undefined variable 'f3'
+E:1104:ITKAnisotropicDiffusionFilter.execute: Undefined variable 'f3'
+E:1151:ITKGradientMagnitudeFilter.execute: Module 'itk' has no 'GradientMagnitudeImageFilter' member
+E:1208:ITKCannyEdgeFilter.execute: Module 'itk' has no 'CannyEdgeDetectionImageFilter' member
+E:1241:ITKSigmoidFilter.__init__: Module 'itk' has no 'Image' member
+E:1242:ITKSigmoidFilter.__init__: Module 'itk' has no 'SigmoidImageFilter' member
+E:1361:ITKLocalMaximumFilter.execute: Module 'itk' has no 'Image' member
+E:1362:ITKLocalMaximumFilter.execute: Module 'itk' has no 'ShiftScaleImageFilter' member
+E:1363:ITKLocalMaximumFilter.execute: Module 'itk' has no 'ReconstructionByDilationImageFilter' member
+E:1364:ITKLocalMaximumFilter.execute: Module 'itk' has no 'SubtractImageFilter' member
+
+(167/245) ./Modules/Task/Manipulation/MorphologicalFilters.py:
+E:103:MorphologicalFilter.execute: Instance of 'MorphologicalFilter' has no 'vtkfilter' member
+E:108:MorphologicalFilter.execute: Instance of 'MorphologicalFilter' has no 'vtkfilter' member
+E:110:MorphologicalFilter.execute: Instance of 'MorphologicalFilter' has no 'vtkfilter' member
+E:111:MorphologicalFilter.execute: Instance of 'MorphologicalFilter' has no 'vtkfilter' member
+
+(168/245) ./Modules/Task/Manipulation/ManipulationDataUnit.py:
+(169/245) ./Modules/Task/Manipulation/TrackingFilters.py:
+(170/245) ./Modules/Task/Manipulation/SegmentationFilters.py:
+E:535:ITKWatershedSegmentationFilter.__init__: Module 'itk' has no 'Image' member
+E:536:ITKWatershedSegmentationFilter.__init__: Module 'itk' has no 'WatershedImageFilter' member
+E:683:MorphologicalWatershedSegmentationFilter.execute: Module 'itk' has no 'Image' member
+E:684:MorphologicalWatershedSegmentationFilter.execute: Module 'itk' has no 'MorphologicalWatershedImageFilter' member
+E:706:MorphologicalWatershedSegmentationFilter.execute: Module 'itk' has no 'RelabelComponentImageFilter' member
+E:818:ConnectedComponentFilter.execute: Module 'itk' has no 'ConnectedComponentImageFilter' member
+E:818:ConnectedComponentFilter.execute: Module 'itk' has no 'Image' member
+E:830:ConnectedComponentFilter.execute: Module 'itk' has no 'RelabelComponentImageFilter' member
+E:920:MaximumObjectsFilter.execute: Module 'itk' has no 'ThresholdMaximumConnectedComponentsImageFilter' member
+E:1001:ITKRelabelImageFilter.execute: Module 'itk' has no 'RelabelComponentImageFilter' member
+E:1072:ITKInvertIntensityFilter.execute: Module 'itk' has no 'InvertIntensityImageFilter' member
+E:1262:MeasureVolumeFilter.execute: Module 'itk' has no 'LabelShapeImageFilter' member
+E:1301:MeasureVolumeFilter.execute: Instance of 'vtkImageLabelAverage' has no 'AddInput' member
+E:1302:MeasureVolumeFilter.execute: Instance of 'vtkImageLabelAverage' has no 'AddInput' member
+E:1304:MeasureVolumeFilter.execute: Instance of 'vtkImageLabelAverage' has no 'Update' member
+E:1368:ITKConfidenceConnectedFilter.__init__: Module 'itk' has no 'Image' member
+E:1369:ITKConfidenceConnectedFilter.__init__: Module 'itk' has no 'ConfidenceConnectedImageFilter' member
+E:1435:ITKConfidenceConnectedFilter.execute: Module 'itk' has no 'Index' member
+E:1478:ITKConnectedThresholdFilter.__init__: Module 'itk' has no 'Image' member
+E:1479:ITKConnectedThresholdFilter.__init__: Module 'itk' has no 'ConnectedThresholdImageFilter' member
+E:1527:ITKConnectedThresholdFilter.execute: Module 'itk' has no 'Index' member
+E:1569:ITKNeighborhoodConnectedThresholdFilter.__init__: Module 'itk' has no 'Image' member
+E:1570:ITKNeighborhoodConnectedThresholdFilter.__init__: Module 'itk' has no 'NeighborhoodConnectedImageFilter' member
+E:1635:ITKNeighborhoodConnectedThresholdFilter.execute: Module 'itk' has no 'Index' member
+E:1644:ITKNeighborhoodConnectedThresholdFilter.execute: Module 'itk' has no 'Size' member
+E:1678:ITKOtsuThresholdFilter.__init__: Module 'itk' has no 'Image' member
+E:1679:ITKOtsuThresholdFilter.__init__: Module 'itk' has no 'OtsuThresholdImageFilter' member
+
+(171/245) ./Modules/Task/Manipulation/__init__.py:
+(172/245) ./Modules/Task/Manipulation/Manipulation.py:
+(173/245) ./Modules/Task/Manipulation/MathFilters.py:
+E: 77:MathFilter.execute: Instance of 'MathFilter' has no 'operation' member
+
+(174/245) ./Modules/Task/Manipulation/ManipulationPanel.py:
+(175/245) ./Modules/Task/Manipulation/RegistrationFilters.py:
+E: 76:RegistrationFilter.getParameterLevel: Module 'GUI.GUIBuilder' has no 'FILTER_INTERMEDIATE' member
+E: 79:RegistrationFilter.getParameterLevel: Module 'GUI.GUIBuilder' has no 'FILTER_BEGINNER' member
+E:120:RegistrationFilter.onRemove: Instance of 'RegistrationFilter' has no 'origCtf' member
+E:121:RegistrationFilter.onRemove: Instance of 'RegistrationFilter' has no 'origCtf' member
+E:152:RegistrationFilter.execute: Module 'itk' has no 'VersorRigid3DTransform' member
+E:153:RegistrationFilter.execute: Module 'itk' has no 'VersorRigid3DTransformOptimizer' member
+E:154:RegistrationFilter.execute: Module 'itk' has no 'MeanSquaresImageToImageMetric' member
+E:155:RegistrationFilter.execute: Module 'itk' has no 'LinearInterpolateImageFunction' member
+E:156:RegistrationFilter.execute: Module 'itk' has no 'ImageRegistrationMethod' member
+E:169:RegistrationFilter.execute: Module 'itk' has no 'CenteredTransformInitializer' member
+E:176:RegistrationFilter.execute: Module 'itk' has no 'Versor' member
+E:177:RegistrationFilter.execute: Module 'itk' has no 'Vector' member
+E:206:RegistrationFilter.execute: Undefined variable 'data'
+
+(176/245) ./Modules/Task/Manipulation/ManipulationSettings.py:
+(177/245) ./Modules/Task/Merging/MergingPanel.py:
+(178/245) ./Modules/Task/Merging/__init__.py:
+(179/245) ./Modules/Task/Merging/Merging.py:
+E:156:Merging.doOperation: Instance of 'vtkImageColorMerge' has no 'AddObserver' member
+E:179:Merging.doOperation: Instance of 'vtkImageColorMerge' has no 'AddInput' member
+E:186:Merging.doOperation: Instance of 'vtkImageColorMerge' has no 'GetOutput' member
+
+(180/245) ./Modules/Task/Merging/MergingDataUnit.py:
+E: 49:MergingDataUnit.getBitDepth: An attribute inherited from DataUnit hide this method
+E: 58:MergingDataUnit.getSingleComponentBitDepth: An attribute inherited from DataUnit hide this method
+
+(181/245) ./Modules/Task/Merging/MergingSettings.py:
+(182/245) ./Modules/Task/Adjust/AdjustSettings.py:
+(183/245) ./Modules/Task/Adjust/Adjust.py:
+E:123:Adjust.doOperation: Instance of 'vtkImageMapToIntensities' has no 'AddObserver' member
+E:125:Adjust.doOperation: Instance of 'vtkImageMapToIntensities' has no 'SetInput' member
+E:128:Adjust.doOperation: Instance of 'vtkImageMapToIntensities' has no 'GetOutput' member
+
+(184/245) ./Modules/Task/Adjust/AdjustPanel.py:
+(185/245) ./Modules/Task/Adjust/__init__.py:
+(186/245) ./Modules/Task/Adjust/AdjustDataUnit.py:
+E:105:AdjustDataUnit.interpolateIntensitiesBetween: Module 'lib.Interpolation' has no 'interpolate' member
+E:142:AdjustDataUnit.copyIntensityTransferFunctionToAll: Instance of 'AdjustDataUnit' has no 'intensityTransferFunctions' member
+
+(187/245) ./Modules/Rendering/ScaleBar.py:
+(188/245) ./Modules/Rendering/Spline.py:
+E: 72:SplineModule.__init__: Instance of 'SplineModule' has no 'endInteraction' member
+E: 73:SplineModule.__init__: Instance of 'SplineModule' has no 'endInteraction' member
+E: 76:SplineModule.__init__: Instance of 'SplineModule' has no 'iren' member
+
+(189/245) ./Modules/Rendering/Orthogonal.py:
+(190/245) ./Modules/Rendering/ArbitrarySlicer.py:
+(191/245) ./Modules/Rendering/CutWidget.py:
+(192/245) ./Modules/Rendering/WarpScalar.py:
+(193/245) ./Modules/Rendering/ClippingPlane.py:
+(194/245) ./Modules/Rendering/VisualizeTrack.py:
+E:125:VisualizeTrackModule.getRange: Instance of 'VisualizeTrackModule' has no 'track' member
+E:127:VisualizeTrackModule.getRange: Instance of 'VisualizeTrackModule' has no 'track' member
+E:132:VisualizeTrackModule.getRange: Instance of 'VisualizeTrackModule' has no 'track' member
+E:133:VisualizeTrackModule.getRange: Instance of 'VisualizeTrackModule' has no 'track' member
+
+(195/245) ./Modules/Rendering/Distance.py:
+E: 95:DistanceModule.onPlacePoint: Instance of 'vtkDistanceRepresentationScaled2D' has no 'GetPoint1Representation' member
+E:102:DistanceModule.onPlacePoint: Instance of 'vtkDistanceRepresentationScaled2D' has no 'GetPoint2Representation' member
+E:146:DistanceModule.setDataUnit: Instance of 'vtkDistanceRepresentationScaled2D' has no 'SetLabelFormat' member
+
+(196/245) ./Modules/Rendering/Angle.py:
+(197/245) ./Modules/Rendering/Volume.py:
+(198/245) ./Modules/Rendering/Axes.py:
+(199/245) ./Modules/Rendering/NewSurface.py:
+E:370:SurfaceConfigurationPanel.onSelectMethod: Instance of 'SurfaceConfigurationPanel' has no 'moduleChoice' member
+
+(200/245) ./Modules/Readers/LeicaDataSource.py:
+E:748:LeicaExperiment.ReadLeicaVolData: Instance of 'vtkExtTIFFReader' has no 'SetFileNames' member
+E:761:LeicaExperiment.ReadLeicaVolData: Instance of 'vtkExtTIFFReader' has no 'SetDataScalarTypeToUnsignedChar' member
+E:764:LeicaExperiment.ReadLeicaVolData: Instance of 'vtkExtTIFFReader' has no 'FileLowerLeftOff' member
+E:765:LeicaExperiment.ReadLeicaVolData: Instance of 'vtkExtTIFFReader' has no 'SetDataExtent' member
+E:766:LeicaExperiment.ReadLeicaVolData: Instance of 'vtkExtTIFFReader' has no 'SetDataSpacing' member
+E:768:LeicaExperiment.ReadLeicaVolData: Instance of 'vtkExtTIFFReader' has no 'Update' member
+
+(201/245) ./Modules/Readers/LIFDataSource.py:
+E:118:LIFDataSource.getDataSet: Instance of 'vtkLIFReader' has no 'GetOutput' member
+
+(202/245) ./Modules/Readers/InterfileDataSource.py:
+(203/245) ./Modules/Readers/LSMDataSource.py:
+E: 81:LsmDataSource.__init__: Instance of 'vtkLSMReader' has no 'AddObserver' member
+E: 98:LsmDataSource.__init__: Instance of 'vtkLSMReader' has no 'UpdateInformation' member
+E:166:LsmDataSource.getBitDepth: Instance of 'vtkLSMReader' has no 'GetOutput' member
+E:239:LsmDataSource.getDataSet: Instance of 'vtkLSMReader' has no 'GetOutput' member
+E:276:LsmDataSource.loadFromFile: Instance of 'vtkLSMReader' has no 'UpdateInformation' member
+
+(204/245) ./Modules/Readers/OlympusDataSource.py:
+E:196:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'AddObserver' member
+E:198:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'SetDataExtent' member
+E:201:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'SetDataSpacing' member
+E:214:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'SetFilePattern' member
+E:217:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'SetFileNameSliceOffset' member
+E:218:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'SetFileNameSliceSpacing' member
+E:220:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'SetFileNameSliceOffset' member
+E:222:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'UpdateInformation' member
+E:224:OlympusDataSource.getTimepoint: Instance of 'vtkExtTIFFReader' has no 'GetOutput' member
+
+(205/245) ./Modules/Readers/BXDDataSource.py:
+(206/245) ./Modules/Readers/FileListDataSource.py:
+(207/245) ./Modules/Readers/BioradDataSource.py:
+E: 65:BioradDataSource.__init__: Module 'itk' has no 'BioRadImageIO' member
+E: 66:BioradDataSource.__init__: Module 'itk' has no 'ImageFileReader' member
+E: 66:BioradDataSource.__init__: Module 'itk' has no 'Image' member
+E:169:BioradDataSource.getTimepoint: Module 'itk' has no 'ImageToVTKImageFilter' member
+
+(208/245) ./Modules/Readers/BXCDataSource.py:
+(209/245) ./Modules/DynamicLoader.py:
+(210/245) ./Modules/Visualization/Rendering.py:
+E:259:RenderingMode.updateRendering: Undefined variable 'Logging'
+
+(211/245) ./Modules/Visualization/Gallery.py:
+(212/245) ./Modules/Visualization/Slices.py:
+(213/245) ./Modules/Visualization/Sections.py:
+(214/245) ./Modules/Visualization/Info.py:
+E:164:InfoMode.setTimepoint: Instance of 'InfoWidget' has no 'preview' member
+E:173:InfoMode.saveSnapshot: Instance of 'InfoWidget' has no 'preview' member
+
+(215/245) ./Modules/Visualization/Simple.py:
+(216/245) ./Modules/Visualization/Animator.py:
+(217/245) ./Modules/__init__.py:
+(218/245) ./template.py:
+(219/245) ./Tests/test_itf.py:
+E:  3: Module 'vtk' has no 'vtkIntensityTransferFunction' member
+E:  4: Module 'vtk' has no 'vtkIntensityTransferFunction' member
+
+(220/245) ./Tests/test_itk.py:
+E:  7: Module 'vtk' has no 'vtkLSMReader' member
+E: 20: Module 'itk' has no 'Image' member
+E: 21: Module 'itk' has no 'VTKImageToImageFilter' member
+E: 28: Module 'itk' has no 'GradientMagnitudeImageFilter' member
+E: 33: Module 'itk' has no 'WatershedImageFilter' member
+E: 41: Module 'itk' has no 'ImageToVTKImageFilter' member
+
+(221/245) ./Tests/test_plot_track.py:
+(222/245) ./Tests/test_scaling.py:
+(223/245) ./Tests/test_coloctest.py:
+E: 19: Module 'vtk' has no 'vtkLSMReader' member
+E: 25: Module 'vtk' has no 'vtkLSMReader' member
+E: 36: Module 'vtk' has no 'vtkImageColocalizationTest' member
+
+(224/245) ./Tests/unittest_lifreader.py:
+E: 18:TestColoc.testDimensions: Instance of 'vtkLIFReader' has no 'Update' member
+E: 19:TestColoc.testDimensions: Instance of 'vtkLIFReader' has no 'GetOutput' member
+E: 26:TestColoc.testMIP: Instance of 'vtkLIFReader' has no 'Update' member
+E: 27:TestColoc.testMIP: Instance of 'vtkLIFReader' has no 'GetOutput' member
+E: 29:TestColoc.testMIP: Instance of 'vtkImageSimpleMIP' has no 'SetInput' member
+E: 31:TestColoc.testMIP: Instance of 'vtkImageSimpleMIP' has no 'GetOutput' member
+E: 32:TestColoc.testMIP: Instance of 'vtkImageSimpleMIP' has no 'Update' member
+
+(225/245) ./Tests/test_oif_read.py:
+E: 11: Instance of 'vtkExtTIFFReader' has no 'SetDataExtent' member
+E: 12: Instance of 'vtkExtTIFFReader' has no 'SetFilePattern' member
+E: 13: Instance of 'vtkExtTIFFReader' has no 'SetFileNameSliceOffset' member
+E: 14: Instance of 'vtkExtTIFFReader' has no 'Update' member
+E: 15: Instance of 'vtkExtTIFFReader' has no 'GetOutput' member
+
+(226/245) ./Tests/test_module_merge.py:
+E: 71: Module 'vtk' has no 'vtkImageSimpleMIP' member
+
+(227/245) ./Tests/lsm.py:
+E:  3: Module 'vtk' has no 'vtkLSMReader' member
+
+(228/245) ./Tests/export_to_vtk.py:
+E:  4: Module 'vtk' has no 'vtkLSMReader' member
+
+(229/245) ./Tests/test_module.py:
+E: 46: lib.DataUnit.CombinedDataUnit is not callable
+E: 63: Module 'vtk' has no 'vtkImageSimpleMIP' member
+
+(230/245) ./Tests/test_big.py:
+E: 19: Module 'vtk' has no 'vtkLSMReader' member
+E: 24: Module 'vtk' has no 'vtkLSMReader' member
+E: 48: Module 'vtk' has no 'vtkImageColorMerge' member
+E: 70: Module 'vtk' has no 'vtkImageSimpleMIP' member
+
+(231/245) ./Tests/test_autocoloc.py:
+E:  8: Module 'vtk' has no 'vtkLSMReader' member
+E: 14: Module 'vtk' has no 'vtkLSMReader' member
+E: 32: Module 'vtk' has no 'vtkImageAutoThresholdColocalization' member
+
+(232/245) ./Tests/unittest_module.py:
+E: 32:TestModuleFunctions.setUp: lib.DataUnit.CombinedDataUnit is not callable
+E: 33:TestModuleFunctions.setUp: Module 'vtk' has no 'vtkLSMReader' member
+E: 34:TestModuleFunctions.setUp: Module 'vtk' has no 'vtkLSMReader' member
+
+(233/245) ./Tests/test_lsmreader_fading.py:
+E:  8: Module 'vtk' has no 'vtkLSMReader' member
+
+(234/245) ./Tests/test_track.py:
+(235/245) ./Tests/test_merge.py:
+E: 20: Module 'vtk' has no 'vtkLSMReader' member
+E: 23: Module 'vtk' has no 'vtkLSMReader' member
+E: 48: Module 'vtk' has no 'vtkImageColorMerge' member
+
+(236/245) ./Tests/unittest_coloc.py:
+E: 10:getChannel: Module 'vtk' has no 'vtkLSMReader' member
+E: 36:TestColoc.testPValue: Module 'vtk' has no 'vtkImageColocalizationTest' member
+E: 69:TestColoc.testAutoThreshold: Module 'vtk' has no 'vtkImageAutoThresholdColocalization' member
+
+(237/245) ./Tests/test_merge2.py:
+E: 12: Module 'vtk' has no 'vtkLSMReader' member
+E: 14: Module 'vtk' has no 'vtkLSMReader' member
+E: 43: Module 'vtk' has no 'vtkImageSimpleMIP' member
+
+(238/245) ./Tests/test_psf.py:
+E:  3: Module 'vtk' has no 'vtkImageDiffractionPSF3D' member
+
+(239/245) ./Tests/test_itfmerge.py:
+E: 10: Module 'vtk' has no 'vtkLSMReader' member
+E: 17: Module 'vtk' has no 'vtkIntensityTransferFunction' member
+E: 26: Module 'vtk' has no 'vtkImageColorMerge' member
+E: 32: Module 'vtk' has no 'vtkImageMapToIntensities' member
+E: 42: Module 'vtk' has no 'vtkImageSimpleMIP' member
+E: 60: Module 'vtk' has no 'vtkImageSimpleMIP' member
+
+(240/245) ./Tests/maptocolor.py:
+(241/245) ./Tests/test_oif.py:
+(242/245) ./LUT/is_nih.py:
+(243/245) ./vtkBXD/Wrapping/Python/vtkbxd/__init__.py:
+(244/245) ./bxdexceptions.py:
+(245/245) ./optimize.py:

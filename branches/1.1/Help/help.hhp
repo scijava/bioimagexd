@@ -1,0 +1,26 @@
+[OPTIONS]
+Compatibility=1.1
+Compiled file=testing.chm
+Contents file=contents.hhc
+Display compile progress=No
+Index file=Index.hhk
+Language=0x409 English (United States)
+Title=BioImageXD Help
+Default topic=index.html
+
+
+
+[FILES]
+index.html
+usersguide.html
+visualizer.html
+slices.html
+gallery.html
+sections.html
+3d.html
+taskmodules.html
+adjust.html
+process.html
+colocalization.html
+merge.html
+

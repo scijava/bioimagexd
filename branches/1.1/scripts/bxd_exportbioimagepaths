@@ -1,0 +1,5 @@
+# Script that creates a PYTHONPATH variable that contains necessary directories for
+# imports to work when running pychecker on separate files.
+# Use by running "source exportbioimagepaths".
+export PYTHONPATH=~/biomage/source:~/bioimage/source/lib:~/bioimage/source/GUI
+echo "Set PYTHONPATH to ~/bioimage/source:~/bioimage/source/lib:~/bioimage/source/GUI"

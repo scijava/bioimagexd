@@ -1,0 +1,35 @@
+The BioImageXD Project:
+
+BioImageXD Copyright (C) 2004-2011 The development team
+
+The main development team:
+
+Pasi Kankaanp‰‰
+Lassi Paavolainen
+Varpu Marjom‰ki
+Jyrki Heino
+Daniel White
+
+Developer:
+
+Joacim P‰iv‰rinne
+
+Former member of the main development team:
+
+Kalle Pahajoki
+Heikki Uuksulainen
+
+BioImageXD is largely based on the work of the Selli project, which included the following people:
+Juha Hyyti‰inen
+Jaakko M‰ntymaa
+Kalle Pahajoki
+Jukka Varsaluoma
+
+The following people, organizations and companies have significantly contributed to the development of BioImageXD:
+
+Jorma Virtanen
+Mikko Huhtala
+Pekka Neittaanm‰ki
+Anna-Brita ÷st
+Mikko Karjalainen
+ISB - National Graduate School in Informational and Structural Biology

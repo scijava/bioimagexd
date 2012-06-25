@@ -1,0 +1,6 @@
+wxVTKRenderWindowInteractor does not work inside wxNotebooks
+FFMPEG usage: we crop 40 pixels of bad data from the right side
+ffmpeg -b 16384 -i anim%3d.png -cropright 40 -vcodec mpeg4 highest.avi
+
+-r determines the framerate, but be careful to place the -r <rate> before
+the -i

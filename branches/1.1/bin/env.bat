@@ -1,0 +1,2 @@
+@echo off
+set PYTHONPATH=%PYTHONPATH%;C:\BioImageXD\VTK\Wrapping\Python;C:\BioImageXD\VTK\bin\Release;C:\BioImageXD\InsightToolkit\Wrapping\WrapITK\Python\Release;C:\BioImageXD\InsightToolkit\bin\Release;C:\BioImageXD\trunk\vtkBXD\Wrapping\Python

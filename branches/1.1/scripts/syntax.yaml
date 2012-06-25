@@ -1,0 +1,62 @@
+## defines the syntax of the language, here: Python
+## it is always executed before any of the functions defined in .order
+## each line is checked against the regexp and reported as the given name instead of code
+## this transforms the source code line into codestat line: linename|parameter|value
+## two special markers may begin the linename: > and & for summary and global variables
+- name:         comment
+  regexp:       ^\s*#(.*?)$
+- name:         docstring
+  regexp:       ^\s*("{3}|'{3})(.*?)\1\s*$
+- name:         line
+  regexp:       "(\"{3}|'{3})(.*?)\\1"
+- name:         docmark
+  regexp:       ^\s*("{3}|'{3})\s*$
+- name:         docmark.with.something
+  regexp:       ^\s*("{3}|'{3})\s*\S
+- name:         something.with.docmark
+  regexp:       \S\s*('{3}|"{3})\s*\S*(.*?)$
+- name:         docmark
+  regexp:       "(\"{3}|'{3})\s*$"
+- name:         specialclassmethod
+  regexp:       "^(\\s*)def\\s+(__[a-zA-Z0-9_]+__)\\s*\\((self).*?\\)\\s*\\:"
+  text:         2
+- name:         classmethod
+  regexp:       "^(\\s*)def\\s+([a-zA-Z0-9_]+)\\s*\\((self).*?\\)\\s*\\:"
+  text:         2
+- name:         specialmethod
+  regexp:       "^(\\s*)def\\s+(__[a-zA-Z0-9_]+__)\\s*\\(.*?\\)\\s*\\:"
+  text:         2 
+- name:         method
+  regexp:       "^(\\s*)def\\s+([a-zA-Z0-9_]+)\\s*\\(.*?\\)\\s*\\:"
+  text:         2
+- name:         class
+  regexp:       "^\\s*class\\s+([a-zA-Z0-9_]+)\\s*(\\([a-zA-Z0-9., _]+\\)\\s*)?\:"
+  text:         1
+- name:         specialclassmethod.open
+  regexp:       "^(\\s*)def\\s+(__[a-zA-Z0-9_]+__)\\s*\\((self)[^\\)]*?"
+  text:         2
+- name:         classmethod.open
+  regexp:       "^(\\s*)def\\s+([a-zA-Z0-9_]+)\\s*\\((self)[^\\)]*?"
+  text:         2
+- name:         specialmethod.open
+  regexp:       "^(\\s*)def\\s+(__[a-zA-Z0-9_]+__)\\s*\\([^\\)]*?"
+  text:         2
+- name:         method.open
+  regexp:       "^(\\s*)def\\s+([a-zA-Z0-9_]+)\\s*\\([^\\)]*?"
+  text:         2
+- name:         class.open
+  regexp:       "^\\s*class\\s+([a-zA-Z0-9_]+)\\s*(\\([a-zA-Z0-9., _]+\\s*)?$"
+  text:         1
+- name:         definition.close
+  regexp:       "[^(]+\\)\\s*:\\s*$"
+- name:         static
+  regexp:       ^\s*@staticmethod\s*$
+- name:         import
+  regexp:       ^\s*import\s+
+- name:         importfrom
+  regexp:       ^\s*from\s+\w+\s+import\s+
+- name:         empty
+  regexp:       ^\s*$
+- name:         line
+  regexp:       ^.*$
+

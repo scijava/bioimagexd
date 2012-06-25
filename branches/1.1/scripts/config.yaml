@@ -1,0 +1,353 @@
+## codestat configuration file
+## valid for project BioImage in Abo Akademi, summer 2007
+## probably of some other minor use elsewhere, too
+
+## renames given lines
+rename:
+ - what:         specialmethod
+   to:           method
+ - what:         specialclassmethod
+   to:           classmethod
+renameclosingdefs:
+ - what:         definition.close
+   to:           line
+
+## extracts given lines and sums them up
+## summary appears at the bottom of the file, each name is preceeded with >
+## count contains the array of lines that are to be included in compacting
+## all the lines matching compacting are removed from where they appear
+extractnoncode:
+ - name:         emptylines
+   count:        [empty]
+ - name:         commentedlines
+   count:        [comment]
+ - name:         imports
+   count:        [import, importfrom]
+extractmod:
+ - name:         moduledocstring
+   count:        [docstring]
+ - name:         modulecode
+   count:        [line]
+
+## flattens the lines that are near each other and share the same class and parameter
+flatten:
+ exclude:        []
+
+## checks whether given lines are marked by a given marker
+## the marker must occur immediately before the line that is to be flagged
+## name is the new line, if it is flagged before
+## marker is the marker line, that must appear before object it flags
+## flags contains the array of lines that the marker flags
+## the information about the marker line is lost when the flagging occurs
+flagstatic:
+ - name:         staticmethod
+   marker:       static
+   flags:        [method]
+
+## merges several lines into a block
+## name is the name of the block
+## start and end give the line that starts and ends the block
+## include specifies whether start and end should be counted as block size
+## count has the array of lines that are to be counted as the block size
+## all lines between start and end are erased and replaced by block name and size  
+blockmethods:
+ - name:         classmethod
+   start:        classmethod.open
+   end:          definition.close
+   include:      true
+   count:        [line]
+ - name:         specialclassmethod
+   start:        specialclassmethod.open
+   end:          definition.close
+   include:      true
+   count:        [line]
+ - name:         method
+   start:        method.open
+   end:          definition.close
+   include:      true
+   count:        [line]
+ - name:         specialmethod
+   start:        specialmethod.open
+   end:          definition.close
+   include:      true
+   count:        [line]
+ - name:         class
+   start:        class.open
+   end:          definition.close
+   include:      true
+   count:        [line]
+
+blockdocs:
+ - name:         docstring
+   start:        docmark
+   end:          docmark
+   include:      false
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         docstring
+   start:        docmark
+   end:          something.with.docmark
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         docstring
+   start:        docmark.with.something
+   end:          something.with.docmark
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         docstring
+   start:        docmark.with.something
+   end:          docmark
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         line
+   start:        something.with.docmark
+   end:          docmark
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         line
+   start:        something.with.docmark
+   end:          docmark.with.something
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         line
+   start:        something.with.docmark
+   end:          something.with.docmark
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+ - name:         line
+   start:        docmark.with.something
+   end:          docmark.with.something
+   include:      true
+   count:        [line, specialclassmethod, classmethod, specialmethod, method, class, specialclassmethod.open, classmethod.open, specialmethod.open, method.open, class.open, definition.close, static, import, importfrom]
+
+## performs a summation
+## the value will appear at the bottom of the file, with name preceeded with >
+## count contains the array of lines that are to be counted
+## value indicates the value of each occurrence (thus disabling the real value!)
+## if value is not present, the value written in the file will be used
+## initial gives the initial value of the sum
+sum:
+ - name:         docstringlines
+   count:        [docstring]
+ - name:         docstringblocks
+   count:        [docstring]
+   value:        1
+ - name:         classes
+   count:        [class]
+   value:        1
+ - name:         classmethods
+   count:        [classmethod]
+   value:        1
+ - name:         staticmethods
+   count:        [staticmethod]
+   value:        1
+ - name:         methods
+   count:        [method]
+   value:        1
+ - name:         allmethods
+   count:        [method, staticmethod, classmethod]
+   value:        1
+ - name:         allclassmethods
+   count:        [staticmethod, classmethod]
+   value:        1
+ - name:         codelines
+   count:        [line]
+ - name:         docstringables
+   count:        [method, class, classmethod, staticmethod]
+   initial:      1
+
+sumspecial:
+ - name:         specialmethods
+   count:        [specialmethod, specialclassmethod]
+   value:        1
+
+## checks for the tagging of the object
+## flags appear before the line, tags - immediately after the line
+## name is the new name
+## marker is the line that must appear after the line it tags
+## tags is the array of lines that can be tagged
+## the information about the marker is lost if the tagging occurs
+tagdocs:
+ - name:         doc_class
+   marker:       docstring
+   tags:         [class]
+ - name:         doc_method
+   marker:       docstring
+   tags:         [method]
+ - name:         doc_classmethod
+   marker:       docstring
+   tags:         [classmethod]
+ - name:         doc_staticmethod
+   marker:       docstring
+   tags:         [staticmethod]
+
+## merges the lines
+## any of the lines given in what must have with line immediately after it to be merged
+## the information about the with line is lost except of its value
+## the value of the what line is lost and replaced by with line value
+mergelines:
+ - what:         [doc_class, doc_method, doc_classmethod, doc_staticmethod, class, method, classmethod, staticmethod]
+   with:         [line]
+
+## counts the maximum, minimum and/or average
+## name is the name that will appear at the end, beginning with >
+## as the parameter the parameter of the maximum value line will be used
+## in case several of the same value are found, the first one is used
+## avgprecision gives the decimal precision for the average (defaults to 2)
+## basically only count is required parameter, others are optional
+## if no name for max, min or avg is given, it will not be written 
+minmax:
+ - maxname:      longestmethod
+   minname:      shortestmethod
+   avgname:      averagemethod
+   avgprecision: 5
+   count:        [method, classmethod, staticmethod, doc_method, doc_classmethod, doc_staticmethod]
+
+## calculates the expressions using only the lines from the summary part
+## name is the name that will appear in the summary part after each calculation
+## when hide is true, the calculation result will not appear in the summary
+## when operator is binary: add sub mul div pow
+## param1 and param2 are the two parameters, either names or explicit values
+## precision is meaningful only for division, it defaults to 2
+## when operator is unary: rnd sqrt neg (round, square root, negation)
+## param1 is the parameter, either name or explicit value
+## precision is meaningful only for sqrt, it defaults to 2
+calculate:
+ - name:         .nospecialdocstringables
+   hide:         true
+   operator:     sub
+   param1:       docstringables
+   param2:       specialmethods
+ - name:         docstringrationospecials
+   operator:     div
+   param1:       docstringblocks
+   param2:       .nospecialdocstringables
+   precision:    5
+ - name:         docstringratio
+   operator:     div
+   param1:       docstringblocks
+   param2:       docstringables
+   precision:    5
+ - name:         methodsperclass
+   operator:     div
+   param1:       allclassmethods
+   param2:       classes
+   precision:    5
+ - name:         documentationlines
+   operator:     add
+   param1:       commentedlines
+   param2:       docstringlines
+ - name:         .documentationpercode
+   hide:         true
+   operator:     div
+   param1:       documentationlines
+   param2:       codelines
+   precision:    4
+ - name:         documentationpercentage
+   operator:     mul
+   param1:       .documentationpercode
+   param2:       100
+ - name:         .commentspercode
+   hide:         true
+   operator:     div
+   param1:       commentedlines
+   param2:       codelines
+   precision:    4
+ - name:         commentspercentage
+   operator:     mul
+   param1:       .commentspercode
+   param2:       100
+ - name:         .averagefnct
+   hide:         true
+   operator:     rnd
+   param1:       averagemethod
+ - name:         longesttoaveragedistance
+   operator:     sub
+   param1:       longestmethod
+   param2:       .averagefnct
+
+## introduces (and updates existing) global variables
+## special global variable are called
+##  &files      - number of files processed
+##  &lines      - number of lines processed
+##  &bytes      - number of bytes processed
+## these special globals cannot be referenced to
+## this is performed after every file has been parsed
+## global variables cannot be used for calculations, summations, etc.
+## global variables do not have a parameter with them, only the value
+## name is the name of variable (global variables start with & sign instead of >)
+## update method specifies the way of updating: add avg max min (defaults to add)
+## variable is the name of the variable that is to be added or averaged
+## precision is meaningful only for average update method (defaults to 2)
+## if variable is not present, name of the global variable is used
+.globals:
+ - name:         allclassmethods
+ - name:         allmethods
+ - name:         averagemethod
+   update:       avg
+   precision:    5
+ - name:         classes
+ - name:         classmethods
+ - name:         codelines
+ - name:         commentedlines
+ - name:         commentspercentage
+   update:       avg
+ - name:         docstringables
+ - name:         docstringblocks
+ - name:         docstringlines
+ - name:         docstringratio
+   update:       avg
+   precision:    5
+ - name:         docstringrationospecials
+   update:       avg
+   precision:    5
+ - name:         documentationlines
+ - name:         documentationpercentage
+   update:       avg
+ - name:         emptylines
+ - name:         imports
+ - name:         longestmethod
+   update:       max
+ - name:         methods
+ - name:         methodsperclass
+   update:       avg
+   precision:    5
+ - name:         modulecode
+ - name:         moduledocstring
+ - name:         shortestmethod
+   update:       min
+ - name:         specialmethods
+ - name:         staticmethods                                    
+
+## specifies the order of executing the functions and the parameters at each step
+## before the functions are executed, the syntax rules are used (separate yaml)
+## after the functions are executed, the .globals rules are used
+## after .globals are executed, the output is generated (separate yaml with formats)
+.order:
+ - function:     extract
+   parameters:   extractnoncode
+ - function:     block
+   parameters:   blockdocs
+ - function:     block
+   parameters:   blockmethods
+ - function:     rename
+   parameters:   renameclosingdefs
+ - function:     sum
+   parameters:   sumspecial
+ - function:     rename
+   parameters:   rename
+ - function:     flag
+   parameters:   flagstatic
+ - function:     sum
+   parameters:   sum 
+ - function:     tag
+   parameters:   tagdocs
+ - function:     flatten
+   parameters:   flatten 
+ - function:     merge
+   parameters:   mergelines
+ - function:     extract
+   parameters:   extractmod
+ - function:     minmax
+   parameters:   minmax
+ - function:     calculate
+   parameters:   calculate
