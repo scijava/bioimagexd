@@ -9,7 +9,6 @@ vtkDistanceRepresentationScaled2D.cxx
 vtkExtTIFFReader.cxx
 vtkImageAlphaFilter.cxx
 vtkImageAutoThresholdColocalization.cxx
-vtkImageMaskAutoThresholdColocalization.cxx
 vtkImageColocalizationFilter.cxx
 vtkImageColocalizationTest.cxx
 vtkIntensityTransferFunction.cxx
@@ -76,8 +75,8 @@ SET_TARGET_PROPERTIES (vtkBXDProcessingPythonD
   )
   INSTALL(TARGETS vtkBXDProcessingPython
     RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib/python2.6/site-packages/vtkbxd
-    ARCHIVE DESTINATION lib/python2.6/site-packages/vtkbxd
+    LIBRARY DESTINATION lib/python2.7/site-packages/vtkbxd
+    ARCHIVE DESTINATION lib/python2.7/site-packages/vtkbxd
   )
 ENDIF (VTK_WRAP_PYTHON AND VTKBXD_WRAP_PYTHON)
 

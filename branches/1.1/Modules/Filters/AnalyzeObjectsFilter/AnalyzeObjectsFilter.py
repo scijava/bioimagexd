@@ -319,15 +319,9 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		print "Input for label shape=",self.getInputDataUnit(1)
 		print "Orig. dataunit = ",self.getInputDataUnit(2)
 
-		diritk = dir(itk)
-		if "LabelImageToStatisticsLabelMapFilter" in diritk and "LabelMap" in diritk and "StatisticsLabelObject" and "LabelGeometryImageFilter" in diritk:
-			newITKStatistics = 1
-		else:
-			newITKStatistics = 0
-
 		# Do necessary conversions of datatype
 		origVTK = origImage
-		if self.parameters["AvgInt"] or self.parameters["NonZero"] or newITKStatistics:
+		if self.parameters["AvgInt"] or self.parameters["NonZero"]:
 			origITK = self.convertVTKtoITK(origVTK)
 
 		# Cannot have two convertVTKtoITK in same filter
@@ -397,46 +391,25 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		startIntensity = ignoreLargest
 		print "Ignoring",startIntensity,"first objects"
 
-		if newITKStatistics: # Change spacing for correct results, or not
-			#changeInfoLabel = itk.ChangeInformationImageFilter[labelITK].New()
-			#changeInfoLabel.SetInput(labelITK)
-			#changeInfoLabel.ChangeSpacingOn()
-
-			#changeInfoOrig = itk.ChangeInformationImageFilter[origITK].New()
-			#changeInfoOrig.SetInput(origITK)
-			#changeInfoOrig.ChangeSpacingOn()
-
-			if dim == 3:
-				lm = itk.LabelMap._3.New()
-				#changeInfoLabel.SetOutputSpacing(voxelSizes)
-				#changeInfoOrig.SetOutputSpacing(voxelSizes)
-			else:
-				lm = itk.LabelMap._2.New()
-				#changeInfoLabel.SetOutputSpacing(voxelSizes[:2])
-				#changeInfoOrig.SetOutputSpacing(voxelSizes[:2])
-			
-			labelStatistics = itk.LabelImageToStatisticsLabelMapFilter[labelITK,origITK,lm].New()
-			#labelStatistics.SetInput1(changeInfoLabel.GetOutput())
-			#labelStatistics.SetInput2(changeInfoOrig.GetOutput())
-			labelStatistics.SetInput1(labelITK)
-			labelStatistics.SetInput2(origITK)
-			if self.parameters["Area"]:
-				labelStatistics.ComputePerimeterOn()
-			labelStatistics.Update()
-			labelMap = labelStatistics.GetOutput()
-			numberOfLabels = labelMap.GetNumberOfLabelObjects()
+		if dim == 3:
+			lm = itk.LabelMap._3.New()
+			#changeInfoLabel.SetOutputSpacing(voxelSizes)
+			#changeInfoOrig.SetOutputSpacing(voxelSizes)
 		else:
-			labelShape = itk.LabelShapeImageFilter[labelITK].New()
-			labelShape.SetInput(labelITK)
-			data = labelShape.GetOutput()
-			data.Update()
-			numberOfLabels = labelShape.GetNumberOfLabels()
-		
-			if self.parameters["AvgInt"]:
-				avgintCalc = itk.LabelStatisticsImageFilter[origITK,labelITK].New()
-				avgintCalc.SetInput(origITK)
-				avgintCalc.SetLabelInput(labelITK)
-				avgintCalc.Update()
+			lm = itk.LabelMap._2.New()
+			#changeInfoLabel.SetOutputSpacing(voxelSizes[:2])
+			#changeInfoOrig.SetOutputSpacing(voxelSizes[:2])
+			
+		labelStatistics = itk.LabelImageToStatisticsLabelMapFilter[labelITK,origITK,lm].New()
+		#labelStatistics.SetInput1(changeInfoLabel.GetOutput())
+		#labelStatistics.SetInput2(changeInfoOrig.GetOutput())
+		labelStatistics.SetInput1(labelITK)
+		labelStatistics.SetInput2(origITK)
+		if self.parameters["Area"]:
+			labelStatistics.ComputePerimeterOn()
+		labelStatistics.Update()
+		labelMap = labelStatistics.GetOutput()
+		numberOfLabels = labelMap.GetNumberOfLabelObjects()
 
 		self.progressObj.setProgress(0.2)
 		self.updateProgress(None, "ProgressEvent")
@@ -469,7 +442,7 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 					smoothProperties.SetInput(smoothDecimate.GetOutput())
 
 		# Filter needed for axes calculations
-		if self.parameters["Axes"] and newITKStatistics:
+		if self.parameters["Axes"]:
 			labelGeometry = itk.LabelGeometryImageFilter[labelITK,labelITK].New()
 			labelGeometry.SetCalculateOrientedBoundingBox(1)
 			labelGeometry.SetInput(labelITK)
@@ -495,160 +468,118 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			angleMajZ = 0.0
 			smoothness = 0.0
 			
-			if newITKStatistics:
-				try:
-					labelObj = labelMap.GetLabelObject(i)
-				except:
-					continue
-				volume = labelObj.GetSize()
-				#com = labelObj.GetCenterOfGravity()
-				com = labelObj.GetCentroid()
+			try:
+				labelObj = labelMap.GetLabelObject(i)
+			except:
+				continue
+			volume = labelObj.GetNumberOfPixels()
+			#com = labelObj.GetCenterOfGravity()
+			com = labelObj.GetCentroid()
 				
-				c = []
-				c2 = []
-				for k in range(0,com.GetPointDimension()):
-					v = com[k]
-					v /= spacing[k]
-					c.append(v)
-					c2.append(v * voxelSizes[k])
-				if com.GetPointDimension() == 2:
-					c.append(0)
-					c2.append(0.0)
+			c = []
+			c2 = []
+			for k in range(0,com.GetPointDimension()):
+				v = com[k]
+				v /= spacing[k]
+				c.append(v)
+				c2.append(v * voxelSizes[k])
+			if com.GetPointDimension() == 2:
+				c.append(0)
+				c2.append(0.0)
 
-				if self.parameters["AvgInt"]:
-					avgInt = labelObj.GetMean()
-					avgIntStdErr = math.sqrt(labelObj.GetVariance()) / math.sqrt(volume)
-					objIntSum = avgInt * volume
+			if self.parameters["AvgInt"]:
+				avgInt = labelObj.GetMean()
+				avgIntStdErr = math.sqrt(labelObj.GetVariance()) / math.sqrt(volume)
+				objIntSum = avgInt * volume
 
-				#if self.parameters["Area"]:
-				#	areaInUm = labelObj.GetPerimeter()
-				#	roundness = labelObj.GetRoundness()
+			#if self.parameters["Area"]:
+			#	areaInUm = labelObj.GetPerimeter()
+			#	roundness = labelObj.GetRoundness()
 
-				# Get area of object, copied old way because roundness is not
-				# working
-				if self.parameters["Area"]:
-					if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
-						objectThreshold.ThresholdBetween(i,i)
-						marchingCubes.SetValue(0,255)
-						polydata = marchingCubes.GetOutput()
+			# Get area of object, copied old way because roundness is not
+			# working
+			if self.parameters["Area"]:
+				if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
+					objectThreshold.ThresholdBetween(i,i)
+					marchingCubes.SetValue(0,255)
+					polydata = marchingCubes.GetOutput()
+					polydata.Update()
+					if polydata.GetNumberOfPolys() > 0:
+						massProperties.Update()
+						areaInUm = massProperties.GetSurfaceArea() / areaDiv
+					else:
+						areaInUm = voxelArea
+
+					# Calculate roundness
+					hypersphereR = ((3*volume*vol)/(4*math.pi))**(1/3.0)
+					hypersphereArea = 3 * volume * vol / hypersphereR
+					roundness = hypersphereArea / areaInUm
+					
+					# Calculate surface smoothness
+					if self.parameters["Smoothness"]:
+						# Smooth surface with vtkDecimatePro.
+						polydata = smoothDecimate.GetOutput()
 						polydata.Update()
 						if polydata.GetNumberOfPolys() > 0:
-							massProperties.Update()
-							areaInUm = massProperties.GetSurfaceArea() / areaDiv
-						else:
-							areaInUm = voxelArea
-
-						# Calculate roundness
-						hypersphereR = ((3*volume*vol)/(4*math.pi))**(1/3.0)
-						hypersphereArea = 3 * volume * vol / hypersphereR
-						roundness = hypersphereArea / areaInUm
-					
-						# Calculate surface smoothness
-						if self.parameters["Smoothness"]:
-							# Smooth surface with vtkDecimatePro.
-							polydata = smoothDecimate.GetOutput()
-							polydata.Update()
-							if polydata.GetNumberOfPolys() > 0:
-								smoothProperties.Update()
-								smoothArea = smoothProperties.GetSurfaceArea() / areaDiv
-								smoothness = smoothArea / areaInUm
-					else:
-						areaInUm = volume * x * y
-
-				if self.parameters["Axes"]:
-					vert = labelGeometry.GetOrientedBoundingBoxVertices(i)
-					vertices = []
-					for vNum in range(vert.size()):
-						vertices.append(vert.pop())
-					
-					boxVect = []
-					if dim == 3:
-						vertNums = [1,2,4]
-					else:
-						vertNums = [1,2]
-					
-					for vertNum in vertNums:
-						vertex1 = vertices[0]
-						vertex2 = vertices[vertNum]
-						boxVect.append([abs(vertex2[dimN]-vertex1[dimN]) * voxelSizes[dimN] for dimN in range(dim)])
-
-					boxVectLen = []
-					minAxNum = -1
-					majAxNum = -1
-					minorLength = -1
-					majorLength = -1
-					for num,vect in enumerate(boxVect):
-						length = 0.0
-						for vectComp in vect:
-							length += vectComp**2
-						length = math.sqrt(length)
-						boxVectLen.append(length)
-						if length > majorLength:
-							majorLength = length
-							majAxNum = num
-						if length < minorLength or minorLength < 0:
-							minorLength = length
-							minAxNum = num
-
-					elongation = majorLength / minorLength
-
-					# Calculate angle between major, minor axes and x,y,z axes
-					for dimN in range(dim):
-						boxVect[minAxNum][dimN] /= minorLength
-						boxVect[majAxNum][dimN] /= majorLength
-					
-					vecX = (1.0, 0.0, 0.0)
-					vecY = (0.0, 1.0, 0.0)
-					vecZ = (0.0, 0.0, 1.0)
-
-					angleMinX = lib.Math.angle(boxVect[minAxNum], vecX)
-					angleMinY = lib.Math.angle(boxVect[minAxNum], vecY)
-					angleMinZ = lib.Math.angle(boxVect[minAxNum], vecZ)
-					angleMajX = lib.Math.angle(boxVect[majAxNum], vecX)
-					angleMajY = lib.Math.angle(boxVect[majAxNum], vecY)
-					angleMajZ = lib.Math.angle(boxVect[majAxNum], vecZ)
-						
-			else:
-				if not labelShape.HasLabel(i):
-					continue
+							smoothProperties.Update()
+							smoothArea = smoothProperties.GetSurfaceArea() / areaDiv
+							smoothness = smoothArea / areaInUm
 				else:
-					volume = labelShape.GetVolume(i)
-					centerOfMass = labelShape.GetCenterOfGravity(i)
+					areaInUm = volume * x * y
+
+			if self.parameters["Axes"]:
+				vert = labelGeometry.GetOrientedBoundingBoxVertices(i)
+				vertices = []
+				for vNum in range(vert.size()):
+					vertices.append(vert.pop())
 				
-					if self.parameters["AvgInt"]:
-						avgInt = avgintCalc.GetMean(i)
-						avgIntStdErr = math.sqrt(abs(avgintCalc.GetVariance(i))) / math.sqrt(volume)
-						objIntSum = avgintCalc.GetSum(i)
+				boxVect = []
+				if dim == 3:
+					vertNums = [1,2,4]
+				else:
+					vertNums = [1,2]
 					
-					c = []
-					c2 = []
-					for k in range(0, dim):
-						v = centerOfMass.GetElement(k)
-						c.append(v)
-						c2.append(v * voxelSizes[k])
-					if dim == 2:
-						c.append(0)
-						c2.append(0.0)
+				for vertNum in vertNums:
+					vertex1 = vertices[0]
+					vertex2 = vertices[vertNum]
+					boxVect.append([abs(vertex2[dimN]-vertex1[dimN]) * voxelSizes[dimN] for dimN in range(dim)])
 
-				# Get area of object
-				if self.parameters["Area"]:
-					if largestSize.GetSizeDimension() > 2 and largestSize.GetElement(2) > 1:
-						objectThreshold.ThresholdBetween(i,i)
-						marchingCubes.SetValue(0,255)
-						polydata = marchingCubes.GetOutput()
-						polydata.Update()
-						if polydata.GetNumberOfPolys() > 0:
-							massProperties.Update()
-							areaInUm = massProperties.GetSurfaceArea() / areaDiv
-						else:
-							areaInUm = voxelArea
+				boxVectLen = []
+				minAxNum = -1
+				majAxNum = -1
+				minorLength = -1
+				majorLength = -1
+				for num,vect in enumerate(boxVect):
+					length = 0.0
+					for vectComp in vect:
+						length += vectComp**2
+					length = math.sqrt(length)
+					boxVectLen.append(length)
+					if length > majorLength:
+						majorLength = length
+						majAxNum = num
+					if length < minorLength or minorLength < 0:
+						minorLength = length
+						minAxNum = num
 
-						# Calculate roundness
-						hypersphereR = ((3*volume*vol)/(4*math.pi))**(1/3.0)
-						hypersphereArea = 3 * volume * vol / hypersphereR
-						roundness = hypersphereArea / areaInUm
-					else:
-						areaInUm = volume * x * y
+				elongation = majorLength / minorLength
+
+				# Calculate angle between major, minor axes and x,y,z axes
+				for dimN in range(dim):
+					boxVect[minAxNum][dimN] /= minorLength
+					boxVect[majAxNum][dimN] /= majorLength
+					
+				vecX = (1.0, 0.0, 0.0)
+				vecY = (0.0, 1.0, 0.0)
+				vecZ = (0.0, 0.0, 1.0)
+
+				angleMinX = lib.Math.angle(boxVect[minAxNum], vecX)
+				angleMinY = lib.Math.angle(boxVect[minAxNum], vecY)
+				angleMinZ = lib.Math.angle(boxVect[minAxNum], vecZ)
+				angleMajX = lib.Math.angle(boxVect[majAxNum], vecX)
+				angleMajY = lib.Math.angle(boxVect[majAxNum], vecY)
+				angleMajZ = lib.Math.angle(boxVect[majAxNum], vecZ)
+						
 
 			# Add object results to result arrays
 			centersofmass.append(tuple(c))
@@ -728,22 +659,14 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			variances = 0.0
 			allVoxels = 0
 			for i in range(0,startIntensity):
-				if newITKStatistics:
-					try:
-						labelObj = labelMap.GetLabelObject(i)
-						voxelAmount = labelObj.GetSize()
-						allVoxels += voxelAmount
-						avgIntOutsideObjs += labelObj.GetMean() * voxelAmount
-						variances += voxelAmount * abs(labelObj.GetVariance())
-					except:
-						pass
-				else:
-					if labelShape.HasLabel(i):
-						voxelAmount = labelShape.GetVolume(i)
-						allVoxels += voxelAmount
-						avgIntOutsideObjs += avgintCalc.GetMean(i) * voxelAmount
-						if voxelAmount > 1:
-							variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+				try:
+					labelObj = labelMap.GetLabelObject(i)
+					voxelAmount = labelObj.GetSize()
+					allVoxels += voxelAmount
+					avgIntOutsideObjs += labelObj.GetMean() * voxelAmount
+					variances += voxelAmount * abs(labelObj.GetVariance())
+				except:
+					pass
 
 			if allVoxels > 0:
 				avgIntOutsideObjs /= allVoxels
@@ -771,22 +694,15 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 			variances = 0.0
 			allVoxels = 0
 			for i in range(startIntensity, numberOfLabels+1):
-				if newITKStatistics:
-					try:
-						labelObj = labelMap.GetLabelObject(i)
-						voxelAmount = labelObj.GetSize()
-						allVoxels += voxelAmount
-						avgIntInsideObjs += labelObj.GetMean() * voxelAmount
-						if voxelAmount > 1:
-							variances += voxelAmount * abs(labelObj.GetVariance())
-					except:
-						pass
-				else:
-					if labelShape.HasLabel(i):
-						voxelAmount = labelShape.GetVolume(i)
-						allVoxels += voxelAmount
-						avgIntInsideObjs += avgintCalc.GetMean(i) * voxelAmount
-						variances += voxelAmount * abs(avgintCalc.GetVariance(i))
+				try:
+					labelObj = labelMap.GetLabelObject(i)
+					voxelAmount = labelObj.GetSize()
+					allVoxels += voxelAmount
+					avgIntInsideObjs += labelObj.GetMean() * voxelAmount
+					if voxelAmount > 1:
+						variances += voxelAmount * abs(labelObj.GetVariance())
+				except:
+					pass
 
 			if allVoxels > 0:
 				avgIntInsideObjs /= allVoxels
