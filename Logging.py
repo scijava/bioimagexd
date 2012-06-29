@@ -2,7 +2,6 @@
 """
  Unit: Logging
  Project: BioImageXD
- Created: 13.12.2004, KP
  Description:
 
  A module for reporting and logging errors
@@ -51,7 +50,6 @@ DO_DEBUG = 1
 
 class Tee:
 	"""
-	Created: Unknown, KP
 	Description: Creates a writable fileobject where the output is tee-ed to all of the individual files.
 	"""
 	def __init__(self, *optargs):

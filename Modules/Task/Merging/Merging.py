@@ -170,7 +170,7 @@ class Merging(Module):
 		for i, image in enumerate(images):
 			self.merge.AddInput(image)
 			self.merge.AddLookupTable(self.ctfs[i])
-			self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
+			if self.intensityTransferFunctions[i] != None: self.merge.AddIntensityTransferFunction(self.intensityTransferFunctions[i])
 
 		#data = self.getLimitedOutput(self.merge)
 

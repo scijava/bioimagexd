@@ -101,6 +101,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
   
   inData[0]->GetContinuousIncrements(outExt,inIncX, inIncY, inIncZ);
   inData[1]->GetContinuousIncrements(outExt, maskIncX,maskIncY,maskIncZ);
+
   maxX = outExt[1] - outExt[0];
   maxY = outExt[3] - outExt[2];
   maxZ = outExt[5] - outExt[4];
@@ -111,13 +112,13 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
 
   double range[2]; 
   inData[1]->GetScalarRange(range);
-  printf("Range = %f,%f\n",range[0],range[1]);
+  //  printf("Range = %f,%f\n",range[0],range[1]);
   avgArray->SetNumberOfValues((unsigned long)range[1]+1);
   numArray->SetNumberOfValues((unsigned long)range[1]+1);
-  avgArray->SetValue(0,0);
-  numArray->SetValue(0,0);
+  //  avgArray->SetValue(0,0);
+  //  numArray->SetValue(0,0);
   char progressText[200];
-  for (int i=0;i<range[1]+1;i++) {
+  for (int i = 0; i <= range[1]; i++) {
       avgArray->SetValue(i,0);
       numArray->SetValue(i,0);
   }
@@ -127,7 +128,7 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
   for (idxZ = 0; idxZ <= maxZ; idxZ++ ) {
     sprintf(progressText,"Calculating average intensity of objects (slice %d / %d)",idxZ,maxZ);
     self->SetProgressText(progressText);
-    for(idxY = 0; !self->AbortExecute &&  idxY <= maxY; idxY++ ) {
+    for (idxY = 0; !self->AbortExecute && idxY <= maxY; idxY++) {
         if (!id)
         {
             if (!(count%target))
@@ -136,9 +137,8 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
             }
             count++;
        }          
-    
-      for(idxX = 0; idxX <= maxX; idxX++ ) {
-          for(idxC = 0; idxC < maxC; idxC++ ) {
+      for (idxX = 0; idxX <= maxX; idxX++ ) {
+          for (idxC = 0; idxC < maxC; idxC++ ) {
             scalar = *inPtr++;
             maskScalar = (unsigned long) *maskPtr++;
 
@@ -157,21 +157,20 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
                     outsideSum += scalar;
 					outsideStd += scalar * scalar;
                 }
-                
             }
-            avg = avgArray->GetValue((unsigned long)maskScalar);
-            avg += scalar;
-            avgArray->SetValue((unsigned long)maskScalar, avg);
-            numberOfValues = numArray -> GetValue(maskScalar);
-            numberOfValues++;
-            numArray->SetValue(maskScalar, numberOfValues);
+		  avg = avgArray->GetValue(maskScalar);
+          avg += scalar;
+          avgArray->SetValue(maskScalar, avg);
+          numberOfValues = numArray->GetValue(maskScalar);
+          numberOfValues++;
+          numArray->SetValue(maskScalar, numberOfValues);
           }
-          inPtr+=inIncX;
+          inPtr += inIncX;
           maskPtr += maskIncX;
       }
       inPtr += inIncY;
       maskPtr += maskIncY;
-    }  
+    }
     inPtr += inIncZ;
     maskPtr += maskIncZ;
   }
@@ -187,17 +186,19 @@ void vtkImageLabelAverageExecute(vtkImageLabelAverage *self, int id, int NumberO
   self->SetVoxelsOutsideLabels(nonZeroOutsideCount);
   self->SetNonZeroVoxels(nonZeroCount);
 
-  insideStd = sqrt((insideStd / nonZeroInsideCount) - self->GetAverageInsideLabels());
-  outsideStd = sqrt((outsideStd / nonZeroOutsideCount) - self->GetAverageOutsideLabels());
+  if (nonZeroInsideCount)
+	insideStd = sqrt((insideStd / nonZeroInsideCount) - self->GetAverageInsideLabels());
+  if (nonZeroOutsideCount)
+	outsideStd = sqrt((outsideStd / nonZeroOutsideCount) - self->GetAverageOutsideLabels());
   self->SetInsideLabelsStdDev(insideStd);
   self->SetOutsideLabelsStdDev(outsideStd);
-  
-  for(int i=0;i<=n;i++) {
+
+  for (int i = 0; i <= n; i++) {
      avg = avgArray->GetValue(i);
-     numberOfValues = numArray -> GetValue(i);
+     numberOfValues = numArray->GetValue(i);
      if (numberOfValues) {
        avg /= numberOfValues;     
-       avgArray -> SetValue(i,avg);
+       avgArray->SetValue(i,avg);
      }
 	 else avgArray->SetValue(i, 0);
   }
@@ -241,8 +242,8 @@ void vtkImageLabelAverage::ThreadedRequestData (
     return;
     }
 
-  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
-                 outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
+  //  printf("Number of connections=%d, outExt=%d,%d,%d,%d,%d,%d\n",this->GetNumberOfInputConnections(0),
+  //               outExt[0],outExt[1],outExt[2],outExt[3],outExt[4],outExt[5]);
 
   switch (inData[0][0]->GetScalarType())
   {

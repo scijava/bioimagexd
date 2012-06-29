@@ -29,6 +29,8 @@ __author__ = "BioImageXD Project <http://www.bioimagexd.org/>"
 __version__ = "$Revision: 1.21 $"
 __date__ = "$Date: 2005/01/13 13:42:03 $"
 
+import platform
+import sys
 import wx
 import Logging
 import wx.lib.ogl as ogl
@@ -209,8 +211,64 @@ class OGLAnnotation(ogl.Shape):
 			self.doMaintainAspect = 1
 		else:
 			self.doMaintainAspect = 0
-
 		ogl.Shape.OnSizingDragLeft(self, pt, draw, x, y, keys, attachment)
+
+		if platform.system() != "Darwin":
+			return
+		# --------------------------------------- #
+		# This is a bug fix for the Mac version.  #
+		# Remove this if or when OGL properly     #
+		# draws outlines when sizing annotations. #
+		# --------------------------------------- #
+		shape = self.GetShape()
+		controlPts = shape._controlPoints
+		minX = minY = sys.maxint
+		maxX = maxY = -sys.maxint - 1
+		for controlPt in controlPts:
+			minX = min(minX, controlPt.GetX())
+			minY = min(minY, controlPt.GetY())
+			maxX = max(maxX, controlPt.GetX())
+			maxY = max(maxY, controlPt.GetY())
+		
+		# Types:
+		# ogl.CONTROL_POINT_HORIZONTAL
+		# ogl.CONTROL_POINT_DIAGONAL
+		# ogl.CONTROL_POINT_VERTICAL
+
+		width, height = pt._controlPointDragEndWidth, pt._controlPointDragEndHeight
+		# pt._controlPointDragPosX pt._controlPointDragPosY
+		# pt._controlPointDragStartX, pt._controlPointDragStartY
+
+		canvas = shape.GetCanvas()
+		dc = wx.ClientDC(canvas)
+		dc.SetPen(wx.Pen(wx.Colour(255, 255, 255), 1, wx.DOT))
+		dc.SetBrush(wx.TRANSPARENT_BRUSH)
+
+		canvas.Refresh()
+		canvas.Update()
+
+		type = shape.AnnotationType
+		if type == "CIRCLE" or type == "RECTANGLE" or type == "SCALEBAR":
+			x, y, w, h = pt._controlPointDragPosX, pt._controlPointDragPosY, pt._controlPointDragEndWidth, pt._controlPointDragEndHeight
+			x0, y0, cw, ch = self.GetCanvas().GetClientRect()
+
+			# The outline drawing appears offset on Mac at least.
+			compensation = 4
+			points = [
+				[x - w / 2.0 - compensation, y - h / 2.0 - compensation],
+				[x + w / 2.0 - compensation, y - h / 2.0 - compensation],
+				[x + w / 2.0 - compensation, y + h / 2.0 - compensation],
+				[x - w / 2.0 - compensation, y + h / 2.0 - compensation],
+				[x - w / 2.0 - compensation, y - h / 2.0 - compensation],
+			]
+
+			points = [(x + x0, y + y0) for (x, y) in points]
+			dc.DrawLines(points)
+
+		# --------------------------------------- #
+		# End Mac outline bug fix.			 #
+		# --------------------------------------- #
+		
 
 	def fOnErase(self, dc):
 		"""
@@ -789,7 +847,7 @@ class MyCircle(ShapeAnnotation, ogl.CircleShape):
 #		 dc.DrawBitmap(bg,0,0)
 
 		img = bg.ConvertToImage()
-		dc.DestroyClippingRegion()
+		dc.DestroyClippingRegion()		
 
 class MyPolygon(ShapeAnnotation, ogl.PolygonShape):
 
@@ -1105,14 +1163,12 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 	AnnotationType = "POLYGONCONTROLPOINT"
 	# Implement resizing polygon or moving the vertex
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
-		#self._shape.GetEventHandler().OnSizingDragLeft(self, draw, x, y, keys, attachment)
-		#self.CalculateNewSize(x,y)
 		self.SetX(x)
 		self.SetY(y)
-		#print "Setting x,y to",x,y
 		self._shape.SetPointsFromControl(self)
 		self._shape.updateEraseRect()
-
+		self._shape.OnDraw(wx.ClientDC(self.GetCanvas()))
+		
 	def OnSizingDragLeft(self, pt, x, y, keys, attch):
 		"""
 		an event handler for when the polygon is resized
@@ -1125,7 +1181,7 @@ class MyPolygonControlPoint(ogl.PolygonControlPoint):
 		"""
 		an event handler for when the polygon is resized
 		"""
-		ogl.PolygonControlPoint.OnSizingDragLeft(self, pt, x, y, keys, attch)
+		ogl.PolygonControlPoint.OnEndSizingDragLeft(self, pt, x, y, keys, attch)
 		self._shape.SetPointsFromControl(self)
 		self._shape.ResetControlPoints()
 		self._shape.updateEraseRect()
@@ -1155,6 +1211,8 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 	def __init__(self, parent):
 		self.parent = parent
 		ogl.ShapeEvtHandler.__init__(self)
+		self.begDragPosX = None
+		self.begDragPosY = None
 
 	def SetParent(self, parent):
 		"""
@@ -1179,6 +1237,11 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 			if dlg.ShowModal() == wx.ID_OK:
 				value = dlg.GetValue()
 				shape.setName(value)
+				# 3D annotations: name all the children of the same parent.
+				if shape.parent != None:
+					annotations = shape.parent.GetAnnotations()
+					for annotation in annotations:
+						annotation.setName(value)
 				self.parent.repaintHelpers()
 				self.parent.Refresh()
 			dlg.Destroy()
@@ -1218,29 +1281,90 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 		self.parent.repaintHelpers()
 		self.parent.Refresh()
 
+	def OnBeginDragLeft(self, x, y, keys = 0, attachment = 0):
+		if self.parent.action not in [None, 0]: return
+		self.begDragPosX = x
+		self.begDragPosY = y
+		ogl.ShapeEvtHandler.OnBeginDragLeft(self, x, y, keys, attachment)
+
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
+		if self.parent.action not in [None, 0]: return
+		print self.parent.action
 		self.parent.EnableScrolling(False, False)
 		self.parent.preventScrolling = True
-		ogl.ShapeEvtHandler.OnDragLeft(self, draw, x, y, keys, attachment)
-		self.parent.repaintHelpers()
+		ogl.ShapeEvtHandler.OnDragLeft(self, True, x, y, keys, attachment)
 
+		# --------------------------------------- #
+		# This is a bug fix for the Mac version.  #
+		# Remove this if or when OGL properly     #
+		# draws outlines when sizing annotations. #
+		# --------------------------------------- #
+
+		if platform.system() != "Darwin":
+			return
+
+		shape = self.GetShape()
+		canvas = shape.GetCanvas()
+		dc = wx.ClientDC(canvas)
+		dc.SetPen(wx.Pen(wx.Colour(255, 255, 255), 1, wx.DOT))
+		dc.SetBrush(wx.TRANSPARENT_BRUSH)
+
+		# It would be nice to clear the dotted annotations, however
+		# this also erases the most current one - which we would
+		# like to keep on screen.
+		canvas.Refresh()
+		canvas.Update()
+
+		type = shape.AnnotationType
+		if type == "CIRCLE":
+			w, h = shape.GetWidth(), shape.GetHeight()
+			radius = max(w, h) / 2
+			sX, sY = self.begDragPosX - shape.GetX(), self.begDragPosY - shape.GetY()
+			dc.DrawEllipse(x - (w / 2) - sX, y - (h / 2) - sY, w, h)
+		elif type == "RECTANGLE" or type == "SCALEBAR":
+			w, h = shape.GetWidth(), shape.GetHeight()
+			sX, sY = self.begDragPosX - shape.GetX(), self.begDragPosY - shape.GetY()
+			dc.DrawRectangle(x - (w / 2) - sX, y - (h / 2) - sY, w, h)
+		elif type == "FINISHED_POLYGON":
+			pts = shape.GetPoints()
+			newPts = []
+			diffX, diffY = x - self.begDragPosX, y - self.begDragPosY
+			for pt in pts:
+				newPts.append(wx.Point(pt[0] + diffX, pt[1] + diffY))
+			dc.DrawPolygon(newPts, shape.GetX(), shape.GetY())
+
+		# --------------------------------------- #
+		# End Mac outline bug fix.			 #
+		# --------------------------------------- #
+
+		self.parent.repaintHelpers()
+		
 	def OnEndDragLeft(self, x, y, keys = 0, attachment = 0):
+		if self.parent.action not in [None, 0]: return
 		self.parent.EnableScrolling(True, True)
 		self.parent.preventScrolling = False
-		shape = self.GetShape()
 		ogl.ShapeEvtHandler.OnEndDragLeft(self, x, y, keys, attachment)
 
+		shape = self.GetShape()
 		if not shape.Selected():
 			self.OnLeftClick(x, y, keys, attachment)
-		self.GetShape().updateEraseRect()
+		shape.updateEraseRect()
 		self.parent.repaintHelpers()
 		self.parent.Refresh()
+
 	def OnSizingEndDragLeft(self, pt, x, y, keys, attch):
 		ogl.ShapeEvtHandler.OnSizingEndDragLeft(self, pt, x, y, keys, attch)
 
 		#self.parent.paintPreview()
+		# There is problem with old control points still being visible with 3D annotations.
+		# So we call DeleteControlPoints. The newer control points are still visible after
+		# a sizing event. However, they disappear with 2D annotations so we only do this
+		# with 3D annotations.
+		if self.GetShape().parent != None:
+			self.GetShape().DeleteControlPoints()
 		self.parent.repaintHelpers()
 		self.parent.Refresh()
+
 	def OnMovePost(self, dc, x, y, oldX, oldY, display):
 		ogl.ShapeEvtHandler.OnMovePost(self, dc, x, y, oldX, oldY, display)
 
