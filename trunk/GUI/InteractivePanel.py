@@ -472,20 +472,26 @@ class InteractivePanel(ogl.ShapeCanvas):
 		"""
 		Returns the masks and names of the given ROIs
 		"""
-		masksAndNames = []
 		mx, my, mz = self.dataUnit.getDimensions()
-		names = [roi.getName() for roi in rois]
+		names = []
+		#names = [roi.getName() for roi in rois]
+		for roi in rois:
+			if roi.parent == None:
+				names.append(roi.getName())
+			elif roi.getName() not in names:
+				names.append(roi.getName())
+		
 		# This is a bit tricky. If the ROI is a 3D one, then we need
 		# to create one mask for every slice and then merge them
 		# together. We need to group the 3D ROIs together based on their
 		# parent.
 		parents = []
-		threeDimROIs = filter(lambda x:isinstance(x, GUI.OGLAnnotations.ShapeAnnotation), rois)
-		for threeDimROI in threeDimROIs:
-			if threeDimROI.parent not in parents and threeDimROI.parent != None:
-				parents.append(threeDimROI.parent)
+		shapeAnnotations = filter(lambda x:isinstance(x, GUI.OGLAnnotations.ShapeAnnotation), rois)
+		for shapeAnnotation in shapeAnnotations:
+			if shapeAnnotation.parent not in parents and shapeAnnotation.parent != None:
+				parents.append(shapeAnnotation.parent)
 
-		# Finished mask volumes.
+		# Create 3D masks based off of the 3D annotations.
 		masks = []
 		for parent in parents:
 			annotations = parent.GetAnnotations()
@@ -493,14 +499,16 @@ class InteractivePanel(ogl.ShapeCanvas):
 			# All children of a parent form one mask volume.
 			for annotation in annotations:
 				maskFromROIs.append(lib.ImageOperations.getMaskFromROIs([annotation], mx, my, 1)[1])
-			masks.append(lib.ImageOperations.CreateVolumeFromSlices(maskFromROIs, self.dataUnit.getSpacing()))
+			if maskFromROIs != []:
+				masks.append(lib.ImageOperations.CreateVolumeFromSlices(maskFromROIs, self.dataUnit.getSpacing()))
 
+        # Create 2D masks based off of the 2D annotations.
 		rois2D = []
 		for roi in rois:
 			if roi.parent == None:
 				rois2D.append(roi)
-
-		masks.append(lib.ImageOperations.getMaskFromROIs(rois2D, mx, my, mz)[1])
+		if rois2D != []:
+			masks.append(lib.ImageOperations.getMaskFromROIs(rois2D, mx, my, mz)[1])
 						
 		# Return all the masks and names.
 		return masks, names
@@ -705,7 +713,6 @@ class InteractivePanel(ogl.ShapeCanvas):
 			self.scrollPos = None
 			self.zoomDragPos = None
 		if (event.LeftIsDown() or event.MiddleIsDown()) and event.Dragging():
-			# @jonte
 			# Here we check if we want to prevent scrolling, because
 			# we might only want to move an annotation. The key
 			# is to select an annotation, and then drag it.

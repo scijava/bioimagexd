@@ -446,6 +446,16 @@ class AnnotationToolbar(wx.Window):
 
 		self.visualizer.getCurrentMode().annotate(annclass, multiple = multiple, color = self.colorSelect.GetColour())
 		
+		button = event.GetEventObject()
+		self.scaleBtn.SetToggle(button == self.scaleBtn)
+		self.circleBtn.SetToggle(button == self.circleBtn)
+		self.rectangleBtn.SetToggle(button == self.rectangleBtn)
+		self.polygonBtn.SetToggle(button == self.polygonBtn)
+		if not scripting.TFLag:
+			self.threeDPolygonBtn.SetToggle(button == self.threeDPolygonBtn)
+			self.threeDCircleBtn.SetToggle(button == self.threeDCircleBtn)
+			self.threeDRectangleBtn.SetToggle(button == self.threeDRectangleBtn)
+		
 	def deleteAnnotation(self, event):
 		"""
 		Delete annotations on the image
@@ -472,6 +482,7 @@ class AnnotationToolbar(wx.Window):
 		"""
 		if hasattr(self.visualizer.currentWindow, "roiToMask"):
 			masks, names = self.visualizer.currentWindow.roiToMask()
+			print masks, names, "\n"*5
 			name = ",".join(names)
 			dims = self.visualizer.dataUnit.getDimensions()
 			for i in range(len(masks)):

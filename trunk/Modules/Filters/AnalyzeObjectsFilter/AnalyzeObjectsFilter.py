@@ -312,6 +312,8 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 
 		labelImage = self.getInput(1)
 		labelImage.Update()
+		if labelImage.GetScalarType() != 9:
+			Logging.error("Incompatible data type", "Please convert the input to label data of type unsigned long. Segmented data can be labeled with 'Connected component labeling' or 'Object separation' in 'Segmentation -> Object Processing'.")
 		origImage = self.getInput(2)
 		origImage.Update()
 		origRange = origImage.GetScalarRange()
