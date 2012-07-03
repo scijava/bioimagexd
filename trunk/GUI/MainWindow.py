@@ -1571,7 +1571,7 @@ importdlg = GUI.ImportDialog.ImportDialog(mainWindow)
 								"Please select a dataset")
 			return
 
-		if len(selectedFiles) > 1 and (mode == "3d" or mode == "animator"): # Group files automatically
+		if len(selectedFiles) > 1 and self.currentTaskWindow is None and (mode == "3d" or mode == "animator"): # Group files automatically if no task is open
 			self.tree.onGroupDataset(None)
 			selectedFiles = self.tree.getSelectedDataUnits()
 		
