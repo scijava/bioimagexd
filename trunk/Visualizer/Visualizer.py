@@ -555,7 +555,7 @@ class Visualizer:
 		self.zoomCombo.SetHelpText("This controls the zoom level of visualization views.")
 		self.tb.AddControl(self.zoomCombo)
 
-		self.tb.AddSeparator()
+		if platform.system() != "Darwin": self.tb.AddSeparator()
 
 		self.viewCombo = wx.ComboBox(self.tb,
 									GUI.MenuManager.ID_SET_VIEW,
@@ -575,7 +575,8 @@ class Visualizer:
 		self.tb.AddControl(self.roll)
 		self.elevation = wx.SpinButton(self.tb, -1, style = wx.SP_VERTICAL, size = (-1, 22))
 		self.tb.AddControl(self.elevation)
-		self.tb.AddSeparator()
+		
+		if platform.system() != "Darwin": self.tb.AddSeparator()
 
 		icon = wx.Image(os.path.join(icondir, "Original.png"), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
 

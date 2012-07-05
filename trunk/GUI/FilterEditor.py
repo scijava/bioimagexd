@@ -444,8 +444,6 @@ class FilterEditor(wx.Panel):
 				filenm = filenm.replace("\\", "\\\\")
 				if platform.system == "Windows":
 					filenm = filenm.encode('mbcs')
-				else:
-					filenm = filenm.encode(sys.getfilesystemencoding())
 				do_cmd = "%s.loadPreset('%s')" % (self.scriptingId, filenm)
 			   
 				cmd = lib.Command.Command(lib.Command.GUI_CMD, None, None, do_cmd, "", \
@@ -477,13 +475,18 @@ class FilterEditor(wx.Panel):
 		"""
 		save the procedure list as preset
 		"""
-		presetDir = scripting.get_preset_dir()
-		if not os.access(presetDir, os.F_OK):
-			os.mkdir(presetDir)
-		filename = os.path.join(presetDir, name + ".bxp")
 		parser = ConfigParser.RawConfigParser()
 		parser.optionxform = str
 		self.filterList.writeOut(parser)
+
+		presetDir = scripting.get_preset_dir()
+		if platform.system() == "Windows":
+			presetDir = presetDir.encode('mbcs')
+			name = name.encode('mbcs')
+
+		if not os.access(presetDir, os.F_OK):
+			os.mkdir(presetDir)
+		filename = os.path.join(presetDir, name + ".bxp")
 		parser.write(open(filename,"w"))
 
 	def setModified(self, flag):

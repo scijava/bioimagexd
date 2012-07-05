@@ -71,7 +71,7 @@ class OlympusDataSource(DataSource):
 		self.filename = filename
 		self.parser = ConfigParser.RawConfigParser()
 		if filename:
-			filepointer = codecs.open(filename, "r", "utf-16")
+			filepointer = codecs.open(self.convertFileName(filename), "r", "utf-16")
 			self.parser.readfp(filepointer)
 			dataName = self.parser.get("File Info","DataName")
 			if dataName[0] == '"':
@@ -231,7 +231,7 @@ class OlympusDataSource(DataSource):
 			tpat = "T%.3d"%(timepointIndex+1)
 		pat = path + zpat + tpat + ".tif"
 		
-		self.reader.SetFilePattern(pat)
+		self.reader.SetFilePattern(self.convertFileName(pat))
 
 		if self.reverseSlices and 0:
 			#print "offset=",self.dimensions[2]
@@ -256,16 +256,16 @@ class OlympusDataSource(DataSource):
 		"""
 		lutFile = os.path.join(self.path, self.lutFileName)
 
-		file = codecs.open(lutFile, "r", "utf-16")
+		fileh = codecs.open(self.convertFileName(lutFile), "r", "utf-16")
 		while 1:
-			line = file.readline()
+			line = fileh.readline()
 			if "ColorLUTData" in line:
 				break
 		
-		file.close()
-		file = open(lutFile, "rb")
-		file.seek(-4 * 65536, 2)
-		data = file.read()
+		fileh.close()
+		fileh = open(self.convertFileName(lutFile), "rb")
+		fileh.seek(-4 * 65536, 2)
+		data = fileh.read()
 		
 		format = "i" * 65536
 		values = struct.unpack(format, data)
@@ -433,13 +433,13 @@ class OlympusDataSource(DataSource):
 		self.path = os.path.dirname(filename)
 		
 		try:
-			file = open(filename)
-			file.close()
+			fileh = open(self.convertFileName(filename))
+			fileh.close()
 		except IOError, ex:
 			Logging.error("Failed to open Olympus OIF File",
 			"Failed to open file %s for reading: %s" % (filename, str(ex)))		   
 
-		filepointer = codecs.open(filename, "r", "utf-16")
+		filepointer = codecs.open(self.convertFileName(filename), "r", "utf-16")
 		self.parser.readfp(filepointer)
 		xDimension, yDimension, zDimension, timepoints, \
 		channels, voxelXDimension, voxelYDimension, voxelZDimension, timeStep = self.getAllDimensions(self.parser)
@@ -451,7 +451,7 @@ class OlympusDataSource(DataSource):
 		
 		dataunits = []
 		for channel in range(1, channels + 1):
-			name = names[channel - 1]	 
+			name = names[channel - 1]
 			excitation = excitations[channel - 1]
 			emission = emissions[channel - 1]
 			datasource = OlympusDataSource(filename, channel, name = name)

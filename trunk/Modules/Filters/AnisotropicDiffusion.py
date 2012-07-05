@@ -60,7 +60,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		"""            
 		return [ 
 		"Neighborhood:", ["", ( ("Faces", "Corners", "Edges"), )],
-		"Threshold:", ["Gradient measure", ( ("CentralDiff", "Gradient"), ("cols", 2)) ],
+		["Gradient measure", ( ("CentralDiff", "Gradient"), ("cols", 2)) ],
 		["", ("DiffThreshold", "DiffFactor")]
 		]
 
@@ -109,7 +109,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 	def execute(self, inputs, update = 0, last = 0):
 		"""
 		Execute the filter with given inputs and return the output
-		"""            
+		"""
 		if not ProcessingFilter.ProcessingFilter.execute(self, inputs):
 			return None
 		
@@ -122,7 +122,7 @@ class AnisotropicDiffusionFilter(ProcessingFilter.ProcessingFilter):
 		self.vtkfilter.SetEdges(self.parameters["Edges"])
 		self.vtkfilter.SetCorners(self.parameters["Corners"])
 		self.vtkfilter.SetGradientMagnitudeThreshold(self.parameters["CentralDiff"])
-		
+
 		if update:
 			self.vtkfilter.Update()
 		return self.vtkfilter.GetOutput()      

@@ -241,7 +241,7 @@ class LsmDataSource(DataSource):
 		Parameters:	  filename	The .lsm-file to be loaded
 		"""
 		try:
-			f = open(filename,"r")
+			f = open(self.convertFileName(filename),"r")
 			f.close()
 		except IOError, ex:
 			Logging.error("Failed to open LSM File",
