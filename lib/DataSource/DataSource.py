@@ -512,8 +512,13 @@ class DataSource:
 		"""
 		convert the filename to proper encoding
 		"""
-		if self.system == "Windows": return filename.encode('mbcs')
-		return filename.encode(sys.getfilesystemencoding())
+		try:
+			if self.system == "Windows":
+				return filename.encode('mbcs')
+			else:
+				return filename.encode(sys.getfilesystemencoding())
+		except:
+			return filename
 		
 	def getDimensions(self):
 		"""

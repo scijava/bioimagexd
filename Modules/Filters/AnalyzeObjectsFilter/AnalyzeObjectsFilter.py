@@ -310,10 +310,16 @@ class AnalyzeObjectsFilter(lib.ProcessingFilter.ProcessingFilter):
 		self.progressObj.setProgress(0.0)
 		self.updateProgress(None, "ProgressEvent")
 
+		rightDataType = True
 		labelImage = self.getInput(1)
 		labelImage.Update()
-		if labelImage.GetScalarType() != 9:
+		if "vtkImageData" in str(labelImage.__class__):
+			rightDataType = (labelImage.GetScalarType() == 9)
+		elif not "itkImageUL" in str(labelImage.__class__):
+			rightDataType = False
+		if not rightDataType:
 			Logging.error("Incompatible data type", "Please convert the input to label data of type unsigned long. Segmented data can be labeled with 'Connected component labeling' or 'Object separation' in 'Segmentation -> Object Processing'.")
+		
 		origImage = self.getInput(2)
 		origImage.Update()
 		origRange = origImage.GetScalarRange()
