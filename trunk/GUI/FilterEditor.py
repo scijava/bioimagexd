@@ -33,6 +33,7 @@ import scripting
 import ConfigParser
 import GUI.Dialogs
 import GUI.FilterBasedTaskPanel
+import Logging
 import glob 
 import lib.Command
 import lib.ImageOperations
@@ -481,8 +482,10 @@ class FilterEditor(wx.Panel):
 
 		presetDir = scripting.get_preset_dir()
 		if platform.system() == "Windows":
-			presetDir = presetDir.encode('mbcs')
-			name = name.encode('mbcs')
+			try:
+				name = name.encode('mbcs')
+			except:
+				Logging.error("Preset saving error", 'Only ascii characters (a-z,0-9,-,_) can be used in preset name in Windows')
 
 		if not os.access(presetDir, os.F_OK):
 			os.mkdir(presetDir)
