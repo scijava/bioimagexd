@@ -145,7 +145,15 @@ class FilterList:
 				
 			if not parser.has_section(sectionName):
 				parser.add_section(sectionName)
+
+			skipNextNItems = 0
 			for key in keys:
+				if skipNextNItems:
+					skipNextNItems -= 1
+					continue
+				if key == 'cols' or key == 'rows': # Don't save RADIO_CHOICE GUI info
+					skipNextNItems = 1
+					continue
 				parser.set(sectionName, key, currfilter.getParameter(key))
 
 			parser.set(sectionName,"Enabled", str(currfilter.getEnabled()))
