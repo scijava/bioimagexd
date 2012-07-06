@@ -120,44 +120,50 @@ aboutText = u"""
 <body bgcolor = "%(bgcolor)s">
 <center><h2 > BioImageXD %(version)s</h2></center>
 <center><img src = "%(icondir)s/logo_medium2.png"></center><br>
-<p><b > BioImageXD</b > is a program for post - processing and visualizing
-three - and four - dimensional microscopy data.</p>
+<p><b>BioImageXD</b> is a free open source software package for analyzing, processing and visualizing multi-dimensional microscopy images.</p>
 
-<h2 > The BioImageXD Project</h2>
-<p><b > The main development team</b></p><p>
+<h2>The BioImageXD Project</h2>
+<p><b>The main development team:</b><br>
 Pasi Kankaanpää<br>
-Lassi Paavolainen <br>
-Varpu Marjomäki <br>
-Jyrki Heino <br>
-Daniel White <br>
+Lassi Paavolainen<br>
+Varpu Marjomäki<br>
+Jyrki Heino
 </p>
 <p>
-<b>Developers:</b>
+<b>Developers:</b><br>
+Joacim Päivärinne<br>
+Mikolaj Olszewski<br>
+Natalia Diaz Rodriguez<br>
+Daniel White
 </p>
 <p>
-Joacim Päivärinne
-</p>
-<p>
-<b> Former members of the main development team:</b>
+<b>Former members of the development team:</b><br>
+Kalle Pahajoki<br>
+Heikki Uuksulainen<br>
+Johan Björkman<br>
+Juha Hyytiäinen<br>
+Jaakko Mäntymaa<br>
+Jukka Varsaluoma<br>
+Ralph-Johan Back
 </p><p>
-Kalle Pahajoki <br>
-Heikki Uuksulainen
+<b>The following people are acknowledged for their valuable contributions:</b><br>
+Jorma Virtanen, Nanoscience Centre, University of Jyväskylä (funding and ideas)<br>
+Karl Garsha, Photometrics and Optical Insights (Leica reader and Apple Mac OS X know how)<br>
+Mikko Huhtala, Åbo Akademi (web page and license issues assistance)<br>
+Mikko Karjalainen, University of Jyväskylä (testing the software and giving ideas)<br>
+Silja Tiitta, University of Turku (testing the software and giving ideas)<br>
+Jonna Nieminen, University of Turku (testing the software and giving ideas)<br>
+Anna-Brita Puranen, University of Turku (testing the software and giving ideas)<br>
+Anders Björkbom, Åbo Akademi University (testing the software and giving ideas)
+Jan Westerholm, Åbo Akademi University (code optimization and giving ideas)
 </p>
-<p>
-<b>BioImageXD is largely based on the work of the Selli project, which included the following people:</b></p><p>
-Juha Hyytiäinen <br>
-Jaakko Mäntymaa <br>
-Kalle Pahajoki <br>
-Jukka Varsaluoma <br>
-</p><p>
-<b> The following people, organizations and companies have significantly contributed to the development of BioImageXD:</b></p><p>
-Jorma Virtanen <br>
-Mikko Huhtala <br>
-Pekka Neittaanmäki <br>
-Anna - Brita Öst <br>
-Mikko Karjalainen <br>
-</p><p>
-ISB - National Graduate School in Informational and Structural Biology <br>
+<p><b>Main funding sources:</b><br>
+Academy of Finland (projects 127168 and 114727)<br>
+The FinNano nanoscience research programme<br>
+Tekes (the Finnish Funding Agency for Technology and Innovation)<br>
+The European Union (7th framework program, MetaFight)<br>
+The Sigrid Juselius Foundation<br>
+Turku BioImaging
 </p>
 </body>
 </html>
