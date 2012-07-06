@@ -733,22 +733,22 @@ class ProcessingFilter:
 		"""
 		Return whether this filter is enabled or not
 		"""
-		return self.descs.keys()
-		#returnList = []
-		#for item in self.getParameters():
+		returnList = []
+		for item in self.getParameters():
 			# If it's a label, then ignore it
-		#	if type(item) == types.StringType:
-		#		continue
+			if type(item) == types.StringType:
+				continue
 			# if it's a list type, then add each parameter in the list to the list of plain parameters
-		#	elif type(item) == types.ListType:
-		#		title, items = item
-		#		for curritem in items:
-		#			toadd = curritem
-		#			if type(curritem) == types.TupleType:
-		#				returnList.extend(curritem)
-		#			else:
-		#				returnList.extend([curritem])
-		#return returnList
+			elif type(item) == types.ListType:
+				title, items = item
+				for curritem in items:
+					toadd = curritem
+					if type(curritem) == types.TupleType:
+						returnList.extend(curritem)
+					else:
+						returnList.extend([curritem])
+
+		return returnList
 		
 	def recordParameterChange(self, parameter, value, modpath):
 		"""
