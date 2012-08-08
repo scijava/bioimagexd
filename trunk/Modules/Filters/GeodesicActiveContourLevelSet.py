@@ -179,11 +179,6 @@ class GeodesicActiveContourLevelSetFilter(lib.ProcessingFilter.ProcessingFilter)
 		self.sigmoid.SetBeta(self.parameters["Beta"])
 		self.sigmoid.SetInput(self.gradient.GetOutput())
 
-		cast = eval("itk.RescaleIntensityImageFilter.IF%dIUC%d.New()"%(dim,dim))
-		cast.SetInput(self.sigmoid.GetOutput())
-		cast.SetOutputMinimum(0)
-		cast.SetOutputMaximum(255)
-
 		seedPoints = self.parameters["Seed"]
 		seeds = eval("itk.VectorContainer.UILSNF%d.New()"%dim)
 		seeds.Initialize()

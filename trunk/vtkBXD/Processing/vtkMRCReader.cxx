@@ -480,15 +480,20 @@ void vtkMRCReader::SetImageDims()
 		case 3:
 		  this->ImageDims[2] = this->N[i];
 		  break;
+		default:
+		  this->ImageDims[i] = this->N[i];
 		}
 	}
 }
 
 void vtkMRCReader::CalculateVoxelSize()
 {
-  this->VoxelSize[0] = this->Len[0] / this->M[0];
-  this->VoxelSize[1] = this->Len[1] / this->M[1];
-  this->VoxelSize[2] = this->Len[2] / this->M[2];
+  if (this->M[0] != 0)
+	this->VoxelSize[0] = this->Len[0] / this->M[0];
+  if (this->M[1] != 0)
+	this->VoxelSize[1] = this->Len[1] / this->M[1];
+  if (this->M[2] != 0)
+	this->VoxelSize[2] = this->Len[2] / this->M[2];
 }
 
 void vtkMRCReader::CalculateExtentAndSpacing(int *extent, double *spacing)
