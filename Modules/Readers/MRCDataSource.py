@@ -149,6 +149,8 @@ class MRCDataSource(DataSource):
 		"""
 		if not self.voxelSize:
 			voxelSizeAngstrom = self.reader.GetVoxelSize()
+			if voxelSizeAngstrom[0] == 0.0:
+				voxelSizeAngstrom = (1.0, 1.0, 1.0)
 			voxelSize = map(lambda x: x*(10**-10),voxelSizeAngstrom)
 			self.voxelSize = voxelSize
 
@@ -162,8 +164,9 @@ class MRCDataSource(DataSource):
 		if not self.spacing:
 			voxelSize = self.getVoxelSize()
 			spacing = [1.0,1.0,1.0]
-			spacing[1] = voxelSize[1] / voxelSize[0]
-			spacing[2] = voxelSize[2] / voxelSize[0]
+			if voxelSize[0] != 0:
+				spacing[1] = voxelSize[1] / voxelSize[0]
+				spacing[2] = voxelSize[2] / voxelSize[0]
 			self.spacing = spacing
 			
 		return self.spacing
@@ -183,17 +186,22 @@ class MRCDataSource(DataSource):
 		Set original range of scalar values of data
 		"""
 		mode = self.reader.GetMode()
-		min = 0
-		max = 255
+		minval = 0
+		maxval = 255
 
 		if mode == 1:
-			min = int(self.reader.GetMin())
-			max = int(self.reader.GetMax())
+			minval = int(self.reader.GetMin())
+			maxval = int(self.reader.GetMax())
 		elif mode == 2:
-			min = self.reader.GetMin()
-			max = self.reader.GetMax()
+			minval = self.reader.GetMin()
+			maxval = self.reader.GetMax()
 
-		self.originalScalarRange = (min,max)
+		# If minval and maxval not specified in header
+		if minval == maxval and maxval == 0:
+			self.reader.Update()
+			minval,maxval = self.reader.GetOutput().GetScalarRange()
+
+		self.originalScalarRange = (minval,maxval)
 
 	def getScalarRange(self):
 		"""

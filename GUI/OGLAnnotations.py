@@ -1289,7 +1289,7 @@ class MyEvtHandler(ogl.ShapeEvtHandler):
 
 	def OnDragLeft(self, draw, x, y, keys = 0, attachment = 0):
 		if self.parent.action not in [None, 0]: return
-		print self.parent.action
+		
 		self.parent.EnableScrolling(False, False)
 		self.parent.preventScrolling = True
 		ogl.ShapeEvtHandler.OnDragLeft(self, True, x, y, keys, attachment)
